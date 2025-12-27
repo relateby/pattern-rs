@@ -1,0 +1,22 @@
+[package]
+name = "gram"
+version = "0.1.0"
+edition = "2021"
+rust-version = "1.70.0"
+authors = ["gram-data"]
+license = "BSD-3-Clause"
+description = "Rust port of gram-hs pattern data structure and graph views"
+repository = "https://github.com/gram-data/gram-rs"
+
+[lib]
+name = "gram"
+path = "src/lib.rs"
+
+[dependencies]
+
+[dev-dependencies]
+
+[features]
+default = []
+wasm = []
+

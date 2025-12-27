@@ -33,6 +33,8 @@
 
 [Gates determined based on constitution file]
 
+**Note**: When porting features from gram-hs, reference the local implementation at `../gram-hs` and corresponding feature specifications in `../gram-hs/specs/`. See [PORTING_GUIDE.md](../../../PORTING_GUIDE.md) for detailed porting instructions.
+
 ## Project Structure
 
 ### Documentation (this feature)
