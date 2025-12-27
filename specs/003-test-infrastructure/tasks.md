@@ -15,22 +15,22 @@
 
 **Purpose**: Project initialization and basic structure for testing infrastructure
 
-- [ ] T001 Add proptest dependency to workspace Cargo.toml in Cargo.toml
-- [ ] T002 [P] Add proptest dev-dependency to pattern-core crate in crates/pattern-core/Cargo.toml
-- [ ] T003 [P] Add proptest dev-dependency to pattern-ops crate in crates/pattern-ops/Cargo.toml
-- [ ] T004 [P] Add proptest dev-dependency to gram-codec crate in crates/gram-codec/Cargo.toml
-- [ ] T005 Add insta dependency to workspace Cargo.toml in Cargo.toml
-- [ ] T006 [P] Add insta dev-dependency to pattern-core crate in crates/pattern-core/Cargo.toml
-- [ ] T007 [P] Add insta dev-dependency to pattern-ops crate in crates/pattern-ops/Cargo.toml
-- [ ] T008 [P] Add insta dev-dependency to gram-codec crate in crates/gram-codec/Cargo.toml
-- [ ] T009 Add criterion dependency to workspace Cargo.toml in Cargo.toml
-- [ ] T010 Create benches directory structure at workspace root in benches/
-- [ ] T011 [P] Create tests/property directory in pattern-core crate in crates/pattern-core/tests/property/
-- [ ] T012 [P] Create tests/equivalence directory in pattern-core crate in crates/pattern-core/tests/equivalence/
-- [ ] T013 [P] Create tests/snapshot directory in pattern-core crate in crates/pattern-core/tests/snapshot/
-- [ ] T014 [P] Create tests/property directory in pattern-ops crate in crates/pattern-ops/tests/property/
-- [ ] T015 [P] Create tests/equivalence directory in pattern-ops crate in crates/pattern-ops/tests/equivalence/
-- [ ] T016 [P] Create tests/snapshot directory in pattern-ops crate in crates/pattern-ops/tests/snapshot/
+- [x] T001 Add proptest dependency to workspace Cargo.toml in Cargo.toml
+- [x] T002 [P] Add proptest dev-dependency to pattern-core crate in crates/pattern-core/Cargo.toml
+- [x] T003 [P] Add proptest dev-dependency to pattern-ops crate in crates/pattern-ops/Cargo.toml
+- [x] T004 [P] Add proptest dev-dependency to gram-codec crate in crates/gram-codec/Cargo.toml
+- [x] T005 Add insta dependency to workspace Cargo.toml in Cargo.toml
+- [x] T006 [P] Add insta dev-dependency to pattern-core crate in crates/pattern-core/Cargo.toml
+- [x] T007 [P] Add insta dev-dependency to pattern-ops crate in crates/pattern-ops/Cargo.toml
+- [x] T008 [P] Add insta dev-dependency to gram-codec crate in crates/gram-codec/Cargo.toml
+- [x] T009 Add criterion dependency to workspace Cargo.toml in Cargo.toml
+- [x] T010 Create benches directory structure at workspace root in benches/
+- [x] T011 [P] Create tests/property directory in pattern-core crate in crates/pattern-core/tests/property/
+- [x] T012 [P] Create tests/equivalence directory in pattern-core crate in crates/pattern-core/tests/equivalence/
+- [x] T013 [P] Create tests/snapshot directory in pattern-core crate in crates/pattern-core/tests/snapshot/
+- [x] T014 [P] Create tests/property directory in pattern-ops crate in crates/pattern-ops/tests/property/
+- [x] T015 [P] Create tests/equivalence directory in pattern-ops crate in crates/pattern-ops/tests/equivalence/
+- [x] T016 [P] Create tests/snapshot directory in pattern-ops crate in crates/pattern-ops/tests/snapshot/
 
 ---
 
@@ -40,13 +40,13 @@
 
 **⚠️ CRITICAL**: No user story work can begin until this phase is complete
 
-- [ ] T017 Create test utility module structure in pattern-core crate in crates/pattern-core/src/test_utils/mod.rs
-- [ ] T018 [P] Create equivalence module placeholder in crates/pattern-core/src/test_utils/equivalence.rs
-- [ ] T019 [P] Create helpers module placeholder in crates/pattern-core/src/test_utils/helpers.rs
-- [ ] T020 [P] Create generators module placeholder in crates/pattern-core/src/test_utils/generators.rs
-- [ ] T021 Export test_utils module from pattern-core lib.rs in crates/pattern-core/src/lib.rs
-- [ ] T022 Verify workspace builds with test dependencies in Cargo.toml
-- [ ] T023 Verify workspace tests run successfully with cargo test --workspace
+- [x] T017 Create test utility module structure in pattern-core crate in crates/pattern-core/src/test_utils/mod.rs
+- [x] T018 [P] Create equivalence module placeholder in crates/pattern-core/src/test_utils/equivalence.rs
+- [x] T019 [P] Create helpers module placeholder in crates/pattern-core/src/test_utils/helpers.rs
+- [x] T020 [P] Create generators module placeholder in crates/pattern-core/src/test_utils/generators.rs
+- [x] T021 Export test_utils module from pattern-core lib.rs in crates/pattern-core/src/lib.rs
+- [x] T022 Verify workspace builds with test dependencies in Cargo.toml
+- [x] T023 Verify workspace tests run successfully with cargo test --workspace
 
 **Checkpoint**: Foundation ready - user story implementation can now begin in parallel
 
@@ -60,14 +60,14 @@
 
 ### Implementation for User Story 1
 
-- [ ] T024 [US1] Configure proptest with WASM feature flag in crates/pattern-core/Cargo.toml
-- [ ] T025 [US1] Create example property test file in crates/pattern-core/tests/property/equality.rs
-- [ ] T026 [US1] Implement basic property test example (equality symmetry) in crates/pattern-core/tests/property/equality.rs
-- [ ] T027 [US1] Create pattern generator placeholder in crates/pattern-core/src/test_utils/generators.rs (will be implemented when pattern types are defined in feature 004)
-- [ ] T028 [US1] Configure proptest test case count (100+ cases per SC-001) in crates/pattern-core/tests/property/equality.rs
-- [ ] T029 [US1] Verify property tests run and generate test cases in crates/pattern-core/tests/property/
-- [ ] T030 [US1] Test property test failure reporting with counterexamples in crates/pattern-core/tests/property/equality.rs
-- [ ] T031 [US1] Verify property tests work on WASM target (wasm32-unknown-unknown) in crates/pattern-core/tests/property/
+- [x] T024 [US1] Configure proptest with WASM feature flag in crates/pattern-core/Cargo.toml
+- [x] T025 [US1] Create example property test file in crates/pattern-core/tests/property/equality.rs
+- [x] T026 [US1] Implement basic property test example (equality symmetry) in crates/pattern-core/tests/property/equality.rs
+- [x] T027 [US1] Create pattern generator placeholder in crates/pattern-core/src/test_utils/generators.rs (will be implemented when pattern types are defined in feature 004)
+- [x] T028 [US1] Configure proptest test case count (100+ cases per SC-001) in crates/pattern-core/tests/property/equality.rs
+- [x] T029 [US1] Verify property tests run and generate test cases in crates/pattern-core/tests/property/
+- [x] T030 [US1] Test property test failure reporting with counterexamples in crates/pattern-core/tests/property/equality.rs
+- [x] T031 [US1] Verify property tests work on WASM target (wasm32-unknown-unknown) in crates/pattern-core/tests/property/
 
 **Checkpoint**: At this point, User Story 1 should be fully functional and testable independently. Developers can write property-based tests that generate 100+ test cases automatically.
 
@@ -81,16 +81,16 @@
 
 ### Implementation for User Story 2
 
-- [ ] T032 [US2] Define EquivalenceResult struct in crates/pattern-core/src/test_utils/equivalence.rs
-- [ ] T033 [US2] Define EquivalenceOptions struct in crates/pattern-core/src/test_utils/equivalence.rs
-- [ ] T034 [US2] Implement check_equivalence function in crates/pattern-core/src/test_utils/equivalence.rs
-- [ ] T035 [US2] Implement check_equivalence_from_test_data function in crates/pattern-core/src/test_utils/equivalence.rs
-- [ ] T036 [US2] Implement difference reporting with field-level details in crates/pattern-core/src/test_utils/equivalence.rs
-- [ ] T037 [US2] Add support for approximate equality for floating-point values in crates/pattern-core/src/test_utils/equivalence.rs
-- [ ] T038 [US2] Create example equivalence test using test data in crates/pattern-core/tests/equivalence/test_data.rs
-- [ ] T039 [US2] Integrate equivalence checking with tests/common/test_cases.json in crates/pattern-core/tests/equivalence/test_data.rs
-- [ ] T040 [US2] Verify equivalence checking completes within 1 second per comparison (SC-003) in crates/pattern-core/tests/equivalence/
-- [ ] T041 [US2] Test equivalence checking error reporting with mismatched outputs in crates/pattern-core/tests/equivalence/test_data.rs
+- [x] T032 [US2] Define EquivalenceResult struct in crates/pattern-core/src/test_utils/equivalence.rs
+- [x] T033 [US2] Define EquivalenceOptions struct in crates/pattern-core/src/test_utils/equivalence.rs
+- [x] T034 [US2] Implement check_equivalence function in crates/pattern-core/src/test_utils/equivalence.rs
+- [x] T035 [US2] Implement check_equivalence_from_test_data function in crates/pattern-core/src/test_utils/equivalence.rs
+- [x] T036 [US2] Implement difference reporting with field-level details in crates/pattern-core/src/test_utils/equivalence.rs
+- [x] T037 [US2] Add support for approximate equality for floating-point values in crates/pattern-core/src/test_utils/equivalence.rs
+- [x] T038 [US2] Create example equivalence test using test data in crates/pattern-core/tests/equivalence/test_data.rs
+- [x] T039 [US2] Integrate equivalence checking with tests/common/test_cases.json in crates/pattern-core/tests/equivalence/test_data.rs
+- [x] T040 [US2] Verify equivalence checking completes within 1 second per comparison (SC-003) in crates/pattern-core/tests/equivalence/
+- [x] T041 [US2] Test equivalence checking error reporting with mismatched outputs in crates/pattern-core/tests/equivalence/test_data.rs
 
 **Checkpoint**: At this point, User Stories 1 AND 2 should both work independently. Equivalence checking utilities can compare outputs and report differences clearly.
 
@@ -104,15 +104,15 @@
 
 ### Implementation for User Story 3
 
-- [ ] T042 [US3] Configure insta snapshot storage in crates/pattern-core/tests/snapshot/ (crate-level snapshots)
-- [ ] T043 [US3] Create example snapshot test file in crates/pattern-core/tests/snapshot/serialization.rs
-- [ ] T044 [US3] Implement basic snapshot test example in crates/pattern-core/tests/snapshot/serialization.rs
-- [ ] T045 [US3] Verify snapshots are created and stored in crates/pattern-core/tests/__snapshots__/
-- [ ] T046 [US3] Test snapshot change detection in crates/pattern-core/tests/snapshot/serialization.rs
-- [ ] T047 [US3] Verify snapshot change detection completes within 2 seconds per snapshot (SC-004) in crates/pattern-core/tests/snapshot/
-- [ ] T048 [US3] Document snapshot review workflow (cargo insta review) in crates/pattern-core/tests/snapshot/README.md
-- [ ] T049 [US3] Create snapshot test structure in pattern-ops crate in crates/pattern-ops/tests/snapshot/
-- [ ] T050 [US3] Verify snapshot testing works across multiple crates in crates/pattern-core/tests/snapshot/ and crates/pattern-ops/tests/snapshot/
+- [x] T042 [US3] Configure insta snapshot storage in crates/pattern-core/tests/snapshot/ (crate-level snapshots)
+- [x] T043 [US3] Create example snapshot test file in crates/pattern-core/tests/snapshot/serialization.rs
+- [x] T044 [US3] Implement basic snapshot test example in crates/pattern-core/tests/snapshot/serialization.rs
+- [x] T045 [US3] Verify snapshots are created and stored in crates/pattern-core/tests/__snapshots__/
+- [x] T046 [US3] Test snapshot change detection in crates/pattern-core/tests/snapshot/serialization.rs
+- [x] T047 [US3] Verify snapshot change detection completes within 2 seconds per snapshot (SC-004) in crates/pattern-core/tests/snapshot/
+- [x] T048 [US3] Document snapshot review workflow (cargo insta review) in crates/pattern-core/tests/snapshot/README.md
+- [x] T049 [US3] Create snapshot test structure in pattern-ops crate in crates/pattern-ops/tests/snapshot/
+- [x] T050 [US3] Verify snapshot testing works across multiple crates in crates/pattern-core/tests/snapshot/ and crates/pattern-ops/tests/snapshot/
 
 **Checkpoint**: At this point, User Stories 1, 2, AND 3 should all work independently. Snapshot testing can capture outputs and detect changes.
 
@@ -126,16 +126,16 @@
 
 ### Implementation for User Story 4
 
-- [ ] T051 [US4] Create test case validation function in scripts/sync-tests/extract.rs
-- [ ] T052 [US4] Implement JSON test case format validation in scripts/sync-tests/extract.rs
-- [ ] T053 [US4] Create test case loading utility in crates/pattern-core/src/test_utils/equivalence.rs
-- [ ] T054 [US4] Implement test case extraction from JSON format in scripts/sync-tests/extract.rs
-- [ ] T055 [US4] Create example test using extracted test data in crates/pattern-core/tests/equivalence/extracted_data.rs
-- [ ] T056 [US4] Verify extraction can process at least 10 test cases from gram-hs (SC-005) in scripts/sync-tests/extract.rs
-- [ ] T057 [US4] Add error handling for invalid test case formats in scripts/sync-tests/extract.rs
-- [ ] T058 [US4] Document test extraction workflow in scripts/sync-tests/README.md
-- [ ] T059 [US4] Create test case comparison utility in scripts/sync-tests/compare.rs
-- [ ] T060 [US4] Verify extracted test cases can be used in equivalence checking in crates/pattern-core/tests/equivalence/extracted_data.rs
+- [x] T051 [US4] Create test case validation function in scripts/sync-tests/extract.rs
+- [x] T052 [US4] Implement JSON test case format validation in scripts/sync-tests/extract.rs
+- [x] T053 [US4] Create test case loading utility in crates/pattern-core/src/test_utils/equivalence.rs
+- [x] T054 [US4] Implement test case extraction from JSON format in scripts/sync-tests/extract.rs
+- [x] T055 [US4] Create example test using extracted test data in crates/pattern-core/tests/equivalence/extracted_data.rs
+- [x] T056 [US4] Verify extraction can process at least 10 test cases from gram-hs (SC-005) in scripts/sync-tests/extract.rs
+- [x] T057 [US4] Add error handling for invalid test case formats in scripts/sync-tests/extract.rs
+- [x] T058 [US4] Document test extraction workflow in scripts/sync-tests/README.md
+- [x] T059 [US4] Create test case comparison utility in scripts/sync-tests/compare.rs
+- [x] T060 [US4] Verify extracted test cases can be used in equivalence checking in crates/pattern-core/tests/equivalence/extracted_data.rs
 
 **Checkpoint**: At this point, User Stories 1-4 should all work independently. Test extraction utilities can extract and validate test cases from gram-hs.
 
@@ -149,16 +149,16 @@
 
 ### Implementation for User Story 5
 
-- [ ] T061 [US5] Configure criterion benchmark in workspace Cargo.toml in Cargo.toml
-- [ ] T062 [US5] Create benchmark file structure in benches/pattern_operations.rs
-- [ ] T063 [US5] Implement basic benchmark example in benches/pattern_operations.rs
-- [ ] T064 [US5] Configure criterion with appropriate sample size and measurement time in benches/pattern_operations.rs
-- [ ] T065 [US5] Create placeholder benchmarks for pattern operations (to be implemented when operations are available) in benches/pattern_operations.rs
-- [ ] T066 [US5] Verify benchmarks run successfully with cargo bench in benches/
-- [ ] T067 [US5] Test benchmark consistency (variance <10% per SC-006) in benches/pattern_operations.rs
-- [ ] T068 [US5] Add conditional compilation for WASM targets (disable or simplify benchmarks) in benches/pattern_operations.rs
-- [ ] T069 [US5] Create benchmark documentation in benches/README.md
-- [ ] T070 [US5] Verify benchmarks are executable independently of test suite (FR-023) in benches/
+- [x] T061 [US5] Configure criterion benchmark in workspace Cargo.toml in Cargo.toml
+- [x] T062 [US5] Create benchmark file structure in benches/pattern_operations.rs
+- [x] T063 [US5] Implement basic benchmark example in benches/pattern_operations.rs
+- [x] T064 [US5] Configure criterion with appropriate sample size and measurement time in benches/pattern_operations.rs
+- [x] T065 [US5] Create placeholder benchmarks for pattern operations (to be implemented when operations are available) in benches/pattern_operations.rs
+- [x] T066 [US5] Verify benchmarks run successfully with cargo bench in benches/
+- [x] T067 [US5] Test benchmark consistency (variance <10% per SC-006) in benches/pattern_operations.rs
+- [x] T068 [US5] Add conditional compilation for WASM targets (disable or simplify benchmarks) in benches/pattern_operations.rs
+- [x] T069 [US5] Create benchmark documentation in benches/README.md
+- [x] T070 [US5] Verify benchmarks are executable independently of test suite (FR-023) in benches/
 
 **Checkpoint**: At this point, User Stories 1-5 should all work independently. Benchmark suite can measure performance and produce consistent results.
 
@@ -172,17 +172,17 @@
 
 ### Implementation for User Story 6
 
-- [ ] T071 [US6] Define PatternComparisonError struct in crates/pattern-core/src/test_utils/helpers.rs
-- [ ] T072 [US6] Define PatternComparisonOptions struct in crates/pattern-core/src/test_utils/helpers.rs
-- [ ] T073 [US6] Define ValidationRules struct in crates/pattern-core/src/test_utils/helpers.rs
-- [ ] T074 [US6] Implement assert_patterns_equal function in crates/pattern-core/src/test_utils/helpers.rs
-- [ ] T075 [US6] Implement assert_pattern_structure_valid function in crates/pattern-core/src/test_utils/helpers.rs
-- [ ] T076 [US6] Implement assert_patterns_equivalent function in crates/pattern-core/src/test_utils/helpers.rs
-- [ ] T077 [US6] Create example test using test helpers in crates/pattern-core/tests/helpers_example.rs
-- [ ] T078 [US6] Verify test helpers reduce boilerplate by 50%+ (SC-007) by comparing test code with and without helpers in crates/pattern-core/tests/
-- [ ] T079 [US6] Test helpers with edge cases (empty patterns, deeply nested patterns) in crates/pattern-core/tests/helpers_example.rs
-- [ ] T080 [US6] Make test helpers available across all workspace crates (FR-024) by exporting from pattern-core in crates/pattern-core/src/lib.rs
-- [ ] T081 [US6] Create test helper usage documentation in crates/pattern-core/src/test_utils/helpers.rs
+- [x] T071 [US6] Define PatternComparisonError struct in crates/pattern-core/src/test_utils/helpers.rs
+- [x] T072 [US6] Define PatternComparisonOptions struct in crates/pattern-core/src/test_utils/helpers.rs
+- [x] T073 [US6] Define ValidationRules struct in crates/pattern-core/src/test_utils/helpers.rs
+- [x] T074 [US6] Implement assert_patterns_equal function in crates/pattern-core/src/test_utils/helpers.rs
+- [x] T075 [US6] Implement assert_pattern_structure_valid function in crates/pattern-core/src/test_utils/helpers.rs
+- [x] T076 [US6] Implement assert_patterns_equivalent function in crates/pattern-core/src/test_utils/helpers.rs
+- [x] T077 [US6] Create example test using test helpers in crates/pattern-core/tests/helpers_example.rs
+- [x] T078 [US6] Verify test helpers reduce boilerplate by 50%+ (SC-007) by comparing test code with and without helpers in crates/pattern-core/tests/
+- [x] T079 [US6] Test helpers with edge cases (empty patterns, deeply nested patterns) in crates/pattern-core/tests/helpers_example.rs
+- [x] T080 [US6] Make test helpers available across all workspace crates (FR-024) by exporting from pattern-core in crates/pattern-core/src/lib.rs
+- [x] T081 [US6] Create test helper usage documentation in crates/pattern-core/src/test_utils/helpers.rs
 
 **Checkpoint**: At this point, all user stories should be independently functional. Test helpers simplify pattern comparison and reduce boilerplate.
 
@@ -192,16 +192,16 @@
 
 **Purpose**: Improvements that affect multiple user stories and final integration
 
-- [ ] T082 [P] Update quickstart.md with testing infrastructure examples in specs/003-test-infrastructure/quickstart.md
-- [ ] T083 [P] Create testing infrastructure documentation in docs/testing-infrastructure.md
-- [ ] T084 Verify all testing infrastructure integrates with workspace structure (SC-008) by running cargo test --workspace
-- [ ] T085 Verify testing infrastructure works across at least 3 different crates (SC-009) in crates/pattern-core/, crates/pattern-ops/, crates/gram-codec/
-- [ ] T086 Test WASM compilation for all testing infrastructure in crates/pattern-core/, crates/pattern-ops/, crates/gram-codec/
-- [ ] T087 [P] Add testing infrastructure examples to quickstart.md in specs/003-test-infrastructure/quickstart.md
-- [ ] T088 Verify new developer can write property test within 15 minutes using documentation (SC-010) in docs/testing-infrastructure.md
-- [ ] T089 Run full workspace test suite to verify no regressions in Cargo.toml
-- [ ] T090 [P] Code cleanup and refactoring across test utilities in crates/pattern-core/src/test_utils/
-- [ ] T091 Update README.md with testing infrastructure information in README.md
+- [x] T082 [P] Update quickstart.md with testing infrastructure examples in specs/003-test-infrastructure/quickstart.md
+- [x] T083 [P] Create testing infrastructure documentation in docs/testing-infrastructure.md
+- [x] T084 Verify all testing infrastructure integrates with workspace structure (SC-008) by running cargo test --workspace
+- [x] T085 Verify testing infrastructure works across at least 3 different crates (SC-009) in crates/pattern-core/, crates/pattern-ops/, crates/gram-codec/
+- [x] T086 Test WASM compilation for all testing infrastructure in crates/pattern-core/, crates/pattern-ops/, crates/gram-codec/
+- [x] T087 [P] Add testing infrastructure examples to quickstart.md in specs/003-test-infrastructure/quickstart.md
+- [x] T088 Verify new developer can write property test within 15 minutes using documentation (SC-010) in docs/testing-infrastructure.md
+- [x] T089 Run full workspace test suite to verify no regressions in Cargo.toml
+- [x] T090 [P] Code cleanup and refactoring across test utilities in crates/pattern-core/src/test_utils/
+- [x] T091 Update README.md with testing infrastructure information in README.md
 
 ---
 

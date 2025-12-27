@@ -70,3 +70,9 @@ Test cases are stored in `tests/common/test_cases.json` at the workspace root.
 - Integration with CI/CD pipeline
 - Test case validation and schema checking
 
+## Implementation Status
+
+- `extract.rs` - Test case extraction and validation utilities (implemented)
+- `compare.rs` - Test case comparison utilities (implemented)
+- JSON format validation - Validates test case format against schema
+

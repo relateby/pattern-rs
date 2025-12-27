@@ -1,0 +1,18 @@
+//! Benchmarks for pattern operations
+//!
+//! These benchmarks measure performance of pattern operations to track
+//! performance over time and detect regressions.
+
+use criterion::{black_box, criterion_group, criterion_main, Criterion};
+
+fn benchmark_placeholder(c: &mut Criterion) {
+    c.bench_function("placeholder", |b| {
+        b.iter(|| {
+            black_box(42)
+        })
+    });
+}
+
+criterion_group!(benches, benchmark_placeholder);
+criterion_main!(benches);
+

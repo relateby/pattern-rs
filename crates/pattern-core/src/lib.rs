@@ -3,6 +3,8 @@
 //! This crate provides the core pattern data structures for the gram-rs library.
 //! It is a faithful port of the gram-hs reference implementation.
 
+pub mod test_utils;
+
 #[cfg(test)]
 mod tests {
     use super::*;

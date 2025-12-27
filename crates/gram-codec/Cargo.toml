@@ -9,6 +9,10 @@ description = "Gram notation serialization/deserialization"
 
 [dependencies]
 
+[dev-dependencies]
+proptest = { workspace = true, features = ["wasm"] }
+insta = { workspace = true }
+
 [lib]
 name = "gram_codec"
 path = "src/lib.rs"
