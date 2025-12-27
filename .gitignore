@@ -1,0 +1,30 @@
+# Cabal build artifacts
+dist-newstyle/
+dist/
+cabal-dev/
+.cabal-sandbox/
+cabal.sandbox.config
+.stack-work/
+
+# GHC/Haskell related
+*.hi
+*.o
+*.p_hi
+*.p_o
+*.dyn_hi
+*.dyn_o
+*.prof
+*.aux
+*.hp
+*.eventlog
+
+# IDE and editor files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+
+# Other
+.ghc.environment.*
