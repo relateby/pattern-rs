@@ -60,7 +60,7 @@
 
 ### Implementation for User Story 1
 
-- [x] T024 [US1] Configure proptest with WASM feature flag in crates/pattern-core/Cargo.toml
+- [x] T024 [US1] Configure proptest dependency in crates/pattern-core/Cargo.toml
 - [x] T025 [US1] Create example property test file in crates/pattern-core/tests/property/equality.rs
 - [x] T026 [US1] Implement basic property test example (equality symmetry) in crates/pattern-core/tests/property/equality.rs
 - [x] T027 [US1] Create pattern generator placeholder in crates/pattern-core/src/test_utils/generators.rs (will be implemented when pattern types are defined in feature 004)
@@ -309,5 +309,5 @@ With multiple developers:
 - Commit after each task or logical group
 - Stop at any checkpoint to validate story independently
 - Avoid: vague tasks, same file conflicts, cross-story dependencies that break independence
-- WASM compatibility: proptest needs feature flag, insta works as-is, criterion needs conditional compilation
+- WASM compatibility: proptest works as-is, insta works as-is, criterion needs conditional compilation
 

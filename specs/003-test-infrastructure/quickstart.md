@@ -21,7 +21,7 @@ Add test dependencies to your crate's `Cargo.toml`:
 
 ```toml
 [dev-dependencies]
-proptest = { version = "1.0", features = ["wasm"] }  # Property-based testing
+proptest = "1.0"  # Property-based testing
 insta = "1.0"                                         # Snapshot testing
 criterion = { version = "0.5", features = ["html_reports"] }  # Benchmarking
 

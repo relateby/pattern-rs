@@ -10,7 +10,7 @@ description = "Gram notation serialization/deserialization"
 [dependencies]
 
 [dev-dependencies]
-proptest = { workspace = true, features = ["wasm"] }
+proptest = { workspace = true }
 insta = { workspace = true }
 
 [lib]

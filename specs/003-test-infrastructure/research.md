@@ -14,10 +14,10 @@
 
 - **proptest**: 
   - Supports WASM targets with some limitations
-  - Requires `proptest` feature flag for WASM compatibility
+  - No special feature flag needed for WASM compatibility
   - Random number generation works on WASM
   - Shrinking (counterexample minimization) may have performance implications on WASM
-  - **Decision**: Use proptest with WASM feature flag, test on `wasm32-unknown-unknown` target
+  - **Decision**: Use proptest as-is (no special WASM feature needed), test on `wasm32-unknown-unknown` target
 
 - **insta**:
   - Fully compatible with WASM targets
@@ -239,7 +239,7 @@
 
 ## Summary of Decisions
 
-1. **proptest**: Use with WASM feature flag, test on WASM target
+1. **proptest**: Use as-is (no special WASM feature needed), test on WASM target
 2. **insta**: Use as-is, fully WASM compatible
 3. **criterion**: Use for native targets, conditional compilation for WASM
 4. **Property-based testing**: Use proptest with custom generators (to be implemented with pattern types)
