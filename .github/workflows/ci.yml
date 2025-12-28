@@ -15,9 +15,11 @@ jobs:
         target: [x86_64-unknown-linux-gnu, wasm32-unknown-unknown]
     steps:
       - uses: actions/checkout@v3
-      - uses: dtolnay/rust-toolchain@stable
+      - uses: actions-rs/toolchain@v1
         with:
-          targets: ${{ matrix.target }}
+          toolchain: stable
+          target: ${{ matrix.target }}
+          override: true
       - uses: actions/cache@v3
         with:
           path: |
@@ -25,14 +27,22 @@ jobs:
             ~/.cargo/git
             target
           key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}-${{ matrix.target }}
-      - run: cargo build --workspace --target ${{ matrix.target }}
+      - run: |
+          if [ "${{ matrix.target }}" = "wasm32-unknown-unknown" ]; then
+            cargo build --target ${{ matrix.target }} -p pattern-core -p pattern-ops -p gram-codec
+          else
+            cargo build --workspace --target ${{ matrix.target }}
+          fi
 
   test:
     name: Test Workspace
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
-      - uses: dtolnay/rust-toolchain@stable
+      - uses: actions-rs/toolchain@v1
+        with:
+          toolchain: stable
+          override: true
       - uses: actions/cache@v3
         with:
           path: |
@@ -47,9 +57,11 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
-      - uses: dtolnay/rust-toolchain@stable
+      - uses: actions-rs/toolchain@v1
         with:
+          toolchain: stable
           components: clippy
+          override: true
       - uses: actions/cache@v3
         with:
           path: |
@@ -64,8 +76,10 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
-      - uses: dtolnay/rust-toolchain@stable
+      - uses: actions-rs/toolchain@v1
         with:
+          toolchain: stable
           components: rustfmt
+          override: true
       - run: cargo fmt --all -- --check
 

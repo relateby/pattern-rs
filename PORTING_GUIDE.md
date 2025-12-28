@@ -65,8 +65,21 @@ Port test cases from `../gram-hs/libs/*/tests/`:
 
 1. Create test file in `tests/equivalence/` or `tests/integration/`
 2. Port test cases maintaining the same test data and expected outputs
+   - **Tip**: Use `gram-hs generate --type suite` to generate test cases in the correct format
+   - See [gram-hs CLI Testing Guide](docs/gram-hs-cli-testing-guide.md) for test suite generation
 3. Run tests (they should fail initially)
 4. Implement functionality to make tests pass
+
+**Alternative: Generate Test Cases from gram-hs**:
+
+You can also generate test cases directly from gram-hs using the CLI:
+```bash
+# Generate test suite with 100 test cases
+gram-hs generate --type suite --count 100 --seed 42 --complexity standard \
+    --format json --value-only > tests/common/test_cases.json
+```
+
+See [gram-hs CLI Testing Guide](docs/gram-hs-cli-testing-guide.md) for more details on test case generation and extraction.
 
 ### 6. Implement Functionality
 
@@ -82,9 +95,20 @@ Port the Haskell implementation from `../gram-hs/libs/*/src/`:
 Before marking complete:
 
 1. **Compare outputs**: Run both implementations on same inputs
+   - Use `gram-hs` CLI tool with `--value-only` and `--canonical` flags for reliable comparison
+   - See [gram-hs CLI Testing Guide](docs/gram-hs-cli-testing-guide.md) for detailed usage
 2. **Check edge cases**: Ensure all edge cases from gram-hs tests pass
 3. **Verify documentation**: Ensure Rust docs match Haskell semantics
 4. **Test WASM compilation**: Verify `cargo build --target wasm32-unknown-unknown`
+
+**Using gram-hs CLI for Equivalence Checking**:
+
+The `gram-hs` CLI tool provides several flags that make equivalence checking easier:
+- `--value-only`: Output only the pattern value without metadata (enables direct JSON comparison)
+- `--deterministic`: Use fixed timestamp and hash for reproducible outputs
+- `--canonical`: Sort JSON keys for byte-for-byte identical output
+
+See [gram-hs CLI Testing Guide](docs/gram-hs-cli-testing-guide.md) for comprehensive examples and integration patterns.
 
 ### 8. Update Examples
 
@@ -194,7 +218,11 @@ Each feature directory contains:
 
 - **gram-hs Repository**: https://github.com/gram-data/gram-hs
 - **Local Reference**: `../gram-hs`
+- **gram-hs CLI Tool**: `/Users/akollegger/.cabal/bin/gram-hs` (or `gram-hs` if in PATH)
+  - **Testing Guide**: [gram-hs CLI Testing Guide](docs/gram-hs-cli-testing-guide.md) - Comprehensive guide for using gram-hs CLI for testing and equivalence checking
+  - **Manpage**: `/Users/akollegger/.cabal/share/man/man1/gram-hs.1` or `man gram-hs`
 - **Constitution**: `.specify/memory/constitution.md`
 - **Rust Book**: https://doc.rust-lang.org/book/
 - **Haskell → Rust Patterns**: See translation guide above
+- **Testing Infrastructure**: [Testing Infrastructure Guide](docs/testing-infrastructure.md) - Overview of testing tools and utilities
 

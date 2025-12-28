@@ -24,13 +24,15 @@ This TODO tracks the incremental porting of features from the gram-hs reference 
 - [x] Setup CI/CD pipeline (GitHub Actions)
 - [x] Add test synchronization infrastructure
 
-### 003-test-infrastructure: Testing Framework
-- [ ] Setup property-based testing with `proptest`
-- [ ] Create test utilities for equivalence checking
-- [ ] Setup snapshot testing with `insta`
-- [ ] Create test data extraction from gram-hs
-- [ ] Add benchmark suite with `criterion`
-- [ ] Create test helpers for pattern comparison
+### ✅ 003-test-infrastructure: Testing Framework
+- [x] Setup property-based testing with `proptest` (infrastructure complete, pattern generators pending feature 004)
+- [x] Create test utilities for equivalence checking (infrastructure complete, full implementation pending feature 004)
+- [x] Setup snapshot testing with `insta` (infrastructure complete, pattern snapshots pending feature 004)
+- [x] Create test data extraction from gram-hs (infrastructure complete, can use gram-hs CLI for test generation)
+- [x] Add benchmark suite with `criterion` (infrastructure complete, pattern benchmarks pending feature 004)
+- [x] Create test helpers for pattern comparison (infrastructure complete, full implementation pending feature 004)
+
+**Status**: All infrastructure tasks complete (91/91 tasks in `specs/003-test-infrastructure/tasks.md`). Full implementation of pattern-specific functionality (generators, helpers, benchmarks) depends on pattern types being defined in feature 004. See `docs/gram-hs-cli-testing-guide.md` for using gram-hs CLI for testing.
 
 ---
 

@@ -9,6 +9,10 @@ description = "Pattern operations and algorithms"
 
 [dependencies]
 
+[dev-dependencies]
+proptest = { workspace = true }
+insta = { workspace = true }
+
 [lib]
 name = "pattern_ops"
 path = "src/lib.rs"

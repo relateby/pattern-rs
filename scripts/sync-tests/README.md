@@ -50,6 +50,17 @@ Extracts test cases from gram-hs reference implementation and converts them to t
 ./extract.sh ../gram-hs > tests/common/test_cases.json
 ```
 
+**Alternative: Using gram-hs CLI**:
+
+The `gram-hs` CLI tool can generate test suites directly:
+```bash
+# Generate test suite with 100 test cases
+gram-hs generate --type suite --count 100 --seed 42 --complexity standard \
+    --format json --value-only > tests/common/test_cases.json
+```
+
+See [gram-hs CLI Testing Guide](../../docs/gram-hs-cli-testing-guide.md) for comprehensive usage examples and integration patterns.
+
 ### compare.sh / compare.rs
 
 Compares test cases between gram-hs and gram-rs implementations, identifying differences in coverage and behavior.
@@ -69,4 +80,10 @@ Test cases are stored in `tests/common/test_cases.json` at the workspace root.
 - Automated comparison and reporting
 - Integration with CI/CD pipeline
 - Test case validation and schema checking
+
+## Implementation Status
+
+- `extract.rs` - Test case extraction and validation utilities (implemented)
+- `compare.rs` - Test case comparison utilities (implemented)
+- JSON format validation - Validates test case format against schema
 

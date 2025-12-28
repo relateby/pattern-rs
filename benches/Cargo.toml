@@ -1,0 +1,18 @@
+[package]
+name = "gram-rs-benches"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+description = "Benchmarks for gram-rs"
+
+[[bench]]
+name = "pattern_operations"
+harness = false
+
+[dependencies]
+criterion = { workspace = true }
+pattern-core = { path = "../crates/pattern-core" }
+pattern-ops = { path = "../crates/pattern-ops" }
+gram-codec = { path = "../crates/gram-codec" }
+

@@ -97,6 +97,20 @@ cargo clippy --workspace
 
 The library is designed to be WASM-compatible. All public APIs avoid blocking I/O and file system access unless explicitly feature-flagged. Platform-specific code uses conditional compilation with the `wasm` feature flag.
 
+## Testing Infrastructure
+
+The project includes comprehensive testing infrastructure:
+
+- **Property-Based Testing**: Using `proptest` for automated test case generation
+- **Equivalence Checking**: Utilities for comparing gram-rs and gram-hs implementations
+- **Snapshot Testing**: Using `insta` for regression detection
+- **Benchmarks**: Using `criterion` for performance tracking
+- **Test Helpers**: Utilities for pattern comparison and validation
+
+See [docs/testing-infrastructure.md](docs/testing-infrastructure.md) for detailed documentation and [specs/003-test-infrastructure/quickstart.md](specs/003-test-infrastructure/quickstart.md) for usage examples.
+
+For using the `gram-hs` CLI tool for testing and equivalence checking, see [gram-hs CLI Testing Guide](docs/gram-hs-cli-testing-guide.md).
+
 ## Examples
 
 See the [examples/](examples/) directory for usage examples:
