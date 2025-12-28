@@ -46,7 +46,7 @@ This TODO tracks the incremental porting of features from the gram-hs reference 
 - [ ] Study Haskell implementation: `../gram-hs/libs/`
 - [ ] Create feature spec in `specs/004-pattern-data-structure/`
 - [ ] Port `Pattern<V>` type definition to Rust
-- [ ] Port `Subject` types (Node, Edge, etc.)
+- [ ] Verify Subject types in gram-hs: Check if Subject types are defined in this feature's type signatures (`../gram-hs/specs/001-pattern-data-structure/contracts/type-signatures.md`). If not, they are value types that may be defined in other features and can be used with Pattern<V> - they are NOT part of this feature's scope.
 - [ ] Implement `Debug` and `Display` traits
 - [ ] Port test cases from gram-hs
 - [ ] Verify behavioral equivalence

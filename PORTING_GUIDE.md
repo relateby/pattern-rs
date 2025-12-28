@@ -53,11 +53,43 @@ Use `/speckit.specify` to create a new feature specification:
 
 Start with `../gram-hs/specs/XXX-feature-name/contracts/type-signatures.md`:
 
+**CRITICAL: Verify What's Actually Defined**
+
+Before porting, carefully review the gram-hs type signatures file to see what types are actually defined:
+- Read the entire `contracts/type-signatures.md` file from gram-hs
+- Only port types that are explicitly defined in that file
+- Do NOT assume types exist just because they're mentioned in requirements or user stories
+- If a type is mentioned but not defined, it may be:
+  - Defined in a different feature
+  - A conceptual type (not a concrete structure)
+  - A value type that can be used with generic types (like `Pattern<V>`)
+
+**Example**: If the spec mentions "Subject types" but the type signatures only define `Pattern v`, then Subject types are NOT part of this feature. They may be value types that can be used with `Pattern<Subject>` if defined elsewhere, but they are not structures to port in this feature.
+
 **Haskell → Rust Translation**:
 - `data Pattern v` → `pub struct Pattern<V>`
 - `type` aliases → `type` aliases (same)
 - Typeclasses → Traits (see translation guide below)
 - Functions → Functions (with Rust naming: `snake_case`)
+
+### 4.5. Common Pitfalls: Assuming Types Exist
+
+**Warning**: Do not assume a type needs to be ported just because it's mentioned in:
+- Feature requirements (FR-XXX)
+- User stories
+- Key Entities sections
+- TODO checklists
+
+**Always verify** by checking:
+1. The gram-hs `contracts/type-signatures.md` file for that feature
+2. The gram-hs source code in `libs/*/src/` for that feature
+
+**Example**: If a requirement says "provide Subject types" but the type signatures only show `Pattern v`, then:
+- Subject types are NOT defined in this feature
+- Pattern<V> is generic and can work with any value type V
+- Subject types, if they exist, are defined in other features and are just value types
+
+**Rule of thumb**: Only port types that are explicitly defined in the gram-hs type signatures for the feature you're porting.
 
 ### 5. Port Tests (TDD Approach)
 
