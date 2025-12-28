@@ -1,6 +1,8 @@
 //! Property-based test generators for patterns
-
-use proptest::prelude::*;
+//!
+//! This module will provide property-based test generators for patterns once pattern types
+//! are defined in feature 004. Generators will use the `proptest` crate (available as a
+//! dev-dependency) to generate test inputs.
 
 // Placeholder generator - will be implemented when pattern types are defined in feature 004
 //
