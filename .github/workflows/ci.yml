@@ -26,7 +26,12 @@ jobs:
             ~/.cargo/git
             target
           key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}-${{ matrix.target }}
-      - run: cargo build --workspace --target ${{ matrix.target }}
+      - run: |
+          if [ "${{ matrix.target }}" = "wasm32-unknown-unknown" ]; then
+            cargo build --workspace --target ${{ matrix.target }} -p pattern-core -p pattern-ops -p gram-codec
+          else
+            cargo build --workspace --target ${{ matrix.target }}
+          fi
 
   test:
     name: Test Workspace
