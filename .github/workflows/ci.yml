@@ -15,9 +15,8 @@ jobs:
         target: [x86_64-unknown-linux-gnu, wasm32-unknown-unknown]
     steps:
       - uses: actions/checkout@v3
-      - uses: dtolnay/rust-toolchain@master
+      - uses: dtolnay/rust-toolchain@stable
         with:
-          toolchain: stable
           targets: ${{ matrix.target }}
       - uses: actions/cache@v3
         with:
@@ -38,9 +37,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
-      - uses: dtolnay/rust-toolchain@master
-        with:
-          toolchain: stable
+      - uses: dtolnay/rust-toolchain@stable
       - uses: actions/cache@v3
         with:
           path: |
@@ -55,9 +52,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
-      - uses: dtolnay/rust-toolchain@master
+      - uses: dtolnay/rust-toolchain@stable
         with:
-          toolchain: stable
           components: clippy
       - uses: actions/cache@v3
         with:
@@ -73,9 +69,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
-      - uses: dtolnay/rust-toolchain@master
+      - uses: dtolnay/rust-toolchain@stable
         with:
-          toolchain: stable
           components: rustfmt
       - run: cargo fmt --all -- --check
 
