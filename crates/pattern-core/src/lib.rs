@@ -68,7 +68,7 @@ pub mod subject;
 pub mod test_utils;
 
 pub use pattern::Pattern;
-pub use subject::{Subject, Symbol, Value, PropertyRecord, RangeValue};
+pub use subject::{PropertyRecord, RangeValue, Subject, Symbol, Value};
 
 #[cfg(test)]
 mod tests {

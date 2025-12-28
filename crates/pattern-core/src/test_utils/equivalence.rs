@@ -117,7 +117,7 @@ where
                 .unwrap_or_else(|_| format!("{:?}", gram_rs_output));
             let hs_json = serde_json::to_string(gram_hs_output)
                 .unwrap_or_else(|_| format!("{:?}", gram_hs_output));
-            
+
             let equivalent = rs_json == hs_json;
             EquivalenceResult {
                 equivalent,
@@ -137,10 +137,14 @@ where
         ComparisonMethod::TestData => {
             // For test data comparison, use direct comparison
             // Full test data comparison will be implemented when test case structure is finalized
-            check_equivalence(gram_rs_output, gram_hs_output, &EquivalenceOptions {
-                comparison_method: ComparisonMethod::Direct,
-                ..options.clone()
-            })
+            check_equivalence(
+                gram_rs_output,
+                gram_hs_output,
+                &EquivalenceOptions {
+                    comparison_method: ComparisonMethod::Direct,
+                    ..options.clone()
+                },
+            )
         }
     }
 }
