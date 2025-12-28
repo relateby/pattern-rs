@@ -12,9 +12,8 @@ fn test_helpers_placeholder() {
     
     // The placeholder implementation always returns Ok(())
     // This test will be updated when pattern types are defined in feature 004
-    // For now, we just verify the function can be called without panicking
-    let _result = assert_pattern_structure_valid(&42, &rules);
-    // Placeholder implementation always succeeds, so we don't need to assert
-    // This will be updated when actual pattern validation is implemented
+    // For now, we verify the function can be called and returns Ok as expected
+    let result = assert_pattern_structure_valid(&42, &rules);
+    assert!(result.is_ok(), "Placeholder implementation should always return Ok");
 }
 
