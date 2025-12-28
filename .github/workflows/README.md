@@ -76,5 +76,5 @@ The CI workflow includes four jobs:
 3. **lint**: Runs clippy with strict warnings
 4. **format**: Verifies code formatting
 
-All jobs use `dtolnay/rust-toolchain@master` with explicit `toolchain: stable` input.
+All jobs use `actions-rs/toolchain@v1` with explicit `toolchain: stable` input.
 
