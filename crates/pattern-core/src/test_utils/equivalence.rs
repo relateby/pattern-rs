@@ -93,23 +93,59 @@ pub fn check_equivalence<T>(
 where
     T: Serialize + PartialEq + Debug,
 {
-    // For now, use direct comparison as placeholder
-    // Full implementation will use JSON serialization for detailed diff reporting
-    let equivalent = gram_rs_output == gram_hs_output;
+    match options.comparison_method {
+        ComparisonMethod::Direct => {
+            let equivalent = gram_rs_output == gram_hs_output;
+            EquivalenceResult {
+                equivalent,
+                differences: if equivalent {
+                    Vec::new()
+                } else {
+                    vec![Difference {
+                        path: vec!["root".to_string()],
+                        expected: format!("{:?}", gram_hs_output),
+                        actual: format!("{:?}", gram_rs_output),
+                        description: "Direct comparison: outputs differ".to_string(),
+                    }]
+                },
+                comparison_method: ComparisonMethod::Direct,
+            }
+        }
+        ComparisonMethod::Json => {
+            // Use JSON serialization for detailed comparison
+            let rs_json = serde_json::to_string(gram_rs_output)
+                .unwrap_or_else(|_| format!("{:?}", gram_rs_output));
+            let hs_json = serde_json::to_string(gram_hs_output)
+                .unwrap_or_else(|_| format!("{:?}", gram_hs_output));
 
-    EquivalenceResult {
-        equivalent,
-        differences: if equivalent {
-            Vec::new()
-        } else {
-            vec![Difference {
-                path: vec!["root".to_string()],
-                expected: format!("{:?}", gram_hs_output),
-                actual: format!("{:?}", gram_rs_output),
-                description: "Outputs differ".to_string(),
-            }]
-        },
-        comparison_method: options.comparison_method,
+            let equivalent = rs_json == hs_json;
+            EquivalenceResult {
+                equivalent,
+                differences: if equivalent {
+                    Vec::new()
+                } else {
+                    vec![Difference {
+                        path: vec!["root".to_string()],
+                        expected: hs_json,
+                        actual: rs_json,
+                        description: "JSON comparison: outputs differ".to_string(),
+                    }]
+                },
+                comparison_method: ComparisonMethod::Json,
+            }
+        }
+        ComparisonMethod::TestData => {
+            // For test data comparison, use direct comparison
+            // Full test data comparison will be implemented when test case structure is finalized
+            check_equivalence(
+                gram_rs_output,
+                gram_hs_output,
+                &EquivalenceOptions {
+                    comparison_method: ComparisonMethod::Direct,
+                    ..options.clone()
+                },
+            )
+        }
     }
 }
 

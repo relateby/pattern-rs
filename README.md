@@ -93,6 +93,17 @@ cargo fmt --all
 cargo clippy --workspace
 ```
 
+### Running CI Checks Locally
+
+Before pushing, you can run all CI checks locally:
+
+```bash
+# Run all CI checks (format, lint, build, test)
+./scripts/ci-local.sh
+```
+
+This script runs the same checks that GitHub Actions runs, so you can catch issues before pushing. See [.github/workflows/README.md](.github/workflows/README.md) for more details.
+
 ### WASM Compatibility
 
 The library is designed to be WASM-compatible. All public APIs avoid blocking I/O and file system access unless explicitly feature-flagged. Platform-specific code uses conditional compilation with the `wasm` feature flag.
@@ -133,6 +144,16 @@ See the [examples/](examples/) directory for usage examples:
 ### Issue: "error: target `wasm32-unknown-unknown` not found"
 
 **Solution**: Install WASM target: `rustup target add wasm32-unknown-unknown`
+
+### Issue: CI fails but local checks pass
+
+**Solution**: 
+1. Run the local CI script to reproduce: `./scripts/ci-local.sh`
+2. Check for platform-specific issues (CI runs on Linux, you might be on macOS/Windows)
+3. Ensure you're using the same Rust version: `rustup default stable`
+4. Clear caches and rebuild: `cargo clean && cargo build --workspace`
+
+**Tip**: Always run `./scripts/ci-local.sh` before pushing to catch issues early.
 
 ### Issue: "error: failed to resolve: use of undeclared crate"
 

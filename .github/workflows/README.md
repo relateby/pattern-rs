@@ -4,28 +4,36 @@ This directory contains GitHub Actions workflows for CI/CD.
 
 ## Testing Workflows Locally
 
-### Using `act` (Recommended)
+### Quick Local CI Script (Easiest)
 
-`act` is a tool that runs GitHub Actions workflows locally using Docker.
+The simplest way to run all CI checks locally is using the provided script:
 
-#### Installation
-
-**macOS (Homebrew)**:
 ```bash
-brew install act
+./scripts/ci-local.sh
 ```
 
-**Linux**:
-```bash
-curl -s https://raw.githubusercontent.com/nektos/act/master/install.sh | sudo bash
-```
+This script runs all the same checks that GitHub Actions runs:
+- Format check
+- Clippy lint
+- Native build
+- WASM build (if target is installed)
+- Tests
 
-**Windows (Chocolatey)**:
-```bash
-choco install act-cli
-```
+**No Docker required!** This is the fastest way to verify your changes before pushing.
 
-#### Usage
+### Using `act` (Full Workflow Simulation)
+
+`act` is a tool that runs GitHub Actions workflows locally. It can use Docker (default) or run directly on your host machine.
+
+#### Prerequisites
+
+- `act` installed (macOS: `brew install act`)
+- **For Docker mode**: Docker must be installed and running
+- **For self-hosted mode**: No Docker required, but tools (Rust, cargo, etc.) must be installed on your system
+
+#### Running with Docker (Default)
+
+This provides the most accurate simulation of GitHub Actions' Ubuntu environment:
 
 1. **List all workflows and jobs**:
    ```bash
@@ -50,10 +58,52 @@ choco install act-cli
    act -v -j build
    ```
 
-#### Prerequisites
+5. **Run a specific job with a specific target** (for the build matrix):
+   ```bash
+   # Run build job with wasm32 target
+   act -j build --matrix target:wasm32-unknown-unknown
+   ```
 
-- Docker must be installed and running
-- The workflow will use Docker containers to simulate GitHub's runner environment
+#### Running Without Docker (Self-Hosted)
+
+You can run workflows directly on your host machine without Docker using the `-P` flag:
+
+**For Ubuntu workflows** (our CI uses `ubuntu-latest`):
+```bash
+# Run all jobs without Docker
+act push -P ubuntu-latest=-self-hosted
+
+# Run a specific job without Docker
+act -j build -P ubuntu-latest=-self-hosted
+act -j test -P ubuntu-latest=-self-hosted
+act -j lint -P ubuntu-latest=-self-hosted
+act -j format -P ubuntu-latest=-self-hosted
+```
+
+**For macOS workflows**:
+```bash
+act -P macos-latest=-self-hosted
+```
+
+**For Windows workflows**:
+```bash
+act -P windows-latest=-self-hosted
+```
+
+**Note**: When running self-hosted, the workflow executes directly on your system. This means:
+- No Docker isolation (uses your system state)
+- Faster execution (no container overhead)
+- May behave differently than GitHub's Ubuntu environment
+- All required tools (Rust, cargo, etc.) must be installed on your host
+
+#### Tips
+
+- **Docker mode**: First run will download Docker images (can take a few minutes)
+- **Self-hosted mode**: Faster startup, but less isolation
+- Use `act -j <job-name>` to test individual jobs quickly
+- Use `act push` to simulate a full push event (runs all jobs)
+- If you get permission errors, `act` needs to create cache directories in `~/.cache/act`
+- For this Rust project, self-hosted mode works well since the workflow only runs Rust commands
 
 ### Manual Validation
 

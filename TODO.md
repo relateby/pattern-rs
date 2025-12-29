@@ -39,17 +39,20 @@ This TODO tracks the incremental porting of features from the gram-hs reference 
 ## Phase 2: Core Pattern Data Structure
 
 ### 004-pattern-data-structure: Core Pattern Type
-**Reference**: `../gram-hs/specs/001-pattern-data-structure/`
+**Primary Reference (Authoritative)**: `../gram-hs/libs/` - Haskell implementation source code
+**Secondary Reference (Context Only)**: `../gram-hs/specs/001-pattern-data-structure/` - Design documents (may be outdated)
 
-- [ ] Review gram-hs spec: `../gram-hs/specs/001-pattern-data-structure/spec.md`
-- [ ] Review type signatures: `../gram-hs/specs/001-pattern-data-structure/contracts/type-signatures.md`
-- [ ] Study Haskell implementation: `../gram-hs/libs/`
+- [ ] Study Haskell implementation: `../gram-hs/libs/` - **This is the source of truth**
+  - Pattern: `../gram-hs/libs/pattern/src/Pattern.hs`
+  - Subject: `../gram-hs/libs/subject/src/Subject/Core.hs`
+- [ ] Review gram-hs tests: `../gram-hs/libs/*/tests/` - **Shows expected behavior**
+- [ ] Review gram-hs spec: `../gram-hs/specs/001-pattern-data-structure/spec.md` (for context only)
 - [ ] Create feature spec in `specs/004-pattern-data-structure/`
-- [ ] Port `Pattern<V>` type definition to Rust
-- [ ] Port `Subject` types (Node, Edge, etc.)
+- [ ] Port `Pattern<V>` type definition to Rust (from actual Haskell source, not design docs)
+- [ ] Verify Subject types in gram-hs: Check actual Haskell source code (`../gram-hs/libs/subject/src/Subject/Core.hs`), not design documents. If Subject is defined in the source, port it. If not, it's a value type that may be defined in other features.
 - [ ] Implement `Debug` and `Display` traits
-- [ ] Port test cases from gram-hs
-- [ ] Verify behavioral equivalence
+- [ ] Port test cases from gram-hs (from actual test files)
+- [ ] Verify behavioral equivalence (against actual Haskell implementation)
 - [ ] Test WASM compilation
 
 ### 005-basic-pattern-type: Pattern Construction & Access
@@ -185,6 +188,9 @@ This TODO tracks the incremental porting of features from the gram-hs reference 
 ---
 
 ## Phase 4: Gram Notation Serialization
+
+For all gram notation work, use the `gram-lint` CLI tool to validate
+snippets. 
 
 ### 019-gram-serialization: Basic Gram Codec
 **Reference**: `../gram-hs/specs/014-gram-serialization/`
