@@ -38,152 +38,224 @@ This TODO tracks the incremental porting of features from the gram-hs reference 
 
 ## Phase 2: Core Pattern Data Structure
 
-### 004-pattern-data-structure: Core Pattern Type
+### ✅ 004-pattern-data-structure: Core Pattern Type
 **Primary Reference (Authoritative)**: `../gram-hs/libs/` - Haskell implementation source code
-**Secondary Reference (Context Only)**: `../gram-hs/specs/001-pattern-data-structure/` - Design documents (may be outdated)
+**Documentation Reference**: `../gram-hs/docs/` - Up-to-date documentation about the implementation
+**Historical Reference (Context Only)**: `../gram-hs/specs/001-pattern-data-structure/` - Historical notes from incremental development (may be outdated)
 
-- [ ] Study Haskell implementation: `../gram-hs/libs/` - **This is the source of truth**
+- [x] Study Haskell implementation: `../gram-hs/libs/` - **This is the source of truth**
   - Pattern: `../gram-hs/libs/pattern/src/Pattern.hs`
   - Subject: `../gram-hs/libs/subject/src/Subject/Core.hs`
-- [ ] Review gram-hs tests: `../gram-hs/libs/*/tests/` - **Shows expected behavior**
-- [ ] Review gram-hs spec: `../gram-hs/specs/001-pattern-data-structure/spec.md` (for context only)
-- [ ] Create feature spec in `specs/004-pattern-data-structure/`
-- [ ] Port `Pattern<V>` type definition to Rust (from actual Haskell source, not design docs)
-- [ ] Verify Subject types in gram-hs: Check actual Haskell source code (`../gram-hs/libs/subject/src/Subject/Core.hs`), not design documents. If Subject is defined in the source, port it. If not, it's a value type that may be defined in other features.
-- [ ] Implement `Debug` and `Display` traits
-- [ ] Port test cases from gram-hs (from actual test files)
-- [ ] Verify behavioral equivalence (against actual Haskell implementation)
-- [ ] Test WASM compilation
+- [x] Review gram-hs documentation: `../gram-hs/docs/` - **Up-to-date information about the implementation**
+- [x] Review gram-hs tests: `../gram-hs/libs/*/tests/` - **Shows expected behavior**
+- [x] Review gram-hs spec: `../gram-hs/specs/001-pattern-data-structure/spec.md` (historical notes, for context only)
+- [x] Create feature spec in `specs/004-pattern-data-structure/`
+- [x] Port `Pattern<V>` type definition to Rust (from actual Haskell source, not design docs)
+- [x] Verify Subject types in gram-hs: Check actual Haskell source code (`../gram-hs/libs/subject/src/Subject/Core.hs`), not design documents. If Subject is defined in the source, port it. If not, it's a value type that may be defined in other features.
+- [x] Implement `Debug` and `Display` traits
+- [x] Port test cases from gram-hs (from actual test files)
+- [x] Verify behavioral equivalence (against actual Haskell implementation)
+- [x] Test WASM compilation
 
 ### 005-basic-pattern-type: Pattern Construction & Access
-**Reference**: `../gram-hs/specs/002-basic-pattern-type/`
+**Primary Reference (Authoritative)**: `../gram-hs/libs/` - Haskell implementation source code
+**Documentation Reference**: `../gram-hs/docs/` - Up-to-date documentation about the implementation
+**Historical Reference (Context Only)**: `../gram-hs/specs/002-basic-pattern-type/` - Historical notes from incremental development (may be outdated)
 
-- [ ] Review gram-hs spec: `../gram-hs/specs/002-basic-pattern-type/spec.md`
-- [ ] Review type signatures: `../gram-hs/specs/002-basic-pattern-type/contracts/type-signatures.md`
-- [ ] Port pattern construction functions
-- [ ] Port pattern accessors (value, elements)
-- [ ] Port pattern inspection utilities
-- [ ] Port test cases
-- [ ] Verify equivalence
+- [ ] Study Haskell implementation: `../gram-hs/libs/` - **This is the source of truth**
+- [ ] Review gram-hs documentation: `../gram-hs/docs/` - **Up-to-date information about the implementation**
+- [ ] Review gram-hs tests: `../gram-hs/libs/*/tests/` - **Shows expected behavior**
+- [ ] Review gram-hs spec: `../gram-hs/specs/002-basic-pattern-type/spec.md` (historical notes, for context only)
+- [ ] Review type signatures: `../gram-hs/specs/002-basic-pattern-type/contracts/type-signatures.md` (historical notes, verify against actual code)
+- [ ] Port pattern construction functions (from actual Haskell source)
+- [ ] Port pattern accessors (value, elements) (from actual Haskell source)
+- [ ] Port pattern inspection utilities (from actual Haskell source)
+- [ ] Port test cases (from actual test files)
+- [ ] Verify equivalence (against actual Haskell implementation)
 
 ### 006-pattern-structure-review: Pattern Structure Validation
-**Reference**: `../gram-hs/specs/003-pattern-structure-review/`
+**Primary Reference (Authoritative)**: `../gram-hs/libs/` - Haskell implementation source code
+**Documentation Reference**: `../gram-hs/docs/` - Up-to-date documentation about the implementation
+**Historical Reference (Context Only)**: `../gram-hs/specs/003-pattern-structure-review/` - Historical notes from incremental development (may be outdated)
 
-- [ ] Review gram-hs spec
-- [ ] Port pattern validation functions
-- [ ] Port structure analysis utilities
-- [ ] Port test cases
-- [ ] Verify equivalence
+- [ ] Study Haskell implementation: `../gram-hs/libs/` - **This is the source of truth**
+- [ ] Review gram-hs documentation: `../gram-hs/docs/` - **Up-to-date information about the implementation**
+- [ ] Review gram-hs tests: `../gram-hs/libs/*/tests/` - **Shows expected behavior**
+- [ ] Review gram-hs spec: `../gram-hs/specs/003-pattern-structure-review/spec.md` (historical notes, for context only)
+- [ ] Port pattern validation functions (from actual Haskell source)
+- [ ] Port structure analysis utilities (from actual Haskell source)
+- [ ] Port test cases (from actual test files)
+- [ ] Verify equivalence (against actual Haskell implementation)
 
 ### 007-construction-functions: Pattern Builders
-**Reference**: `../gram-hs/specs/004-construction-functions/`
+**Primary Reference (Authoritative)**: `../gram-hs/libs/` - Haskell implementation source code
+**Documentation Reference**: `../gram-hs/docs/` - Up-to-date documentation about the implementation
+**Historical Reference (Context Only)**: `../gram-hs/specs/004-construction-functions/` - Historical notes from incremental development (may be outdated)
 
-- [ ] Review gram-hs spec
-- [ ] Port pattern builder functions
-- [ ] Port convenience constructors
-- [ ] Port test cases
-- [ ] Verify equivalence
+- [ ] Study Haskell implementation: `../gram-hs/libs/` - **This is the source of truth**
+- [ ] Review gram-hs documentation: `../gram-hs/docs/` - **Up-to-date information about the implementation**
+- [ ] Review gram-hs tests: `../gram-hs/libs/*/tests/` - **Shows expected behavior**
+- [ ] Review gram-hs spec: `../gram-hs/specs/004-construction-functions/spec.md` (historical notes, for context only)
+- [ ] Port pattern builder functions (from actual Haskell source)
+- [ ] Port convenience constructors (from actual Haskell source)
+- [ ] Port test cases (from actual test files)
+- [ ] Verify equivalence (against actual Haskell implementation)
 
 ---
 
 ## Phase 3: Pattern Typeclass Instances (Traits)
 
 ### 008-functor-instance: Functor Trait
-**Reference**: `../gram-hs/specs/005-functor-instance/`
+**Primary Reference (Authoritative)**: `../gram-hs/libs/` - Haskell implementation source code
+**Documentation Reference**: `../gram-hs/docs/` - Up-to-date documentation about the implementation
+**Historical Reference (Context Only)**: `../gram-hs/specs/005-functor-instance/` - Historical notes from incremental development (may be outdated)
 
-- [ ] Review gram-hs spec
-- [ ] Design Rust trait equivalent to Functor
-- [ ] Implement `map` function for patterns
-- [ ] Port test cases
-- [ ] Verify equivalence
+- [ ] Study Haskell implementation: `../gram-hs/libs/` - **This is the source of truth**
+- [ ] Review gram-hs documentation: `../gram-hs/docs/` - **Up-to-date information about the implementation**
+- [ ] Review gram-hs tests: `../gram-hs/libs/*/tests/` - **Shows expected behavior**
+- [ ] Review gram-hs spec: `../gram-hs/specs/005-functor-instance/spec.md` (historical notes, for context only)
+- [ ] Design Rust trait equivalent to Functor (based on actual Haskell implementation)
+- [ ] Implement `map` function for patterns (from actual Haskell source)
+- [ ] Port test cases (from actual test files)
+- [ ] Verify equivalence (against actual Haskell implementation)
 
 ### 009-foldable-instance: Foldable Trait
-**Reference**: `../gram-hs/specs/006-foldable-instance/`
+**Primary Reference (Authoritative)**: `../gram-hs/libs/` - Haskell implementation source code
+**Documentation Reference**: `../gram-hs/docs/` - Up-to-date documentation about the implementation
+**Historical Reference (Context Only)**: `../gram-hs/specs/006-foldable-instance/` - Historical notes from incremental development (may be outdated)
 
-- [ ] Review gram-hs spec
-- [ ] Design Rust trait equivalent to Foldable
-- [ ] Implement `fold` functions for patterns
-- [ ] Port test cases
-- [ ] Verify equivalence
+- [ ] Study Haskell implementation: `../gram-hs/libs/` - **This is the source of truth**
+- [ ] Review gram-hs documentation: `../gram-hs/docs/` - **Up-to-date information about the implementation**
+- [ ] Review gram-hs tests: `../gram-hs/libs/*/tests/` - **Shows expected behavior**
+- [ ] Review gram-hs spec: `../gram-hs/specs/006-foldable-instance/spec.md` (historical notes, for context only)
+- [ ] Design Rust trait equivalent to Foldable (based on actual Haskell implementation)
+- [ ] Implement `fold` functions for patterns (from actual Haskell source)
+- [ ] Port test cases (from actual test files)
+- [ ] Verify equivalence (against actual Haskell implementation)
 
 ### 010-traversable-instance: Traversable Trait
-**Reference**: `../gram-hs/specs/007-traversable-instance/`
+**Primary Reference (Authoritative)**: `../gram-hs/libs/` - Haskell implementation source code
+**Documentation Reference**: `../gram-hs/docs/` - Up-to-date documentation about the implementation
+**Historical Reference (Context Only)**: `../gram-hs/specs/007-traversable-instance/` - Historical notes from incremental development (may be outdated)
 
-- [ ] Review gram-hs spec
-- [ ] Design Rust trait equivalent to Traversable
-- [ ] Implement `traverse` functions for patterns
-- [ ] Port test cases
-- [ ] Verify equivalence
+- [ ] Study Haskell implementation: `../gram-hs/libs/` - **This is the source of truth**
+- [ ] Review gram-hs documentation: `../gram-hs/docs/` - **Up-to-date information about the implementation**
+- [ ] Review gram-hs tests: `../gram-hs/libs/*/tests/` - **Shows expected behavior**
+- [ ] Review gram-hs spec: `../gram-hs/specs/007-traversable-instance/spec.md` (historical notes, for context only)
+- [ ] Design Rust trait equivalent to Traversable (based on actual Haskell implementation)
+- [ ] Implement `traverse` functions for patterns (from actual Haskell source)
+- [ ] Port test cases (from actual test files)
+- [ ] Verify equivalence (against actual Haskell implementation)
 
 ### 011-basic-query-functions: Pattern Query Operations
-**Reference**: `../gram-hs/specs/008-basic-query-functions/`
+**Primary Reference (Authoritative)**: `../gram-hs/libs/` - Haskell implementation source code
+**Documentation Reference**: `../gram-hs/docs/` - Up-to-date documentation about the implementation
+**Historical Reference (Context Only)**: `../gram-hs/specs/008-basic-query-functions/` - Historical notes from incremental development (may be outdated)
 
-- [ ] Review gram-hs spec
-- [ ] Port pattern query functions
-- [ ] Port pattern search utilities
-- [ ] Port test cases
-- [ ] Verify equivalence
+- [ ] Study Haskell implementation: `../gram-hs/libs/` - **This is the source of truth**
+- [ ] Review gram-hs documentation: `../gram-hs/docs/` - **Up-to-date information about the implementation**
+- [ ] Review gram-hs tests: `../gram-hs/libs/*/tests/` - **Shows expected behavior**
+- [ ] Review gram-hs spec: `../gram-hs/specs/008-basic-query-functions/spec.md` (historical notes, for context only)
+- [ ] Port pattern query functions (from actual Haskell source)
+- [ ] Port pattern search utilities (from actual Haskell source)
+- [ ] Port test cases (from actual test files)
+- [ ] Verify equivalence (against actual Haskell implementation)
 
 ### 012-ord-instance: Ord Trait
-**Reference**: `../gram-hs/specs/009-ord-instance/`
+**Primary Reference (Authoritative)**: `../gram-hs/libs/` - Haskell implementation source code
+**Documentation Reference**: `../gram-hs/docs/` - Up-to-date documentation about the implementation
+**Historical Reference (Context Only)**: `../gram-hs/specs/009-ord-instance/` - Historical notes from incremental development (may be outdated)
 
-- [ ] Review gram-hs spec
-- [ ] Implement `PartialOrd` and `Ord` for patterns
-- [ ] Port test cases
-- [ ] Verify equivalence
+- [ ] Study Haskell implementation: `../gram-hs/libs/` - **This is the source of truth**
+- [ ] Review gram-hs documentation: `../gram-hs/docs/` - **Up-to-date information about the implementation**
+- [ ] Review gram-hs tests: `../gram-hs/libs/*/tests/` - **Shows expected behavior**
+- [ ] Review gram-hs spec: `../gram-hs/specs/009-ord-instance/spec.md` (historical notes, for context only)
+- [ ] Implement `PartialOrd` and `Ord` for patterns (from actual Haskell source)
+- [ ] Port test cases (from actual test files)
+- [ ] Verify equivalence (against actual Haskell implementation)
 
 ### 013-semigroup-instance: Semigroup Trait
-**Reference**: `../gram-hs/specs/010-semigroup-instance/`
+**Primary Reference (Authoritative)**: `../gram-hs/libs/` - Haskell implementation source code
+**Documentation Reference**: `../gram-hs/docs/` - Up-to-date documentation about the implementation
+**Historical Reference (Context Only)**: `../gram-hs/specs/010-semigroup-instance/` - Historical notes from incremental development (may be outdated)
 
-- [ ] Review gram-hs spec
-- [ ] Design Rust trait equivalent to Semigroup
-- [ ] Implement pattern combination operations
-- [ ] Port test cases
-- [ ] Verify equivalence
+- [ ] Study Haskell implementation: `../gram-hs/libs/` - **This is the source of truth**
+- [ ] Review gram-hs documentation: `../gram-hs/docs/` - **Up-to-date information about the implementation**
+- [ ] Review gram-hs tests: `../gram-hs/libs/*/tests/` - **Shows expected behavior**
+- [ ] Review gram-hs spec: `../gram-hs/specs/010-semigroup-instance/spec.md` (historical notes, for context only)
+- [ ] Design Rust trait equivalent to Semigroup (based on actual Haskell implementation)
+- [ ] Implement pattern combination operations (from actual Haskell source)
+- [ ] Port test cases (from actual test files)
+- [ ] Verify equivalence (against actual Haskell implementation)
 
 ### 014-monoid-instance: Monoid Trait
-**Reference**: `../gram-hs/specs/011-monoid-instance/`
+**Primary Reference (Authoritative)**: `../gram-hs/libs/` - Haskell implementation source code
+**Documentation Reference**: `../gram-hs/docs/` - Up-to-date documentation about the implementation
+**Historical Reference (Context Only)**: `../gram-hs/specs/011-monoid-instance/` - Historical notes from incremental development (may be outdated)
 
-- [ ] Review gram-hs spec
-- [ ] Design Rust trait equivalent to Monoid
-- [ ] Implement pattern identity element
-- [ ] Port test cases
-- [ ] Verify equivalence
+- [ ] Study Haskell implementation: `../gram-hs/libs/` - **This is the source of truth**
+- [ ] Review gram-hs documentation: `../gram-hs/docs/` - **Up-to-date information about the implementation**
+- [ ] Review gram-hs tests: `../gram-hs/libs/*/tests/` - **Shows expected behavior**
+- [ ] Review gram-hs spec: `../gram-hs/specs/011-monoid-instance/spec.md` (historical notes, for context only)
+- [ ] Design Rust trait equivalent to Monoid (based on actual Haskell implementation)
+- [ ] Implement pattern identity element (from actual Haskell source)
+- [ ] Port test cases (from actual test files)
+- [ ] Verify equivalence (against actual Haskell implementation)
 
 ### 015-hashable-instance: Hash Trait
-**Reference**: `../gram-hs/specs/012-hashable-instance/`
+**Primary Reference (Authoritative)**: `../gram-hs/libs/` - Haskell implementation source code
+**Documentation Reference**: `../gram-hs/docs/` - Up-to-date documentation about the implementation
+**Historical Reference (Context Only)**: `../gram-hs/specs/012-hashable-instance/` - Historical notes from incremental development (may be outdated)
 
-- [ ] Review gram-hs spec
-- [ ] Implement `Hash` trait for patterns
-- [ ] Port test cases
-- [ ] Verify equivalence
+- [ ] Study Haskell implementation: `../gram-hs/libs/` - **This is the source of truth**
+- [ ] Review gram-hs documentation: `../gram-hs/docs/` - **Up-to-date information about the implementation**
+- [ ] Review gram-hs tests: `../gram-hs/libs/*/tests/` - **Shows expected behavior**
+- [ ] Review gram-hs spec: `../gram-hs/specs/012-hashable-instance/spec.md` (historical notes, for context only)
+- [ ] Implement `Hash` trait for patterns (from actual Haskell source)
+- [ ] Port test cases (from actual test files)
+- [ ] Verify equivalence (against actual Haskell implementation)
 
 ### 016-predicate-matching: Pattern Matching
-**Reference**: `../gram-hs/specs/012-predicate-matching/`
+**Primary Reference (Authoritative)**: `../gram-hs/libs/` - Haskell implementation source code
+**Documentation Reference**: `../gram-hs/docs/` - Up-to-date documentation about the implementation
+**Historical Reference (Context Only)**: `../gram-hs/specs/012-predicate-matching/` - Historical notes from incremental development (may be outdated)
 
-- [ ] Review gram-hs spec
-- [ ] Port pattern matching algorithm
-- [ ] Port predicate matching functions
-- [ ] Port test cases
-- [ ] Verify equivalence
+- [ ] Study Haskell implementation: `../gram-hs/libs/` - **This is the source of truth**
+- [ ] Review gram-hs documentation: `../gram-hs/docs/` - **Up-to-date information about the implementation**
+- [ ] Review gram-hs tests: `../gram-hs/libs/*/tests/` - **Shows expected behavior**
+- [ ] Review gram-hs spec: `../gram-hs/specs/012-predicate-matching/spec.md` (historical notes, for context only)
+- [ ] Port pattern matching algorithm (from actual Haskell source)
+- [ ] Port predicate matching functions (from actual Haskell source)
+- [ ] Port test cases (from actual test files)
+- [ ] Verify equivalence (against actual Haskell implementation)
 
 ### 017-applicative-instance: Applicative Trait
-**Reference**: `../gram-hs/specs/013-applicative-instance/`
+**Primary Reference (Authoritative)**: `../gram-hs/libs/` - Haskell implementation source code
+**Documentation Reference**: `../gram-hs/docs/` - Up-to-date documentation about the implementation
+**Historical Reference (Context Only)**: `../gram-hs/specs/013-applicative-instance/` - Historical notes from incremental development (may be outdated)
 
-- [ ] Review gram-hs spec
-- [ ] Design Rust trait equivalent to Applicative
-- [ ] Implement applicative operations for patterns
-- [ ] Port test cases
-- [ ] Verify equivalence
+- [ ] Study Haskell implementation: `../gram-hs/libs/` - **This is the source of truth**
+- [ ] Review gram-hs documentation: `../gram-hs/docs/` - **Up-to-date information about the implementation**
+- [ ] Review gram-hs tests: `../gram-hs/libs/*/tests/` - **Shows expected behavior**
+- [ ] Review gram-hs spec: `../gram-hs/specs/013-applicative-instance/spec.md` (historical notes, for context only)
+- [ ] Design Rust trait equivalent to Applicative (based on actual Haskell implementation)
+- [ ] Implement applicative operations for patterns (from actual Haskell source)
+- [ ] Port test cases (from actual test files)
+- [ ] Verify equivalence (against actual Haskell implementation)
 
 ### 018-comonad-instance: Comonad Trait
-**Reference**: `../gram-hs/specs/014-comonad-instance/`
+**Primary Reference (Authoritative)**: `../gram-hs/libs/` - Haskell implementation source code
+**Documentation Reference**: `../gram-hs/docs/` - Up-to-date documentation about the implementation
+**Historical Reference (Context Only)**: `../gram-hs/specs/014-comonad-instance/` - Historical notes from incremental development (may be outdated)
 
-- [ ] Review gram-hs spec
-- [ ] Design Rust trait equivalent to Comonad
-- [ ] Implement comonad operations for patterns
-- [ ] Port test cases
-- [ ] Verify equivalence
+- [ ] Study Haskell implementation: `../gram-hs/libs/` - **This is the source of truth**
+- [ ] Review gram-hs documentation: `../gram-hs/docs/` - **Up-to-date information about the implementation**
+- [ ] Review gram-hs tests: `../gram-hs/libs/*/tests/` - **Shows expected behavior**
+- [ ] Review gram-hs spec: `../gram-hs/specs/014-comonad-instance/spec.md` (historical notes, for context only)
+- [ ] Design Rust trait equivalent to Comonad (based on actual Haskell implementation)
+- [ ] Implement comonad operations for patterns (from actual Haskell source)
+- [ ] Port test cases (from actual test files)
+- [ ] Verify equivalence (against actual Haskell implementation)
 
 ---
 
@@ -193,99 +265,148 @@ For all gram notation work, use the `gram-lint` CLI tool to validate
 snippets. 
 
 ### 019-gram-serialization: Basic Gram Codec
-**Reference**: `../gram-hs/specs/014-gram-serialization/`
+**Primary Reference (Authoritative)**: `../gram-hs/libs/` - Haskell implementation source code
+**Documentation Reference**: `../gram-hs/docs/` - Up-to-date documentation about the implementation
+**Historical Reference (Context Only)**: `../gram-hs/specs/014-gram-serialization/` - Historical notes from incremental development (may be outdated)
 
-- [ ] Review gram-hs spec
-- [ ] Review gram grammar definition
+- [ ] Study Haskell implementation: `../gram-hs/libs/` - **This is the source of truth**
+- [ ] Review gram-hs documentation: `../gram-hs/docs/` - **Up-to-date information about the implementation**
+- [ ] Review gram-hs tests: `../gram-hs/libs/*/tests/` - **Shows expected behavior**
+- [ ] Review gram-hs spec: `../gram-hs/specs/014-gram-serialization/spec.md` (historical notes, for context only)
+- [ ] Review gram grammar definition (from actual Haskell source)
 - [ ] Choose parser library (recommended: winnow)
-- [ ] Implement gram → pattern decoder
-- [ ] Implement pattern → gram encoder
-- [ ] Port test cases
+- [ ] Implement gram → pattern decoder (from actual Haskell source)
+- [ ] Implement pattern → gram encoder (from actual Haskell source)
+- [ ] Port test cases (from actual test files)
 - [ ] Round-trip testing
-- [ ] Verify equivalence with gram-hs
+- [ ] Verify equivalence (against actual Haskell implementation)
 
 ### 020-gram-parsing-conformance: Parser Conformance
-**Reference**: `../gram-hs/specs/016-gram-parsing-conformance/`
+**Primary Reference (Authoritative)**: `../gram-hs/libs/` - Haskell implementation source code
+**Documentation Reference**: `../gram-hs/docs/` - Up-to-date documentation about the implementation
+**Historical Reference (Context Only)**: `../gram-hs/specs/016-gram-parsing-conformance/` - Historical notes from incremental development (may be outdated)
 
-- [ ] Review gram-hs spec
-- [ ] Port grammar conformance tests
-- [ ] Verify parser handles all gram syntax
-- [ ] Add error recovery and reporting
-- [ ] Port test cases
-- [ ] Verify equivalence
+- [ ] Study Haskell implementation: `../gram-hs/libs/` - **This is the source of truth**
+- [ ] Review gram-hs documentation: `../gram-hs/docs/` - **Up-to-date information about the implementation**
+- [ ] Review gram-hs tests: `../gram-hs/libs/*/tests/` - **Shows expected behavior**
+- [ ] Review gram-hs spec: `../gram-hs/specs/016-gram-parsing-conformance/spec.md` (historical notes, for context only)
+- [ ] Port grammar conformance tests (from actual test files)
+- [ ] Verify parser handles all gram syntax (from actual Haskell implementation)
+- [ ] Add error recovery and reporting (from actual Haskell source)
+- [ ] Port test cases (from actual test files)
+- [ ] Verify equivalence (against actual Haskell implementation)
 
 ### 021-gram-serializer-updates: Serializer Enhancements
-**Reference**: `../gram-hs/specs/017-gram-serializer-updates/`
+**Primary Reference (Authoritative)**: `../gram-hs/libs/` - Haskell implementation source code
+**Documentation Reference**: `../gram-hs/docs/` - Up-to-date documentation about the implementation
+**Historical Reference (Context Only)**: `../gram-hs/specs/017-gram-serializer-updates/` - Historical notes from incremental development (may be outdated)
 
-- [ ] Review gram-hs spec
-- [ ] Port serializer improvements
-- [ ] Add pretty-printing support
-- [ ] Port test cases
-- [ ] Verify equivalence
+- [ ] Study Haskell implementation: `../gram-hs/libs/` - **This is the source of truth**
+- [ ] Review gram-hs documentation: `../gram-hs/docs/` - **Up-to-date information about the implementation**
+- [ ] Review gram-hs tests: `../gram-hs/libs/*/tests/` - **Shows expected behavior**
+- [ ] Review gram-hs spec: `../gram-hs/specs/017-gram-serializer-updates/spec.md` (historical notes, for context only)
+- [ ] Port serializer improvements (from actual Haskell source)
+- [ ] Add pretty-printing support (from actual Haskell source)
+- [ ] Port test cases (from actual test files)
+- [ ] Verify equivalence (against actual Haskell implementation)
 
 ### 022-subject-serialization: Subject Type Serialization
-**Reference**: `../gram-hs/specs/020-subject-serialization/`
+**Primary Reference (Authoritative)**: `../gram-hs/libs/` - Haskell implementation source code
+**Documentation Reference**: `../gram-hs/docs/` - Up-to-date documentation about the implementation
+**Historical Reference (Context Only)**: `../gram-hs/specs/020-subject-serialization/` - Historical notes from incremental development (may be outdated)
 
-- [ ] Review gram-hs spec
-- [ ] Port subject serialization
-- [ ] Port test cases
-- [ ] Verify equivalence
+- [ ] Study Haskell implementation: `../gram-hs/libs/` - **This is the source of truth**
+- [ ] Review gram-hs documentation: `../gram-hs/docs/` - **Up-to-date information about the implementation**
+- [ ] Review gram-hs tests: `../gram-hs/libs/*/tests/` - **Shows expected behavior**
+- [ ] Review gram-hs spec: `../gram-hs/specs/020-subject-serialization/spec.md` (historical notes, for context only)
+- [ ] Port subject serialization (from actual Haskell source)
+- [ ] Port test cases (from actual test files)
+- [ ] Verify equivalence (against actual Haskell implementation)
 
 ### 023-gram-serialization-update: Serialization Updates
-**Reference**: `../gram-hs/specs/021-gram-serialization-update/`
+**Primary Reference (Authoritative)**: `../gram-hs/libs/` - Haskell implementation source code
+**Documentation Reference**: `../gram-hs/docs/` - Up-to-date documentation about the implementation
+**Historical Reference (Context Only)**: `../gram-hs/specs/021-gram-serialization-update/` - Historical notes from incremental development (may be outdated)
 
-- [ ] Review gram-hs spec
-- [ ] Port serialization updates
-- [ ] Port test cases
-- [ ] Verify equivalence
+- [ ] Study Haskell implementation: `../gram-hs/libs/` - **This is the source of truth**
+- [ ] Review gram-hs documentation: `../gram-hs/docs/` - **Up-to-date information about the implementation**
+- [ ] Review gram-hs tests: `../gram-hs/libs/*/tests/` - **Shows expected behavior**
+- [ ] Review gram-hs spec: `../gram-hs/specs/021-gram-serialization-update/spec.md` (historical notes, for context only)
+- [ ] Port serialization updates (from actual Haskell source)
+- [ ] Port test cases (from actual test files)
+- [ ] Verify equivalence (against actual Haskell implementation)
 
 ### 024-codefence-strings: Code Fence String Support
-**Reference**: `../gram-hs/specs/024-codefence-strings/`
+**Primary Reference (Authoritative)**: `../gram-hs/libs/` - Haskell implementation source code
+**Documentation Reference**: `../gram-hs/docs/` - Up-to-date documentation about the implementation
+**Historical Reference (Context Only)**: `../gram-hs/specs/024-codefence-strings/` - Historical notes from incremental development (may be outdated)
 
-- [ ] Review gram-hs spec
-- [ ] Port code fence string parsing
-- [ ] Port test cases
-- [ ] Verify equivalence
+- [ ] Study Haskell implementation: `../gram-hs/libs/` - **This is the source of truth**
+- [ ] Review gram-hs documentation: `../gram-hs/docs/` - **Up-to-date information about the implementation**
+- [ ] Review gram-hs tests: `../gram-hs/libs/*/tests/` - **Shows expected behavior**
+- [ ] Review gram-hs spec: `../gram-hs/specs/024-codefence-strings/spec.md` (historical notes, for context only)
+- [ ] Port code fence string parsing (from actual Haskell source)
+- [ ] Port test cases (from actual test files)
+- [ ] Verify equivalence (against actual Haskell implementation)
 
 ---
 
 ## Phase 5: Advanced Pattern Operations
 
 ### 025-pattern-path-semantics: Pattern Path Operations
-**Reference**: `../gram-hs/specs/018-pattern-path-semantics/`
+**Primary Reference (Authoritative)**: `../gram-hs/libs/` - Haskell implementation source code
+**Documentation Reference**: `../gram-hs/docs/` - Up-to-date documentation about the implementation
+**Historical Reference (Context Only)**: `../gram-hs/specs/018-pattern-path-semantics/` - Historical notes from incremental development (may be outdated)
 
-- [ ] Review gram-hs spec
-- [ ] Port pattern path operations
-- [ ] Port path traversal functions
-- [ ] Port test cases
-- [ ] Verify equivalence
+- [ ] Study Haskell implementation: `../gram-hs/libs/` - **This is the source of truth**
+- [ ] Review gram-hs documentation: `../gram-hs/docs/` - **Up-to-date information about the implementation**
+- [ ] Review gram-hs tests: `../gram-hs/libs/*/tests/` - **Shows expected behavior**
+- [ ] Review gram-hs spec: `../gram-hs/specs/018-pattern-path-semantics/spec.md` (historical notes, for context only)
+- [ ] Port pattern path operations (from actual Haskell source)
+- [ ] Port path traversal functions (from actual Haskell source)
+- [ ] Port test cases (from actual test files)
+- [ ] Verify equivalence (against actual Haskell implementation)
 
 ### 026-graph-lens: Graph Lens Operations
-**Reference**: `../gram-hs/specs/023-graph-lens/`
+**Primary Reference (Authoritative)**: `../gram-hs/libs/` - Haskell implementation source code
+**Documentation Reference**: `../gram-hs/docs/` - Up-to-date documentation about the implementation
+**Historical Reference (Context Only)**: `../gram-hs/specs/023-graph-lens/` - Historical notes from incremental development (may be outdated)
 
-- [ ] Review gram-hs spec
-- [ ] Review graph lens analysis: `../gram-hs/specs/022-graph-lens-review/`
-- [ ] Port graph lens operations
-- [ ] Port lens composition
-- [ ] Port test cases
-- [ ] Verify equivalence
+- [ ] Study Haskell implementation: `../gram-hs/libs/` - **This is the source of truth**
+- [ ] Review gram-hs documentation: `../gram-hs/docs/` - **Up-to-date information about the implementation**
+- [ ] Review gram-hs tests: `../gram-hs/libs/*/tests/` - **Shows expected behavior**
+- [ ] Review gram-hs spec: `../gram-hs/specs/023-graph-lens/spec.md` (historical notes, for context only)
+- [ ] Review graph lens analysis: `../gram-hs/specs/022-graph-lens-review/` (for context only)
+- [ ] Port graph lens operations (from actual Haskell source)
+- [ ] Port lens composition (from actual Haskell source)
+- [ ] Port test cases (from actual test files)
+- [ ] Verify equivalence (against actual Haskell implementation)
 
 ### 027-decouple-identity-assignment: Identity Management
-**Reference**: `../gram-hs/specs/025-decouple-identity-assignment/`
+**Primary Reference (Authoritative)**: `../gram-hs/libs/` - Haskell implementation source code
+**Documentation Reference**: `../gram-hs/docs/` - Up-to-date documentation about the implementation
+**Historical Reference (Context Only)**: `../gram-hs/specs/025-decouple-identity-assignment/` - Historical notes from incremental development (may be outdated)
 
-- [ ] Review gram-hs spec
-- [ ] Port identity assignment logic
-- [ ] Port test cases
-- [ ] Verify equivalence
+- [ ] Study Haskell implementation: `../gram-hs/libs/` - **This is the source of truth**
+- [ ] Review gram-hs documentation: `../gram-hs/docs/` - **Up-to-date information about the implementation**
+- [ ] Review gram-hs tests: `../gram-hs/libs/*/tests/` - **Shows expected behavior**
+- [ ] Review gram-hs spec: `../gram-hs/specs/025-decouple-identity-assignment/spec.md` (historical notes, for context only)
+- [ ] Port identity assignment logic (from actual Haskell source)
+- [ ] Port test cases (from actual test files)
+- [ ] Verify equivalence (against actual Haskell implementation)
 
 ### 028-integration-polish: Integration & Polish
-**Reference**: `../gram-hs/specs/015-integration-polish/` and `../gram-hs/specs/019-integration-polish/`
+**Primary Reference (Authoritative)**: `../gram-hs/libs/` - Haskell implementation source code
+**Documentation Reference**: `../gram-hs/docs/` - Up-to-date documentation about the implementation
+**Historical Reference (Context Only)**: `../gram-hs/specs/015-integration-polish/` and `../gram-hs/specs/019-integration-polish/` - Historical notes from incremental development (may be outdated)
 
-- [ ] Review gram-hs specs
-- [ ] Port integration improvements
-- [ ] Port polish features
-- [ ] Port test cases
-- [ ] Verify equivalence
+- [ ] Study Haskell implementation: `../gram-hs/libs/` - **This is the source of truth**
+- [ ] Review gram-hs tests: `../gram-hs/libs/*/tests/` - **Shows expected behavior**
+- [ ] Review gram-hs specs: `../gram-hs/specs/015-integration-polish/` and `../gram-hs/specs/019-integration-polish/` (for context only)
+- [ ] Port integration improvements (from actual Haskell source)
+- [ ] Port polish features (from actual Haskell source)
+- [ ] Port test cases (from actual test files)
+- [ ] Verify equivalence (against actual Haskell implementation)
 
 ---
 
@@ -405,7 +526,7 @@ snippets.
 
 - **Feature Numbering**: Features 001-039 in gram-rs correspond to incremental development phases. Some gram-hs features (e.g., 001-pattern-data-structure) map to later gram-rs features (004-pattern-data-structure) because infrastructure setup comes first.
 
-- **Reference Implementation**: Always verify against `../gram-hs` before marking features complete. See `PORTING_GUIDE.md` for detailed workflow.
+- **Reference Implementation**: Always verify against the actual Haskell source code in `../gram-hs/libs/` before marking features complete. The Haskell implementation is the authoritative source of truth. Documentation in `../gram-hs/docs/` provides up-to-date information about the implementation. Historical notes in `../gram-hs/specs/` guided incremental development but may be outdated. See `PORTING_GUIDE.md` for detailed workflow.
 
 - **Priority**: Focus on Phase 1-4 first to establish core functionality. Phases 5-8 can proceed in parallel once core is stable.
 

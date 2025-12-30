@@ -6,9 +6,10 @@ This guide provides a systematic approach for porting features from the gram-hs 
 
 The gram-hs reference implementation is available locally at:
 - **Path**: `../gram-hs` (relative to gram-rs repository root)
-- **Feature Specifications**: `../gram-hs/specs/` - Contains incremental feature development
-- **Source Code**: `../gram-hs/libs/` - Haskell library implementations
-- **Tests**: `../gram-hs/libs/*/tests/` - Test suites for verification
+- **Source Code (Authoritative)**: `../gram-hs/libs/` - Haskell library implementations - **This is the source of truth**
+- **Documentation (Up-to-date)**: `../gram-hs/docs/` - Up-to-date documentation about the implementation
+- **Tests (Authoritative)**: `../gram-hs/libs/*/tests/` - Test suites for verification - **Shows expected behavior**
+- **Historical Notes (Context Only)**: `../gram-hs/specs/` - Historical notes that guided incremental development (may be outdated, use for context only)
 
 ## Porting Workflow
 
@@ -24,12 +25,15 @@ Check `../gram-hs/specs/` for available features. Features are numbered incremen
 
 **CRITICAL: The Haskell Implementation is the Source of Truth**
 
-The Haskell implementation in `../gram-hs/libs/` is the authoritative source of truth. Design documents in `../gram-hs/specs/` are useful for context and understanding the feature's purpose, but they may contain:
+The Haskell implementation in `../gram-hs/libs/` is the authoritative source of truth. We are porting the actual Haskell implementation to idiomatic Rust.
+
+Historical notes in `../gram-hs/specs/` guided incremental development and may be useful for understanding the feature's purpose and approach, but they are NOT authoritative. They may contain:
 - Outdated information that was corrected during implementation
 - Design mistakes that were fixed in the actual code
 - Progressive design changes where later work overrides earlier work
+- Incomplete or speculative design decisions
 
-**Always prefer the Haskell implementation over design documents.**
+**Always prefer the Haskell implementation over design documents. When in doubt, check the actual source code.**
 
 **Primary Source (Authoritative)**:
 - **Haskell Implementation** (`../gram-hs/libs/`):
@@ -37,13 +41,20 @@ The Haskell implementation in `../gram-hs/libs/` is the authoritative source of 
   - Test files in `libs/*/tests/` - **This is the source of truth for expected behavior**
   - Documentation in source files (Haddock comments) - **This is the source of truth for API documentation**
 
-**Secondary Sources (Context Only)**:
+**Documentation (Up-to-date)**:
+- **Implementation Documentation** (`../gram-hs/docs/`):
+  - `docs/reference/` - Architecture and feature documentation (up-to-date information about the implementation)
+  - `docs/users/` - User guides and examples (up-to-date usage information)
+  - `docs/design/` - Design documentation (up-to-date design information)
+
+**Historical Notes (Context Only)**:
 - **Feature Specification** (`../gram-hs/specs/XXX-feature-name/`):
-  - `spec.md` - Feature requirements and user stories (useful for understanding purpose)
+  - These are historical notes that guided incremental development, NOT authoritative sources
+  - `spec.md` - Feature requirements and user stories (useful for understanding purpose and approach)
   - `plan.md` - Implementation plan (may be outdated)
-  - `contracts/type-signatures.md` - API contracts (may not reflect final implementation)
+  - `contracts/type-signatures.md` - API contracts (may not reflect final implementation - verify against actual code)
   - `quickstart.md` - Usage examples (may be outdated)
-  - `data-model.md` - Data structures (may not match actual implementation)
+  - `data-model.md` - Data structures (may not match actual implementation - verify against actual code)
 
 **When in doubt, check the actual Haskell source code.**
 
@@ -57,14 +68,16 @@ Use `/speckit.specify` to create a new feature specification:
 
 **Important**: In your spec, include:
 - **Primary reference**: Link to Haskell source code: `../gram-hs/libs/*/src/` - **This is the source of truth**
-- **Secondary reference**: Link to gram-hs feature specs: `../gram-hs/specs/XXX-feature-name/` - **For context only, may be outdated**
-- Behavioral equivalence requirements (verify against actual Haskell implementation, not design docs)
+- **Documentation reference**: Link to gram-hs documentation: `../gram-hs/docs/` - **Up-to-date information about the implementation**
+- **Historical reference**: Link to gram-hs feature specs: `../gram-hs/specs/XXX-feature-name/` - **Historical notes for context only, may be outdated**
+- Behavioral equivalence requirements (verify against actual Haskell implementation, not historical notes)
+- Note that we are porting the Haskell implementation to idiomatic Rust
 
 ### 4. Port Type Signatures
 
 **CRITICAL: Use the Haskell Implementation as the Source of Truth**
 
-Start with the actual Haskell source code in `../gram-hs/libs/*/src/`. The design documents in `../gram-hs/specs/XXX-feature-name/contracts/type-signatures.md` may be outdated or incorrect.
+Start with the actual Haskell source code in `../gram-hs/libs/*/src/`. We are porting the Haskell implementation to idiomatic Rust. Also review the up-to-date documentation in `../gram-hs/docs/`. The historical notes in `../gram-hs/specs/XXX-feature-name/contracts/type-signatures.md` may be outdated or incorrect - always verify against the actual source code.
 
 **Step 1: Find the Haskell Implementation**
 
@@ -117,7 +130,7 @@ cat ../gram-hs/libs/subject/src/Subject/Core.hs | grep -A 10 "^data Subject"
 ### 4.5. Common Pitfalls: Assuming Types Exist
 
 **Warning**: Do not assume a type needs to be ported just because it's mentioned in:
-- Design documents (`spec.md`, `contracts/type-signatures.md`)
+- Historical notes (`spec.md`, `contracts/type-signatures.md`) - These guided incremental development but may be outdated
 - Feature requirements (FR-XXX)
 - User stories
 - Key Entities sections
@@ -132,7 +145,7 @@ cat ../gram-hs/libs/subject/src/Subject/Core.hs | grep -A 10 "^data Subject"
 - Pattern<V> is generic and can work with any value type V
 - Subject types, if they exist, are defined in other libraries and are just value types
 
-**Rule of thumb**: Only port types that are explicitly defined in the Haskell source code (`*.hs` files) for the feature you're porting. Design documents are for context only.
+**Rule of thumb**: Only port types that are explicitly defined in the Haskell source code (`*.hs` files) for the feature you're porting. Historical notes in `../gram-hs/specs/` guided incremental development but are NOT authoritative - always verify against the actual source code and up-to-date documentation in `../gram-hs/docs/`.
 
 ### 5. Port Tests (TDD Approach)
 
@@ -158,12 +171,13 @@ See [gram-hs CLI Testing Guide](docs/gram-hs-cli-testing-guide.md) for more deta
 
 ### 6. Implement Functionality
 
-Port the Haskell implementation from `../gram-hs/libs/*/src/`:
+Port the Haskell implementation from `../gram-hs/libs/*/src/` to idiomatic Rust:
 
 - Translate Haskell patterns to Rust idioms
 - Use Rust's type system (enums, Result, ownership)
 - Follow Rust naming conventions
-- Maintain behavioral equivalence
+- Maintain behavioral equivalence with the actual Haskell implementation
+- Do not rely on design documents - use the actual source code as the reference
 
 ### 7. Verify Equivalence
 
@@ -259,13 +273,14 @@ pub fn get_value<V>(p: &Pattern<V>) -> &V {
 For each feature being ported:
 
 - [ ] **Studied Haskell implementation** in `../gram-hs/libs/*/src/` - **Primary source of truth**
+- [ ] Reviewed gram-hs documentation in `../gram-hs/docs/` - **Up-to-date information about the implementation**
 - [ ] Reviewed Haskell tests in `../gram-hs/libs/*/tests/` - **Shows expected behavior**
-- [ ] Reviewed `../gram-hs/specs/XXX-feature-name/spec.md` - **For context only, may be outdated**
-- [ ] Reviewed `../gram-hs/specs/XXX-feature-name/contracts/type-signatures.md` - **For context only, verify against actual code**
+- [ ] Reviewed `../gram-hs/specs/XXX-feature-name/spec.md` - **Historical notes for context only, may be outdated**
+- [ ] Reviewed `../gram-hs/specs/XXX-feature-name/contracts/type-signatures.md` - **Historical notes for context only, verify against actual code**
 - [ ] Created feature specification in `specs/XXX-feature-name/`
 - [ ] Ported type signatures to Rust (from actual Haskell source, not design docs)
 - [ ] Ported test cases from gram-hs (from actual test files)
-- [ ] Implemented functionality (matching actual Haskell implementation)
+- [ ] Implemented functionality in idiomatic Rust (matching actual Haskell implementation)
 - [ ] Verified behavioral equivalence (against actual Haskell implementation)
 - [ ] Tested WASM compilation
 - [ ] Updated examples (if applicable)
@@ -285,16 +300,16 @@ ls -1 ../gram-hs/specs/
 ls -1 ../gram-hs/libs/
 ```
 
-**Important**: The actual implementations are in `../gram-hs/libs/`. The specifications in `../gram-hs/specs/` are design documents that may be outdated. Always check the actual Haskell source code in `libs/*/src/` as the authoritative source.
+**Important**: The actual implementations are in `../gram-hs/libs/`. Up-to-date documentation is in `../gram-hs/docs/`. The specifications in `../gram-hs/specs/` are historical notes that guided incremental development but may be outdated. Always check the actual Haskell source code in `libs/*/src/` as the authoritative source, and refer to `../gram-hs/docs/` for up-to-date documentation. We are porting the Haskell implementation to idiomatic Rust.
 
-Each feature directory in `specs/` contains (for context only, may be outdated):
-- `spec.md` - Feature specification
-- `plan.md` - Implementation plan
-- `contracts/` - API contracts and type signatures
-- `quickstart.md` - Usage examples
+Each feature directory in `specs/` contains (historical notes for context only, may be outdated):
+- `spec.md` - Feature specification (historical notes)
+- `plan.md` - Implementation plan (may be outdated)
+- `contracts/` - API contracts and type signatures (verify against actual code)
+- `quickstart.md` - Usage examples (may be outdated)
 - Other design artifacts
 
-**Note**: Features are numbered sequentially. When creating a new feature in gram-rs, use the same feature number and name from gram-hs to maintain consistency (e.g., `002-basic-pattern-type`). However, always verify the actual implementation in `../gram-hs/libs/` rather than relying solely on the design documents.
+**Note**: Features are numbered sequentially. When creating a new feature in gram-rs, use the same feature number and name from gram-hs to maintain consistency (e.g., `002-basic-pattern-type`). However, always verify the actual implementation in `../gram-hs/libs/` and refer to up-to-date documentation in `../gram-hs/docs/` rather than relying on the historical notes. The historical notes guided incremental development but are not authoritative sources.
 
 ## Resources
 

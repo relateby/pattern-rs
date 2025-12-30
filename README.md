@@ -9,12 +9,13 @@ This library provides a faithful port of the gram-hs reference implementation, e
 This project is a port of the [gram-hs](https://github.com/gram-data/gram-hs) reference implementation. The reference implementation is available locally at `../gram-hs` (relative to this repository root).
 
 **Key Reference Locations**:
-- **Feature Specifications**: `../gram-hs/specs/` - Incremental feature development documentation
-- **Source Code**: `../gram-hs/libs/` - Haskell library implementations
-- **Tests**: `../gram-hs/libs/*/tests/` - Test suites for behavioral equivalence verification
+- **Source Code (Authoritative)**: `../gram-hs/libs/` - Haskell library implementations - **This is the source of truth**
+- **Documentation (Up-to-date)**: `../gram-hs/docs/` - Up-to-date documentation about the implementation
+- **Tests (Authoritative)**: `../gram-hs/libs/*/tests/` - Test suites for behavioral equivalence verification - **Shows expected behavior**
+- **Historical Notes (Context Only)**: `../gram-hs/specs/` - Historical notes that guided incremental development (may be outdated, use for context only)
 - **Online Repository**: https://github.com/gram-data/gram-hs
 
-All functionality is designed to faithfully replicate the behavior of the Haskell implementation. When porting features, developers should reference the corresponding feature specification in `../gram-hs/specs/` and study the Haskell implementation to ensure correctness.
+All functionality is designed to faithfully replicate the behavior of the Haskell implementation. We are porting the Haskell implementation to idiomatic Rust. When porting features, developers should study the actual Haskell source code in `../gram-hs/libs/` as the authoritative source and refer to up-to-date documentation in `../gram-hs/docs/`. The historical notes in `../gram-hs/specs/` guided incremental development and may be useful for understanding the feature's purpose and approach, but they are NOT authoritative and may be outdated.
 
 ## Quick Start
 
@@ -185,10 +186,12 @@ When porting features from gram-hs, see [PORTING_GUIDE.md](PORTING_GUIDE.md) for
 - Verification and testing strategies
 
 **Quick Start for Porting**:
-1. Review the feature specification in `../gram-hs/specs/XXX-feature-name/`
-2. Study the Haskell implementation in `../gram-hs/libs/`
-3. Create a new feature specification using `/speckit.specify`
-4. Follow the porting guide for implementation
+1. Study the Haskell implementation in `../gram-hs/libs/` - **This is the source of truth**
+2. Review the up-to-date documentation in `../gram-hs/docs/` - **Information about the implementation**
+3. Review the Haskell tests in `../gram-hs/libs/*/tests/` - **Shows expected behavior**
+4. Review the historical notes in `../gram-hs/specs/XXX-feature-name/` (for context only, may be outdated)
+5. Create a new feature specification using `/speckit.specify`
+6. Follow the porting guide for implementation (porting Haskell to idiomatic Rust)
 
 ## License
 
