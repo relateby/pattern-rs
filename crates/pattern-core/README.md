@@ -37,10 +37,7 @@ let subject = Subject {
     },
 };
 
-let pattern_with_subject: Pattern<Subject> = Pattern {
-    value: subject,
-    elements: vec![],
-};
+let pattern_with_subject: Pattern<Subject> = Pattern::point(subject);
 ```
 
 ## WASM Compilation

@@ -1034,3 +1034,299 @@ mod quickstart_validation {
     }
 }
 
+#[cfg(test)]
+mod pattern_construction_tests {
+    use super::*;
+
+    #[test]
+    fn test_point_creates_atomic_pattern() {
+        // T004 [US1] Test Pattern::point() creates atomic pattern
+        let atomic = Pattern::point("hello".to_string());
+        assert_eq!(atomic.value, "hello");
+        assert_eq!(atomic.elements.len(), 0);
+    }
+
+    #[test]
+    fn test_pattern_creates_pattern_with_elements() {
+        // T005 [US1] Test Pattern::pattern() creates pattern with elements
+        let pattern = Pattern::pattern(
+            "parent".to_string(),
+            vec![
+                Pattern::point("child1".to_string()),
+                Pattern::point("child2".to_string()),
+            ],
+        );
+        assert_eq!(pattern.value, "parent");
+        assert_eq!(pattern.elements.len(), 2);
+        assert_eq!(pattern.elements[0].value, "child1");
+        assert_eq!(pattern.elements[1].value, "child2");
+    }
+
+    #[test]
+    fn test_from_list_creates_pattern_from_value_list() {
+        // T006 [US1] Test Pattern::from_list() creates pattern from value list
+        let pattern = Pattern::from_list("root".to_string(), vec![
+            "a".to_string(),
+            "b".to_string(),
+            "c".to_string(),
+        ]);
+        assert_eq!(pattern.value, "root");
+        assert_eq!(pattern.elements.len(), 3);
+        assert_eq!(pattern.elements[0].value, "a");
+        assert_eq!(pattern.elements[1].value, "b");
+        assert_eq!(pattern.elements[2].value, "c");
+    }
+
+    #[test]
+    fn test_construction_with_string_values() {
+        // T007 [US1] Test construction with string values
+        let pattern = Pattern::point("test".to_string());
+        assert_eq!(pattern.value, "test");
+    }
+
+    #[test]
+    fn test_construction_with_integer_values() {
+        // T008 [US1] Test construction with integer values
+        let pattern = Pattern::point(42);
+        assert_eq!(pattern.value, 42);
+    }
+
+    #[test]
+    fn test_construction_with_subject_values() {
+        // T009 [US1] Test construction with Subject values
+        let subject = Subject {
+            identity: Symbol("n1".to_string()),
+            labels: HashSet::new(),
+            properties: HashMap::new(),
+        };
+        let pattern = Pattern::point(subject);
+        assert_eq!(pattern.value.identity.0, "n1");
+    }
+
+    #[test]
+    fn test_nested_pattern_construction() {
+        // T010 [US1] Test nested pattern construction
+        let nested = Pattern::pattern("parent".to_string(), vec![
+            Pattern::pattern("child".to_string(), vec![
+                Pattern::point("grandchild".to_string()),
+            ]),
+        ]);
+        assert_eq!(nested.value, "parent");
+        assert_eq!(nested.elements.len(), 1);
+        assert_eq!(nested.elements[0].value, "child");
+        assert_eq!(nested.elements[0].elements.len(), 1);
+        assert_eq!(nested.elements[0].elements[0].value, "grandchild");
+    }
+
+    #[test]
+    fn test_from_list_converts_values_to_atomic_patterns() {
+        // T011 [US1] Test from_list converts values to atomic patterns
+        let pattern = Pattern::from_list("root".to_string(), vec![
+            "a".to_string(),
+            "b".to_string(),
+        ]);
+        // Verify each element is atomic (has no elements)
+        assert_eq!(pattern.elements[0].elements.len(), 0);
+        assert_eq!(pattern.elements[1].elements.len(), 0);
+    }
+}
+
+#[cfg(test)]
+mod pattern_accessor_tests {
+    use super::*;
+
+    #[test]
+    fn test_value_returns_correct_value() {
+        // T017 [US2] Test value() returns correct value
+        let pattern = Pattern::point("hello".to_string());
+        assert_eq!(pattern.value(), "hello");
+    }
+
+    #[test]
+    fn test_elements_returns_correct_elements_slice() {
+        // T018 [US2] Test elements() returns correct elements slice
+        let pattern = Pattern::pattern("parent".to_string(), vec![
+            Pattern::point("child1".to_string()),
+            Pattern::point("child2".to_string()),
+        ]);
+        let elements = pattern.elements();
+        assert_eq!(elements.len(), 2);
+        assert_eq!(elements[0].value, "child1");
+        assert_eq!(elements[1].value, "child2");
+    }
+
+    #[test]
+    fn test_value_preserves_type_information() {
+        // T019 [US2] Test value() preserves type information
+        let pattern: Pattern<String> = Pattern::point("test".to_string());
+        let value: &String = pattern.value();
+        assert_eq!(value, "test");
+    }
+
+    #[test]
+    fn test_elements_allows_iteration() {
+        // T020 [US2] Test elements() allows iteration
+        let pattern = Pattern::pattern("parent".to_string(), vec![
+            Pattern::point("child1".to_string()),
+            Pattern::point("child2".to_string()),
+        ]);
+        let mut count = 0;
+        for elem in pattern.elements() {
+            count += 1;
+            assert!(!elem.value.is_empty());
+        }
+        assert_eq!(count, 2);
+    }
+
+    #[test]
+    fn test_accessors_work_with_nested_patterns() {
+        // T021 [US2] Test accessors work with nested patterns
+        let nested = Pattern::pattern("parent".to_string(), vec![
+            Pattern::pattern("child".to_string(), vec![
+                Pattern::point("grandchild".to_string()),
+            ]),
+        ]);
+        assert_eq!(nested.value(), "parent");
+        assert_eq!(nested.elements().len(), 1);
+        assert_eq!(nested.elements()[0].value(), "child");
+        assert_eq!(nested.elements()[0].elements().len(), 1);
+    }
+
+    #[test]
+    fn test_accessors_work_with_different_value_types() {
+        // T022 [US2] Test accessors work with different value types
+        let string_pattern: Pattern<String> = Pattern::point("test".to_string());
+        assert_eq!(string_pattern.value(), "test");
+        
+        let int_pattern: Pattern<i32> = Pattern::point(42);
+        assert_eq!(int_pattern.value(), &42);
+        
+        let subject = Subject {
+            identity: Symbol("n1".to_string()),
+            labels: HashSet::new(),
+            properties: HashMap::new(),
+        };
+        let subject_pattern: Pattern<Subject> = Pattern::point(subject);
+        assert_eq!(subject_pattern.value().identity.0, "n1");
+    }
+}
+
+#[cfg(test)]
+mod pattern_inspection_tests {
+    use super::*;
+
+    #[test]
+    fn test_length_returns_direct_element_count() {
+        // T027 [US3] Test length() returns direct element count
+        let pattern = Pattern::pattern("parent".to_string(), vec![
+            Pattern::point("child1".to_string()),
+            Pattern::point("child2".to_string()),
+            Pattern::point("child3".to_string()),
+        ]);
+        assert_eq!(pattern.length(), 3);
+    }
+
+    #[test]
+    fn test_size_returns_total_node_count() {
+        // T028 [US3] Test size() returns total node count
+        let atomic = Pattern::point("atom".to_string());
+        assert_eq!(atomic.size(), 1);
+        
+        let pattern = Pattern::pattern("root".to_string(), vec![
+            Pattern::point("child1".to_string()),
+            Pattern::point("child2".to_string()),
+        ]);
+        assert_eq!(pattern.size(), 3); // root + 2 children
+    }
+
+    #[test]
+    fn test_depth_returns_maximum_nesting_depth() {
+        // T029 [US3] Test depth() returns maximum nesting depth
+        let nested = Pattern::pattern("parent".to_string(), vec![
+            Pattern::pattern("child".to_string(), vec![
+                Pattern::point("grandchild".to_string()),
+            ]),
+        ]);
+        assert_eq!(nested.depth(), 2);
+    }
+
+    #[test]
+    fn test_is_atomic_identifies_atomic_patterns() {
+        // T030 [US3] Test is_atomic() identifies atomic patterns
+        let atomic = Pattern::point("hello".to_string());
+        assert!(atomic.is_atomic());
+        
+        let nested = Pattern::pattern("parent".to_string(), vec![
+            Pattern::point("child".to_string()),
+        ]);
+        assert!(!nested.is_atomic());
+    }
+
+    #[test]
+    fn test_depth_returns_0_for_atomic_patterns() {
+        // T031 [US3] Test depth() returns 0 for atomic patterns
+        let atomic = Pattern::point("hello".to_string());
+        assert_eq!(atomic.depth(), 0);
+    }
+
+    #[test]
+    fn test_depth_calculates_nested_depth_correctly() {
+        // T032 [US3] Test depth() calculates nested depth correctly
+        let atomic = Pattern::point("atom".to_string());
+        assert_eq!(atomic.depth(), 0);
+        
+        let level1 = Pattern::pattern("level1".to_string(), vec![
+            Pattern::point("level2".to_string()),
+        ]);
+        assert_eq!(level1.depth(), 1);
+        
+        let level2 = Pattern::pattern("level1".to_string(), vec![
+            Pattern::pattern("level2".to_string(), vec![
+                Pattern::point("level3".to_string()),
+            ]),
+        ]);
+        assert_eq!(level2.depth(), 2);
+    }
+
+    #[test]
+    fn test_size_counts_all_nodes_recursively() {
+        // T033 [US3] Test size() counts all nodes recursively
+        let pattern = Pattern::pattern("root".to_string(), vec![
+            Pattern::pattern("child1".to_string(), vec![
+                Pattern::point("grandchild1".to_string()),
+                Pattern::point("grandchild2".to_string()),
+            ]),
+            Pattern::point("child2".to_string()),
+        ]);
+        // root + child1 + child2 + grandchild1 + grandchild2 = 5 nodes
+        assert_eq!(pattern.size(), 5);
+    }
+
+    #[test]
+    fn test_inspection_utilities_handle_100_plus_nesting_levels() {
+        // T034 [US3] Test inspection utilities handle 100+ nesting levels
+        fn create_nested(depth: usize) -> Pattern<usize> {
+            if depth == 0 {
+                Pattern::point(0)
+            } else {
+                Pattern::pattern(depth, vec![create_nested(depth - 1)])
+            }
+        }
+        
+        let deep = create_nested(100);
+        assert_eq!(deep.depth(), 100);
+        assert_eq!(deep.size(), 101); // 100 levels + root
+    }
+
+    #[test]
+    fn test_inspection_utilities_handle_10000_plus_elements() {
+        // T035 [US3] Test inspection utilities handle 10,000+ elements
+        let elements: Vec<Pattern<usize>> = (0..10000)
+            .map(|i| Pattern::point(i))
+            .collect();
+        let pattern = Pattern::pattern(0, elements);
+        assert_eq!(pattern.length(), 10000);
+        assert_eq!(pattern.size(), 10001); // root + 10000 children
+    }
+}
+

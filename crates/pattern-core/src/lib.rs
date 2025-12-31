@@ -21,11 +21,19 @@
 //! use pattern_core::{Pattern, Subject, Symbol, Value};
 //! use std::collections::{HashSet, HashMap};
 //!
-//! // Create a simple pattern
-//! let pattern = Pattern {
-//!     value: "hello".to_string(),
-//!     elements: vec![],
-//! };
+//! // Create an atomic pattern (special case)
+//! let atomic = Pattern::point("hello".to_string());
+//!
+//! // Create a pattern with elements (primary constructor)
+//! let pattern = Pattern::pattern("parent".to_string(), vec![
+//!     Pattern::point("child1".to_string()),
+//!     Pattern::point("child2".to_string()),
+//! ]);
+//!
+//! // Access pattern components
+//! assert_eq!(atomic.value(), "hello");
+//! assert_eq!(pattern.length(), 2);
+//! assert_eq!(pattern.depth(), 1);
 //!
 //! // Create a pattern with Subject value
 //! let subject = Subject {
@@ -42,10 +50,7 @@
 //!     },
 //! };
 //!
-//! let pattern_with_subject: Pattern<Subject> = Pattern {
-//!     value: subject,
-//!     elements: vec![],
-//! };
+//! let pattern_with_subject: Pattern<Subject> = Pattern::point(subject);
 //! ```
 //!
 //! # WASM Compatibility
@@ -72,8 +77,6 @@ pub use subject::{PropertyRecord, RangeValue, Subject, Symbol, Value};
 
 #[cfg(test)]
 mod tests {
-    use super::*;
-
     #[test]
     fn it_works() {
         // Placeholder test - will be expanded as functionality is ported

@@ -268,6 +268,72 @@ pub fn get_value<V>(p: &Pattern<V>) -> &V {
 }
 ```
 
+### Balancing Rust Conventions with Cross-Language Equivalence
+
+When porting from gram-hs to gram-rs, there's a tension between:
+- **Rust conventions**: Idiomatic Rust patterns (e.g., `Type::new()` for constructors)
+- **Cross-language equivalence**: Matching the gram-hs API exactly (e.g., `Pattern::point()` and `Pattern::pattern()`)
+
+**Principle: Logical Equivalence Over Syntactic Equivalence**
+
+The most important goal is **logical equivalence** - ensuring that the Rust implementation behaves identically to the Haskell implementation. Syntactic differences (like naming conventions) are acceptable and often necessary.
+
+**Guidelines:**
+
+1. **Primary API**: Match gram-hs function names when they're part of the public API contract
+   - Example: `Pattern::point()` matches `point :: v -> Pattern v` from gram-hs
+   - Example: `Pattern::pattern()` matches `pattern :: v -> [Pattern v] -> Pattern v` from gram-hs
+   - This enables direct comparison and verification against the reference implementation
+
+2. **Breaking Changes**: When gram-hs introduces breaking API changes, adopt them to maintain equivalence
+   - Example: gram-hs changed from `pattern :: v -> Pattern v` to `point :: v -> Pattern v` for atomic patterns
+   - Example: gram-hs changed from `patternWith :: v -> [Pattern v] -> Pattern v` to `pattern :: v -> [Pattern v] -> Pattern v` for the primary constructor
+   - Always update Rust implementation to match the current gram-hs API
+
+3. **Documentation**: Clearly document the API and its relationship to gram-hs
+   - Note which functions match gram-hs exactly
+   - Explain the semantic meaning (e.g., `point` is the special case for atomic patterns, `pattern` is the primary constructor)
+   - Document any intentional deviations
+
+4. **Linting**: Use `#[allow]` attributes when necessary to document intentional deviations
+   - Example: `#[allow(clippy::self_named_constructors)]` for `Pattern::pattern()` (matches gram-hs API)
+   - Include a comment explaining why the deviation is intentional
+
+5. **Testing**: Test the API to ensure behavioral equivalence
+   - Verify that functions produce identical results to gram-hs
+   - Document equivalence in tests
+
+**Example Pattern (Current API):**
+
+```rust
+impl<V> Pattern<V> {
+    /// Creates an atomic pattern. Equivalent to gram-hs `point :: v -> Pattern v`.
+    pub fn point(value: V) -> Self {
+        Pattern { value, elements: vec![] }
+    }
+
+    /// Creates a pattern with a value and elements. This is the primary constructor.
+    /// Equivalent to gram-hs `pattern :: v -> [Pattern v] -> Pattern v`.
+    #[allow(clippy::self_named_constructors)]
+    pub fn pattern(value: V, elements: Vec<Pattern<V>>) -> Self {
+        Pattern { value, elements }
+    }
+}
+```
+
+This approach:
+- ✅ Maintains behavioral equivalence with gram-hs (primary goal)
+- ✅ Matches gram-hs API exactly for direct comparison
+- ✅ Enables direct API comparison for verification
+- ✅ Documents intentional linting deviations
+
+**API Evolution:**
+
+The gram-hs API has evolved over time. When porting, always use the **current** gram-hs API as the source of truth:
+- Check `../gram-hs/libs/pattern/src/Pattern/Core.hs` for the actual function signatures
+- Update Rust implementation to match current gram-hs API, even if it means breaking changes
+- Document breaking changes in migration notes if needed
+
 ## Feature Porting Checklist
 
 For each feature being ported:
