@@ -11,9 +11,9 @@ mod construction_equivalence_tests {
     use super::*;
 
     #[test]
-    fn test_pattern_construction_equivalence() {
-        // T044 [US4] Port test cases from gram-hs for pattern() construction
-        // In gram-hs: pattern "hello" creates Pattern "hello" []
+    fn test_point_construction_equivalence() {
+        // T044 [US4] Port test cases from gram-hs for point() construction
+        // In gram-hs: point "hello" creates Pattern "hello" []
         let pattern_rs = Pattern::point("hello".to_string());
         let pattern_expected = Pattern {
             value: "hello".to_string(),
