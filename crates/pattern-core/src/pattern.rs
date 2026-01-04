@@ -27,6 +27,10 @@
 //! - [`Pattern::any_value`] - Checks if at least one value satisfies a predicate (short-circuits)
 //! - [`Pattern::all_values`] - Checks if all values satisfy a predicate (short-circuits)
 //! - [`Pattern::filter`] - Extracts subpatterns that satisfy a pattern predicate
+//!
+//! # Combination Operations
+//!
+//! - [`Pattern::combine`] - Combines two patterns associatively (value combination + element concatenation)
 
 use std::cmp::Ordering;
 use std::fmt;
@@ -2134,6 +2138,102 @@ impl<V: Ord> Ord for Pattern<V> {
         match self.value.cmp(&other.value) {
             Ordering::Equal => self.elements.cmp(&other.elements),
             non_equal => non_equal,
+        }
+    }
+}
+
+// ============================================================================
+// Pattern Combination
+// ============================================================================
+
+impl<V: crate::Combinable> Pattern<V> {
+    /// Combines two patterns associatively.
+    ///
+    /// Creates a new pattern by:
+    /// 1. Combining the values using `V::combine`
+    /// 2. Concatenating the element vectors (left first, then right)
+    ///
+    /// The operation is associative: `(a.combine(b)).combine(c)` equals `a.combine(b.combine(c))`.
+    ///
+    /// # Parameters
+    ///
+    /// * `self` - The first pattern (consumed)
+    /// * `other` - The second pattern to combine with (consumed)
+    ///
+    /// # Returns
+    ///
+    /// A new `Pattern<V>` with:
+    /// * `value`: Result of `self.value.combine(other.value)`
+    /// * `elements`: Concatenation of `self.elements` and `other.elements`
+    ///
+    /// # Examples
+    ///
+    /// ## Atomic Patterns
+    ///
+    /// ```rust
+    /// use pattern_core::Pattern;
+    ///
+    /// let p1 = Pattern::point("hello".to_string());
+    /// let p2 = Pattern::point(" world".to_string());
+    /// let result = p1.combine(p2);
+    ///
+    /// assert_eq!(result.value(), "hello world");
+    /// assert_eq!(result.length(), 0);  // No elements
+    /// ```
+    ///
+    /// ## Patterns with Elements
+    ///
+    /// ```rust
+    /// use pattern_core::Pattern;
+    ///
+    /// let p1 = Pattern::pattern("a".to_string(), vec![
+    ///     Pattern::point("b".to_string()),
+    ///     Pattern::point("c".to_string()),
+    /// ]);
+    ///
+    /// let p2 = Pattern::pattern("d".to_string(), vec![
+    ///     Pattern::point("e".to_string()),
+    /// ]);
+    ///
+    /// let result = p1.combine(p2);
+    ///
+    /// assert_eq!(result.value(), "ad");
+    /// assert_eq!(result.length(), 3);  // [b, c, e]
+    /// ```
+    ///
+    /// ## Associativity
+    ///
+    /// ```rust
+    /// use pattern_core::Pattern;
+    ///
+    /// let a = Pattern::point("a".to_string());
+    /// let b = Pattern::point("b".to_string());
+    /// let c = Pattern::point("c".to_string());
+    ///
+    /// let left = a.clone().combine(b.clone()).combine(c.clone());
+    /// let right = a.combine(b.combine(c));
+    ///
+    /// assert_eq!(left, right);  // Associativity holds
+    /// ```
+    ///
+    /// # Performance
+    ///
+    /// * Time: O(|elements1| + |elements2| + value_combine_cost)
+    /// * Space: O(|elements1| + |elements2|)
+    ///
+    /// Element concatenation uses `Vec::extend` for efficiency.
+    pub fn combine(self, other: Self) -> Self {
+        // Step 1: Combine values using V's Combinable implementation
+        let combined_value = self.value.combine(other.value);
+        
+        // Step 2: Concatenate elements (left first, then right)
+        let mut combined_elements = self.elements;
+        combined_elements.extend(other.elements);
+        
+        // Step 3: Return new pattern
+        Pattern {
+            value: combined_value,
+            elements: combined_elements,
         }
     }
 }
