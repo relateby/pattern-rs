@@ -5,10 +5,10 @@
 //!
 //! # Using gram-hs CLI for Test Suite Generation
 //!
-//! The `gram-hs` CLI tool can generate test suites directly:
+//! The `gramref` CLI tool can generate test suites directly:
 //!
 //! ```bash
-//! gram-hs generate --type suite --count 100 --seed 42 --complexity standard \
+//! gramref generate --type suite --count 100 --seed 42 --complexity standard \
 //!     --format json --value-only > tests/common/test_cases.json
 //! ```
 //!

@@ -6,7 +6,7 @@
 //!
 //! ```bash
 //! # Generate test suite
-//! gram-hs generate --type suite --count 100 --seed 42 --complexity standard \
+//! gramref generate --type suite --count 100 --seed 42 --complexity standard \
 //!     --format json --value-only > tests/common/test_cases.json
 //! ```
 //!

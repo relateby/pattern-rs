@@ -25,10 +25,10 @@ cargo test [ONLY COMMANDS FOR ACTIVE TECHNOLOGIES][ONLY COMMANDS FOR ACTIVE TECH
 Rust (MSRV: 1.70.0, edition: 2021): Follow standard conventions
 
 ## Recent Changes
+- 006-pattern-structure-review: Added Rust 1.70.0+ (workspace MSRV), Edition 2021
 - 004-pattern-data-structure: Added Rust 1.70.0+ (workspace MSRV), Edition 2021
 - 003-test-infrastructure: Added Rust (MSRV: 1.70.0, edition: 2021)
 
-- 002-workspace-setup: Added Rust (MSRV: 1.70.0, edition: 2021)
 
 <!-- MANUAL ADDITIONS START -->
 

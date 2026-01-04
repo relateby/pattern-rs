@@ -1,11 +1,17 @@
-# gram-hs CLI Testing Guide for gram-rs
+# gramref CLI Testing Guide for gram-rs
 
-**Purpose**: Guide for using the updated `gram-hs` CLI tool for testing gram-rs  
-**Last Updated**: 2025-12-28
+**CLI Tool**: `gramref` (formerly known as `gram-hs`)  
+**Location**: `/Users/akollegger/.cabal/bin/gramref` (or in PATH)  
+**Purpose**: Generate test patterns and validate outputs for gram-rs testing  
+**Last Updated**: 2025-01-04
+
+> **Important Distinction**: This document describes the `gramref` CLI tool, which is separate from 
+> the `../gram-hs/` Haskell library reference implementation. The library at `../gram-hs/libs/` 
+> is the source code we port to Rust; the `gramref` CLI tool is what we use for testing.
 
 ## Overview
 
-The `gram-hs` CLI tool has been updated with several improvements that make it highly suitable for automated testing and equivalence checking with gram-rs. This guide demonstrates how to use these features effectively.
+The `gramref` CLI tool (formerly `gram-hs`) has been updated with several improvements that make it highly suitable for automated testing and equivalence checking with gram-rs. This guide demonstrates how to use these features effectively.
 
 ## Key Improvements Implemented
 
@@ -33,8 +39,8 @@ The `gram-hs` CLI tool has been updated with several improvements that make it h
 **Solution**: Use `--value-only` to get just the pattern value:
 
 ```bash
-# Get reference output from gram-hs (just the value)
-echo '(node1)' | gram-hs parse --format json --value-only
+# Get reference output from gramref (just the value)
+echo '(node1)' | gramref parse --format json --value-only
 # Output: {"elements":[],"value":{"labels":[],"properties":{},"symbol":"node1"}}
 
 # Compare with gram-rs output (after implementing gram-rs CLI)
@@ -46,12 +52,12 @@ echo '(node1)' | gram-hs parse --format json --value-only
 **Example Integration**:
 ```rust
 // In equivalence checking utility
-let gram_hs_output = std::process::Command::new("gram-hs")
+let gramref_output = std::process::Command::new("gramref")
     .args(&["parse", "--format", "json", "--value-only"])
     .stdin(std::process::Stdio::piped())
     .output()?;
     
-let gram_hs_value: serde_json::Value = serde_json::from_slice(&gram_hs_output.stdout)?;
+let gramref_value: serde_json::Value = serde_json::from_slice(&gramref_output.stdout)?;
 // Now compare directly with gram_rs_output
 ```
 
@@ -65,7 +71,7 @@ let gram_hs_value: serde_json::Value = serde_json::from_slice(&gram_hs_output.st
 
 ```bash
 # Deterministic output with fixed timestamp and hash
-echo '(node1)' | gram-hs parse --format json --deterministic
+echo '(node1)' | gramref parse --format json --deterministic
 # Meta.Timestamp: "1970-01-01T00:00:00+0000"
 # Meta.Hash: "0000000000000000000000000000000000000000000000000000000000000000"
 ```
@@ -75,7 +81,7 @@ echo '(node1)' | gram-hs parse --format json --deterministic
 **Example**:
 ```bash
 # Generate deterministic snapshot
-echo '(node1)' | gram-hs parse --format json --deterministic > snapshot.json
+echo '(node1)' | gramref parse --format json --deterministic > snapshot.json
 
 # This snapshot will be identical on every run, suitable for insta snapshots
 ```
@@ -90,7 +96,7 @@ echo '(node1)' | gram-hs parse --format json --deterministic > snapshot.json
 
 ```bash
 # Canonical output with sorted keys
-echo '(node1)-[edge]->(node2)' | gram-hs parse --format json --canonical --value-only
+echo '(node1)-[edge]->(node2)' | gramref parse --format json --canonical --value-only
 ```
 
 **Use Case**: Reliable comparison where exact JSON string matching is required.
@@ -107,7 +113,7 @@ echo '(node1)-[edge]->(node2)' | gram-hs parse --format json --canonical --value
 
 ```bash
 # Generate test suite with 10 test cases
-gram-hs generate --type suite --count 10 --seed 42 --format json > test_cases.json
+gramref generate --type suite --count 10 --seed 42 --format json > test_cases.json
 
 # Output format matches test-sync-format.md:
 # {
@@ -129,7 +135,7 @@ gram-hs generate --type suite --count 10 --seed 42 --format json > test_cases.js
 **Example Integration**:
 ```rust
 // In test extraction utility
-let output = std::process::Command::new("gram-hs")
+let output = std::process::Command::new("gramref")
     .args(&[
         "generate",
         "--type", "suite",
@@ -160,25 +166,25 @@ Flags can be combined for optimal testing scenarios:
 ### Scenario 1: Direct Value Comparison
 ```bash
 # Best for equivalence checking - just the value, deterministic
-echo '(node1)' | gram-hs parse --format json --value-only --deterministic
+echo '(node1)' | gramref parse --format json --value-only --deterministic
 ```
 
 ### Scenario 2: Snapshot Testing
 ```bash
 # Full structure but deterministic - good for insta snapshots
-echo '(node1)' | gram-hs parse --format json --deterministic --canonical
+echo '(node1)' | gramref parse --format json --deterministic --canonical
 ```
 
 ### Scenario 3: Test Suite Generation
 ```bash
 # Generate test suite without metadata
-gram-hs generate --type suite --count 50 --seed 42 --format json --value-only
+gramref generate --type suite --count 50 --seed 42 --format json --value-only
 ```
 
 ### Scenario 4: Canonical Value Output
 ```bash
 # Value only, with sorted keys for reliable comparison
-echo '(node1)-[edge]->(node2)' | gram-hs parse --format json --value-only --canonical
+echo '(node1)-[edge]->(node2)' | gramref parse --format json --value-only --canonical
 ```
 
 ---
@@ -192,30 +198,30 @@ Update `check_equivalence` to use `--value-only`:
 ```rust
 // In crates/pattern-core/src/test_utils/equivalence.rs
 
-pub fn get_gram_hs_reference(input: &str) -> Result<serde_json::Value, String> {
-    let output = std::process::Command::new("gram-hs")
+pub fn get_gramref_reference(input: &str) -> Result<serde_json::Value, String> {
+    let output = std::process::Command::new("gramref")
         .args(&["parse", "--format", "json", "--value-only", "--canonical"])
         .stdin(std::process::Stdio::piped())
         .stdout(std::process::Stdio::piped())
         .spawn()
-        .map_err(|e| format!("Failed to spawn gram-hs: {}", e))?;
+        .map_err(|e| format!("Failed to spawn gramref: {}", e))?;
     
     // Write input to stdin
     use std::io::Write;
     if let Some(mut stdin) = output.stdin {
         stdin.write_all(input.as_bytes())
-            .map_err(|e| format!("Failed to write to gram-hs: {}", e))?;
+            .map_err(|e| format!("Failed to write to gramref: {}", e))?;
     }
     
     let result = output.wait_with_output()
-        .map_err(|e| format!("Failed to get gram-hs output: {}", e))?;
+        .map_err(|e| format!("Failed to get gramref output: {}", e))?;
     
     if !result.status.success() {
-        return Err(format!("gram-hs failed: {}", String::from_utf8_lossy(&result.stderr)));
+        return Err(format!("gramref failed: {}", String::from_utf8_lossy(&result.stderr)));
     }
     
     serde_json::from_slice(&result.stdout)
-        .map_err(|e| format!("Failed to parse gram-hs JSON: {}", e))
+        .map_err(|e| format!("Failed to parse gramref JSON: {}", e))
 }
 ```
 
@@ -227,7 +233,7 @@ Update `extract_test_cases_from_json` to use `--type suite`:
 // In scripts/sync-tests/extract.rs
 
 pub fn generate_test_suite(count: usize, seed: u64, complexity: &str) -> Result<Value, String> {
-    let output = std::process::Command::new("gram-hs")
+    let output = std::process::Command::new("gramref")
         .args(&[
             "generate",
             "--type", "suite",
@@ -238,10 +244,10 @@ pub fn generate_test_suite(count: usize, seed: u64, complexity: &str) -> Result<
             "--value-only",  // Exclude metadata
         ])
         .output()
-        .map_err(|e| format!("Failed to run gram-hs: {}", e))?;
+        .map_err(|e| format!("Failed to run gramref: {}", e))?;
     
     if !output.status.success() {
-        return Err(format!("gram-hs generate failed: {}", 
+        return Err(format!("gramref generate failed: {}", 
             String::from_utf8_lossy(&output.stderr)));
     }
     
@@ -258,7 +264,7 @@ pub fn generate_test_suite(count: usize, seed: u64, complexity: &str) -> Result<
 
 ```bash
 # Generate test suite
-gram-hs generate --type suite --count 100 --seed 42 --complexity standard \
+gramref generate --type suite --count 100 --seed 42 --complexity standard \
     --format json --value-only > tests/common/test_cases.json
 
 # Validate format
@@ -268,21 +274,21 @@ cargo run --bin test-validator tests/common/test_cases.json
 ### Workflow 2: Compare Single Pattern
 
 ```bash
-# Get gram-hs reference
-echo '(node1)-[edge]->(node2)' | gram-hs parse --format json --value-only --canonical > hs_output.json
+# Get gramref reference
+echo '(node1)-[edge]->(node2)' | gramref parse --format json --value-only --canonical > ref_output.json
 
 # Get gram-rs output (when implemented)
 echo '(node1)-[edge]->(node2)' | cargo run --bin gram-rs parse --format json --value-only > rs_output.json
 
 # Compare
-diff hs_output.json rs_output.json
+diff ref_output.json rs_output.json
 ```
 
 ### Workflow 3: Snapshot Testing
 
 ```bash
 # Generate deterministic snapshot
-echo '(node1)' | gram-hs parse --format json --deterministic --canonical > snapshot.json
+echo '(node1)' | gramref parse --format json --deterministic --canonical > snapshot.json
 
 # Use in insta snapshot test
 # The snapshot will be identical on every run
@@ -314,8 +320,9 @@ echo '(node1)' | gram-hs parse --format json --deterministic --canonical > snaps
 - **Test Sync Format**: `specs/002-workspace-setup/contracts/test-sync-format.md`
 - **Test Utilities API**: `specs/003-test-infrastructure/contracts/test-utilities-api.md`
 - **Testing Infrastructure**: `specs/003-test-infrastructure/`
+- **Porting Guide**: `PORTING_GUIDE.md` - Distinction between library and CLI tool
 
 ---
 
-**Last Updated**: 2025-12-28
+**Last Updated**: 2025-01-04
 

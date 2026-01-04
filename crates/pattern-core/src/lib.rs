@@ -35,6 +35,18 @@
 //! assert_eq!(pattern.length(), 2);
 //! assert_eq!(pattern.depth(), 1);
 //!
+//! // Validate pattern structure
+//! use pattern_core::ValidationRules;
+//! let rules = ValidationRules {
+//!     max_depth: Some(10),
+//!     ..Default::default()
+//! };
+//! assert!(pattern.validate(&rules).is_ok());
+//!
+//! // Analyze pattern structure
+//! let analysis = pattern.analyze_structure();
+//! println!("Structure: {}", analysis.summary);
+//!
 //! // Create a pattern with Subject value
 //! let subject = Subject {
 //!     identity: Symbol("n".to_string()),
@@ -72,7 +84,7 @@ pub mod pattern;
 pub mod subject;
 pub mod test_utils;
 
-pub use pattern::Pattern;
+pub use pattern::{Pattern, StructureAnalysis, ValidationError, ValidationRules};
 pub use subject::{PropertyRecord, RangeValue, Subject, Symbol, Value};
 
 #[cfg(test)]

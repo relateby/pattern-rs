@@ -110,6 +110,89 @@ pub struct Pattern<V> {
     pub elements: Vec<Pattern<V>>,
 }
 
+/// Configurable validation rules for pattern structure.
+///
+/// Rules can specify limits on nesting depth, element counts, or other structural properties.
+/// Rules are optional (None means no limit).
+///
+/// # Examples
+///
+/// ```
+/// use pattern_core::ValidationRules;
+///
+/// // No constraints (all patterns valid)
+/// let rules = ValidationRules::default();
+///
+/// // Maximum depth constraint
+/// let rules = ValidationRules {
+///     max_depth: Some(10),
+///     ..Default::default()
+/// };
+/// ```
+#[derive(Debug, Clone, Default)]
+pub struct ValidationRules {
+    /// Maximum nesting depth allowed (None = no limit)
+    pub max_depth: Option<usize>,
+    /// Maximum element count allowed (None = no limit)
+    pub max_elements: Option<usize>,
+    /// Required fields (reserved for future value-specific validation)
+    pub required_fields: Vec<String>,
+}
+
+/// Error type for pattern validation failures.
+///
+/// Provides detailed information about what rule was violated and where
+/// in the pattern structure the violation occurred.
+///
+/// # Examples
+///
+/// ```
+/// use pattern_core::ValidationError;
+///
+/// let error = ValidationError {
+///     message: "Pattern depth exceeds maximum".to_string(),
+///     rule_violated: "max_depth".to_string(),
+///     location: vec!["elements".to_string(), "0".to_string()],
+/// };
+/// ```
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct ValidationError {
+    /// Human-readable error message
+    pub message: String,
+    /// Name of violated rule (e.g., "max_depth", "max_elements")
+    pub rule_violated: String,
+    /// Path to violating node in pattern structure
+    pub location: Vec<String>,
+}
+
+/// Results from structure analysis utilities.
+///
+/// Provides detailed information about pattern structural characteristics
+/// including depth distribution, element counts, nesting patterns, and summaries.
+///
+/// # Examples
+///
+/// ```
+/// use pattern_core::{Pattern, StructureAnalysis};
+///
+/// let pattern = Pattern::pattern("root".to_string(), vec![/* ... */]);
+/// let analysis = pattern.analyze_structure();
+///
+/// println!("Depth distribution: {:?}", analysis.depth_distribution);
+/// println!("Summary: {}", analysis.summary);
+/// ```
+#[derive(Debug, Clone)]
+pub struct StructureAnalysis {
+    /// Count of nodes at each depth level (index = depth, value = count)
+    pub depth_distribution: Vec<usize>,
+    /// Element counts at each level (index = level, value = count)
+    pub element_counts: Vec<usize>,
+    /// Identified structural patterns (e.g., "linear", "tree", "balanced")
+    pub nesting_patterns: Vec<String>,
+    /// Human-readable summary of structure
+    pub summary: String,
+}
+
 impl<V: fmt::Debug> Pattern<V> {
     fn fmt_debug_with_depth(
         &self,
@@ -469,5 +552,263 @@ impl<V> Pattern<V> {
     /// ```
     pub fn is_atomic(&self) -> bool {
         self.elements.is_empty()
+    }
+
+    /// Validates pattern structure against configurable rules and constraints.
+    ///
+    /// Returns `Ok(())` if the pattern is valid according to the rules,
+    /// or `Err(ValidationError)` if validation fails.
+    ///
+    /// # Arguments
+    ///
+    /// * `rules` - Validation rules to apply
+    ///
+    /// # Returns
+    ///
+    /// * `Ok(())` if pattern is valid
+    /// * `Err(ValidationError)` if validation fails, containing detailed error information
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use pattern_core::{Pattern, ValidationRules};
+    ///
+    /// let pattern = Pattern::pattern("root".to_string(), vec![/* ... */]);
+    ///
+    /// let rules = ValidationRules {
+    ///     max_depth: Some(10),
+    ///     ..Default::default()
+    /// };
+    ///
+    /// match pattern.validate(&rules) {
+    ///     Ok(()) => println!("Pattern is valid"),
+    ///     Err(e) => println!("Validation failed: {} at {:?}", e.message, e.location),
+    /// }
+    /// ```
+    ///
+    /// # Performance
+    ///
+    /// This operation is O(n) where n is the number of nodes in the pattern.
+    /// Must handle at least 100 nesting levels without stack overflow.
+    pub fn validate(&self, rules: &ValidationRules) -> Result<(), ValidationError> {
+        self.validate_recursive(rules, 0, &mut Vec::new())
+    }
+
+    /// Internal recursive validation helper
+    fn validate_recursive(
+        &self,
+        rules: &ValidationRules,
+        current_depth: usize,
+        location: &mut Vec<String>,
+    ) -> Result<(), ValidationError> {
+        // Check max_depth constraint
+        if let Some(max_depth) = rules.max_depth {
+            if current_depth > max_depth {
+                return Err(ValidationError {
+                    message: format!(
+                        "Pattern depth {} exceeds maximum allowed depth {}",
+                        current_depth, max_depth
+                    ),
+                    rule_violated: "max_depth".to_string(),
+                    location: location.clone(),
+                });
+            }
+        }
+
+        // Check max_elements constraint at current level
+        if let Some(max_elements) = rules.max_elements {
+            if self.elements.len() > max_elements {
+                return Err(ValidationError {
+                    message: format!(
+                        "Pattern has {} elements, exceeding maximum allowed {}",
+                        self.elements.len(),
+                        max_elements
+                    ),
+                    rule_violated: "max_elements".to_string(),
+                    location: location.clone(),
+                });
+            }
+        }
+
+        // Recursively validate all elements
+        for (index, element) in self.elements.iter().enumerate() {
+            location.push("elements".to_string());
+            location.push(index.to_string());
+
+            element.validate_recursive(rules, current_depth + 1, location)?;
+
+            location.pop(); // Remove index
+            location.pop(); // Remove "elements"
+        }
+
+        Ok(())
+    }
+
+    /// Analyzes pattern structure and returns detailed information about structural characteristics.
+    ///
+    /// Provides comprehensive structural analysis including depth distribution, element counts,
+    /// nesting patterns, and a human-readable summary.
+    ///
+    /// # Returns
+    ///
+    /// `StructureAnalysis` containing:
+    /// - Depth distribution: Count of nodes at each depth level
+    /// - Element counts: Maximum element count at each level (for pattern identification)
+    /// - Nesting patterns: Identified structural patterns
+    /// - Summary: Human-readable text summary
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use pattern_core::Pattern;
+    ///
+    /// let pattern = Pattern::pattern("root".to_string(), vec![/* ... */]);
+    /// let analysis = pattern.analyze_structure();
+    ///
+    /// println!("Depth distribution: {:?}", analysis.depth_distribution);
+    /// println!("Element counts: {:?}", analysis.element_counts);
+    /// println!("Nesting patterns: {:?}", analysis.nesting_patterns);
+    /// println!("Summary: {}", analysis.summary);
+    /// ```
+    ///
+    /// # Performance
+    ///
+    /// This operation is O(n) where n is the number of nodes in the pattern.
+    /// Must handle at least 100 nesting levels without stack overflow.
+    /// Must handle at least 10,000 elements efficiently.
+    pub fn analyze_structure(&self) -> StructureAnalysis {
+        let mut depth_distribution = Vec::new();
+        let mut element_counts = Vec::new();
+
+        self.analyze_recursive(0, &mut depth_distribution, &mut element_counts);
+
+        // Trim trailing zeros from element_counts (leaf levels with 0 elements)
+        // According to spec: atomic pattern should have [], 2-level tree should have [count], not [count, 0]
+        while let Some(&0) = element_counts.last() {
+            element_counts.pop();
+        }
+
+        // Identify nesting patterns
+        let nesting_patterns = self.identify_nesting_patterns(&depth_distribution, &element_counts);
+
+        // Generate summary
+        let summary =
+            self.generate_summary(&depth_distribution, &element_counts, &nesting_patterns);
+
+        StructureAnalysis {
+            depth_distribution,
+            element_counts,
+            nesting_patterns,
+            summary,
+        }
+    }
+
+    /// Internal recursive analysis helper
+    /// Tracks maximum element count at each level for pattern identification
+    fn analyze_recursive(
+        &self,
+        current_depth: usize,
+        depth_distribution: &mut Vec<usize>,
+        element_counts: &mut Vec<usize>,
+    ) {
+        // Ensure vectors are large enough
+        while depth_distribution.len() <= current_depth {
+            depth_distribution.push(0);
+        }
+        while element_counts.len() <= current_depth {
+            element_counts.push(0);
+        }
+
+        // Count this node at current depth
+        depth_distribution[current_depth] += 1;
+
+        // Track maximum element count at current level
+        // Maximum is used for linear/tree pattern detection (all nodes <= 1 vs any node > 1)
+        // For balanced patterns, we compare maximums across levels, which works correctly
+        // with the fixed balanced pattern logic (ratio between 0.5 and 2.0)
+        let current_count = self.elements.len();
+        if current_count > element_counts[current_depth] {
+            element_counts[current_depth] = current_count;
+        }
+
+        // Recursively analyze elements
+        for element in &self.elements {
+            element.analyze_recursive(current_depth + 1, depth_distribution, element_counts);
+        }
+    }
+
+    /// Identify structural patterns from depth distribution and element counts
+    fn identify_nesting_patterns(
+        &self,
+        depth_distribution: &[usize],
+        element_counts: &[usize],
+    ) -> Vec<String> {
+        let mut patterns = Vec::new();
+
+        if depth_distribution.len() <= 1 {
+            patterns.push("atomic".to_string());
+            return patterns;
+        }
+
+        // Check for linear pattern (one element per level)
+        let is_linear = element_counts.iter().all(|&count| count <= 1);
+        if is_linear {
+            patterns.push("linear".to_string());
+        }
+
+        // Check for tree-like pattern (multiple elements, decreasing with depth)
+        let has_branching = element_counts.iter().any(|&count| count > 1);
+        if has_branching {
+            patterns.push("tree".to_string());
+        }
+
+        // Check for balanced pattern (similar element counts across levels)
+        // Balanced means counts are within 50% of each other (ratio between 0.5 and 2.0)
+        // Note: element_counts already has trailing zeros trimmed, so all entries are non-zero
+        if element_counts.len() >= 2 {
+            let first_count = element_counts[0];
+            if first_count > 0 {
+                // Check all levels (trailing zeros already trimmed)
+                let similar_counts = element_counts.iter().skip(1).all(|&count| {
+                    let ratio = count as f64 / first_count as f64;
+                    // Balanced if ratio is between 0.5 and 2.0 (within 50% of first_count)
+                    (0.5..=2.0).contains(&ratio)
+                });
+                if similar_counts && first_count > 1 {
+                    patterns.push("balanced".to_string());
+                }
+            }
+        }
+
+        if patterns.is_empty() {
+            patterns.push("irregular".to_string());
+        }
+
+        patterns
+    }
+
+    /// Generate human-readable summary of structure
+    fn generate_summary(
+        &self,
+        depth_distribution: &[usize],
+        _element_counts: &[usize], // Reserved for future use in summary generation
+        nesting_patterns: &[String],
+    ) -> String {
+        let total_nodes: usize = depth_distribution.iter().sum();
+        let max_depth = depth_distribution.len().saturating_sub(1);
+        let pattern_desc = if nesting_patterns.is_empty() {
+            "unknown"
+        } else {
+            &nesting_patterns[0]
+        };
+
+        format!(
+            "Pattern with {} level{}, {} node{}, {}-like structure",
+            max_depth + 1,
+            if max_depth == 0 { "" } else { "s" },
+            total_nodes,
+            if total_nodes == 1 { "" } else { "s" },
+            pattern_desc
+        )
     }
 }

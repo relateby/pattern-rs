@@ -1,0 +1,6 @@
+---
+source: crates/pattern-core/tests/snapshot_validation.rs
+assertion_line: 49
+expression: e.rule_violated
+---
+max_elements

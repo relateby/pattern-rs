@@ -52,14 +52,14 @@ Extracts test cases from gram-hs reference implementation and converts them to t
 
 **Alternative: Using gram-hs CLI**:
 
-The `gram-hs` CLI tool can generate test suites directly:
+The `gramref` CLI tool can generate test suites directly:
 ```bash
 # Generate test suite with 100 test cases
-gram-hs generate --type suite --count 100 --seed 42 --complexity standard \
+gramref generate --type suite --count 100 --seed 42 --complexity standard \
     --format json --value-only > tests/common/test_cases.json
 ```
 
-See [gram-hs CLI Testing Guide](../../docs/gram-hs-cli-testing-guide.md) for comprehensive usage examples and integration patterns.
+See [gramref CLI Testing Guide](../../docs/gramref-cli-testing-guide.md) for comprehensive usage examples and integration patterns.
 
 ### compare.sh / compare.rs
 

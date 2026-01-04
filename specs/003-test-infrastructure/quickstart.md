@@ -284,10 +284,10 @@ open target/criterion/index.html
 
 ### Extract Test Cases from gram-hs
 
-**Using gram-hs CLI** (recommended):
+**Using gramref CLI** (recommended):
 ```bash
 # Generate test suite with 100 test cases
-gram-hs generate --type suite --count 100 --seed 42 --complexity standard \
+gramref generate --type suite --count 100 --seed 42 --complexity standard \
     --format json --value-only > tests/common/test_cases.json
 
 # Validate extracted test cases

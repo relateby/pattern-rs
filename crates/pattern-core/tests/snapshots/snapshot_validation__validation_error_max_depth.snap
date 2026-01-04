@@ -1,0 +1,6 @@
+---
+source: crates/pattern-core/tests/snapshot_validation.rs
+assertion_line: 25
+expression: e.message
+---
+Pattern depth 2 exceeds maximum allowed depth 1

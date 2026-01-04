@@ -1,0 +1,6 @@
+---
+source: crates/pattern-core/tests/snapshot_validation.rs
+assertion_line: 48
+expression: e.message
+---
+Pattern has 3 elements, exceeding maximum allowed 2

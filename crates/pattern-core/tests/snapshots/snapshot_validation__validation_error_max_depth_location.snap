@@ -1,0 +1,6 @@
+---
+source: crates/pattern-core/tests/snapshot_validation.rs
+assertion_line: 27
+expression: "format!(\"{:?}\", e.location)"
+---
+["elements", "0", "elements", "0"]

@@ -1,0 +1,6 @@
+---
+source: crates/pattern-core/tests/snapshot_analysis.rs
+assertion_line: 16
+expression: analysis.summary
+---
+Pattern with 1 level, 1 node, atomic-like structure
