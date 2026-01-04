@@ -659,6 +659,250 @@ impl<V> Pattern<V> {
         }
     }
 
+    /// Folds the pattern into a single value by applying a function to each value with an accumulator.
+    ///
+    /// Processes values in depth-first, root-first order (pre-order traversal).
+    /// The root value is processed first, then elements are processed left to right, recursively.
+    /// Each value in the pattern is processed exactly once, and the accumulator is threaded through
+    /// all processing steps.
+    ///
+    /// # Type Parameters
+    ///
+    /// * `B` - The accumulator type (can be different from `V`)
+    /// * `F` - The folding function type
+    ///
+    /// # Arguments
+    ///
+    /// * `init` - Initial accumulator value
+    /// * `f` - Folding function with signature `Fn(B, &V) -> B`
+    ///   - First parameter: Accumulator (passed by value)
+    ///   - Second parameter: Value reference (borrowed from pattern)
+    ///   - Returns: New accumulator value
+    ///
+    /// # Returns
+    ///
+    /// The final accumulated value of type `B`
+    ///
+    /// # Examples
+    ///
+    /// ## Sum all integers
+    ///
+    /// ```
+    /// use pattern_core::Pattern;
+    ///
+    /// let pattern = Pattern::pattern(10, vec![
+    ///     Pattern::point(20),
+    ///     Pattern::point(30),
+    /// ]);
+    /// let sum = pattern.fold(0, |acc, v| acc + v);
+    /// assert_eq!(sum, 60);  // 10 + 20 + 30
+    /// ```
+    ///
+    /// ## Count values
+    ///
+    /// ```
+    /// use pattern_core::Pattern;
+    ///
+    /// let pattern = Pattern::pattern("root", vec![
+    ///     Pattern::point("child1"),
+    ///     Pattern::point("child2"),
+    /// ]);
+    /// let count = pattern.fold(0, |acc, _| acc + 1);
+    /// assert_eq!(count, 3);  // root + 2 children
+    /// assert_eq!(count, pattern.size());
+    /// ```
+    ///
+    /// ## Concatenate strings
+    ///
+    /// ```
+    /// use pattern_core::Pattern;
+    ///
+    /// let pattern = Pattern::pattern("Hello", vec![
+    ///     Pattern::point(" "),
+    ///     Pattern::point("World"),
+    /// ]);
+    /// let result = pattern.fold(String::new(), |acc, s| acc + s);
+    /// assert_eq!(result, "Hello World");
+    /// ```
+    ///
+    /// ## Type transformation (string lengths to sum)
+    ///
+    /// ```
+    /// use pattern_core::Pattern;
+    ///
+    /// let pattern = Pattern::pattern("hello", vec![
+    ///     Pattern::point("world"),
+    ///     Pattern::point("!"),
+    /// ]);
+    /// let total_length: usize = pattern.fold(0, |acc, s| acc + s.len());
+    /// assert_eq!(total_length, 11);  // 5 + 5 + 1
+    /// ```
+    ///
+    /// ## Build a vector
+    ///
+    /// ```
+    /// use pattern_core::Pattern;
+    ///
+    /// let pattern = Pattern::pattern(1, vec![
+    ///     Pattern::point(2),
+    ///     Pattern::point(3),
+    /// ]);
+    /// let values: Vec<i32> = pattern.fold(Vec::new(), |mut acc, v| {
+    ///     acc.push(*v);
+    ///     acc
+    /// });
+    /// assert_eq!(values, vec![1, 2, 3]);
+    /// ```
+    ///
+    /// ## Verify traversal order
+    ///
+    /// ```
+    /// use pattern_core::Pattern;
+    ///
+    /// let pattern = Pattern::pattern("A", vec![
+    ///     Pattern::point("B"),
+    ///     Pattern::pattern("C", vec![
+    ///         Pattern::point("D"),
+    ///     ]),
+    /// ]);
+    /// // Root first, then elements in order, depth-first
+    /// let result = pattern.fold(String::new(), |acc, s| acc + s);
+    /// assert_eq!(result, "ABCD");
+    /// ```
+    ///
+    /// # Performance
+    ///
+    /// - Time complexity: O(n) where n is the total number of values
+    /// - Space complexity: O(d) for recursion stack where d is the maximum nesting depth
+    /// - Handles patterns with 100+ nesting levels without stack overflow
+    /// - Handles patterns with 10,000+ nodes efficiently
+    ///
+    /// # Behavioral Guarantees
+    ///
+    /// 1. **Completeness**: Every value in the pattern is processed exactly once
+    /// 2. **Order**: Values processed in depth-first, root-first order
+    /// 3. **Non-destructive**: Pattern structure is not modified (borrows only)
+    /// 4. **Reusability**: Pattern can be folded multiple times
+    pub fn fold<B, F>(&self, init: B, f: F) -> B
+    where
+        F: Fn(B, &V) -> B,
+    {
+        self.fold_with(init, &f)
+    }
+
+    /// Internal helper for fold that takes function by reference.
+    ///
+    /// This enables efficient recursion without cloning the closure.
+    /// Public `fold` passes closure by value for ergonomics,
+    /// internal `fold_with` passes closure by reference for efficiency.
+    fn fold_with<B, F>(&self, acc: B, f: &F) -> B
+    where
+        F: Fn(B, &V) -> B,
+    {
+        // Process root value first
+        let acc = f(acc, &self.value);
+
+        // Process elements recursively (left to right)
+        self.elements
+            .iter()
+            .fold(acc, |acc, elem| elem.fold_with(acc, f))
+    }
+
+    /// Collects all values from the pattern into a vector in traversal order.
+    ///
+    /// Returns references to all values in the pattern, maintaining depth-first,
+    /// root-first order (same as `fold`). The root value appears first in the vector,
+    /// followed by element values in traversal order.
+    ///
+    /// This method uses `fold` internally and is a convenience for the common case
+    /// of collecting all pattern values into a standard collection.
+    ///
+    /// # Returns
+    ///
+    /// A `Vec<&V>` containing references to all values in traversal order
+    ///
+    /// # Examples
+    ///
+    /// ## Get all values
+    ///
+    /// ```
+    /// use pattern_core::Pattern;
+    ///
+    /// let pattern = Pattern::pattern(1, vec![
+    ///     Pattern::point(2),
+    ///     Pattern::point(3),
+    /// ]);
+    /// let values: Vec<&i32> = pattern.values();
+    /// assert_eq!(values, vec![&1, &2, &3]);
+    /// assert_eq!(values.len(), pattern.size());
+    /// ```
+    ///
+    /// ## Verify order
+    ///
+    /// ```
+    /// use pattern_core::Pattern;
+    ///
+    /// let pattern = Pattern::pattern(1, vec![
+    ///     Pattern::point(2),
+    ///     Pattern::pattern(3, vec![
+    ///         Pattern::point(4),
+    ///     ]),
+    /// ]);
+    /// let values = pattern.values();
+    /// assert_eq!(values, vec![&1, &2, &3, &4]);
+    /// ```
+    ///
+    /// ## Use with Iterator methods
+    ///
+    /// ```
+    /// use pattern_core::Pattern;
+    ///
+    /// let pattern = Pattern::pattern(1, vec![
+    ///     Pattern::point(2),
+    ///     Pattern::point(3),
+    ///     Pattern::point(4),
+    /// ]);
+    /// let sum: i32 = pattern.values().iter().map(|&&v| v).sum();
+    /// assert_eq!(sum, 10);
+    ///
+    /// let all_positive = pattern.values().iter().all(|&&v| v > 0);
+    /// assert!(all_positive);
+    /// ```
+    ///
+    /// ## Nested patterns
+    ///
+    /// ```
+    /// use pattern_core::Pattern;
+    ///
+    /// let pattern = Pattern::pattern(1, vec![
+    ///     Pattern::pattern(2, vec![
+    ///         Pattern::point(3),
+    ///     ]),
+    /// ]);
+    /// let values: Vec<&i32> = pattern.values();
+    /// assert_eq!(values, vec![&1, &2, &3]);
+    /// ```
+    ///
+    /// # Performance
+    ///
+    /// - Time complexity: O(n) where n is the total number of values
+    /// - Space complexity: O(n) for the result vector
+    /// - Efficient single-pass collection using fold
+    pub fn values(&self) -> Vec<&V> {
+        // Collect all values into a vector using fold
+        let mut result = Vec::with_capacity(self.size());
+        self.collect_values(&mut result);
+        result
+    }
+
+    /// Internal helper to recursively collect values into a vector.
+    fn collect_values<'a>(&'a self, result: &mut Vec<&'a V>) {
+        result.push(&self.value);
+        for elem in &self.elements {
+            elem.collect_values(result);
+        }
+    }
+
     /// Validates pattern structure against configurable rules and constraints.
     ///
     /// Returns `Ok(())` if the pattern is valid according to the rules,
