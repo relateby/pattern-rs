@@ -12,6 +12,7 @@ Auto-generated from all feature plans. Last updated: 2025-12-27
 - N/A (pure computation) (011-basic-query-functions)
 - Rust 1.70.0+ (workspace MSRV), Edition 2021 + None (core library functionality, uses std::cmp only) (012-ord-trait)
 - N/A (pure computation, no persistence) (012-ord-trait)
+- Rust 1.70.0+ (workspace MSRV), Edition 2021 + None (core library functionality) (013-semigroup-instance)
 
 - Rust (MSRV: 1.70.0, edition: 2021) (002-workspace-setup)
 
@@ -31,9 +32,9 @@ cargo test [ONLY COMMANDS FOR ACTIVE TECHNOLOGIES][ONLY COMMANDS FOR ACTIVE TECH
 Rust (MSRV: 1.70.0, edition: 2021): Follow standard conventions
 
 ## Recent Changes
+- 013-semigroup-instance: Added Rust 1.70.0+ (workspace MSRV), Edition 2021 + None (core library functionality)
 - 012-ord-trait: Added Rust 1.70.0+ (workspace MSRV), Edition 2021 + None (core library functionality, uses std::cmp only)
 - 011-basic-query-functions: Added Rust 1.75+ (matches existing codebase) + None (core library functionality, no external dependencies needed)
-- 010-traversable-instance: Added Rust 1.70.0+ (workspace MSRV), Edition 2021
 
 
 <!-- MANUAL ADDITIONS START -->

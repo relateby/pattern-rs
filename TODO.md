@@ -120,11 +120,14 @@ This TODO tracks the incremental porting of features from the gram-hs reference 
 
 ## Phase 3: Pattern Typeclass Instances (Traits)
 
-**Progress**: 3/11 features complete
+**Progress**: 6/11 features complete
 - ✅ 008: Functor instance (idiomatic `map` method)
 - ✅ 009: Foldable instance (fold operations)
 - ✅ 010: Traversable instance (effectful transformations)
-- ⏸️ 011-018: Remaining typeclass instances (pending)
+- ✅ 011: Query functions (any_value, all_values, filter)
+- ✅ 012: Ord instance (ordering and comparison)
+- ✅ 013: Semigroup instance (Combinable trait, associative combination)
+- ⏸️ 014-018: Remaining typeclass instances (pending)
 
 ### ✅ 008-functor-instance: Functor Trait
 **Primary Reference (Authoritative)**: `../gram-hs/libs/` - Haskell implementation source code
@@ -193,32 +196,48 @@ This TODO tracks the incremental porting of features from the gram-hs reference 
 **Tests**: `crates/pattern-core/tests/query_*.rs` (66 tests)
 **Status**: Complete - all operations implemented with comprehensive test coverage
 
-### 012-ord-instance: Ord Trait
+### 012-ord-instance: Ord Trait ✅
 **Primary Reference (Authoritative)**: `../gram-hs/libs/` - Haskell implementation source code
 **Documentation Reference**: `../gram-hs/docs/` - Up-to-date documentation about the implementation
 **Historical Reference (Context Only)**: `../gram-hs/specs/009-ord-instance/` - Historical notes from incremental development (may be outdated)
 
-- [ ] Study Haskell implementation: `../gram-hs/libs/` - **This is the source of truth**
-- [ ] Review gram-hs documentation: `../gram-hs/docs/` - **Up-to-date information about the implementation**
-- [ ] Review gram-hs tests: `../gram-hs/libs/*/tests/` - **Shows expected behavior**
-- [ ] Review gram-hs spec: `../gram-hs/specs/009-ord-instance/spec.md` (historical notes, for context only)
-- [ ] Implement `PartialOrd` and `Ord` for patterns (from actual Haskell source)
-- [ ] Port test cases (from actual test files)
-- [ ] Verify equivalence (against actual Haskell implementation)
+- [x] Study Haskell implementation: `../gram-hs/libs/` - **This is the source of truth**
+- [x] Review gram-hs documentation: `../gram-hs/docs/` - **Up-to-date information about the implementation**
+- [x] Review gram-hs tests: `../gram-hs/libs/*/tests/` - **Shows expected behavior**
+- [x] Review gram-hs spec: `../gram-hs/specs/009-ord-instance/spec.md` (historical notes, for context only)
+- [x] Implement `PartialOrd` and `Ord` for patterns (from actual Haskell source) - value-first lexicographic ordering
+- [x] Port test cases (from actual test files) - 56 tests ported and passing
+- [x] Verify equivalence (against actual Haskell implementation) - behavioral equivalence verified
 
-### 013-semigroup-instance: Semigroup Trait
+**Implementation**: `crates/pattern-core/src/pattern.rs` - PartialOrd and Ord trait implementations
+**Tests**: `crates/pattern-core/tests/ord_*.rs` (56 tests covering comparison, sorting, extrema, collections, property laws)
+**Benchmarks**: `crates/pattern-core/benches/ord_benchmarks.rs` (9 benchmark groups for performance validation)
+**Status**: Complete - all operations implemented with comprehensive test coverage, property-based Ord law verification, and behavioral equivalence with gram-hs confirmed
+
+### 013-semigroup-instance: Semigroup Trait ✅ COMPLETE
 **Primary Reference (Authoritative)**: `../gram-hs/libs/` - Haskell implementation source code
-**Documentation Reference**: `../gram-hs/docs/` - Up-to-date documentation about the implementation
-**Historical Reference (Context Only)**: `../gram-hs/specs/010-semigroup-instance/` - Historical notes from incremental development (may be outdated)
+**Spec**: `specs/013-semigroup-instance/spec.md` - Implementation-agnostic specification
+**Plan**: `specs/013-semigroup-instance/plan.md` - Implementation plan and design decisions
+**Tasks**: `specs/013-semigroup-instance/tasks.md` - 60 detailed implementation tasks
 
-- [ ] Study Haskell implementation: `../gram-hs/libs/` - **This is the source of truth**
-- [ ] Review gram-hs documentation: `../gram-hs/docs/` - **Up-to-date information about the implementation**
-- [ ] Review gram-hs tests: `../gram-hs/libs/*/tests/` - **Shows expected behavior**
-- [ ] Review gram-hs spec: `../gram-hs/specs/010-semigroup-instance/spec.md` (historical notes, for context only)
-- [ ] Design Rust trait equivalent to Semigroup (based on actual Haskell implementation)
-- [ ] Implement pattern combination operations (from actual Haskell source)
-- [ ] Port test cases (from actual test files)
-- [ ] Verify equivalence (against actual Haskell implementation)
+- [x] Study Haskell implementation: `../gram-hs/libs/` - **This is the source of truth**
+- [x] Review gram-hs documentation: `../gram-hs/docs/` - **Up-to-date information about the implementation**
+- [x] Review gram-hs tests: `../gram-hs/libs/*/tests/` - **Shows expected behavior**
+- [x] Design Rust trait equivalent to Semigroup (Combinable trait)
+- [x] Implement pattern combination operations (`Pattern::combine`)
+- [x] Port test cases (from actual test files)
+- [x] Verify equivalence (against actual Haskell implementation)
+
+**Implementation**: 
+- `crates/pattern-core/src/lib.rs` - Combinable trait for String, Vec<T>, ()
+- `crates/pattern-core/src/pattern.rs` - Pattern::combine method
+**Tests**: 
+- `crates/pattern-core/tests/semigroup_basic.rs` (12 unit tests)
+- `crates/pattern-core/tests/semigroup_property.rs` (11 property tests with proptest for associativity)
+- `crates/pattern-core/tests/semigroup_integration.rs` (15 integration tests with iterators)
+- `crates/pattern-core/tests/semigroup_equivalence.rs` (14 equivalence tests with gram-hs)
+**Benchmarks**: `crates/pattern-core/benches/semigroup_benchmarks.rs` (7 benchmark groups: atomic ~100ns, 1000 elements ~119µs, 100-pattern fold ~17µs)
+**Status**: Complete - associative combination operation implemented with comprehensive test coverage, property-based verification, and behavioral equivalence with gram-hs confirmed
 
 ### 014-monoid-instance: Monoid Trait
 **Primary Reference (Authoritative)**: `../gram-hs/libs/` - Haskell implementation source code

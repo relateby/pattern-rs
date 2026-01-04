@@ -69,6 +69,43 @@
 //! let pattern_with_subject: Pattern<Subject> = Pattern::point(subject);
 //! ```
 //!
+//! # Pattern Combination
+//!
+//! Patterns can be combined associatively using the `combine()` method when the value type
+//! implements the `Combinable` trait. Combination merges two patterns by combining their values
+//! and concatenating their elements.
+//!
+//! ```rust
+//! use pattern_core::{Pattern, Combinable};
+//!
+//! // Combine atomic patterns (no elements)
+//! let p1 = Pattern::point("hello".to_string());
+//! let p2 = Pattern::point(" world".to_string());
+//! let combined = p1.combine(p2);
+//! assert_eq!(combined.value(), "hello world");
+//! assert_eq!(combined.length(), 0);
+//!
+//! // Combine patterns with elements
+//! let p3 = Pattern::pattern("a".to_string(), vec![
+//!     Pattern::point("b".to_string()),
+//!     Pattern::point("c".to_string()),
+//! ]);
+//! let p4 = Pattern::pattern("d".to_string(), vec![
+//!     Pattern::point("e".to_string()),
+//! ]);
+//! let result = p3.combine(p4);
+//! assert_eq!(result.value(), "ad");
+//! assert_eq!(result.length(), 3); // [b, c, e]
+//!
+//! // Associativity: (a ⊕ b) ⊕ c = a ⊕ (b ⊕ c)
+//! let a = Pattern::point("a".to_string());
+//! let b = Pattern::point("b".to_string());
+//! let c = Pattern::point("c".to_string());
+//! let left = a.clone().combine(b.clone()).combine(c.clone());
+//! let right = a.combine(b.combine(c));
+//! assert_eq!(left, right);
+//! ```
+//!
 //! # Pattern Ordering
 //!
 //! Patterns implement `Ord` and `PartialOrd` for types that support ordering,
@@ -139,6 +176,116 @@ pub mod test_utils;
 
 pub use pattern::{Pattern, StructureAnalysis, ValidationError, ValidationRules};
 pub use subject::{PropertyRecord, RangeValue, Subject, Symbol, Value};
+
+// ============================================================================
+// Combinable Trait
+// ============================================================================
+
+/// Types that support associative combination.
+///
+/// Implementors must ensure that combination is associative:
+/// `(a.combine(b)).combine(c)` must equal `a.combine(b.combine(c))` for all values.
+///
+/// This trait is used to enable pattern combination for `Pattern<V>` where `V: Combinable`.
+///
+/// # Laws
+///
+/// **Associativity**: For all values a, b, c of type Self:
+/// ```text
+/// (a.combine(b)).combine(c) == a.combine(b.combine(c))
+/// ```
+///
+/// # Examples
+///
+/// ```rust
+/// use pattern_core::Combinable;
+///
+/// let s1 = String::from("hello");
+/// let s2 = String::from(" world");
+/// let result = s1.combine(s2);
+/// assert_eq!(result, "hello world");
+/// ```
+pub trait Combinable {
+    /// Combines two values associatively.
+    ///
+    /// # Parameters
+    ///
+    /// * `self` - The first value (consumed)
+    /// * `other` - The second value to combine with (consumed)
+    ///
+    /// # Returns
+    ///
+    /// A new value representing the combination of `self` and `other`.
+    ///
+    /// # Laws
+    ///
+    /// Must be associative: `(a.combine(b)).combine(c) == a.combine(b.combine(c))`
+    fn combine(self, other: Self) -> Self;
+}
+
+// ============================================================================
+// Standard Implementations
+// ============================================================================
+
+/// Combines two strings by concatenation.
+///
+/// String concatenation is associative: `(a + b) + c = a + (b + c)`
+///
+/// # Examples
+///
+/// ```rust
+/// use pattern_core::Combinable;
+///
+/// let s1 = String::from("hello");
+/// let s2 = String::from(" world");
+/// let result = s1.combine(s2);
+/// assert_eq!(result, "hello world");
+/// ```
+impl Combinable for String {
+    fn combine(mut self, other: Self) -> Self {
+        self.push_str(&other);
+        self
+    }
+}
+
+/// Combines two vectors by concatenation.
+///
+/// Vector concatenation is associative: `(a ++ b) ++ c = a ++ (b ++ c)`
+///
+/// # Examples
+///
+/// ```rust
+/// use pattern_core::Combinable;
+///
+/// let v1 = vec![1, 2, 3];
+/// let v2 = vec![4, 5];
+/// let result = v1.combine(v2);
+/// assert_eq!(result, vec![1, 2, 3, 4, 5]);
+/// ```
+impl<T> Combinable for Vec<T> {
+    fn combine(mut self, other: Self) -> Self {
+        self.extend(other);
+        self
+    }
+}
+
+/// Combines two unit values (trivial).
+///
+/// Unit combination is trivially associative.
+///
+/// # Examples
+///
+/// ```rust
+/// use pattern_core::Combinable;
+///
+/// let u1 = ();
+/// let u2 = ();
+/// let result = u1.combine(u2);
+/// assert_eq!(result, ());
+/// ```
+impl Combinable for () {
+    fn combine(self, _other: Self) -> Self {}
+}
 
 #[cfg(test)]
 mod tests {

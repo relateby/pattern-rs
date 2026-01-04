@@ -8,6 +8,7 @@ This crate provides the foundational `Pattern<V>` type and `Subject` type, porte
 
 - **Pattern<V>**: A recursive, nested structure (s-expression-like) that is generic over value type `V`
 - **Functor Instance**: Transform pattern values while preserving structure with the `map` method
+- **Combinable Trait**: Associative combination operations for composing patterns
 - **Subject**: A self-descriptive value type with identity, labels, and properties
 - **WASM Compatible**: All types compile successfully for `wasm32-unknown-unknown` target
 
@@ -48,6 +49,23 @@ let pattern = Pattern::pattern("root", vec![
 let upper = pattern.map(|s| s.to_uppercase());
 assert_eq!(upper.value, "ROOT");
 assert_eq!(upper.elements[0].value, "CHILD1");
+
+// Combine patterns (Combinable)
+let p1 = Pattern::point("hello".to_string());
+let p2 = Pattern::point(" world".to_string());
+let combined = p1.combine(p2);
+assert_eq!(combined.value(), "hello world");
+
+// Combine multiple patterns using iterators
+let patterns = vec![
+    Pattern::point("a".to_string()),
+    Pattern::point("b".to_string()),
+    Pattern::point("c".to_string()),
+];
+let result = patterns.into_iter()
+    .reduce(|acc, p| acc.combine(p))
+    .unwrap();
+assert_eq!(result.value(), "abc");
 ```
 
 ## WASM Compilation
