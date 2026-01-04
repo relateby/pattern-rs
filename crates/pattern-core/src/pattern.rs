@@ -565,7 +565,8 @@ impl<V> Pattern<V> {
     ///
     /// This operation traverses the pattern structure in pre-order (root first, then elements)
     /// and applies the predicate to each value. Returns `true` as soon as a value satisfies
-    /// the predicate (short-circuit evaluation), or `false` if no values match.
+    /// the predicate (short-circuit evaluation - both predicate evaluation AND traversal stop),
+    /// or `false` if no values match.
     ///
     /// Equivalent to Haskell's `anyValue :: (v -> Bool) -> Pattern v -> Bool`.
     ///
@@ -606,15 +607,15 @@ impl<V> Pattern<V> {
     ///
     /// # Short-Circuit Behavior
     ///
-    /// The operation stops as soon as a matching value is found:
+    /// The operation stops traversal as soon as a matching value is found:
     ///
     /// ```
     /// use pattern_core::Pattern;
     ///
     /// let pattern = Pattern::pattern(1, vec![
     ///     Pattern::point(2),
-    ///     Pattern::point(5), // Matches here
-    ///     Pattern::point(3), // Not evaluated
+    ///     Pattern::point(5), // Matches here - stops traversal
+    ///     Pattern::point(3), // Not visited
     /// ]);
     ///
     /// assert!(pattern.any_value(|v| *v == 5));
@@ -623,15 +624,35 @@ impl<V> Pattern<V> {
     where
         F: Fn(&V) -> bool,
     {
-        self.fold(false, |acc, v| acc || predicate(v))
+        self.any_value_recursive(&predicate)
+    }
+
+    /// Helper function for any_value with early termination.
+    fn any_value_recursive<F>(&self, predicate: &F) -> bool
+    where
+        F: Fn(&V) -> bool,
+    {
+        // Check current value (pre-order)
+        if predicate(&self.value) {
+            return true;
+        }
+
+        // Check elements recursively, stop on first match
+        for element in &self.elements {
+            if element.any_value_recursive(predicate) {
+                return true;
+            }
+        }
+
+        false
     }
 
     /// Checks if all values in the pattern satisfy the given predicate.
     ///
     /// This operation traverses the pattern structure in pre-order (root first, then elements)
     /// and applies the predicate to each value. Returns `false` as soon as a value is found
-    /// that does not satisfy the predicate (short-circuit evaluation), or `true` if all values
-    /// satisfy the predicate.
+    /// that does not satisfy the predicate (short-circuit evaluation - both predicate evaluation
+    /// AND traversal stop), or `true` if all values satisfy the predicate.
     ///
     /// Equivalent to Haskell's `allValues :: (v -> Bool) -> Pattern v -> Bool`.
     ///
@@ -672,15 +693,15 @@ impl<V> Pattern<V> {
     ///
     /// # Short-Circuit Behavior
     ///
-    /// The operation stops as soon as a non-matching value is found:
+    /// The operation stops traversal as soon as a non-matching value is found:
     ///
     /// ```
     /// use pattern_core::Pattern;
     ///
     /// let pattern = Pattern::pattern(1, vec![
     ///     Pattern::point(2),
-    ///     Pattern::point(-5), // Fails here
-    ///     Pattern::point(3),  // Not evaluated
+    ///     Pattern::point(-5), // Fails here - stops traversal
+    ///     Pattern::point(3),  // Not visited
     /// ]);
     ///
     /// assert!(!pattern.all_values(|v| *v > 0));
@@ -705,7 +726,27 @@ impl<V> Pattern<V> {
     where
         F: Fn(&V) -> bool,
     {
-        self.fold(true, |acc, v| acc && predicate(v))
+        self.all_values_recursive(&predicate)
+    }
+
+    /// Helper function for all_values with early termination.
+    fn all_values_recursive<F>(&self, predicate: &F) -> bool
+    where
+        F: Fn(&V) -> bool,
+    {
+        // Check current value (pre-order)
+        if !predicate(&self.value) {
+            return false;
+        }
+
+        // Check elements recursively, stop on first failure
+        for element in &self.elements {
+            if !element.all_values_recursive(predicate) {
+                return false;
+            }
+        }
+
+        true
     }
 
     /// Filters subpatterns that satisfy the given pattern predicate.
