@@ -136,14 +136,32 @@ A developer needs to verify that pattern validation and structure analysis funct
 
 ## References
 
-- **Primary Source (Authoritative)**: **gram-hs Implementation**: `../gram-hs/libs/` - Haskell library source code
+### Primary Source (Authoritative)
+
+- **gram-hs Library Implementation**: `../gram-hs/libs/` - Haskell library source code
   - Pattern Validation: `../gram-hs/libs/pattern/src/Pattern.hs` (validation functions)
   - Structure Analysis: `../gram-hs/libs/pattern/src/Pattern.hs` (structure analysis utilities)
   - Tests: `../gram-hs/libs/pattern/tests/` (test cases for validation and structure analysis)
-- **Secondary Source (Context Only)**: gram-hs Design Documents: `../gram-hs/specs/003-pattern-structure-review/`
+
+### Testing Tool
+
+- **gramref CLI**: `/Users/akollegger/.cabal/bin/gramref` - CLI tool for testing
+  - Purpose: Generate test patterns and validate outputs
+  - Usage: `gramref generate --type suite` for test case generation
+  - See: `docs/gramref-cli-testing-guide.md` for detailed usage
+  - See: `docs/gramref-quick-reference.md` for quick command reference
+
+### Secondary Sources
+
+- **gram-hs Design Documents** (Context Only): `../gram-hs/specs/003-pattern-structure-review/`
   - Feature Specification: `../gram-hs/specs/003-pattern-structure-review/spec.md` (for context, may be outdated)
-- **Porting Guide**: `PORTING_GUIDE.md` - Systematic approach for porting from gram-hs
+- **Porting Guide**: `PORTING_GUIDE.md` - Systematic approach for porting from gram-hs (includes Library vs CLI distinction)
 - **Project Plan**: `docs/gram-rs-project-plan.md` - Overall architecture and design decisions
 - **TODO**: `TODO.md` - Feature tracking and porting checklist
 
-**Important**: The Haskell implementation in `../gram-hs/libs/` is the authoritative source of truth. Design documents in `../gram-hs/specs/` are useful for context but may contain outdated information or design mistakes that were corrected in the actual implementation.
+### Important Distinction
+
+- **`../gram-hs/libs/`** = Haskell library source code (authoritative reference implementation to port)
+- **`gramref`** = CLI tool for generating test patterns (testing utility)
+
+The Haskell implementation in `../gram-hs/libs/` is the authoritative source of truth for implementation. Design documents in `../gram-hs/specs/` are useful for context but may contain outdated information or design mistakes that were corrected in the actual implementation.

@@ -11,6 +11,32 @@ The gram-hs reference implementation is available locally at:
 - **Tests (Authoritative)**: `../gram-hs/libs/*/tests/` - Test suites for verification - **Shows expected behavior**
 - **Historical Notes (Context Only)**: `../gram-hs/specs/` - Historical notes that guided incremental development (may be outdated, use for context only)
 
+## Important: Library vs CLI Tool
+
+**Critical Distinction**: There are two separate things you'll work with - don't confuse them!
+
+### The `../gram-hs/` Library (Reference Implementation)
+
+- **Location**: `../gram-hs/libs/` (relative to gram-rs root)
+- **Purpose**: Haskell source code to port to Rust
+- **Use for**: Reading implementations, understanding algorithms, studying type signatures
+- **Example**: Study `../gram-hs/libs/pattern/src/Pattern.hs` to understand Pattern type
+- **When**: During implementation - when writing Rust code
+
+### The `gramref` CLI Tool (Testing Tool)
+
+- **Location**: `/Users/akollegger/.cabal/bin/gramref` (or in PATH)
+- **Purpose**: Generate test patterns and validate outputs
+- **Use for**: Test case generation, equivalence checking, reference outputs
+- **Example**: `gramref generate --type suite --count 100` to create test cases
+- **When**: During testing - when verifying your Rust implementation
+
+**Key Rule**: 
+- **Read** from the **library** (`../gram-hs/libs/`) when implementing functionality
+- **Execute** the **CLI tool** (`gramref`) when testing that functionality
+
+For detailed usage of the `gramref` CLI tool, see: `docs/gramref-cli-testing-guide.md`
+
 ## Porting Workflow
 
 ### 1. Identify Feature to Port
@@ -153,21 +179,21 @@ Port test cases from `../gram-hs/libs/*/tests/`:
 
 1. Create test file in `tests/equivalence/` or `tests/integration/`
 2. Port test cases maintaining the same test data and expected outputs
-   - **Tip**: Use `gram-hs generate --type suite` to generate test cases in the correct format
-   - See [gram-hs CLI Testing Guide](docs/gram-hs-cli-testing-guide.md) for test suite generation
+   - **Tip**: Use `gramref generate --type suite` to generate test cases in the correct format
+   - See [gramref CLI Testing Guide](docs/gramref-cli-testing-guide.md) for test suite generation
 3. Run tests (they should fail initially)
 4. Implement functionality to make tests pass
 
-**Alternative: Generate Test Cases from gram-hs**:
+**Alternative: Generate Test Cases Using gramref**:
 
-You can also generate test cases directly from gram-hs using the CLI:
+You can also generate test cases directly using the `gramref` CLI tool:
 ```bash
 # Generate test suite with 100 test cases
-gram-hs generate --type suite --count 100 --seed 42 --complexity standard \
+gramref generate --type suite --count 100 --seed 42 --complexity standard \
     --format json --value-only > tests/common/test_cases.json
 ```
 
-See [gram-hs CLI Testing Guide](docs/gram-hs-cli-testing-guide.md) for more details on test case generation and extraction.
+See [gramref CLI Testing Guide](docs/gramref-cli-testing-guide.md) for more details on test case generation and extraction.
 
 ### 6. Implement Functionality
 
@@ -184,15 +210,15 @@ Port the Haskell implementation from `../gram-hs/libs/*/src/` to idiomatic Rust:
 Before marking complete:
 
 1. **Compare outputs**: Run both implementations on same inputs
-   - Use `gram-hs` CLI tool with `--value-only` and `--canonical` flags for reliable comparison
-   - See [gram-hs CLI Testing Guide](docs/gram-hs-cli-testing-guide.md) for detailed usage
+   - Use `gramref` CLI tool with `--value-only` and `--canonical` flags for reliable comparison
+   - See [gramref CLI Testing Guide](docs/gramref-cli-testing-guide.md) for detailed usage
 2. **Check edge cases**: Ensure all edge cases from gram-hs tests pass
 3. **Verify documentation**: Ensure Rust docs match Haskell semantics
 4. **Test WASM compilation**: Verify `cargo build --target wasm32-unknown-unknown`
 
-**Using gram-hs CLI for Equivalence Checking**:
+**Using gramref CLI for Equivalence Checking**:
 
-The `gram-hs` CLI tool provides several flags that make equivalence checking easier:
+The `gramref` CLI tool provides several flags that make equivalence checking easier:
 - `--value-only`: Output only the pattern value without metadata (enables direct JSON comparison)
 - `--deterministic`: Use fixed timestamp and hash for reproducible outputs
 - `--canonical`: Sort JSON keys for byte-for-byte identical output
