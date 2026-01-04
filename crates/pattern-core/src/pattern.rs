@@ -20,6 +20,13 @@
 //! - [`Pattern::size`] - Returns the total number of nodes
 //! - [`Pattern::depth`] - Returns the maximum nesting depth
 //! - [`Pattern::is_atomic`] - Checks if a pattern is atomic
+//! - [`Pattern::values`] - Extracts all values as a flat list (pre-order)
+//!
+//! # Query Functions
+//!
+//! - [`Pattern::any_value`] - Checks if at least one value satisfies a predicate (short-circuits)
+//! - [`Pattern::all_values`] - Checks if all values satisfy a predicate (short-circuits)
+//! - [`Pattern::filter`] - Extracts subpatterns that satisfy a pattern predicate
 
 use std::fmt;
 
@@ -552,6 +559,333 @@ impl<V> Pattern<V> {
     /// ```
     pub fn is_atomic(&self) -> bool {
         self.elements.is_empty()
+    }
+
+    /// Checks if at least one value in the pattern satisfies the given predicate.
+    ///
+    /// This operation traverses the pattern structure in pre-order (root first, then elements)
+    /// and applies the predicate to each value. Returns `true` as soon as a value satisfies
+    /// the predicate (short-circuit evaluation - both predicate evaluation AND traversal stop),
+    /// or `false` if no values match.
+    ///
+    /// Equivalent to Haskell's `anyValue :: (v -> Bool) -> Pattern v -> Bool`.
+    ///
+    /// # Type Parameters
+    ///
+    /// * `F` - A function that takes a reference to a value and returns a boolean
+    ///
+    /// # Arguments
+    ///
+    /// * `predicate` - A function to test each value
+    ///
+    /// # Returns
+    ///
+    /// * `true` if at least one value satisfies the predicate
+    /// * `false` if no values satisfy the predicate (including empty patterns)
+    ///
+    /// # Complexity
+    ///
+    /// * Time: O(n) worst case, O(1) to O(n) average (short-circuits on first match)
+    /// * Space: O(1) heap, O(d) stack where d = maximum depth
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use pattern_core::Pattern;
+    ///
+    /// let pattern = Pattern::pattern(5, vec![
+    ///     Pattern::point(10),
+    ///     Pattern::point(3),
+    /// ]);
+    ///
+    /// // Check if any value is greater than 8
+    /// assert!(pattern.any_value(|v| *v > 8));  // true (10 > 8)
+    ///
+    /// // Check if any value is negative
+    /// assert!(!pattern.any_value(|v| *v < 0)); // false (all positive)
+    /// ```
+    ///
+    /// # Short-Circuit Behavior
+    ///
+    /// The operation stops traversal as soon as a matching value is found:
+    ///
+    /// ```
+    /// use pattern_core::Pattern;
+    ///
+    /// let pattern = Pattern::pattern(1, vec![
+    ///     Pattern::point(2),
+    ///     Pattern::point(5), // Matches here - stops traversal
+    ///     Pattern::point(3), // Not visited
+    /// ]);
+    ///
+    /// assert!(pattern.any_value(|v| *v == 5));
+    /// ```
+    pub fn any_value<F>(&self, predicate: F) -> bool
+    where
+        F: Fn(&V) -> bool,
+    {
+        self.any_value_recursive(&predicate)
+    }
+
+    /// Helper function for any_value with early termination.
+    fn any_value_recursive<F>(&self, predicate: &F) -> bool
+    where
+        F: Fn(&V) -> bool,
+    {
+        // Check current value (pre-order)
+        if predicate(&self.value) {
+            return true;
+        }
+
+        // Check elements recursively, stop on first match
+        for element in &self.elements {
+            if element.any_value_recursive(predicate) {
+                return true;
+            }
+        }
+
+        false
+    }
+
+    /// Checks if all values in the pattern satisfy the given predicate.
+    ///
+    /// This operation traverses the pattern structure in pre-order (root first, then elements)
+    /// and applies the predicate to each value. Returns `false` as soon as a value is found
+    /// that does not satisfy the predicate (short-circuit evaluation - both predicate evaluation
+    /// AND traversal stop), or `true` if all values satisfy the predicate.
+    ///
+    /// Equivalent to Haskell's `allValues :: (v -> Bool) -> Pattern v -> Bool`.
+    ///
+    /// # Type Parameters
+    ///
+    /// * `F` - A function that takes a reference to a value and returns a boolean
+    ///
+    /// # Arguments
+    ///
+    /// * `predicate` - A function to test each value
+    ///
+    /// # Returns
+    ///
+    /// * `true` if all values satisfy the predicate (vacuous truth for patterns with no values)
+    /// * `false` if at least one value does not satisfy the predicate
+    ///
+    /// # Complexity
+    ///
+    /// * Time: O(n) worst case, O(1) to O(n) average (short-circuits on first failure)
+    /// * Space: O(1) heap, O(d) stack where d = maximum depth
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use pattern_core::Pattern;
+    ///
+    /// let pattern = Pattern::pattern(5, vec![
+    ///     Pattern::point(10),
+    ///     Pattern::point(3),
+    /// ]);
+    ///
+    /// // Check if all values are positive
+    /// assert!(pattern.all_values(|v| *v > 0));  // true (all > 0)
+    ///
+    /// // Check if all values are greater than 8
+    /// assert!(!pattern.all_values(|v| *v > 8)); // false (5 and 3 fail)
+    /// ```
+    ///
+    /// # Short-Circuit Behavior
+    ///
+    /// The operation stops traversal as soon as a non-matching value is found:
+    ///
+    /// ```
+    /// use pattern_core::Pattern;
+    ///
+    /// let pattern = Pattern::pattern(1, vec![
+    ///     Pattern::point(2),
+    ///     Pattern::point(-5), // Fails here - stops traversal
+    ///     Pattern::point(3),  // Not visited
+    /// ]);
+    ///
+    /// assert!(!pattern.all_values(|v| *v > 0));
+    /// ```
+    ///
+    /// # Relationship to any_value
+    ///
+    /// The following equivalence holds: `all_values(p) ≡ !any_value(!p)`
+    ///
+    /// ```
+    /// use pattern_core::Pattern;
+    ///
+    /// let pattern = Pattern::pattern(5, vec![Pattern::point(10)]);
+    /// let predicate = |v: &i32| *v > 0;
+    ///
+    /// assert_eq!(
+    ///     pattern.all_values(predicate),
+    ///     !pattern.any_value(|v| !predicate(v))
+    /// );
+    /// ```
+    pub fn all_values<F>(&self, predicate: F) -> bool
+    where
+        F: Fn(&V) -> bool,
+    {
+        self.all_values_recursive(&predicate)
+    }
+
+    /// Helper function for all_values with early termination.
+    fn all_values_recursive<F>(&self, predicate: &F) -> bool
+    where
+        F: Fn(&V) -> bool,
+    {
+        // Check current value (pre-order)
+        if !predicate(&self.value) {
+            return false;
+        }
+
+        // Check elements recursively, stop on first failure
+        for element in &self.elements {
+            if !element.all_values_recursive(predicate) {
+                return false;
+            }
+        }
+
+        true
+    }
+
+    /// Filters subpatterns that satisfy the given pattern predicate.
+    ///
+    /// This operation traverses the pattern structure in pre-order (root first, then elements)
+    /// and collects references to all patterns that satisfy the predicate. Unlike `any_value`
+    /// and `all_values` which operate on values, this method operates on entire patterns,
+    /// allowing predicates to test structural properties (length, depth, etc.) as well as values.
+    ///
+    /// Equivalent to Haskell's `filterPatterns :: (Pattern v -> Bool) -> Pattern v -> [Pattern v]`.
+    ///
+    /// # Type Parameters
+    ///
+    /// * `F` - A function that takes a reference to a pattern and returns a boolean
+    ///
+    /// # Arguments
+    ///
+    /// * `predicate` - A function to test each pattern (including the root)
+    ///
+    /// # Returns
+    ///
+    /// A vector of immutable references to patterns that satisfy the predicate, in pre-order
+    /// traversal order. Returns an empty vector if no patterns match.
+    ///
+    /// # Complexity
+    ///
+    /// * Time: O(n) where n is the number of nodes (must visit all patterns)
+    /// * Space: O(m) heap where m is the number of matches, O(d) stack where d = maximum depth
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use pattern_core::Pattern;
+    ///
+    /// let pattern = Pattern::pattern(
+    ///     "root",
+    ///     vec![
+    ///         Pattern::point("leaf1"),
+    ///         Pattern::pattern("branch", vec![
+    ///             Pattern::point("leaf2"),
+    ///         ]),
+    ///     ],
+    /// );
+    ///
+    /// // Find all atomic (leaf) patterns
+    /// let leaves = pattern.filter(|p| p.is_atomic());
+    /// assert_eq!(leaves.len(), 2);  // leaf1, leaf2
+    ///
+    /// // Find all patterns with specific value
+    /// let roots = pattern.filter(|p| p.value == "root");
+    /// assert_eq!(roots.len(), 1);
+    ///
+    /// // Find patterns with elements (non-atomic)
+    /// let branches = pattern.filter(|p| p.length() > 0);
+    /// assert_eq!(branches.len(), 2);  // root, branch
+    /// ```
+    ///
+    /// # Pre-Order Traversal
+    ///
+    /// Results are returned in pre-order traversal order (root first, then elements in order):
+    ///
+    /// ```
+    /// use pattern_core::Pattern;
+    ///
+    /// let pattern = Pattern::pattern(1, vec![
+    ///     Pattern::point(2),
+    ///     Pattern::pattern(3, vec![Pattern::point(4)]),
+    ///     Pattern::point(5),
+    /// ]);
+    ///
+    /// let all = pattern.filter(|_| true);
+    /// assert_eq!(all.len(), 5);
+    /// assert_eq!(all[0].value, 1); // root
+    /// assert_eq!(all[1].value, 2); // first element
+    /// assert_eq!(all[2].value, 3); // second element
+    /// assert_eq!(all[3].value, 4); // nested in second element
+    /// assert_eq!(all[4].value, 5); // third element
+    /// ```
+    ///
+    /// # Combining with Other Operations
+    ///
+    /// Filter can be combined with value predicates:
+    ///
+    /// ```
+    /// use pattern_core::Pattern;
+    ///
+    /// let pattern = Pattern::pattern(5, vec![
+    ///     Pattern::point(10),
+    ///     Pattern::pattern(3, vec![]),
+    /// ]);
+    ///
+    /// // Find patterns with large values
+    /// let large = pattern.filter(|p| p.value > 8);
+    /// assert_eq!(large.len(), 1); // Only point(10)
+    ///
+    /// // Find non-empty patterns with all values positive
+    /// let branches = pattern.filter(|p| {
+    ///     p.length() > 0 && p.all_values(|v| *v > 0)
+    /// });
+    /// ```
+    ///
+    /// # Lifetime and References
+    ///
+    /// The returned references borrow from the source pattern and have the same lifetime:
+    ///
+    /// ```
+    /// use pattern_core::Pattern;
+    ///
+    /// let pattern = Pattern::pattern("a", vec![Pattern::point("b")]);
+    /// let matches = pattern.filter(|_| true);
+    /// // matches[0] and matches[1] borrow from pattern
+    /// // Cannot move or drop pattern while matches exist
+    /// ```
+    pub fn filter<F>(&self, predicate: F) -> Vec<&Pattern<V>>
+    where
+        F: Fn(&Pattern<V>) -> bool,
+    {
+        let mut result = Vec::new();
+        self.filter_recursive(&predicate, &mut result);
+        result
+    }
+
+    /// Helper function for recursive filter implementation.
+    ///
+    /// This performs a pre-order traversal, checking the current pattern first,
+    /// then recursively filtering elements.
+    fn filter_recursive<'a, F>(&'a self, predicate: &F, result: &mut Vec<&'a Pattern<V>>)
+    where
+        F: Fn(&Pattern<V>) -> bool,
+    {
+        // Check current pattern (pre-order: root first)
+        if predicate(self) {
+            result.push(self);
+        }
+
+        // Recursively filter elements
+        for element in &self.elements {
+            element.filter_recursive(predicate, result);
+        }
     }
 
     /// Maps a function over all values in the pattern, preserving structure.

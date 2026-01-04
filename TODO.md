@@ -175,19 +175,23 @@ This TODO tracks the incremental porting of features from the gram-hs reference 
 **Tests**: 53 tests in `crates/pattern-core/tests/traversable_*.rs` - all passing
 **Deferred**: Async support (traverse_future) - Would require tokio/async runtime dependency. Can be added later as feature-gated functionality if needed.
 
-### 011-basic-query-functions: Pattern Query Operations
+### 011-basic-query-functions: Pattern Query Operations ✅
 **Primary Reference (Authoritative)**: `../gram-hs/libs/` - Haskell implementation source code
 **Documentation Reference**: `../gram-hs/docs/` - Up-to-date documentation about the implementation
 **Historical Reference (Context Only)**: `../gram-hs/specs/008-basic-query-functions/` - Historical notes from incremental development (may be outdated)
 
-- [ ] Study Haskell implementation: `../gram-hs/libs/` - **This is the source of truth**
-- [ ] Review gram-hs documentation: `../gram-hs/docs/` - **Up-to-date information about the implementation**
-- [ ] Review gram-hs tests: `../gram-hs/libs/*/tests/` - **Shows expected behavior**
-- [ ] Review gram-hs spec: `../gram-hs/specs/008-basic-query-functions/spec.md` (historical notes, for context only)
-- [ ] Port pattern query functions (from actual Haskell source)
-- [ ] Port pattern search utilities (from actual Haskell source)
-- [ ] Port test cases (from actual test files)
-- [ ] Verify equivalence (against actual Haskell implementation)
+- [x] Study Haskell implementation: `../gram-hs/libs/` - **This is the source of truth**
+- [x] Review gram-hs documentation: `../gram-hs/docs/` - **Up-to-date information about the implementation**
+- [x] Review gram-hs tests: `../gram-hs/libs/*/tests/` - **Shows expected behavior**
+- [x] Review gram-hs spec: `../gram-hs/specs/008-basic-query-functions/spec.md` (historical notes, for context only)
+- [x] Port pattern query functions (from actual Haskell source) - any_value, all_values, filter
+- [x] Port pattern search utilities (from actual Haskell source) - filter operation
+- [x] Port test cases (from actual test files) - 66 tests ported and passing
+- [x] Verify equivalence (against actual Haskell implementation) - behavioral equivalence verified
+
+**Implementation**: `crates/pattern-core/src/pattern.rs`
+**Tests**: `crates/pattern-core/tests/query_*.rs` (66 tests)
+**Status**: Complete - all operations implemented with comprehensive test coverage
 
 ### 012-ord-instance: Ord Trait
 **Primary Reference (Authoritative)**: `../gram-hs/libs/` - Haskell implementation source code
