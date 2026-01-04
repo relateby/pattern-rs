@@ -116,8 +116,8 @@ Developers need to apply asynchronous operations (like database lookups, API cal
 - **FR-007**: Traversable implementation MUST satisfy the naturality law: for natural transformation t, `t . traverse(f) == traverse(t . f)`
 - **FR-008**: System MUST provide `traverse_result()` method for Result types, providing short-circuit semantics (first error terminates traversal)
 - **FR-009**: System MUST provide `traverse_option()` method for Option types, providing all-or-nothing semantics (first None terminates traversal)
-- **FR-010**: System MUST provide `traverse_future()` method for async effect types, processing values sequentially (one at a time in order)
-- **FR-011**: System MUST provide `validate()` method that collects all errors encountered during traversal instead of short-circuiting
+- **FR-010**: System MUST provide `traverse_future()` method for async effect types, processing values sequentially (one at a time in order) [DEFERRED - requires async runtime]
+- **FR-011**: System MUST provide `validate_all()` method that collects all errors encountered during traversal instead of short-circuiting (named `validate_all` to avoid conflict with existing structural `validate()` method)
 - **FR-012**: System MUST process atomic patterns (patterns with no elements) by applying the effectful function only to the root value
 - **FR-013**: System MUST preserve the order guarantee: for pattern with root value V and elements [E1, E2, E3], traverse must process V first, then values from E1, then values from E2, then values from E3
 - **FR-014**: System MUST integrate cleanly with Functor (map) and Foldable (fold) operations to enable composition of functional patterns
@@ -143,7 +143,7 @@ Developers need to apply asynchronous operations (like database lookups, API cal
 - **SC-006**: Traversable implementation compiles for WASM target without errors
 - **SC-007**: `traverse_result()` method properly short-circuits on first error without processing remaining values (verifiable through side-effect counting)
 - **SC-008**: `traverse_option()` method properly terminates on first None without processing remaining values
-- **SC-012**: `validate()` method collects all errors from a pattern with multiple invalid values and reports them all
+- **SC-012**: `validate_all()` method collects all errors from a pattern with multiple invalid values and reports them all
 - **SC-009**: Pattern structures with 10,000 elements can be traversed without exceeding 100MB memory overhead
 - **SC-010**: Traverse operations compose cleanly with map (Functor) and fold (Foldable) operations in test pipelines
 - **SC-011**: Async traverse operations (with Future types) correctly initiate and collect results for all values in a pattern
@@ -202,4 +202,4 @@ Developers need to apply asynchronous operations (like database lookups, API cal
 
 **Decision**: Both approaches - separate methods for different use cases
 
-**Rationale**: Provide two methods: `traverse_result()` for short-circuit behavior (fails fast on first error, matching typical Result semantics) and `validate()` for collecting all errors (provides comprehensive feedback for validation scenarios). This covers both performance-critical use cases (short-circuit) and user-feedback use cases (collect all errors) without forcing a single compromise. The validate method will require an error aggregation mechanism to collect multiple errors.
+**Rationale**: Provide two methods: `traverse_result()` for short-circuit behavior (fails fast on first error, matching typical Result semantics) and `validate_all()` for collecting all errors (provides comprehensive feedback for validation scenarios). This covers both performance-critical use cases (short-circuit) and user-feedback use cases (collect all errors) without forcing a single compromise. The `validate_all()` method is named with the `_all` suffix to avoid conflict with the existing `Pattern::validate(&ValidationRules)` method used for structural validation. The method will collect multiple errors using `Vec<E>` as the error type.

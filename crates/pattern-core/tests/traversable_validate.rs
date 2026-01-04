@@ -287,3 +287,29 @@ fn validate_atomic_invalid() {
     assert_eq!(errors.len(), 1);
     assert_eq!(errors[0], "value -5 is not positive");
 }
+
+/// Test that validate_all only calls the function once per value (no double-calling)
+#[test]
+fn validate_all_single_call_per_value() {
+    use pattern_core::test_utils::helpers::EffectCounter;
+    use std::sync::Arc;
+
+    let pattern = Pattern::pattern(
+        1,
+        vec![Pattern::point(2), Pattern::point(3), Pattern::point(4)],
+    );
+
+    // Use Arc to share counter between closure calls
+    let counter = Arc::new(EffectCounter::new());
+    let counter_clone = counter.clone();
+
+    let result: Result<Pattern<i32>, Vec<String>> = pattern.validate_all(move |v| {
+        counter_clone.increment();
+        Ok(*v * 10)
+    });
+
+    assert!(result.is_ok());
+    // Should call function exactly 4 times (once per value: 1, 2, 3, 4)
+    // If double-calling bug exists, this would be 8
+    assert_eq!(counter.count(), 4);
+}

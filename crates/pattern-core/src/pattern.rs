@@ -1563,47 +1563,63 @@ impl<V> Pattern<V> {
     /// This enables efficient recursion without cloning the closure.
     /// Collects errors during traversal and returns them all at the end.
     ///
-    /// Uses a two-pass approach:
-    /// 1. First pass: Apply function to all values and collect all errors
-    /// 2. If no errors: Build the transformed pattern using traverse_result
+    /// Uses a single-pass approach:
+    /// 1. Apply function to all values once, collecting both successes and errors
+    /// 2. If no errors: Build the transformed pattern from collected successes
     /// 3. If errors: Return all collected errors
     fn validate_all_with<W, E, F>(&self, f: &F) -> Result<Pattern<W>, Vec<E>>
     where
         F: Fn(&V) -> Result<W, E>,
     {
-        // Helper function to collect all errors from the entire pattern
-        fn collect_all_errors<V, E, F>(pattern: &Pattern<V>, f: &F, errors: &mut Vec<E>)
-        where
-            F: Fn(&V) -> Result<(), E>,
+        // Helper to recursively collect all results in pre-order (root first, then elements)
+        fn collect_results<V, W, E, F>(
+            pattern: &Pattern<V>,
+            f: &F,
+            successes: &mut Vec<W>,
+            errors: &mut Vec<E>,
+        ) where
+            F: Fn(&V) -> Result<W, E>,
         {
-            // Check root value
-            if let Err(e) = f(&pattern.value) {
-                errors.push(e);
+            // Process root value first
+            match f(&pattern.value) {
+                Ok(w) => successes.push(w),
+                Err(e) => errors.push(e),
             }
-            // Recurse into all elements
+
+            // Process elements recursively (left to right)
             for elem in &pattern.elements {
-                collect_all_errors(elem, f, errors);
+                collect_results(elem, f, successes, errors);
             }
         }
 
-        // First pass: collect all errors
-        let mut all_errors = Vec::new();
-        collect_all_errors(self, &|v| f(v).map(|_| ()), &mut all_errors);
+        // Single pass: apply function to all values, collecting results
+        let mut successes = Vec::new();
+        let mut errors = Vec::new();
+        collect_results(self, f, &mut successes, &mut errors);
 
-        // If there were any errors, return them all
-        if !all_errors.is_empty() {
-            return Err(all_errors);
+        // If any errors occurred, return them all
+        if !errors.is_empty() {
+            return Err(errors);
         }
 
-        // All validations succeeded - now build the transformed pattern
-        // We know this will succeed because we just validated everything
-        match self.traverse_result(f) {
-            Ok(pattern) => Ok(pattern),
-            Err(_) => {
-                // This should never happen since we validated all values above
-                // But if it does, it means there's a bug in the validation logic
-                panic!("validate_all: traverse_result failed after validation passed");
-            }
+        // All validations succeeded - rebuild pattern from collected values
+        // Values are in pre-order, so we consume them in the same order
+        fn rebuild<V, W>(pattern: &Pattern<V>, values: &mut impl Iterator<Item = W>) -> Pattern<W> {
+            // Get root value (next in pre-order sequence)
+            let value = values
+                .next()
+                .expect("validate_all: insufficient transformed values");
+
+            // Rebuild elements recursively
+            let elements = pattern
+                .elements
+                .iter()
+                .map(|elem| rebuild(elem, values))
+                .collect();
+
+            Pattern { value, elements }
         }
+
+        Ok(rebuild(self, &mut successes.into_iter()))
     }
 }
