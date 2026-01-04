@@ -69,6 +69,55 @@
 //! let pattern_with_subject: Pattern<Subject> = Pattern::point(subject);
 //! ```
 //!
+//! # Pattern Ordering
+//!
+//! Patterns implement `Ord` and `PartialOrd` for types that support ordering,
+//! enabling sorting, comparison, and use in ordered data structures.
+//!
+//! ```rust
+//! use pattern_core::Pattern;
+//! use std::collections::{BTreeSet, BTreeMap};
+//!
+//! // Compare patterns
+//! let p1 = Pattern::point(1);
+//! let p2 = Pattern::point(2);
+//! assert!(p1 < p2);
+//!
+//! // Value-first ordering: values compared before elements
+//! let p3 = Pattern::pattern(3, vec![Pattern::point(100)]);
+//! let p4 = Pattern::pattern(4, vec![Pattern::point(1)]);
+//! assert!(p3 < p4); // 3 < 4, elements not compared
+//!
+//! // Sort patterns
+//! let mut patterns = vec![
+//!     Pattern::point(5),
+//!     Pattern::point(2),
+//!     Pattern::point(8),
+//! ];
+//! patterns.sort();
+//! assert_eq!(patterns[0], Pattern::point(2));
+//!
+//! // Find min/max
+//! let min = patterns.iter().min().unwrap();
+//! let max = patterns.iter().max().unwrap();
+//! assert_eq!(min, &Pattern::point(2));
+//! assert_eq!(max, &Pattern::point(8));
+//!
+//! // Use in BTreeSet (maintains sorted order)
+//! let mut set = BTreeSet::new();
+//! set.insert(Pattern::point(5));
+//! set.insert(Pattern::point(2));
+//! set.insert(Pattern::point(8));
+//! let sorted: Vec<_> = set.iter().map(|p| p.value).collect();
+//! assert_eq!(sorted, vec![2, 5, 8]);
+//!
+//! // Use as BTreeMap keys
+//! let mut map = BTreeMap::new();
+//! map.insert(Pattern::point(1), "first");
+//! map.insert(Pattern::point(2), "second");
+//! assert_eq!(map.get(&Pattern::point(1)), Some(&"first"));
+//! ```
+//!
 //! # WASM Compatibility
 //!
 //! All types in this crate are fully compatible with WebAssembly targets. Compile for WASM with:

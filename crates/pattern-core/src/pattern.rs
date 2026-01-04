@@ -28,6 +28,7 @@
 //! - [`Pattern::all_values`] - Checks if all values satisfy a predicate (short-circuits)
 //! - [`Pattern::filter`] - Extracts subpatterns that satisfy a pattern predicate
 
+use std::cmp::Ordering;
 use std::fmt;
 
 /// A recursive, nested structure (s-expression-like) that is generic over value type `V`.
@@ -93,6 +94,9 @@ use std::fmt;
 ///
 /// - `Clone`: Patterns can be cloned when `V: Clone`
 /// - `PartialEq`, `Eq`: Patterns can be compared for equality when `V: PartialEq` (or `Eq`)
+/// - `PartialOrd`, `Ord`: Patterns can be ordered when `V: PartialOrd` (or `Ord`)
+///   - Uses value-first lexicographic ordering: compares values, then elements
+///   - Enables sorting, min/max operations, and use in ordered collections (BTreeSet, BTreeMap)
 /// - `Debug`: Structured representation for debugging (with truncation for deep nesting)
 /// - `Display`: Human-readable representation
 ///
@@ -1955,5 +1959,181 @@ impl<V> Pattern<V> {
         }
 
         Ok(rebuild(self, &mut successes.into_iter()))
+    }
+}
+
+// ============================================================================
+// Ordering Trait Implementations
+// ============================================================================
+
+/// `PartialOrd` implementation for `Pattern`.
+///
+/// Provides lexicographic ordering for patterns based on their structure.
+/// Patterns are compared by their value first, then by their elements recursively.
+///
+/// This implementation follows the same semantics as the Haskell reference implementation
+/// in `gram-hs/libs/pattern/src/Pattern/Core.hs`.
+///
+/// # Ordering Rules
+///
+/// 1. **Value-first comparison**: Compare pattern values first using the value type's `PartialOrd` instance
+/// 2. **Element comparison**: If values are equal, compare element vectors lexicographically
+/// 3. **Lexicographic elements**: Elements are compared left-to-right, stopping at first difference
+/// 4. **Length comparison**: If all compared elements are equal, shorter < longer
+///
+/// # Examples
+///
+/// ```
+/// use pattern_core::Pattern;
+///
+/// // Comparing atomic patterns
+/// let p1 = Pattern::point(1);
+/// let p2 = Pattern::point(2);
+/// assert!(p1 < p2);
+///
+/// // Comparing patterns with same value but different elements
+/// let p3 = Pattern::pattern(5, vec![Pattern::point(1)]);
+/// let p4 = Pattern::pattern(5, vec![Pattern::point(2)]);
+/// assert!(p3 < p4); // Values equal, first element 1 < 2
+///
+/// // Value takes precedence over elements
+/// let p5 = Pattern::pattern(3, vec![Pattern::point(100)]);
+/// let p6 = Pattern::pattern(4, vec![Pattern::point(1)]);
+/// assert!(p5 < p6); // 3 < 4, elements not compared
+/// ```
+///
+/// # Comparison with Haskell
+///
+/// This implementation is behaviorally equivalent to the Haskell `Ord` instance:
+///
+/// ```haskell
+/// instance Ord v => Ord (Pattern v) where
+///   compare (Pattern v1 es1) (Pattern v2 es2) =
+///     case compare v1 v2 of
+///       EQ -> compare es1 es2
+///       other -> other
+/// ```
+impl<V: PartialOrd> PartialOrd for Pattern<V> {
+    /// Compares two patterns, returning `Some(ordering)` if comparable, `None` otherwise.
+    ///
+    /// Uses value-first lexicographic comparison:
+    /// 1. Compare pattern values using `V::partial_cmp`
+    /// 2. If equal (or both None), compare element vectors lexicographically
+    /// 3. If values differ, return that ordering
+    ///
+    /// # Returns
+    ///
+    /// - `Some(Ordering::Less)` if `self < other`
+    /// - `Some(Ordering::Equal)` if `self == other`
+    /// - `Some(Ordering::Greater)` if `self > other`
+    /// - `None` if values cannot be compared (e.g., NaN in floats)
+    ///
+    /// # Performance
+    ///
+    /// - **Best case**: O(1) - Values differ, immediate return
+    /// - **Average case**: O(log n) - Finds difference early in elements
+    /// - **Worst case**: O(n) - Must compare all nodes where n = total nodes
+    fn partial_cmp(&self, other: &Self) -> Option<Ordering> {
+        match self.value.partial_cmp(&other.value) {
+            Some(Ordering::Equal) => self.elements.partial_cmp(&other.elements),
+            other => other,
+        }
+    }
+}
+
+/// `Ord` implementation for `Pattern`.
+///
+/// Provides total ordering for patterns where the value type implements `Ord`.
+/// This enables patterns to be used as keys in ordered data structures like
+/// `BTreeMap`, `BTreeSet`, and `BinaryHeap`.
+///
+/// # Ordering Rules
+///
+/// Same as `PartialOrd`:
+/// 1. Compare values first
+/// 2. If equal, compare elements lexicographically
+///
+/// # Properties
+///
+/// This implementation satisfies all `Ord` trait requirements:
+///
+/// - **Reflexivity**: `x.cmp(&x) == Ordering::Equal` for all x
+/// - **Antisymmetry**: if `x.cmp(&y) == Less` then `y.cmp(&x) == Greater`
+/// - **Transitivity**: if `x < y` and `y < z` then `x < z`
+/// - **Totality**: For all x, y, exactly one of `x < y`, `x == y`, `x > y` holds
+/// - **Consistency with Eq**: `x == y` implies `x.cmp(&y) == Equal`
+///
+/// These properties are verified through property-based tests.
+///
+/// # Examples
+///
+/// ```
+/// use pattern_core::Pattern;
+/// use std::cmp::Ordering;
+///
+/// let p1 = Pattern::point(1);
+/// let p2 = Pattern::point(2);
+///
+/// // Using cmp directly
+/// assert_eq!(p1.cmp(&p2), Ordering::Less);
+///
+/// // Using comparison operators
+/// assert!(p1 < p2);
+/// assert!(p1 <= p2);
+/// assert!(p2 > p1);
+/// assert!(p2 >= p1);
+///
+/// // Sorting collections
+/// let mut patterns = vec![p2.clone(), p1.clone()];
+/// patterns.sort();
+/// assert_eq!(patterns, vec![p1, p2]);
+/// ```
+///
+/// # Usage in Data Structures
+///
+/// ```
+/// use pattern_core::Pattern;
+/// use std::collections::{BTreeMap, BTreeSet};
+///
+/// // As BTreeSet elements
+/// let mut set = BTreeSet::new();
+/// set.insert(Pattern::point(3));
+/// set.insert(Pattern::point(1));
+/// set.insert(Pattern::point(2));
+/// // Iteration in sorted order: 1, 2, 3
+///
+/// // As BTreeMap keys
+/// let mut map = BTreeMap::new();
+/// map.insert(Pattern::point(1), "first");
+/// map.insert(Pattern::point(2), "second");
+/// ```
+impl<V: Ord> Ord for Pattern<V> {
+    /// Compares two patterns, returning their ordering.
+    ///
+    /// Uses value-first lexicographic comparison:
+    /// 1. Compare pattern values using `V::cmp`
+    /// 2. If equal, compare element vectors lexicographically
+    /// 3. If values differ, return that ordering
+    ///
+    /// This method always returns a definitive ordering (never None).
+    ///
+    /// # Performance
+    ///
+    /// - **Best case**: O(1) - Values differ, immediate return
+    /// - **Average case**: O(log n) - Finds difference early in elements
+    /// - **Worst case**: O(n) - Must compare all nodes where n = total nodes
+    ///
+    /// # Short-Circuit Optimization
+    ///
+    /// Comparison stops as soon as a difference is found:
+    /// - If values differ, elements are never compared
+    /// - If elements differ, remaining elements are not compared
+    ///
+    /// This provides efficient comparison even for large patterns.
+    fn cmp(&self, other: &Self) -> Ordering {
+        match self.value.cmp(&other.value) {
+            Ordering::Equal => self.elements.cmp(&other.elements),
+            non_equal => non_equal,
+        }
     }
 }
