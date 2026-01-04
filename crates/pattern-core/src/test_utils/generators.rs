@@ -18,7 +18,7 @@ use crate::Pattern;
 /// - Up to 5 levels of nesting
 #[cfg(test)]
 pub fn arbitrary_pattern_i32() -> impl Strategy<Value = Pattern<i32>> {
-    let leaf = any::<i32>().prop_map(|v| Pattern::point(v));
+    let leaf = any::<i32>().prop_map(Pattern::point);
     
     leaf.prop_recursive(
         5,   // max_depth
@@ -57,7 +57,7 @@ pub fn arbitrary_pattern_string() -> impl Strategy<Value = Pattern<String>> {
 /// Some values will be Some, others None, allowing testing of sequence operations
 #[cfg(test)]
 pub fn arbitrary_pattern_option() -> impl Strategy<Value = Pattern<Option<i32>>> {
-    let leaf = any::<Option<i32>>().prop_map(|v| Pattern::point(v));
+    let leaf = any::<Option<i32>>().prop_map(Pattern::point);
     
     leaf.prop_recursive(
         5,   // max_depth
@@ -75,7 +75,7 @@ pub fn arbitrary_pattern_option() -> impl Strategy<Value = Pattern<Option<i32>>>
 /// Some values will be Ok, others Err, allowing testing of sequence operations
 #[cfg(test)]
 pub fn arbitrary_pattern_result() -> impl Strategy<Value = Pattern<Result<i32, String>>> {
-    let leaf = any::<Result<i32, String>>().prop_map(|v| Pattern::point(v));
+    let leaf = any::<Result<i32, String>>().prop_map(Pattern::point);
     
     leaf.prop_recursive(
         5,   // max_depth

@@ -1251,4 +1251,362 @@ impl<V> Pattern<V> {
             elements: new_elements?,
         })
     }
+
+    /// Applies an effectful function returning `Result` to all values in the pattern.
+    ///
+    /// Traverses the pattern in depth-first, root-first order (pre-order traversal).
+    /// If any transformation returns `Err`, the entire operation returns `Err` (short-circuits).
+    /// If all transformations return `Ok`, returns `Ok(Pattern<W>)` with transformed values.
+    ///
+    /// This implements the Traversable pattern for Result, providing:
+    /// - Structure preservation: Output pattern has same shape as input
+    /// - Effect sequencing: Short-circuits on first Err
+    /// - All-or-nothing semantics: All values must be Ok for success
+    /// - Error propagation: First error encountered is returned
+    ///
+    /// # Type Parameters
+    ///
+    /// * `W` - The type of transformed values
+    /// * `E` - The error type
+    /// * `F` - The transformation function type
+    ///
+    /// # Arguments
+    ///
+    /// * `f` - A function that transforms values of type `&V` to `Result<W, E>`
+    ///
+    /// # Returns
+    ///
+    /// * `Ok(Pattern<W>)` if all transformations succeed
+    /// * `Err(E)` with the first error encountered (short-circuit)
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use pattern_core::Pattern;
+    ///
+    /// // Successful traversal - all values parse
+    /// let pattern = Pattern::pattern("1", vec![Pattern::point("2")]);
+    /// let result: Result<Pattern<i32>, String> = pattern.traverse_result(|s| {
+    ///     s.parse::<i32>().map_err(|e| format!("parse error: {}", e))
+    /// });
+    /// assert!(result.is_ok());
+    /// assert_eq!(result.unwrap().value, 1);
+    ///
+    /// // Failed traversal - one value doesn't parse
+    /// let pattern = Pattern::pattern("1", vec![Pattern::point("invalid")]);
+    /// let result: Result<Pattern<i32>, String> = pattern.traverse_result(|s| {
+    ///     s.parse::<i32>().map_err(|e| format!("parse error: {}", e))
+    /// });
+    /// assert!(result.is_err());
+    /// ```
+    ///
+    /// # Traversable Laws
+    ///
+    /// This implementation satisfies the traversable laws:
+    /// - Identity: `pattern.traverse_result(|v| Ok(*v)) == Ok(pattern.clone())`
+    /// - Structure preservation: If successful, output has same size, depth, and length
+    ///
+    /// # Short-Circuiting
+    ///
+    /// The traversal stops immediately when the first error is encountered:
+    /// - Root value is checked first
+    /// - Elements are processed left-to-right
+    /// - Nested patterns are traversed depth-first
+    /// - No further values are processed after an error
+    ///
+    /// # Performance
+    ///
+    /// - Time: O(n) where n is the number of nodes (best case: O(1) if root errors)
+    /// - Space: O(n) for the new pattern + O(d) stack for recursion depth d
+    /// - Short-circuits on first Err without processing remaining values
+    pub fn traverse_result<W, E, F>(&self, f: F) -> Result<Pattern<W>, E>
+    where
+        F: Fn(&V) -> Result<W, E>,
+    {
+        self.traverse_result_with(&f)
+    }
+
+    /// Internal helper for `traverse_result` that takes function by reference.
+    ///
+    /// This enables efficient recursion without cloning the closure.
+    /// Public `traverse_result` passes closure by value for ergonomics,
+    /// internal `traverse_result_with` passes closure by reference for efficiency.
+    fn traverse_result_with<W, E, F>(&self, f: &F) -> Result<Pattern<W>, E>
+    where
+        F: Fn(&V) -> Result<W, E>,
+    {
+        // Transform root value first (short-circuits on Err via ?)
+        let new_value = f(&self.value)?;
+
+        // Transform elements recursively (left to right)
+        // Iterator::collect() handles Result sequencing - stops on first Err
+        let new_elements: Result<Vec<Pattern<W>>, E> = self
+            .elements
+            .iter()
+            .map(|elem| elem.traverse_result_with(f))
+            .collect();
+
+        // Construct new pattern with transformed value and elements
+        Ok(Pattern {
+            value: new_value,
+            elements: new_elements?,
+        })
+    }
+}
+
+impl<V: Clone> Pattern<Option<V>> {
+    /// Flips the layers of structure from `Pattern<Option<V>>` to `Option<Pattern<V>>`.
+    ///
+    /// This is the `sequence` operation for Option, which "sequences" or "flips" the
+    /// nested structure layers. If all values in the pattern are `Some`, returns
+    /// `Some(Pattern<V>)` with the unwrapped values. If any value is `None`, returns `None`.
+    ///
+    /// This operation is equivalent to `traverse_option` with the identity function,
+    /// and demonstrates the relationship: `sequence = traverse(id)`.
+    ///
+    /// # Type Parameters
+    ///
+    /// * `V` - The type inside the Option values (must implement Clone)
+    ///
+    /// # Returns
+    ///
+    /// * `Some(Pattern<V>)` if all values are Some (unwrapped)
+    /// * `None` if any value in the pattern is None
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use pattern_core::Pattern;
+    ///
+    /// // All Some values → Some(Pattern)
+    /// let pattern = Pattern::pattern(Some(1), vec![Pattern::point(Some(2))]);
+    /// let result = pattern.sequence_option();
+    /// assert!(result.is_some());
+    /// assert_eq!(result.unwrap().value, 1);
+    ///
+    /// // Any None → None
+    /// let pattern = Pattern::pattern(Some(1), vec![Pattern::point(None)]);
+    /// let result = pattern.sequence_option();
+    /// assert!(result.is_none());
+    /// ```
+    ///
+    /// # All-or-Nothing Semantics
+    ///
+    /// - If all values are `Some`, returns `Some` with unwrapped pattern
+    /// - If any value is `None`, returns `None` (short-circuits)
+    /// - Preserves pattern structure when successful
+    ///
+    /// # Use Cases
+    ///
+    /// - Converting `Pattern<Option<V>>` from multiple optional lookups into `Option<Pattern<V>>`
+    /// - Validating that all values in a pattern are present
+    /// - Implementing all-or-nothing processing for optional data
+    ///
+    /// # Performance
+    ///
+    /// - Time: O(n) where n is the number of nodes (best case: O(1) if root is None)
+    /// - Space: O(n) for the new pattern + O(d) stack for recursion depth d
+    /// - Short-circuits on first None without processing remaining values
+    pub fn sequence_option(self) -> Option<Pattern<V>> {
+        self.traverse_option(|opt| opt.as_ref().cloned())
+    }
+}
+
+impl<V, E> Pattern<Result<V, E>> {
+    /// Flips the layers of structure from `Pattern<Result<V, E>>` to `Result<Pattern<V>, E>`.
+    ///
+    /// This is the `sequence` operation for Result, which "sequences" or "flips" the
+    /// nested structure layers. If all values in the pattern are `Ok`, returns
+    /// `Ok(Pattern<V>)` with the unwrapped values. If any value is `Err`, returns that `Err`.
+    ///
+    /// This operation is equivalent to `traverse_result` with the identity function,
+    /// and demonstrates the relationship: `sequence = traverse(id)`.
+    ///
+    /// # Type Parameters
+    ///
+    /// * `V` - The success type inside the Result values
+    /// * `E` - The error type
+    ///
+    /// # Returns
+    ///
+    /// * `Ok(Pattern<V>)` if all values are Ok (unwrapped)
+    /// * `Err(E)` with the first error encountered
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use pattern_core::Pattern;
+    ///
+    /// // All Ok values → Ok(Pattern)
+    /// let pattern: Pattern<Result<i32, String>> = Pattern::pattern(
+    ///     Ok(1),
+    ///     vec![Pattern::point(Ok(2))]
+    /// );
+    /// let result = pattern.sequence_result();
+    /// assert!(result.is_ok());
+    /// assert_eq!(result.unwrap().value, 1);
+    ///
+    /// // Any Err → Err
+    /// let pattern: Pattern<Result<i32, String>> = Pattern::pattern(
+    ///     Ok(1),
+    ///     vec![Pattern::point(Err("error".to_string()))]
+    /// );
+    /// let result = pattern.sequence_result();
+    /// assert!(result.is_err());
+    /// ```
+    ///
+    /// # All-or-Nothing Semantics
+    ///
+    /// - If all values are `Ok`, returns `Ok` with unwrapped pattern
+    /// - If any value is `Err`, returns first `Err` encountered (short-circuits)
+    /// - Preserves pattern structure when successful
+    ///
+    /// # Use Cases
+    ///
+    /// - Converting `Pattern<Result<V, E>>` from multiple fallible operations into `Result<Pattern<V>, E>`
+    /// - Validating that all operations in a pattern succeeded
+    /// - Implementing all-or-nothing processing for fallible operations
+    ///
+    /// # Performance
+    ///
+    /// - Time: O(n) where n is the number of nodes (best case: O(1) if root is Err)
+    /// - Space: O(n) for the new pattern + O(d) stack for recursion depth d
+    /// - Short-circuits on first Err without processing remaining values
+    pub fn sequence_result(self) -> Result<Pattern<V>, E>
+    where
+        V: Clone,
+        E: Clone,
+    {
+        self.traverse_result(|res| res.clone())
+    }
+}
+
+impl<V> Pattern<V> {
+    /// Applies a validation function to all values and collects ALL errors.
+    ///
+    /// Unlike `traverse_result` which short-circuits on the first error, `validate_all`
+    /// processes the entire pattern and collects all errors encountered. This is useful
+    /// for comprehensive validation where you want to report all issues at once.
+    ///
+    /// Traverses in depth-first, root-first order (pre-order). If all validations succeed,
+    /// returns `Ok(Pattern<W>)` with transformed values. If any validation fails, returns
+    /// `Err(Vec<E>)` with ALL errors collected in traversal order.
+    ///
+    /// # Type Parameters
+    ///
+    /// * `W` - The type of transformed values
+    /// * `E` - The error type
+    /// * `F` - The validation function type
+    ///
+    /// # Arguments
+    ///
+    /// * `f` - A function that validates and transforms values of type `&V` to `Result<W, E>`
+    ///
+    /// # Returns
+    ///
+    /// * `Ok(Pattern<W>)` if all validations succeed
+    /// * `Err(Vec<E>)` with ALL errors collected in traversal order
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use pattern_core::Pattern;
+    ///
+    /// // All validations succeed
+    /// let pattern = Pattern::pattern(1, vec![Pattern::point(2), Pattern::point(3)]);
+    /// let result: Result<Pattern<i32>, Vec<String>> = pattern.validate_all(|v| {
+    ///     if *v > 0 { Ok(*v * 10) } else { Err(format!("negative: {}", v)) }
+    /// });
+    /// assert!(result.is_ok());
+    ///
+    /// // Multiple validations fail - ALL errors collected
+    /// let pattern = Pattern::pattern(-1, vec![Pattern::point(2), Pattern::point(-3)]);
+    /// let result: Result<Pattern<i32>, Vec<String>> = pattern.validate_all(|v| {
+    ///     if *v > 0 { Ok(*v * 10) } else { Err(format!("negative: {}", v)) }
+    /// });
+    /// assert!(result.is_err());
+    /// let errors = result.unwrap_err();
+    /// assert_eq!(errors.len(), 2); // Both -1 and -3 reported
+    /// ```
+    ///
+    /// # Comparison with traverse_result
+    ///
+    /// **traverse_result**: Returns first error (short-circuits)
+    /// - Use when: You want to fail fast and stop processing
+    /// - Performance: O(1) to O(n) depending on error location
+    /// - Behavior: Stops at first error
+    ///
+    /// **validate_all**: Returns ALL errors (no short-circuit)
+    /// - Use when: You want comprehensive error reporting
+    /// - Performance: Always O(n) - processes entire pattern
+    /// - Behavior: Collects all errors, then returns
+    ///
+    /// # Error Ordering
+    ///
+    /// Errors are collected in traversal order (root first, then elements left to right).
+    /// This provides predictable and consistent error reporting.
+    ///
+    /// # Performance
+    ///
+    /// - Time: Always O(n) where n is the number of nodes (no short-circuiting)
+    /// - Space: O(n) for the new pattern + O(e) for error collection + O(d) stack depth
+    /// - Processes every value regardless of errors
+    pub fn validate_all<W, E, F>(&self, f: F) -> Result<Pattern<W>, Vec<E>>
+    where
+        F: Fn(&V) -> Result<W, E>,
+    {
+        self.validate_all_with(&f)
+    }
+
+    /// Internal helper for `validate_all` that takes function by reference.
+    ///
+    /// This enables efficient recursion without cloning the closure.
+    /// Collects errors during traversal and returns them all at the end.
+    ///
+    /// Uses a two-pass approach:
+    /// 1. First pass: Apply function to all values and collect all errors
+    /// 2. If no errors: Build the transformed pattern using traverse_result
+    /// 3. If errors: Return all collected errors
+    fn validate_all_with<W, E, F>(&self, f: &F) -> Result<Pattern<W>, Vec<E>>
+    where
+        F: Fn(&V) -> Result<W, E>,
+    {
+        // Helper function to collect all errors from the entire pattern
+        fn collect_all_errors<V, E, F>(
+            pattern: &Pattern<V>,
+            f: &F,
+            errors: &mut Vec<E>,
+        ) where
+            F: Fn(&V) -> Result<(), E>,
+        {
+            // Check root value
+            if let Err(e) = f(&pattern.value) {
+                errors.push(e);
+            }
+            // Recurse into all elements
+            for elem in &pattern.elements {
+                collect_all_errors(elem, f, errors);
+            }
+        }
+
+        // First pass: collect all errors
+        let mut all_errors = Vec::new();
+        collect_all_errors(self, &|v| f(v).map(|_| ()), &mut all_errors);
+
+        // If there were any errors, return them all
+        if !all_errors.is_empty() {
+            return Err(all_errors);
+        }
+
+        // All validations succeeded - now build the transformed pattern
+        // We know this will succeed because we just validated everything
+        match self.traverse_result(f) {
+            Ok(pattern) => Ok(pattern),
+            Err(_) => {
+                // This should never happen since we validated all values above
+                // But if it does, it means there's a bug in the validation logic
+                panic!("validate_all: traverse_result failed after validation passed");
+            }
+        }
+    }
 }
