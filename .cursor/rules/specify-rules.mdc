@@ -7,6 +7,7 @@ Auto-generated from all feature plans. Last updated: 2025-12-27
 - Rust 1.70.0+ (workspace MSRV), Edition 2021 (004-pattern-data-structure)
 - N/A (in-memory data structures only) (004-pattern-data-structure)
 - N/A (in-memory operations only) (009-foldable-instance)
+- N/A (in-memory transformations only) (010-traversable-instance)
 
 - Rust (MSRV: 1.70.0, edition: 2021) (002-workspace-setup)
 
@@ -26,9 +27,9 @@ cargo test [ONLY COMMANDS FOR ACTIVE TECHNOLOGIES][ONLY COMMANDS FOR ACTIVE TECH
 Rust (MSRV: 1.70.0, edition: 2021): Follow standard conventions
 
 ## Recent Changes
+- 010-traversable-instance: Added Rust 1.70.0+ (workspace MSRV), Edition 2021
 - 009-foldable-instance: Added Rust 1.70.0+ (workspace MSRV), Edition 2021
 - 006-pattern-structure-review: Added Rust 1.70.0+ (workspace MSRV), Edition 2021
-- 004-pattern-data-structure: Added Rust 1.70.0+ (workspace MSRV), Edition 2021
 
 
 <!-- MANUAL ADDITIONS START -->
