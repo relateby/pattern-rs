@@ -139,9 +139,9 @@ crates/pattern-core/
    - **Alternatives considered**: `&self` receiver (rejected - requires cloning), `FnMut` or `FnOnce` bounds (rejected - `Fn` is most flexible)
 
 3. **Q: How to handle recursion (closure capture)?**
-   - **Decision**: Capture `&f` in recursive calls: `elem.map(&f)`
-   - **Rationale**: Allows reusing the same closure for all recursive calls without cloning
-   - **Alternatives considered**: Clone closure (rejected - performance overhead), separate recursive helper (rejected - unnecessary complexity)
+   - **Decision**: Use internal `map_with(&F)` helper for recursive calls
+   - **Rationale**: Public API takes `F` by value for ergonomics, internal helper takes `&F` by reference for efficiency. Avoids `Clone` bound and nested reference types.
+   - **Alternatives considered**: Clone closure (rejected - requires `F: Clone` bound), direct `&f` capture (rejected - nested reference type errors)
 
 4. **Q: What naming convention to use?**
    - **Decision**: `map` (not `fmap`)

@@ -52,10 +52,10 @@ Foundational (Phase 2) ← Must complete before any user story
 
 ### Tasks
 
-- [ ] T001 [P] Verify Pattern<V> type exists in crates/pattern-core/src/pattern.rs
-- [ ] T002 [P] Verify proptest dependency available in Cargo.toml
-- [ ] T003 [P] Review gram-hs Functor implementation at ../gram-hs/libs/pattern/src/Pattern/Core.hs lines 536-617
-- [ ] T004 [P] Review gram-hs Functor tests at ../gram-hs/libs/pattern/tests/Spec/Pattern/Properties.hs lines 176-203
+- [x] T001 [P] Verify Pattern<V> type exists in crates/pattern-core/src/pattern.rs
+- [x] T002 [P] Verify proptest dependency available in Cargo.toml
+- [x] T003 [P] Review gram-hs Functor implementation at ../gram-hs/libs/pattern/src/Pattern/Core.hs lines 536-617
+- [x] T004 [P] Review gram-hs Functor tests at ../gram-hs/libs/pattern/tests/Spec/Pattern/Properties.hs lines 176-203
 
 **Acceptance**: All prerequisites verified, gram-hs implementation reviewed
 
@@ -67,12 +67,12 @@ Foundational (Phase 2) ← Must complete before any user story
 
 ### Tasks
 
-- [ ] T005 Add method signature for Pattern::map in crates/pattern-core/src/pattern.rs
-- [ ] T006 Implement map method body with value transformation in crates/pattern-core/src/pattern.rs
-- [ ] T007 Implement recursive element transformation in crates/pattern-core/src/pattern.rs
-- [ ] T008 Add comprehensive doc comments with examples to map method in crates/pattern-core/src/pattern.rs
-- [ ] T009 Export map functionality if needed in crates/pattern-core/src/lib.rs
-- [ ] T010 Verify WASM compilation: cargo build --target wasm32-unknown-unknown
+- [x] T005 Add method signature for Pattern::map in crates/pattern-core/src/pattern.rs
+- [x] T006 Implement map method body with value transformation in crates/pattern-core/src/pattern.rs
+- [x] T007 Implement recursive element transformation in crates/pattern-core/src/pattern.rs
+- [x] T008 Add comprehensive doc comments with examples to map method in crates/pattern-core/src/pattern.rs
+- [x] T009 Export map functionality if needed in crates/pattern-core/src/lib.rs
+- [x] T010 Verify WASM compilation: cargo build --target wasm32-unknown-unknown
 
 **Acceptance**: Pattern::map method compiles, documented, WASM compatible
 
@@ -93,18 +93,18 @@ Foundational (Phase 2) ← Must complete before any user story
 
 ### Property-Based Tests
 
-- [ ] T011 [P] [US1] Create test file crates/pattern-core/tests/functor_laws.rs
-- [ ] T012 [P] [US1] Add proptest imports and pattern generators in crates/pattern-core/tests/functor_laws.rs
-- [ ] T013 [P] [US1] Implement structure_preservation property test in crates/pattern-core/tests/functor_laws.rs
-- [ ] T014 [US1] Run structure preservation test: cargo test functor_laws::structure_preservation
+- [x] T011 [P] [US1] Create test file crates/pattern-core/tests/functor_laws.rs
+- [x] T012 [P] [US1] Add proptest imports and pattern generators in crates/pattern-core/tests/functor_laws.rs
+- [x] T013 [P] [US1] Implement structure_preservation property test in crates/pattern-core/tests/functor_laws.rs
+- [x] T014 [US1] Run structure preservation test: cargo test functor_laws::structure_preservation
 
 ### Unit Tests
 
-- [ ] T015 [P] [US1] Implement test_map_atomic_pattern in crates/pattern-core/tests/functor_laws.rs
-- [ ] T016 [P] [US1] Implement test_map_nested_pattern in crates/pattern-core/tests/functor_laws.rs
-- [ ] T017 [P] [US1] Implement test_map_type_conversion in crates/pattern-core/tests/functor_laws.rs
-- [ ] T018 [P] [US1] Implement test_map_preserves_structure in crates/pattern-core/tests/functor_laws.rs
-- [ ] T019 [US1] Run all US1 tests: cargo test functor_laws
+- [x] T015 [P] [US1] Implement test_map_atomic_pattern in crates/pattern-core/tests/functor_laws.rs
+- [x] T016 [P] [US1] Implement test_map_nested_pattern in crates/pattern-core/tests/functor_laws.rs
+- [x] T017 [P] [US1] Implement test_map_type_conversion in crates/pattern-core/tests/functor_laws.rs
+- [x] T018 [P] [US1] Implement test_map_preserves_structure in crates/pattern-core/tests/functor_laws.rs
+- [x] T019 [US1] Run all US1 tests: cargo test functor_laws
 
 **US1 Deliverable**: Working map method with structure preservation verified
 
@@ -126,9 +126,9 @@ Foundational (Phase 2) ← Must complete before any user story
 
 ### Property-Based Tests
 
-- [ ] T020 [P] [US2] Implement composition_law property test in crates/pattern-core/tests/functor_laws.rs
-- [ ] T021 [US2] Run composition law test: cargo test functor_laws::composition_law
-- [ ] T022 [P] [US2] Add test for composition with type transformations in crates/pattern-core/tests/functor_laws.rs
+- [x] T020 [P] [US2] Implement composition_law property test in crates/pattern-core/tests/functor_laws.rs
+- [x] T021 [US2] Run composition law test: cargo test functor_laws::composition_law
+- [x] T022 [P] [US2] Add test for composition with type transformations in crates/pattern-core/tests/functor_laws.rs
 
 **US2 Deliverable**: Composition law verified through property tests
 
@@ -149,8 +149,8 @@ Foundational (Phase 2) ← Must complete before any user story
 
 ### Property-Based Tests
 
-- [ ] T023 [P] [US3] Implement identity_law property test in crates/pattern-core/tests/functor_laws.rs
-- [ ] T024 [US3] Run identity law test: cargo test functor_laws::identity_law
+- [x] T023 [P] [US3] Implement identity_law property test in crates/pattern-core/tests/functor_laws.rs
+- [x] T024 [US3] Run identity law test: cargo test functor_laws::identity_law
 
 **US3 Deliverable**: Identity law verified through property tests
 
@@ -164,24 +164,24 @@ Foundational (Phase 2) ← Must complete before any user story
 
 ### Performance Verification
 
-- [ ] T025 Benchmark transformation with 1000-node patterns in crates/pattern-core/benches/ (if benchmark infrastructure exists)
-- [ ] T026 Test stack safety with 100+ nesting levels in crates/pattern-core/tests/functor_laws.rs
-- [ ] T027 Profile memory usage with 10,000-element patterns (manual verification)
+- [x] T025 Benchmark transformation with 1000-node patterns in crates/pattern-core/benches/ (if benchmark infrastructure exists)
+- [x] T026 Test stack safety with 100+ nesting levels in crates/pattern-core/tests/functor_laws.rs
+- [x] T027 Profile memory usage with 10,000-element patterns (manual verification)
 
 ### Documentation & Integration
 
-- [ ] T028 [P] Update crate documentation in crates/pattern-core/src/lib.rs
-- [ ] T029 [P] Add examples to crates/pattern-core/README.md
-- [ ] T030 [P] Update TODO.md to mark feature 008 complete
-- [ ] T031 Verify all success criteria from specs/008-functor-instance/spec.md
+- [x] T028 [P] Update crate documentation in crates/pattern-core/src/lib.rs
+- [x] T029 [P] Add examples to crates/pattern-core/README.md
+- [x] T030 [P] Update TODO.md to mark feature 008 complete
+- [x] T031 Verify all success criteria from specs/008-functor-instance/spec.md
 
 ### Final Verification
 
-- [ ] T032 Run full test suite: cargo test
-- [ ] T033 Run clippy: cargo clippy --all-targets --all-features
-- [ ] T034 Run rustfmt: cargo fmt --check
-- [ ] T035 Verify WASM compilation: cargo build --target wasm32-unknown-unknown
-- [ ] T036 Review and update PORTING_GUIDE.md examples if needed
+- [x] T032 Run full test suite: cargo test
+- [x] T033 Run clippy: cargo clippy --all-targets --all-features
+- [x] T034 Run rustfmt: cargo fmt --check
+- [x] T035 Verify WASM compilation: cargo build --target wasm32-unknown-unknown
+- [x] T036 Review and update PORTING_GUIDE.md examples if needed
 
 **Phase Complete**: All tests pass, documentation complete, feature ready for merge
 

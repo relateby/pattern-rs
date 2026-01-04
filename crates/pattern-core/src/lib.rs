@@ -35,6 +35,10 @@
 //! assert_eq!(pattern.length(), 2);
 //! assert_eq!(pattern.depth(), 1);
 //!
+//! // Transform pattern values (Functor)
+//! let upper = pattern.clone().map(|s| s.to_uppercase());
+//! assert_eq!(upper.value(), "PARENT");
+//!
 //! // Validate pattern structure
 //! use pattern_core::ValidationRules;
 //! let rules = ValidationRules {

@@ -30,20 +30,31 @@ instance Functor Pattern where
   fmap f (Pattern v es) = Pattern (f v) (map (fmap f) es)
 ```
 
-**Rust** (concrete method):
+**Rust** (concrete method with helper):
 ```rust
 impl<V> Pattern<V> {
+    // Public API - ergonomic
     pub fn map<W, F>(self, f: F) -> Pattern<W>
+    where
+        F: Fn(&V) -> W,
+    {
+        self.map_with(&f)
+    }
+
+    // Internal helper - efficient recursion
+    fn map_with<W, F>(self, f: &F) -> Pattern<W>
     where
         F: Fn(&V) -> W,
     {
         Pattern {
             value: f(&self.value),
-            elements: self.elements.into_iter().map(|e| e.map(&f)).collect(),
+            elements: self.elements.into_iter().map(|e| e.map_with(f)).collect(),
         }
     }
 }
 ```
+
+**Implementation Note**: The helper function pattern allows the public API to take `F` by value (ergonomic, matches standard library conventions) while internal recursion uses `&F` (efficient, avoids cloning). This avoids requiring `F: Clone` bound, making the API more flexible.
 
 ### Behavioral Equivalence
 

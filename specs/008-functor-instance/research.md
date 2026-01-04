@@ -99,33 +99,55 @@
 - Analyzed recursive patterns in standard library
 - Studied stack safety for deep recursion
 
-**Decision**: Capture `&f` (closure reference) in recursive calls
+**Decision**: Capture `&f` (closure reference) in recursive calls via internal helper
 
 **Implementation**:
 ```rust
-Pattern {
-    value: f(&self.value),
-    elements: self.elements
-        .into_iter()
-        .map(|elem| elem.map(&f))  // Capture &f here
-        .collect(),
+// Public API - ergonomic, takes F by value
+pub fn map<W, F>(self, f: F) -> Pattern<W>
+where
+    F: Fn(&V) -> W,
+{
+    self.map_with(&f)
+}
+
+// Internal helper - efficient, takes &F by reference
+fn map_with<W, F>(self, f: &F) -> Pattern<W>
+where
+    F: Fn(&V) -> W,
+{
+    Pattern {
+        value: f(&self.value),
+        elements: self.elements
+            .into_iter()
+            .map(|elem| elem.map_with(f))  // Reuse &f here
+            .collect(),
+    }
 }
 ```
 
 **Rationale**:
 1. **Efficiency**: Reuses same closure for all recursive calls without cloning
-2. **Simplicity**: Natural recursion pattern, easy to understand
-3. **Type safety**: Rust's borrow checker ensures correctness
-4. **Tail recursion**: Iterator's map handles the recursion, reducing stack depth
+2. **Ergonomics**: Public API takes `F` by value (like `Option::map`, `Result::map`)
+3. **Type safety**: Helper function pattern avoids nested reference types
+4. **No Clone bound**: Works with any `Fn`, not just cloneable closures
 
 **Alternatives Considered**:
 - Clone closure for each recursive call:
   ```rust
-  .map(|elem| elem.map(f.clone()))
+  .map(|elem| elem.map(f.clone()))  // With F: Clone bound
   ```
-  - **Rejected**: Requires `F: Clone`, adds overhead
-- Separate recursive helper function:
-  - **Rejected**: Adds unnecessary complexity, doesn't improve clarity
+  - **Rejected**: Requires `F: Clone`, adds unnecessary overhead, less flexible
+- Public API takes `&F` directly:
+  ```rust
+  pub fn map<W, F>(self, f: &F) -> Pattern<W>
+  ```
+  - **Rejected**: Less ergonomic, users must write `pattern.map(&|x| ...)` instead of `pattern.map(|x| ...)`
+- Direct recursive call with `&f`:
+  ```rust
+  elem.map(&f)  // Without helper
+  ```
+  - **Rejected**: Creates nested reference types (`&&&...F`), compiler error
 
 **Stack Safety**:
 - Tested with patterns of 100+ nesting levels

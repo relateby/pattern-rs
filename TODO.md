@@ -6,6 +6,11 @@ This TODO tracks the incremental porting of features from the gram-hs reference 
 
 ## Phase 1: Foundation & Infrastructure
 
+**Progress**: 3/3 features complete ✅
+- ✅ 001: Rust project initialization
+- ✅ 002: Multi-crate workspace setup
+- ✅ 003: Testing framework infrastructure
+
 ### ✅ 001-rust-init: Rust Project Initialization
 - [x] Project structure and Cargo.toml setup
 - [x] Basic workspace configuration
@@ -37,6 +42,12 @@ This TODO tracks the incremental porting of features from the gram-hs reference 
 ---
 
 ## Phase 2: Core Pattern Data Structure
+
+**Progress**: 3/4 features complete (007 deferred)
+- ✅ 004: Pattern data structure
+- ✅ 005: Pattern construction & access
+- ✅ 006: Pattern validation & structure analysis
+- ⏸️ 007: Additional pattern builders (deferred - core constructors already available)
 
 ### ✅ 004-pattern-data-structure: Core Pattern Type
 **Primary Reference (Authoritative)**: `../gram-hs/libs/` - Haskell implementation source code
@@ -73,24 +84,28 @@ This TODO tracks the incremental porting of features from the gram-hs reference 
 - [x] Port test cases (from actual test files)
 - [x] Verify equivalence (against actual Haskell implementation)
 
-### 006-pattern-structure-review: Pattern Structure Validation
+### ✅ 006-pattern-structure-review: Pattern Structure Validation
 **Primary Reference (Authoritative)**: `../gram-hs/libs/` - Haskell implementation source code
 **Documentation Reference**: `../gram-hs/docs/` - Up-to-date documentation about the implementation
 **Historical Reference (Context Only)**: `../gram-hs/specs/003-pattern-structure-review/` - Historical notes from incremental development (may be outdated)
 
-- [ ] Study Haskell implementation: `../gram-hs/libs/` - **This is the source of truth**
-- [ ] Review gram-hs documentation: `../gram-hs/docs/` - **Up-to-date information about the implementation**
-- [ ] Review gram-hs tests: `../gram-hs/libs/*/tests/` - **Shows expected behavior**
-- [ ] Review gram-hs spec: `../gram-hs/specs/003-pattern-structure-review/spec.md` (historical notes, for context only)
-- [ ] Port pattern validation functions (from actual Haskell source)
-- [ ] Port structure analysis utilities (from actual Haskell source)
-- [ ] Port test cases (from actual test files)
-- [ ] Verify equivalence (against actual Haskell implementation)
+- [x] Study Haskell implementation: `../gram-hs/libs/` - **This is the source of truth**
+- [x] Review gram-hs documentation: `../gram-hs/docs/` - **Up-to-date information about the implementation**
+- [x] Review gram-hs tests: `../gram-hs/libs/*/tests/` - **Shows expected behavior**
+- [x] Review gram-hs spec: `../gram-hs/specs/003-pattern-structure-review/spec.md` (historical notes, for context only)
+- [x] Port pattern validation functions (from actual Haskell source)
+- [x] Port structure analysis utilities (from actual Haskell source)
+- [x] Port test cases (from actual test files)
+- [x] Verify equivalence (against actual Haskell implementation)
 
-### 007-construction-functions: Pattern Builders
+**Note**: Validation and structure analysis functionality implemented in feature 005 as part of core Pattern API (`validate()`, `analyze_structure()` methods).
+
+### ⏸️ 007-construction-functions: Pattern Builders (DEFERRED)
 **Primary Reference (Authoritative)**: `../gram-hs/libs/` - Haskell implementation source code
 **Documentation Reference**: `../gram-hs/docs/` - Up-to-date documentation about the implementation
 **Historical Reference (Context Only)**: `../gram-hs/specs/004-construction-functions/` - Historical notes from incremental development (may be outdated)
+
+**Status**: DEFERRED - Core constructors (`point`, `pattern`) already implemented in feature 005. Additional builder/convenience functions can be added later as needed based on usage patterns.
 
 - [ ] Study Haskell implementation: `../gram-hs/libs/` - **This is the source of truth**
 - [ ] Review gram-hs documentation: `../gram-hs/docs/` - **Up-to-date information about the implementation**
@@ -105,19 +120,23 @@ This TODO tracks the incremental porting of features from the gram-hs reference 
 
 ## Phase 3: Pattern Typeclass Instances (Traits)
 
-### 008-functor-instance: Functor Trait
+**Progress**: 1/11 features complete
+- ✅ 008: Functor instance (idiomatic `map` method)
+- ⏸️ 009-018: Remaining typeclass instances (pending)
+
+### ✅ 008-functor-instance: Functor Trait
 **Primary Reference (Authoritative)**: `../gram-hs/libs/` - Haskell implementation source code
 **Documentation Reference**: `../gram-hs/docs/` - Up-to-date documentation about the implementation
 **Historical Reference (Context Only)**: `../gram-hs/specs/005-functor-instance/` - Historical notes from incremental development (may be outdated)
 
-- [ ] Study Haskell implementation: `../gram-hs/libs/` - **This is the source of truth**
-- [ ] Review gram-hs documentation: `../gram-hs/docs/` - **Up-to-date information about the implementation**
-- [ ] Review gram-hs tests: `../gram-hs/libs/*/tests/` - **Shows expected behavior**
-- [ ] Review gram-hs spec: `../gram-hs/specs/005-functor-instance/spec.md` (historical notes, for context only)
-- [ ] Design Rust trait equivalent to Functor (based on actual Haskell implementation)
-- [ ] Implement `map` function for patterns (from actual Haskell source)
-- [ ] Port test cases (from actual test files)
-- [ ] Verify equivalence (against actual Haskell implementation)
+- [x] Study Haskell implementation: `../gram-hs/libs/` - **This is the source of truth**
+- [x] Review gram-hs documentation: `../gram-hs/docs/` - **Up-to-date information about the implementation**
+- [x] Review gram-hs tests: `../gram-hs/libs/*/tests/` - **Shows expected behavior**
+- [x] Review gram-hs spec: `../gram-hs/specs/005-functor-instance/spec.md` (historical notes, for context only)
+- [x] Design Rust trait equivalent to Functor (based on actual Haskell implementation)
+- [x] Implement `map` function for patterns (from actual Haskell source)
+- [x] Port test cases (from actual test files)
+- [x] Verify equivalence (against actual Haskell implementation)
 
 ### 009-foldable-instance: Foldable Trait
 **Primary Reference (Authoritative)**: `../gram-hs/libs/` - Haskell implementation source code
@@ -529,6 +548,8 @@ snippets.
 - **Reference Implementation**: Always verify against the actual Haskell source code in `../gram-hs/libs/` before marking features complete. The Haskell implementation is the authoritative source of truth. Documentation in `../gram-hs/docs/` provides up-to-date information about the implementation. Historical notes in `../gram-hs/specs/` guided incremental development but may be outdated. See `PORTING_GUIDE.md` for detailed workflow.
 
 - **Priority**: Focus on Phase 1-4 first to establish core functionality. Phases 5-8 can proceed in parallel once core is stable.
+
+- **Deferred Features**: Some features may be deferred if their core functionality is already covered by other features. For example, feature 007 (additional pattern builders) is deferred because the essential constructors (`point`, `pattern`) are already available from feature 005. Deferred features can be revisited later based on user needs.
 
 - **Breaking Changes**: Any intentional deviations from gram-hs behavior must be documented with rationale.
 
