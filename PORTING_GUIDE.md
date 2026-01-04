@@ -37,6 +37,92 @@ The gram-hs reference implementation is available locally at:
 
 For detailed usage of the `gramref` CLI tool, see: `docs/gramref-cli-testing-guide.md`
 
+## Core Principle: Idiomatic Rust vs Literal Translation
+
+**We are porting concepts and behaviors, not Haskell syntax.**
+
+The gram-hs reference implementation serves as a **behavioral specification** - it demonstrates the concepts we need to implement and provides test cases to verify correctness. However, the Rust implementation should be **idiomatic Rust**, not a literal translation of Haskell.
+
+### What We Port
+
+✅ **Port these**:
+- **Concepts**: The ideas and abstractions (e.g., "structure-preserving value transformation")
+- **Behavior**: What the code does (e.g., "maps a function over all values while preserving structure")
+- **Laws**: Mathematical properties (e.g., functor identity and composition laws)
+- **Test cases**: Expected inputs and outputs
+- **Edge cases**: Boundary conditions and error scenarios
+
+❌ **Don't port these**:
+- **Syntax**: Haskell language constructs (typeclasses, pattern matching syntax, etc.)
+- **Naming**: Haskell function names when Rust has different conventions (use `map` not `fmap`)
+- **Type system features**: Higher-Kinded Types, type families, etc. (Rust doesn't have these)
+- **Implementation details**: Haskell-specific optimizations or patterns
+
+### Example: Porting Functor
+
+**Haskell approach** (typeclass):
+```haskell
+class Functor f where
+  fmap :: (a -> b) -> f a -> f b
+
+instance Functor Pattern where
+  fmap f (Pattern v es) = Pattern (f v) (map (fmap f) es)
+```
+
+**Idiomatic Rust approach** (direct method):
+```rust
+impl<V> Pattern<V> {
+    /// Maps a function over all values in the pattern, preserving structure.
+    pub fn map<W, F>(self, f: F) -> Pattern<W>
+    where
+        F: Fn(&V) -> W,
+    {
+        Pattern {
+            value: f(&self.value),
+            elements: self.elements.into_iter().map(|e| e.map(&f)).collect(),
+        }
+    }
+}
+```
+
+**What we preserved**:
+- ✅ Concept: Structure-preserving value transformation
+- ✅ Behavior: Applies function to all values recursively
+- ✅ Laws: Identity and composition (verified via tests)
+- ✅ Type transformation: Can change from `Pattern<V>` to `Pattern<W>`
+
+**What we changed**:
+- ❌ No Functor trait (Rust doesn't have HKTs, and a direct method is more idiomatic)
+- ❌ Name: `map` instead of `fmap` (follows Rust standard library conventions)
+- ❌ Ownership: Consumes `self` (idiomatic Rust pattern)
+
+### Guidelines for Idiomatic Ports
+
+1. **Follow Rust Standard Library Conventions**
+   - Use names that Rust developers expect (`map`, `and_then`, `or_else`, etc.)
+   - Follow ownership patterns (consume when appropriate, borrow when needed)
+   - Use standard traits when they fit (`Debug`, `Display`, `PartialEq`, etc.)
+
+2. **Simplify When Appropriate**
+   - If a Haskell typeclass can be replaced with a simple method, do so
+   - Don't create complex trait hierarchies unless they add real value
+   - Prefer concrete implementations over abstract ones when appropriate
+
+3. **Maintain Behavioral Equivalence**
+   - Port the test cases to verify behavior matches
+   - Ensure the same edge cases are handled
+   - Verify the same laws/properties hold
+
+4. **Document the Mapping**
+   - Note in comments which Haskell construct inspired the Rust code
+   - Explain why deviations from Haskell are appropriate
+   - Link to the reference implementation for context
+
+5. **Test the Concept, Not the Syntax**
+   - Port property-based tests that verify laws and invariants
+   - Use the same test data to ensure behavioral equivalence
+   - Focus on "does it behave the same?" not "does it look the same?"
+
 ## Porting Workflow
 
 ### 1. Identify Feature to Port
@@ -131,15 +217,21 @@ Before porting, verify what types actually exist in the Haskell implementation:
   - User stories
   - TODO checklists
 
-**Step 3: Port the Types**
+**Step 3: Port the Types (Idiomatically)**
 
-Port the types you found in the Haskell source:
+Port the types you found in the Haskell source, **using idiomatic Rust patterns**:
 
 **Haskell → Rust Translation**:
 - `data Pattern v = Pattern { value :: v, elements :: [Pattern v] }` → `pub struct Pattern<V> { pub value: V, pub elements: Vec<Pattern<V>> }`
-- `type` aliases → `type` aliases (same)
-- Typeclasses → Traits (see translation guide below)
-- Functions → Functions (with Rust naming: `snake_case`)
+- `type` aliases → `type` aliases (same concept, Rust syntax)
+- **Typeclasses → Idiomatic Rust** (see translation guide - prefer direct methods over trait hierarchies)
+- Functions → Methods or functions (with Rust naming: `snake_case`, following Rust conventions)
+
+**Key Point on Typeclasses**:
+When you encounter a Haskell typeclass instance (like `Functor`, `Applicative`, `Foldable`), ask:
+1. Is there a standard library trait that fits? (Use it)
+2. Would direct methods be more idiomatic? (Prefer this for most cases)
+3. Is a custom trait truly needed for abstraction? (Only if yes to both)
 
 **Example**: To find the Pattern type definition:
 ```bash
@@ -195,15 +287,24 @@ gramref generate --type suite --count 100 --seed 42 --complexity standard \
 
 See [gramref CLI Testing Guide](docs/gramref-cli-testing-guide.md) for more details on test case generation and extraction.
 
-### 6. Implement Functionality
+### 6. Implement Functionality (Idiomatically)
 
-Port the Haskell implementation from `../gram-hs/libs/*/src/` to idiomatic Rust:
+Port the **behavior** from `../gram-hs/libs/*/src/` using **idiomatic Rust**:
 
-- Translate Haskell patterns to Rust idioms
-- Use Rust's type system (enums, Result, ownership)
-- Follow Rust naming conventions
-- Maintain behavioral equivalence with the actual Haskell implementation
-- Do not rely on design documents - use the actual source code as the reference
+- **Understand the concept**: Read the Haskell code to understand what it does and why
+- **Implement idiomatically**: Write Rust code that achieves the same behavior using Rust conventions
+- **Don't translate literally**: Haskell syntax doesn't map 1:1 to Rust; that's okay
+- **Follow Rust patterns**: Use standard library conventions, ownership model, type system
+- **Test behavioral equivalence**: Verify the Rust code produces the same results
+- **Document the mapping**: Note which Haskell code inspired the Rust implementation
+
+**Example Workflow**:
+1. Read Haskell implementation: "This is a Functor instance that maps a function over values"
+2. Understand the concept: "Structure-preserving value transformation"
+3. Find Rust idiom: "Standard library uses `map` methods on `Option`, `Result`, etc."
+4. Implement: Create a `map` method following standard library conventions
+5. Test: Port property tests to verify functor laws hold
+6. Document: "Equivalent to Haskell's `fmap` from Functor typeclass"
 
 ### 7. Verify Equivalence
 
@@ -250,18 +351,31 @@ pub struct Pattern<V> {
 }
 ```
 
-### Typeclasses → Traits
+### Typeclasses → Traits (Prefer Idiomatic Approaches)
 
-| Haskell | Rust |
-|---------|------|
-| `Show` | `Debug` + `Display` |
-| `Eq` | `PartialEq` + `Eq` |
-| `Ord` | `PartialOrd` + `Ord` |
-| `Functor` | Custom trait or `Iterator` |
-| `Foldable` | `Iterator` methods |
-| `Traversable` | `Iterator` + `collect` |
-| `Semigroup` | Custom trait or use `Add` |
-| `Monoid` | Custom trait or use `Default` |
+**Important**: Rust lacks Higher-Kinded Types (HKTs), which means many Haskell typeclasses cannot be directly translated. Instead, prefer idiomatic Rust approaches that achieve the same behavior.
+
+| Haskell Typeclass | Idiomatic Rust Approach | Alternative |
+|-------------------|------------------------|-------------|
+| `Show` | `Debug` + `Display` traits | Standard library |
+| `Eq` | `PartialEq` + `Eq` traits | Standard library |
+| `Ord` | `PartialOrd` + `Ord` traits | Standard library |
+| `Functor` | **Direct `map` method** (like `Option::map`) | Custom trait (less idiomatic) |
+| `Applicative` | Direct methods (`pure`, `apply`) | Custom trait (if needed) |
+| `Foldable` | `Iterator` methods or custom fold methods | Standard library patterns |
+| `Traversable` | `Iterator` + `collect` or custom traverse | Standard library patterns |
+| `Semigroup` | Direct method (e.g., `combine`) | Custom trait or `Add` |
+| `Monoid` | Direct method + `Default` for identity | Custom trait |
+
+**Preference Order**:
+1. **Standard library traits** when they fit exactly (`Debug`, `Eq`, `Ord`, etc.)
+2. **Direct methods** following standard library conventions (e.g., `map` like `Option::map`)
+3. **Custom traits** only when abstraction is truly needed and provides clear value
+
+**Example - Functor**:
+- ❌ Don't create: `trait Functor<A> { type Output<B>; fn fmap<B, F>(self, f: F) -> Self::Output<B>; }`
+- ✅ Do create: `impl<V> Pattern<V> { pub fn map<W, F>(self, f: F) -> Pattern<W> { ... } }`
+- Rationale: Direct method is more idiomatic, easier to use, and matches standard library conventions
 
 ### Error Handling
 
@@ -296,13 +410,19 @@ pub fn get_value<V>(p: &Pattern<V>) -> &V {
 
 ### Balancing Rust Conventions with Cross-Language Equivalence
 
-When porting from gram-hs to gram-rs, there's a tension between:
-- **Rust conventions**: Idiomatic Rust patterns (e.g., `Type::new()` for constructors)
-- **Cross-language equivalence**: Matching the gram-hs API exactly (e.g., `Pattern::point()` and `Pattern::pattern()`)
+When porting from gram-hs to gram-rs, there's a natural tension between:
+- **Rust conventions**: Idiomatic Rust patterns that Rust developers expect
+- **Cross-language equivalence**: Maintaining consistency with gram-hs for verification
 
-**Principle: Logical Equivalence Over Syntactic Equivalence**
+**Principle: Behavioral Equivalence Through Idiomatic Implementation**
 
-The most important goal is **logical equivalence** - ensuring that the Rust implementation behaves identically to the Haskell implementation. Syntactic differences (like naming conventions) are acceptable and often necessary.
+The primary goal is **behavioral equivalence** - ensuring that the Rust implementation produces the same results and satisfies the same properties as the Haskell implementation. This is achieved through **idiomatic Rust code** that embodies the same concepts, not through literal syntax translation.
+
+**Priority Hierarchy**:
+1. **Behavioral correctness** (laws, properties, edge cases) - Non-negotiable
+2. **Rust idioms** (standard library conventions, ownership patterns) - Strongly preferred
+3. **API naming** (matching gram-hs when it aids verification) - Flexible
+4. **Syntax similarity** (looking like Haskell code) - Not a goal
 
 **Guidelines:**
 
@@ -364,19 +484,31 @@ The gram-hs API has evolved over time. When porting, always use the **current** 
 
 For each feature being ported:
 
-- [ ] **Studied Haskell implementation** in `../gram-hs/libs/*/src/` - **Primary source of truth**
+### Understanding Phase
+- [ ] **Studied Haskell implementation** in `../gram-hs/libs/*/src/` - **Understand the concept and behavior**
 - [ ] Reviewed gram-hs documentation in `../gram-hs/docs/` - **Up-to-date information about the implementation**
-- [ ] Reviewed Haskell tests in `../gram-hs/libs/*/tests/` - **Shows expected behavior**
-- [ ] Reviewed `../gram-hs/specs/XXX-feature-name/spec.md` - **Historical notes for context only, may be outdated**
-- [ ] Reviewed `../gram-hs/specs/XXX-feature-name/contracts/type-signatures.md` - **Historical notes for context only, verify against actual code**
+- [ ] Reviewed Haskell tests in `../gram-hs/libs/*/tests/` - **Expected behavior and test cases**
+- [ ] Reviewed `../gram-hs/specs/XXX-feature-name/spec.md` - **Historical context (may be outdated)**
+- [ ] **Identified the core concept** - What problem does this solve? What behavior does it provide?
+
+### Design Phase
 - [ ] Created feature specification in `specs/XXX-feature-name/`
-- [ ] Ported type signatures to Rust (from actual Haskell source, not design docs)
-- [ ] Ported test cases from gram-hs (from actual test files)
-- [ ] Implemented functionality in idiomatic Rust (matching actual Haskell implementation)
-- [ ] Verified behavioral equivalence (against actual Haskell implementation)
+- [ ] **Identified idiomatic Rust approach** - How would Rust standard library solve this?
+- [ ] Designed API following Rust conventions (not literal Haskell translation)
+- [ ] Planned property-based tests to verify behavioral equivalence
+
+### Implementation Phase
+- [ ] Implemented functionality **idiomatically in Rust** (behavior matches, syntax is Rust-idiomatic)
+- [ ] Ported test cases from gram-hs (from actual test files) - **tests verify behavior, not syntax**
+- [ ] Verified **behavioral equivalence** (same results, same edge cases, same properties)
+- [ ] Added comprehensive documentation explaining the concept
+- [ ] Documented relationship to Haskell implementation (for reference)
+
+### Validation Phase
 - [ ] Tested WASM compilation
 - [ ] Updated examples (if applicable)
-- [ ] Documented any intentional deviations
+- [ ] Documented intentional deviations from Haskell syntax (with rationale)
+- [ ] Verified all property tests pass (laws, invariants, edge cases)
 
 ## Available Features in gram-hs
 

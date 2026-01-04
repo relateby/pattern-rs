@@ -7,6 +7,7 @@ This crate provides the foundational `Pattern<V>` type and `Subject` type, porte
 ## Features
 
 - **Pattern<V>**: A recursive, nested structure (s-expression-like) that is generic over value type `V`
+- **Functor Instance**: Transform pattern values while preserving structure with the `map` method
 - **Subject**: A self-descriptive value type with identity, labels, and properties
 - **WASM Compatible**: All types compile successfully for `wasm32-unknown-unknown` target
 
@@ -38,6 +39,15 @@ let subject = Subject {
 };
 
 let pattern_with_subject: Pattern<Subject> = Pattern::point(subject);
+
+// Transform pattern values (Functor)
+let pattern = Pattern::pattern("root", vec![
+    Pattern::point("child1"),
+    Pattern::point("child2"),
+]);
+let upper = pattern.map(|s| s.to_uppercase());
+assert_eq!(upper.value, "ROOT");
+assert_eq!(upper.elements[0].value, "CHILD1");
 ```
 
 ## WASM Compilation

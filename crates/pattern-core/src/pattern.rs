@@ -554,6 +554,111 @@ impl<V> Pattern<V> {
         self.elements.is_empty()
     }
 
+    /// Maps a function over all values in the pattern, preserving structure.
+    ///
+    /// This is equivalent to Haskell's `fmap` for the Functor typeclass,
+    /// but follows Rust naming conventions. The transformation applies to
+    /// all values recursively while preserving the pattern structure
+    /// (number of elements, nesting depth, element order).
+    ///
+    /// # Functor Laws
+    ///
+    /// This implementation satisfies the functor laws:
+    /// - **Identity**: `pattern.map(|x| x.clone()) == pattern`
+    /// - **Composition**: `pattern.map(|x| g(&f(x))) == pattern.map(f).map(g)`
+    ///
+    /// # Type Parameters
+    ///
+    /// * `W` - The output value type (can be different from `V`)
+    /// * `F` - The transformation function type
+    ///
+    /// # Arguments
+    ///
+    /// * `f` - Transformation function that takes a reference to a value (`&V`)
+    ///   and returns a new value (`W`)
+    ///
+    /// # Returns
+    ///
+    /// A new `Pattern<W>` with the same structure but transformed values
+    ///
+    /// # Examples
+    ///
+    /// ## String transformation
+    ///
+    /// ```
+    /// use pattern_core::Pattern;
+    ///
+    /// let pattern = Pattern::point("hello");
+    /// let upper = pattern.map(|s| s.to_uppercase());
+    /// assert_eq!(upper.value, "HELLO");
+    /// ```
+    ///
+    /// ## Type conversion
+    ///
+    /// ```
+    /// use pattern_core::Pattern;
+    ///
+    /// let numbers = Pattern::point(42);
+    /// let strings = numbers.map(|n| n.to_string());
+    /// assert_eq!(strings.value, "42");
+    /// ```
+    ///
+    /// ## Nested patterns
+    ///
+    /// ```
+    /// use pattern_core::Pattern;
+    ///
+    /// let pattern = Pattern::pattern("root", vec![
+    ///     Pattern::point("child1"),
+    ///     Pattern::point("child2"),
+    /// ]);
+    /// let upper = pattern.map(|s| s.to_uppercase());
+    /// assert_eq!(upper.value, "ROOT");
+    /// assert_eq!(upper.elements[0].value, "CHILD1");
+    /// assert_eq!(upper.elements[1].value, "CHILD2");
+    /// ```
+    ///
+    /// ## Composition
+    ///
+    /// ```
+    /// use pattern_core::Pattern;
+    ///
+    /// let result = Pattern::point(5)
+    ///     .map(|n| n * 2)
+    ///     .map(|n| n + 1);
+    /// assert_eq!(result.value, 11);
+    /// ```
+    ///
+    /// # Performance
+    ///
+    /// - Time complexity: O(n) where n is the total number of nodes
+    /// - Space complexity: O(n) for the new pattern + O(d) for recursion stack
+    ///   where d is the maximum nesting depth
+    /// - Handles patterns with 100+ nesting levels without stack overflow
+    /// - Handles patterns with 10,000+ nodes efficiently
+    pub fn map<W, F>(self, f: F) -> Pattern<W>
+    where
+        F: Fn(&V) -> W,
+    {
+        self.map_with(&f)
+    }
+
+    /// Internal helper for map that takes function by reference.
+    /// This enables efficient recursion without cloning the closure.
+    fn map_with<W, F>(self, f: &F) -> Pattern<W>
+    where
+        F: Fn(&V) -> W,
+    {
+        Pattern {
+            value: f(&self.value),
+            elements: self
+                .elements
+                .into_iter()
+                .map(|elem| elem.map_with(f))
+                .collect(),
+        }
+    }
+
     /// Validates pattern structure against configurable rules and constraints.
     ///
     /// Returns `Ok(())` if the pattern is valid according to the rules,

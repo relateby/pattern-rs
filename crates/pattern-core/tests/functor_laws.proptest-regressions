@@ -1,0 +1,9 @@
+# Seeds for failure cases proptest has generated in the past. It is
+# automatically read and these particular cases re-run before any
+# novel cases are generated.
+#
+# It is recommended to check this file in to source control so that
+# everyone who runs the test benefits from these saved cases.
+cc 7346c859ceb6452bff638c86c0263ab7a385ea2e0925526972d925e162ac0481 # shrinks to pattern = Pattern { value: 0, elements: [Pattern { value: -1073741825, elements: [] }] }
+cc 1afa8bbcc669ae0090ed7f59ac155396ccbc82ade34c9fc34087ffdb673500bb # shrinks to pattern = Pattern { value: 0, elements: [Pattern { value: -1073741825, elements: [] }] }
+cc 7f91e60f3b29c25c3726385b3fb24cfc69064c003c06723d4838ef05c14f6dec # shrinks to pattern = Pattern { value: 1073741824, elements: [] }
