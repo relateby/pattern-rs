@@ -27,9 +27,9 @@ Using existing Rust workspace structure:
 
 **Purpose**: Verify build environment and prepare for implementation
 
-- [ ] T001 Verify Rust toolchain version 1.75+ is installed
-- [ ] T002 Verify existing Pattern<V> type and fold() method in crates/pattern-core/src/pattern.rs
-- [ ] T003 [P] Review Haskell reference implementation at ../gram-hs/libs/pattern/src/Pattern/Core.hs lines 945-1028
+- [x] T001 Verify Rust toolchain version 1.75+ is installed
+- [x] T002 Verify existing Pattern<V> type and fold() method in crates/pattern-core/src/pattern.rs
+- [x] T003 [P] Review Haskell reference implementation at ../gram-hs/libs/pattern/src/Pattern/Core.hs lines 945-1028
 
 ---
 
@@ -59,32 +59,32 @@ Using existing Rust workspace structure:
 
 > **NOTE: Write these tests FIRST, ensure they FAIL before implementation**
 
-- [ ] T004 [P] [US1] Create test file crates/pattern-core/tests/query_any_value.rs with basic structure
-- [ ] T005 [P] [US1] Write unit test for any_value with atomic pattern containing matching value in crates/pattern-core/tests/query_any_value.rs
-- [ ] T006 [P] [US1] Write unit test for any_value with atomic pattern containing non-matching value in crates/pattern-core/tests/query_any_value.rs
-- [ ] T007 [P] [US1] Write unit test for any_value with nested pattern where value matches at different levels in crates/pattern-core/tests/query_any_value.rs
-- [ ] T008 [P] [US1] Write unit test for any_value with pattern containing no matching values in crates/pattern-core/tests/query_any_value.rs
-- [ ] T009 [P] [US1] Write unit test for any_value with deeply nested pattern (100+ levels) in crates/pattern-core/tests/query_any_value.rs
-- [ ] T010 [P] [US1] Write unit test for any_value with large flat pattern (1000+ elements) in crates/pattern-core/tests/query_any_value.rs
+- [x] T004 [P] [US1] Create test file crates/pattern-core/tests/query_any_value.rs with basic structure
+- [x] T005 [P] [US1] Write unit test for any_value with atomic pattern containing matching value in crates/pattern-core/tests/query_any_value.rs
+- [x] T006 [P] [US1] Write unit test for any_value with atomic pattern containing non-matching value in crates/pattern-core/tests/query_any_value.rs
+- [x] T007 [P] [US1] Write unit test for any_value with nested pattern where value matches at different levels in crates/pattern-core/tests/query_any_value.rs
+- [x] T008 [P] [US1] Write unit test for any_value with pattern containing no matching values in crates/pattern-core/tests/query_any_value.rs
+- [x] T009 [P] [US1] Write unit test for any_value with deeply nested pattern (100+ levels) in crates/pattern-core/tests/query_any_value.rs
+- [x] T010 [P] [US1] Write unit test for any_value with large flat pattern (1000+ elements) in crates/pattern-core/tests/query_any_value.rs
 
 ### Implementation for User Story 1
 
-- [ ] T011 [US1] Implement any_value method in crates/pattern-core/src/pattern.rs using fold with OR combinator
-- [ ] T012 [US1] Add comprehensive documentation for any_value including examples and complexity analysis in crates/pattern-core/src/pattern.rs
-- [ ] T013 [US1] Export any_value in crates/pattern-core/src/lib.rs public API
-- [ ] T014 [US1] Verify all US1 unit tests pass with cargo test query_any_value
+- [x] T011 [US1] Implement any_value method in crates/pattern-core/src/pattern.rs using fold with OR combinator
+- [x] T012 [US1] Add comprehensive documentation for any_value including examples and complexity analysis in crates/pattern-core/src/pattern.rs
+- [x] T013 [US1] Export any_value in crates/pattern-core/src/lib.rs public API
+- [x] T014 [US1] Verify all US1 unit tests pass with cargo test query_any_value
 
 ### Property Tests for User Story 1
 
-- [ ] T015 [P] [US1] Create property test file crates/pattern-core/tests/property/query_any_value.rs
-- [ ] T016 [P] [US1] Implement property test: any_value(const true) always returns true in crates/pattern-core/tests/property/query_any_value.rs
-- [ ] T017 [P] [US1] Implement property test: any_value(const false) always returns false in crates/pattern-core/tests/property/query_any_value.rs
-- [ ] T018 [P] [US1] Implement property test: any_value consistent with any() over values() in crates/pattern-core/tests/property/query_any_value.rs
+- [x] T015 [P] [US1] Create property test file crates/pattern-core/tests/query_any_value_property.rs
+- [x] T016 [P] [US1] Implement property test: any_value(const true) always returns true in crates/pattern-core/tests/query_any_value_property.rs
+- [x] T017 [P] [US1] Implement property test: any_value(const false) always returns false in crates/pattern-core/tests/query_any_value_property.rs
+- [x] T018 [P] [US1] Implement property test: any_value consistent with any() over values() in crates/pattern-core/tests/query_any_value_property.rs
 
 ### Performance Verification for User Story 1
 
-- [ ] T019 [US1] Create benchmark for any_value short-circuit behavior in crates/pattern-core/benches/query_benchmarks.rs
-- [ ] T020 [US1] Verify any_value meets <100ms target for 10,000 node patterns with cargo bench
+- [x] T019 [US1] Create benchmark for any_value short-circuit behavior in crates/pattern-core/benches/query_benchmarks.rs
+- [x] T020 [US1] Verify any_value meets <100ms target for 10,000 node patterns with cargo bench
 
 **Checkpoint**: At this point, User Story 1 (any_value) should be fully functional, tested, and performant
 

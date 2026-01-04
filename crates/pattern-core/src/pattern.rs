@@ -554,6 +554,71 @@ impl<V> Pattern<V> {
         self.elements.is_empty()
     }
 
+    /// Checks if at least one value in the pattern satisfies the given predicate.
+    ///
+    /// This operation traverses the pattern structure in pre-order (root first, then elements)
+    /// and applies the predicate to each value. Returns `true` as soon as a value satisfies
+    /// the predicate (short-circuit evaluation), or `false` if no values match.
+    ///
+    /// Equivalent to Haskell's `anyValue :: (v -> Bool) -> Pattern v -> Bool`.
+    ///
+    /// # Type Parameters
+    ///
+    /// * `F` - A function that takes a reference to a value and returns a boolean
+    ///
+    /// # Arguments
+    ///
+    /// * `predicate` - A function to test each value
+    ///
+    /// # Returns
+    ///
+    /// * `true` if at least one value satisfies the predicate
+    /// * `false` if no values satisfy the predicate (including empty patterns)
+    ///
+    /// # Complexity
+    ///
+    /// * Time: O(n) worst case, O(1) to O(n) average (short-circuits on first match)
+    /// * Space: O(1) heap, O(d) stack where d = maximum depth
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use pattern_core::Pattern;
+    ///
+    /// let pattern = Pattern::pattern(5, vec![
+    ///     Pattern::point(10),
+    ///     Pattern::point(3),
+    /// ]);
+    ///
+    /// // Check if any value is greater than 8
+    /// assert!(pattern.any_value(|v| *v > 8));  // true (10 > 8)
+    ///
+    /// // Check if any value is negative
+    /// assert!(!pattern.any_value(|v| *v < 0)); // false (all positive)
+    /// ```
+    ///
+    /// # Short-Circuit Behavior
+    ///
+    /// The operation stops as soon as a matching value is found:
+    ///
+    /// ```
+    /// use pattern_core::Pattern;
+    ///
+    /// let pattern = Pattern::pattern(1, vec![
+    ///     Pattern::point(2),
+    ///     Pattern::point(5), // Matches here
+    ///     Pattern::point(3), // Not evaluated
+    /// ]);
+    ///
+    /// assert!(pattern.any_value(|v| *v == 5));
+    /// ```
+    pub fn any_value<F>(&self, predicate: F) -> bool
+    where
+        F: Fn(&V) -> bool,
+    {
+        self.fold(false, |acc, v| acc || predicate(v))
+    }
+
     /// Maps a function over all values in the pattern, preserving structure.
     ///
     /// This is equivalent to Haskell's `fmap` for the Functor typeclass,
