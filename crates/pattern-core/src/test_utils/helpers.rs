@@ -190,7 +190,7 @@ impl Clone for EffectCounter {
 ///
 /// // Use counting_fn in traverse
 /// let result = pattern.traverse_result(counting_fn);
-/// 
+///
 /// // Check how many times the function was called
 /// assert_eq!(counter.count(), expected_count);
 /// ```

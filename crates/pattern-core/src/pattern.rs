@@ -1572,11 +1572,8 @@ impl<V> Pattern<V> {
         F: Fn(&V) -> Result<W, E>,
     {
         // Helper function to collect all errors from the entire pattern
-        fn collect_all_errors<V, E, F>(
-            pattern: &Pattern<V>,
-            f: &F,
-            errors: &mut Vec<E>,
-        ) where
+        fn collect_all_errors<V, E, F>(pattern: &Pattern<V>, f: &F, errors: &mut Vec<E>)
+        where
             F: Fn(&V) -> Result<(), E>,
         {
             // Check root value
