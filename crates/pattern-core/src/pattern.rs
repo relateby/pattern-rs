@@ -1048,7 +1048,7 @@ impl<V> Pattern<V> {
     /// // Find first pattern where all values are positive
     /// let result = pattern.find_first(|p| p.all_values(|v| *v > 0));
     /// assert!(result.is_some());
-    /// assert_eq!(result.unwrap().value, 2);  // Second branch
+    /// assert_eq!(result.unwrap().value, 7);  // First point with all positive values
     /// ```
     ///
     /// # Panics

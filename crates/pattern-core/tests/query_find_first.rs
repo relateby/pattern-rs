@@ -23,10 +23,10 @@ use pattern_core::Pattern;
 
 #[test]
 fn test_find_first_root_matches() {
-    let pattern = Pattern::pattern("root", vec![
-        Pattern::point("child1"),
-        Pattern::point("child2"),
-    ]);
+    let pattern = Pattern::pattern(
+        "root",
+        vec![Pattern::point("child1"), Pattern::point("child2")],
+    );
 
     // Root matches: should return the root pattern itself
     let result = pattern.find_first(|p| p.value == "root");
@@ -36,9 +36,7 @@ fn test_find_first_root_matches() {
 
 #[test]
 fn test_find_first_root_matches_by_structure() {
-    let pattern = Pattern::pattern("root", vec![
-        Pattern::point("child"),
-    ]);
+    let pattern = Pattern::pattern("root", vec![Pattern::point("child")]);
 
     // Root matches by element count
     let result = pattern.find_first(|p| p.length() == 1);
@@ -52,10 +50,10 @@ fn test_find_first_root_matches_by_structure() {
 
 #[test]
 fn test_find_first_element_matches() {
-    let pattern = Pattern::pattern("root", vec![
-        Pattern::point("target"),
-        Pattern::point("other"),
-    ]);
+    let pattern = Pattern::pattern(
+        "root",
+        vec![Pattern::point("target"), Pattern::point("other")],
+    );
 
     // First element matches
     let result = pattern.find_first(|p| p.value == "target");
@@ -65,10 +63,10 @@ fn test_find_first_element_matches() {
 
 #[test]
 fn test_find_first_second_element_matches() {
-    let pattern = Pattern::pattern("root", vec![
-        Pattern::point("first"),
-        Pattern::point("target"),
-    ]);
+    let pattern = Pattern::pattern(
+        "root",
+        vec![Pattern::point("first"), Pattern::point("target")],
+    );
 
     // Second element matches (root doesn't match)
     let result = pattern.find_first(|p| p.value == "target");
@@ -82,14 +80,16 @@ fn test_find_first_second_element_matches() {
 
 #[test]
 fn test_find_first_deeply_nested() {
-    let pattern = Pattern::pattern("root", vec![
-        Pattern::pattern("branch1", vec![
-            Pattern::pattern("branch2", vec![
-                Pattern::point("target"),
-            ]),
-        ]),
-        Pattern::point("sibling"),
-    ]);
+    let pattern = Pattern::pattern(
+        "root",
+        vec![
+            Pattern::pattern(
+                "branch1",
+                vec![Pattern::pattern("branch2", vec![Pattern::point("target")])],
+            ),
+            Pattern::point("sibling"),
+        ],
+    );
 
     // Find deeply nested target
     let result = pattern.find_first(|p| p.value == "target");
@@ -117,10 +117,10 @@ fn test_find_first_very_deep_nesting() {
 
 #[test]
 fn test_find_first_no_matches() {
-    let pattern = Pattern::pattern("root", vec![
-        Pattern::point("child1"),
-        Pattern::point("child2"),
-    ]);
+    let pattern = Pattern::pattern(
+        "root",
+        vec![Pattern::point("child1"), Pattern::point("child2")],
+    );
 
     // No pattern has value "nonexistent"
     let result = pattern.find_first(|p| p.value == "nonexistent");
@@ -129,10 +129,10 @@ fn test_find_first_no_matches() {
 
 #[test]
 fn test_find_first_no_matches_structural_predicate() {
-    let pattern = Pattern::pattern("root", vec![
-        Pattern::point("child1"),
-        Pattern::point("child2"),
-    ]);
+    let pattern = Pattern::pattern(
+        "root",
+        vec![Pattern::point("child1"), Pattern::point("child2")],
+    );
 
     // No pattern has more than 2 elements
     let result = pattern.find_first(|p| p.length() > 2);
@@ -145,12 +145,13 @@ fn test_find_first_no_matches_structural_predicate() {
 
 #[test]
 fn test_find_first_pre_order_traversal() {
-    let pattern = Pattern::pattern("root", vec![
-        Pattern::pattern("branch", vec![
-            Pattern::point("match2"),
-        ]),
-        Pattern::point("match1"),
-    ]);
+    let pattern = Pattern::pattern(
+        "root",
+        vec![
+            Pattern::pattern("branch", vec![Pattern::point("match2")]),
+            Pattern::point("match1"),
+        ],
+    );
 
     // Multiple patterns are atomic (no elements)
     // Pre-order: root, branch, match2, match1
@@ -162,12 +163,13 @@ fn test_find_first_pre_order_traversal() {
 
 #[test]
 fn test_find_first_multiple_value_matches() {
-    let pattern = Pattern::pattern("a", vec![
-        Pattern::pattern("a", vec![
+    let pattern = Pattern::pattern(
+        "a",
+        vec![
+            Pattern::pattern("a", vec![Pattern::point("a")]),
             Pattern::point("a"),
-        ]),
-        Pattern::point("a"),
-    ]);
+        ],
+    );
 
     // All patterns have value "a", should return root (first in pre-order)
     let result = pattern.find_first(|p| p.value == "a");
@@ -178,10 +180,10 @@ fn test_find_first_multiple_value_matches() {
 
 #[test]
 fn test_find_first_left_before_right() {
-    let pattern = Pattern::pattern("root", vec![
-        Pattern::point("left"),
-        Pattern::point("right"),
-    ]);
+    let pattern = Pattern::pattern(
+        "root",
+        vec![Pattern::point("left"), Pattern::point("right")],
+    );
 
     // Both children are atomic, should return left (first in pre-order)
     let result = pattern.find_first(|p| p.is_atomic());
@@ -295,13 +297,16 @@ fn test_find_first_120_level_nesting() {
 
 #[test]
 fn test_find_first_combined_value_and_structure() {
-    let pattern = Pattern::pattern("root", vec![
-        Pattern::pattern("branch", vec![
-            Pattern::point("child1"),
-            Pattern::point("child2"),
-        ]),
-        Pattern::point("leaf"),
-    ]);
+    let pattern = Pattern::pattern(
+        "root",
+        vec![
+            Pattern::pattern(
+                "branch",
+                vec![Pattern::point("child1"), Pattern::point("child2")],
+            ),
+            Pattern::point("leaf"),
+        ],
+    );
 
     // Find pattern with value "branch" AND 2 elements
     let result = pattern.find_first(|p| p.value == "branch" && p.length() == 2);
@@ -311,14 +316,16 @@ fn test_find_first_combined_value_and_structure() {
 
 #[test]
 fn test_find_first_structural_predicate_depth() {
-    let pattern = Pattern::pattern("root", vec![
-        Pattern::pattern("branch", vec![
-            Pattern::pattern("deep", vec![
-                Pattern::point("deepest"),
-            ]),
-        ]),
-        Pattern::point("shallow"),
-    ]);
+    let pattern = Pattern::pattern(
+        "root",
+        vec![
+            Pattern::pattern(
+                "branch",
+                vec![Pattern::pattern("deep", vec![Pattern::point("deepest")])],
+            ),
+            Pattern::point("shallow"),
+        ],
+    );
 
     // Find first pattern with depth >= 2
     let result = pattern.find_first(|p| p.depth() >= 2);
@@ -329,14 +336,20 @@ fn test_find_first_structural_predicate_depth() {
 
 #[test]
 fn test_find_first_structural_predicate_size() {
-    let pattern = Pattern::pattern("root", vec![
-        Pattern::pattern("branch", vec![
-            Pattern::point("child1"),
-            Pattern::point("child2"),
-            Pattern::point("child3"),
-        ]),
-        Pattern::point("leaf"),
-    ]);
+    let pattern = Pattern::pattern(
+        "root",
+        vec![
+            Pattern::pattern(
+                "branch",
+                vec![
+                    Pattern::point("child1"),
+                    Pattern::point("child2"),
+                    Pattern::point("child3"),
+                ],
+            ),
+            Pattern::point("leaf"),
+        ],
+    );
 
     // Find first pattern with size >= 3
     let result = pattern.find_first(|p| p.size() >= 3);
@@ -351,13 +364,13 @@ fn test_find_first_structural_predicate_size() {
 
 #[test]
 fn test_find_first_with_any_value() {
-    let pattern = Pattern::pattern(1, vec![
-        Pattern::pattern(2, vec![
-            Pattern::point(5),
-            Pattern::point(10),
-        ]),
-        Pattern::point(3),
-    ]);
+    let pattern = Pattern::pattern(
+        1,
+        vec![
+            Pattern::pattern(2, vec![Pattern::point(5), Pattern::point(10)]),
+            Pattern::point(3),
+        ],
+    );
 
     // Find first pattern where any value is greater than 8
     let result = pattern.find_first(|p| p.any_value(|v| *v > 8));
@@ -368,13 +381,13 @@ fn test_find_first_with_any_value() {
 
 #[test]
 fn test_find_first_with_all_values() {
-    let pattern = Pattern::pattern(1, vec![
-        Pattern::pattern(2, vec![
-            Pattern::point(5),
-            Pattern::point(10),
-        ]),
-        Pattern::point(-3),
-    ]);
+    let pattern = Pattern::pattern(
+        1,
+        vec![
+            Pattern::pattern(2, vec![Pattern::point(5), Pattern::point(10)]),
+            Pattern::point(-3),
+        ],
+    );
 
     // Find first pattern where all values are positive
     let result = pattern.find_first(|p| p.all_values(|v| *v > 0));
@@ -385,13 +398,14 @@ fn test_find_first_with_all_values() {
 
 #[test]
 fn test_find_first_with_filter_consistency() {
-    let pattern = Pattern::pattern("root", vec![
-        Pattern::point("a"),
-        Pattern::pattern("branch", vec![
-            Pattern::point("b"),
-        ]),
-        Pattern::point("c"),
-    ]);
+    let pattern = Pattern::pattern(
+        "root",
+        vec![
+            Pattern::point("a"),
+            Pattern::pattern("branch", vec![Pattern::point("b")]),
+            Pattern::point("c"),
+        ],
+    );
 
     // find_first and filter should be consistent
     let predicate = |p: &Pattern<&str>| p.is_atomic();
@@ -406,16 +420,16 @@ fn test_find_first_with_filter_consistency() {
 
 #[test]
 fn test_find_first_returns_reference_not_clone() {
-    let pattern = Pattern::pattern("root".to_string(), vec![
-        Pattern::point("child".to_string()),
-    ]);
+    let pattern = Pattern::pattern(
+        "root".to_string(),
+        vec![Pattern::point("child".to_string())],
+    );
 
     let result = pattern.find_first(|p| p.value == "child");
     assert!(result.is_some());
-    
+
     // Verify it's a reference by checking pointer equality
     let child_ref = &pattern.elements[0];
     let result_ref = result.unwrap();
     assert!(std::ptr::eq(child_ref, result_ref));
 }
-

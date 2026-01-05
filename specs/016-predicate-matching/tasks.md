@@ -129,16 +129,16 @@
 
 **Purpose**: Verify mathematical properties and relationships between all predicate functions
 
-- [ ] T053 Create test file crates/pattern-core/tests/predicate_properties.rs with proptest infrastructure
-- [ ] T054 [P] Write property test for find_first consistency with filter in crates/pattern-core/tests/predicate_properties.rs
-- [ ] T055 [P] Write property test for find_first returning first element in crates/pattern-core/tests/predicate_properties.rs
-- [ ] T056 [P] Write property test for matches reflexivity in crates/pattern-core/tests/predicate_properties.rs
-- [ ] T057 [P] Write property test for matches symmetry in crates/pattern-core/tests/predicate_properties.rs
-- [ ] T058 [P] Write property test for contains reflexivity in crates/pattern-core/tests/predicate_properties.rs
-- [ ] T059 [P] Write property test for contains transitivity in crates/pattern-core/tests/predicate_properties.rs
-- [ ] T060 [P] Write property test for matches implies contains in crates/pattern-core/tests/predicate_properties.rs
-- [ ] T061 [P] Write property test generators for patterns with various structures in crates/pattern-core/tests/predicate_properties.rs
-- [ ] T062 Run property tests: `cargo test --test predicate_properties`
+- [x] T053 Create test file crates/pattern-core/tests/predicate_properties.rs with proptest infrastructure
+- [x] T054 [P] Write property test for find_first consistency with filter in crates/pattern-core/tests/predicate_properties.rs
+- [x] T055 [P] Write property test for find_first returning first element in crates/pattern-core/tests/predicate_properties.rs
+- [x] T056 [P] Write property test for matches reflexivity in crates/pattern-core/tests/predicate_properties.rs
+- [x] T057 [P] Write property test for matches symmetry in crates/pattern-core/tests/predicate_properties.rs
+- [x] T058 [P] Write property test for contains reflexivity in crates/pattern-core/tests/predicate_properties.rs
+- [x] T059 [P] Write property test for contains transitivity in crates/pattern-core/tests/predicate_properties.rs
+- [x] T060 [P] Write property test for matches implies contains in crates/pattern-core/tests/predicate_properties.rs
+- [x] T061 [P] Write property test generators for patterns with various structures in crates/pattern-core/tests/predicate_properties.rs
+- [x] T062 Run property tests: `cargo test --test predicate_properties`
 
 ---
 
@@ -146,14 +146,14 @@
 
 **Purpose**: Verify performance targets (SC-005: find_first <10ms for early matches, SC-006: all ops <100ms for 1000 nodes/100 depth)
 
-- [ ] T063 Create benchmark file crates/pattern-core/benches/predicate_benchmarks.rs with criterion infrastructure
-- [ ] T064 [P] Implement find_first benchmark for 1000-node pattern with match in first 10 nodes in crates/pattern-core/benches/predicate_benchmarks.rs
-- [ ] T065 [P] Implement find_first benchmark for 1000-node pattern with no match in crates/pattern-core/benches/predicate_benchmarks.rs
-- [ ] T066 [P] Implement matches benchmark for 1000-node patterns with 100-level depth in crates/pattern-core/benches/predicate_benchmarks.rs
-- [ ] T067 [P] Implement contains benchmark for 1000-node patterns with 100-level depth in crates/pattern-core/benches/predicate_benchmarks.rs
-- [ ] T068 [P] Implement deep nesting benchmark (100+ levels) to verify no stack overflow in crates/pattern-core/benches/predicate_benchmarks.rs
-- [ ] T069 Run benchmarks: `cargo bench --bench predicate_benchmarks`
-- [ ] T070 Verify performance targets are met (find_first <10ms early match, all <100ms for 1000 nodes/100 depth)
+- [x] T063 Create benchmark file crates/pattern-core/benches/predicate_benchmarks.rs with criterion infrastructure
+- [x] T064 [P] Implement find_first benchmark for 1000-node pattern with match in first 10 nodes in crates/pattern-core/benches/predicate_benchmarks.rs
+- [x] T065 [P] Implement find_first benchmark for 1000-node pattern with no match in crates/pattern-core/benches/predicate_benchmarks.rs
+- [x] T066 [P] Implement matches benchmark for 1000-node patterns with 100-level depth in crates/pattern-core/benches/predicate_benchmarks.rs
+- [x] T067 [P] Implement contains benchmark for 1000-node patterns with 100-level depth in crates/pattern-core/benches/predicate_benchmarks.rs
+- [x] T068 [P] Implement deep nesting benchmark (100+ levels) to verify no stack overflow in crates/pattern-core/benches/predicate_benchmarks.rs
+- [x] T069 Run benchmarks: `cargo bench --bench predicate_benchmarks`
+- [x] T070 Verify performance targets are met (find_first <10ms early match, all <100ms for 1000 nodes/100 depth)
 
 ---
 
@@ -161,14 +161,14 @@
 
 **Purpose**: Verify behavioral equivalence with reference implementation (SC-007: 100% equivalence in test cases)
 
-- [ ] T071 Review gram-hs test suite in `../gram-hs/libs/pattern/tests/Spec/Pattern/CoreSpec.hs` for find_first (findPattern) test cases
-- [ ] T072 Review gram-hs test suite in `../gram-hs/libs/pattern/tests/Spec/Pattern/CoreSpec.hs` for matches test cases
-- [ ] T073 Review gram-hs test suite in `../gram-hs/libs/pattern/tests/Spec/Pattern/CoreSpec.hs` for contains test cases
-- [ ] T074 [P] Add equivalence tests for find_first in crates/pattern-core/tests/query_find_first.rs (compare with gram-hs expected output)
-- [ ] T075 [P] Add equivalence tests for matches in crates/pattern-core/tests/predicate_matches.rs (compare with gram-hs expected output)
-- [ ] T076 [P] Add equivalence tests for contains in crates/pattern-core/tests/predicate_contains.rs (compare with gram-hs expected output)
-- [ ] T077 Run all equivalence tests: `cargo test equivalence`
-- [ ] T078 Document any intentional deviations from gram-hs behavior in specs/016-predicate-matching/research.md
+- [x] T071 Review gram-hs test suite in `../gram-hs/libs/pattern/tests/Spec/Pattern/CoreSpec.hs` for find_first (findPattern) test cases
+- [x] T072 Review gram-hs test suite in `../gram-hs/libs/pattern/tests/Spec/Pattern/CoreSpec.hs` for matches test cases
+- [x] T073 Review gram-hs test suite in `../gram-hs/libs/pattern/tests/Spec/Pattern/CoreSpec.hs` for contains test cases
+- [x] T074 [P] Add equivalence tests for find_first in crates/pattern-core/tests/query_find_first.rs (compare with gram-hs expected output)
+- [x] T075 [P] Add equivalence tests for matches in crates/pattern-core/tests/predicate_matches.rs (compare with gram-hs expected output)
+- [x] T076 [P] Add equivalence tests for contains in crates/pattern-core/tests/predicate_contains.rs (compare with gram-hs expected output)
+- [x] T077 Run all equivalence tests: `cargo test equivalence`
+- [x] T078 Document any intentional deviations from gram-hs behavior in specs/016-predicate-matching/EQUIVALENCE.md
 
 ---
 
@@ -176,16 +176,16 @@
 
 **Purpose**: Final improvements and documentation updates
 
-- [ ] T079 [P] Add module-level documentation updates in crates/pattern-core/src/pattern.rs (update file header with new methods)
-- [ ] T080 [P] Verify all new methods appear in rustdoc: `cargo doc --no-deps --open`
-- [ ] T081 [P] Update crates/pattern-core/README.md with examples of new methods (if README exists)
-- [ ] T082 [P] Verify code follows Rust formatting: `cargo fmt -- --check`
-- [ ] T083 [P] Verify code passes clippy lints: `cargo clippy -- -D warnings`
-- [ ] T084 Run full test suite: `cargo test --all-features`
-- [ ] T085 Run full test suite in release mode: `cargo test --release`
-- [ ] T086 Verify WASM build in release mode: `cargo build --release --target wasm32-unknown-unknown`
-- [ ] T087 Update specs/016-predicate-matching/plan.md to mark Post-Implementation status as complete
-- [ ] T088 Create implementation summary documenting any deviations or notable decisions
+- [x] T079 [P] Add module-level documentation updates in crates/pattern-core/src/pattern.rs (update file header with new methods)
+- [x] T080 [P] Verify all new methods appear in rustdoc: `cargo doc --no-deps --open`
+- [x] T081 [P] Update crates/pattern-core/README.md with examples of new methods (if README exists)
+- [x] T082 [P] Verify code follows Rust formatting: `cargo fmt -- --check`
+- [x] T083 [P] Verify code passes clippy lints: `cargo clippy -- -D warnings`
+- [x] T084 Run full test suite: `cargo test --all-features`
+- [x] T085 Run full test suite in release mode: `cargo test --release`
+- [x] T086 Verify WASM build in release mode: `cargo build --release --target wasm32-unknown-unknown`
+- [x] T087 Update specs/016-predicate-matching/plan.md to mark Post-Implementation status as complete
+- [x] T088 Create implementation summary documenting any deviations or notable decisions
 
 ---
 
