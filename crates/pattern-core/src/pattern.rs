@@ -2246,3 +2246,141 @@ impl<V: crate::Combinable> Pattern<V> {
         }
     }
 }
+
+// ============================================================================
+// Default Trait Implementation - Identity Element for Monoid
+// ============================================================================
+
+/// Provides a default (identity) pattern for value types that implement `Default`.
+///
+/// The default pattern serves as the identity element for pattern combination,
+/// completing the monoid algebraic structure (associative operation + identity).
+/// The default pattern has the default value for type `V` and an empty elements list.
+///
+/// # Monoid Laws
+///
+/// When combined with the [`Combinable`] trait, patterns form a complete monoid
+/// satisfying these identity laws:
+///
+/// - **Left Identity**: `Pattern::default().combine(p) == p` for all patterns `p`
+/// - **Right Identity**: `p.combine(Pattern::default()) == p` for all patterns `p`
+///
+/// These laws ensure that the default pattern acts as a neutral element: combining
+/// any pattern with the default pattern (on either side) yields the original pattern
+/// unchanged.
+///
+/// # Implementation
+///
+/// The default pattern is created using [`Pattern::point`] with the default value
+/// for type `V`. This results in:
+/// ```text
+/// Pattern {
+///     value: V::default(),
+///     elements: vec![]
+/// }
+/// ```
+///
+/// # Examples
+///
+/// ## Basic Usage
+///
+/// ```rust
+/// use pattern_core::Pattern;
+///
+/// // Create default pattern for String
+/// let empty: Pattern<String> = Pattern::default();
+/// assert_eq!(empty.value(), "");
+/// assert_eq!(empty.length(), 0);
+///
+/// // Create default pattern for Vec<i32>
+/// let empty: Pattern<Vec<i32>> = Pattern::default();
+/// let expected: Vec<i32> = vec![];
+/// assert_eq!(empty.value(), &expected);
+/// assert_eq!(empty.length(), 0);
+///
+/// // Create default pattern for unit type
+/// let empty: Pattern<()> = Pattern::default();
+/// assert_eq!(empty.value(), &());
+/// assert_eq!(empty.length(), 0);
+/// ```
+///
+/// ## Identity Laws
+///
+/// ```rust
+/// use pattern_core::{Pattern, Combinable};
+///
+/// let p = Pattern::point("hello".to_string());
+/// let empty = Pattern::<String>::default();
+///
+/// // Left identity: empty.combine(p) == p
+/// assert_eq!(empty.clone().combine(p.clone()), p);
+///
+/// // Right identity: p.combine(empty) == p
+/// assert_eq!(p.clone().combine(empty.clone()), p);
+/// ```
+///
+/// ## Usage with Iterators
+///
+/// ```rust
+/// use pattern_core::{Pattern, Combinable};
+///
+/// let patterns = vec![
+///     Pattern::point("hello".to_string()),
+///     Pattern::point(" ".to_string()),
+///     Pattern::point("world".to_string()),
+/// ];
+///
+/// // Fold with default as initial value
+/// let result = patterns.into_iter()
+///     .fold(Pattern::default(), |acc, p| acc.combine(p));
+///
+/// assert_eq!(result.value(), "hello world");
+/// ```
+///
+/// ## Handling Empty Collections
+///
+/// ```rust
+/// use pattern_core::{Pattern, Combinable};
+///
+/// let empty_vec: Vec<Pattern<String>> = vec![];
+///
+/// // Folding empty collection returns default
+/// let result = empty_vec.into_iter()
+///     .fold(Pattern::default(), |acc, p| acc.combine(p));
+///
+/// assert_eq!(result, Pattern::default());
+/// ```
+///
+/// # See Also
+///
+/// - [`Pattern::point`] - Used internally to create the default pattern
+/// - [`Pattern::combine`] - The associative combination operation
+/// - [`Combinable`] - Trait for types supporting associative combination
+///
+/// [`Combinable`]: crate::Combinable
+impl<V> Default for Pattern<V>
+where
+    V: Default,
+{
+    /// Creates a default pattern with the default value and empty elements.
+    ///
+    /// This is the identity element for pattern combination operations.
+    ///
+    /// # Returns
+    ///
+    /// A pattern with `V::default()` as the value and an empty elements vector.
+    ///
+    /// # Examples
+    ///
+    /// ```rust
+    /// use pattern_core::Pattern;
+    ///
+    /// let empty: Pattern<String> = Pattern::default();
+    /// assert_eq!(empty.value(), "");
+    /// assert_eq!(empty.length(), 0);
+    /// assert!(empty.is_atomic());
+    /// ```
+    fn default() -> Self {
+        Pattern::point(V::default())
+    }
+}
