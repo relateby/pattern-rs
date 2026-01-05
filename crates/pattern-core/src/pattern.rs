@@ -27,6 +27,9 @@
 //! - [`Pattern::any_value`] - Checks if at least one value satisfies a predicate (short-circuits)
 //! - [`Pattern::all_values`] - Checks if all values satisfy a predicate (short-circuits)
 //! - [`Pattern::filter`] - Extracts subpatterns that satisfy a pattern predicate
+//! - [`Pattern::find_first`] - Finds the first subpattern that satisfies a pattern predicate (short-circuits)
+//! - [`Pattern::matches`] - Checks if two patterns have identical structure
+//! - [`Pattern::contains`] - Checks if a pattern contains another as a subpattern
 //!
 //! # Combination Operations
 //!
@@ -899,6 +902,490 @@ impl<V> Pattern<V> {
         for element in &self.elements {
             element.filter_recursive(predicate, result);
         }
+    }
+
+    /// Finds the first subpattern (including self) that satisfies a predicate.
+    ///
+    /// This method performs a depth-first pre-order traversal of the pattern structure
+    /// (checking the root first, then elements recursively from left to right) and
+    /// returns the first pattern that satisfies the predicate.
+    ///
+    /// # Arguments
+    ///
+    /// * `predicate` - A function that takes a pattern reference and returns `true`
+    ///   if it matches the search criteria. The predicate can examine both the
+    ///   pattern's value and its structure (element count, depth, etc.).
+    ///
+    /// # Returns
+    ///
+    /// * `Some(&Pattern<V>)` - A reference to the first matching pattern
+    /// * `None` - If no pattern in the structure satisfies the predicate
+    ///
+    /// # Traversal Order
+    ///
+    /// The method uses depth-first pre-order traversal:
+    /// 1. Check the root pattern first
+    /// 2. Then check elements from left to right
+    /// 3. For each element, recursively apply the same order
+    ///
+    /// This ensures consistent, predictable ordering and matches the behavior
+    /// of other pattern traversal methods (`filter`, `fold`, `map`).
+    ///
+    /// # Short-Circuit Evaluation
+    ///
+    /// Unlike `filter`, which collects all matches, `find_first` stops immediately
+    /// upon finding the first match. This makes it more efficient when you only
+    /// need to know if a match exists or when you want the first occurrence.
+    ///
+    /// # Time Complexity
+    ///
+    /// * Best case: O(1) - if root matches
+    /// * Average case: O(k) - where k is position of first match
+    /// * Worst case: O(n) - if no match exists or match is last
+    ///
+    /// # Space Complexity
+    ///
+    /// O(d) where d is the maximum nesting depth (recursion stack)
+    ///
+    /// # Examples
+    ///
+    /// ## Finding by value
+    ///
+    /// ```
+    /// use pattern_core::Pattern;
+    ///
+    /// let pattern = Pattern::pattern("root", vec![
+    ///     Pattern::point("child1"),
+    ///     Pattern::point("target"),
+    /// ]);
+    ///
+    /// let result = pattern.find_first(|p| p.value == "target");
+    /// assert!(result.is_some());
+    /// assert_eq!(result.unwrap().value, "target");
+    /// ```
+    ///
+    /// ## Finding by structure
+    ///
+    /// ```
+    /// use pattern_core::Pattern;
+    ///
+    /// let pattern = Pattern::pattern("root", vec![
+    ///     Pattern::pattern("branch", vec![
+    ///         Pattern::point("leaf"),
+    ///     ]),
+    ///     Pattern::point("leaf2"),
+    /// ]);
+    ///
+    /// // Find first atomic pattern (no elements)
+    /// let leaf = pattern.find_first(|p| p.is_atomic());
+    /// assert!(leaf.is_some());
+    /// assert_eq!(leaf.unwrap().value, "leaf");  // First in pre-order
+    /// ```
+    ///
+    /// ## No match returns None
+    ///
+    /// ```
+    /// use pattern_core::Pattern;
+    ///
+    /// let pattern = Pattern::point("single");
+    /// let result = pattern.find_first(|p| p.value == "other");
+    /// assert!(result.is_none());
+    /// ```
+    ///
+    /// ## Combining value and structural predicates
+    ///
+    /// ```
+    /// use pattern_core::Pattern;
+    ///
+    /// let pattern = Pattern::pattern(5, vec![
+    ///     Pattern::pattern(10, vec![
+    ///         Pattern::point(3),
+    ///         Pattern::point(7),
+    ///     ]),
+    ///     Pattern::point(15),
+    /// ]);
+    ///
+    /// // Find first pattern with value > 8 AND has elements
+    /// let result = pattern.find_first(|p| p.value > 8 && p.length() > 0);
+    /// assert!(result.is_some());
+    /// assert_eq!(result.unwrap().value, 10);
+    /// ```
+    ///
+    /// ## Pre-order traversal demonstration
+    ///
+    /// ```
+    /// use pattern_core::Pattern;
+    ///
+    /// let pattern = Pattern::pattern(1, vec![
+    ///     Pattern::pattern(2, vec![
+    ///         Pattern::point(3),
+    ///     ]),
+    ///     Pattern::point(4),
+    /// ]);
+    ///
+    /// // Traversal order: 1 (root), 2, 3, 4
+    /// // First pattern with value > 1 is 2 (not 3)
+    /// let result = pattern.find_first(|p| p.value > 1);
+    /// assert_eq!(result.unwrap().value, 2);
+    /// ```
+    ///
+    /// ## Integration with other methods
+    ///
+    /// ```
+    /// use pattern_core::Pattern;
+    ///
+    /// let pattern = Pattern::pattern(5, vec![
+    ///     Pattern::pattern(10, vec![
+    ///         Pattern::point(-3),
+    ///         Pattern::point(7),
+    ///     ]),
+    ///     Pattern::pattern(2, vec![
+    ///         Pattern::point(1),
+    ///         Pattern::point(4),
+    ///     ]),
+    /// ]);
+    ///
+    /// // Find first pattern where all values are positive
+    /// let result = pattern.find_first(|p| p.all_values(|v| *v > 0));
+    /// assert!(result.is_some());
+    /// assert_eq!(result.unwrap().value, 2);  // Second branch
+    /// ```
+    ///
+    /// # Panics
+    ///
+    /// This method does not panic. All inputs are valid:
+    /// - Works with atomic patterns (no elements)
+    /// - Works with patterns with empty elements
+    /// - Works with deeply nested structures (limited only by stack size)
+    /// - Handles all predicate results gracefully
+    ///
+    /// # Relationship to Other Methods
+    ///
+    /// * `filter` - Returns all matches, `find_first` returns only the first
+    /// * `any_value` - Operates on values only, `find_first` operates on whole patterns
+    /// * Consistency: `find_first(p).is_some()` implies `filter(p).len() > 0`
+    /// * Consistency: If `find_first(p) == Some(x)`, then `filter(p)[0] == x`
+    pub fn find_first<F>(&self, predicate: F) -> Option<&Pattern<V>>
+    where
+        F: Fn(&Pattern<V>) -> bool,
+    {
+        self.find_first_recursive(&predicate)
+    }
+
+    /// Helper function for recursive find_first implementation.
+    ///
+    /// This performs a pre-order traversal with early termination.
+    /// Checks the current pattern first, then recursively searches elements.
+    ///
+    /// Returns `Some(&Pattern<V>)` on first match, `None` if no match found.
+    fn find_first_recursive<'a, F>(&'a self, predicate: &F) -> Option<&'a Pattern<V>>
+    where
+        F: Fn(&Pattern<V>) -> bool,
+    {
+        // Check current pattern first (pre-order: root first)
+        if predicate(self) {
+            return Some(self);
+        }
+
+        // Recursively search elements (with early termination)
+        for element in &self.elements {
+            if let Some(found) = element.find_first_recursive(predicate) {
+                return Some(found);
+            }
+        }
+
+        // No match found
+        None
+    }
+
+    /// Checks if two patterns have identical structure.
+    ///
+    /// This method performs structural equality checking, comparing both values and
+    /// element arrangement recursively. Two patterns match if and only if:
+    /// - Their values are equal (using `PartialEq`)
+    /// - They have the same number of elements
+    /// - All corresponding elements match recursively
+    ///
+    /// This is distinct from the `Eq` trait implementation and is intended for
+    /// structural pattern matching operations. While currently equivalent to `==`
+    /// for patterns where `V: Eq`, this method may diverge in the future to support
+    /// wildcards, partial matching, or other pattern matching semantics.
+    ///
+    /// # Type Constraints
+    ///
+    /// Requires `V: PartialEq` so that values can be compared for equality.
+    ///
+    /// # Mathematical Properties
+    ///
+    /// * **Reflexive**: `p.matches(&p)` is always `true`
+    /// * **Symmetric**: `p.matches(&q) == q.matches(&p)`
+    /// * **Structural**: Distinguishes patterns with same values but different structures
+    ///
+    /// # Time Complexity
+    ///
+    /// * Best case: O(1) - if root values differ
+    /// * Average case: O(min(n, m) / 2) - short-circuits on first mismatch
+    /// * Worst case: O(min(n, m)) - if patterns are identical or differ only at end
+    ///
+    /// Where n and m are the number of nodes in each pattern.
+    ///
+    /// # Space Complexity
+    ///
+    /// O(min(d1, d2)) where d1 and d2 are the maximum nesting depths
+    /// (recursion stack usage).
+    ///
+    /// # Examples
+    ///
+    /// ## Identical patterns match
+    ///
+    /// ```
+    /// use pattern_core::Pattern;
+    ///
+    /// let p1 = Pattern::pattern("root", vec![
+    ///     Pattern::point("a"),
+    ///     Pattern::point("b"),
+    /// ]);
+    /// let p2 = Pattern::pattern("root", vec![
+    ///     Pattern::point("a"),
+    ///     Pattern::point("b"),
+    /// ]);
+    ///
+    /// assert!(p1.matches(&p2));
+    /// ```
+    ///
+    /// ## Self-matching (reflexive)
+    ///
+    /// ```
+    /// use pattern_core::Pattern;
+    ///
+    /// let pattern = Pattern::point("a");
+    /// assert!(pattern.matches(&pattern));
+    /// ```
+    ///
+    /// ## Different values don't match
+    ///
+    /// ```
+    /// use pattern_core::Pattern;
+    ///
+    /// let p1 = Pattern::point("a");
+    /// let p2 = Pattern::point("b");
+    /// assert!(!p1.matches(&p2));
+    /// ```
+    ///
+    /// ## Different structures don't match
+    ///
+    /// ```
+    /// use pattern_core::Pattern;
+    ///
+    /// let p1 = Pattern::pattern("a", vec![
+    ///     Pattern::point("b"),
+    ///     Pattern::point("c"),
+    /// ]);
+    /// let p2 = Pattern::pattern("a", vec![
+    ///     Pattern::pattern("b", vec![
+    ///         Pattern::point("c"),
+    ///     ]),
+    /// ]);
+    ///
+    /// // Same flattened values ["a", "b", "c"] but different structure
+    /// assert!(!p1.matches(&p2));
+    /// ```
+    ///
+    /// ## Symmetry property
+    ///
+    /// ```
+    /// use pattern_core::Pattern;
+    ///
+    /// let p1 = Pattern::point(42);
+    /// let p2 = Pattern::point(99);
+    ///
+    /// // p1.matches(&p2) == p2.matches(&p1)
+    /// assert_eq!(p1.matches(&p2), p2.matches(&p1));
+    /// ```
+    ///
+    /// # Panics
+    ///
+    /// This method does not panic. All inputs are valid:
+    /// - Works with atomic patterns
+    /// - Works with patterns with empty elements
+    /// - Works with deeply nested structures (limited only by stack size)
+    ///
+    /// # Relationship to Other Methods
+    ///
+    /// * **Eq trait**: Currently equivalent for `V: Eq`, may diverge in future
+    /// * **contains**: `p.matches(&q)` implies `p.contains(&q)` (equality implies containment)
+    pub fn matches(&self, other: &Pattern<V>) -> bool
+    where
+        V: PartialEq,
+    {
+        // Values must match
+        if self.value != other.value {
+            return false;
+        }
+
+        // Element counts must match
+        if self.elements.len() != other.elements.len() {
+            return false;
+        }
+
+        // All corresponding elements must match recursively
+        self.elements
+            .iter()
+            .zip(other.elements.iter())
+            .all(|(e1, e2)| e1.matches(e2))
+    }
+
+    /// Checks if this pattern contains another pattern as a subpattern.
+    ///
+    /// This method searches the entire pattern structure to determine if the given
+    /// subpattern appears anywhere within it. A pattern contains a subpattern if:
+    /// - The pattern matches the subpattern (using `matches`), OR
+    /// - Any of its elements contains the subpattern (recursive search)
+    ///
+    /// This provides a structural containment check that goes beyond simple equality,
+    /// allowing you to test whether a pattern appears as part of a larger structure.
+    ///
+    /// # Type Constraints
+    ///
+    /// Requires `V: PartialEq` because it uses `matches` internally for comparison.
+    ///
+    /// # Mathematical Properties
+    ///
+    /// * **Reflexive**: `p.contains(&p)` is always `true` (self-containment)
+    /// * **Transitive**: If `a.contains(&b)` and `b.contains(&c)`, then `a.contains(&c)`
+    /// * **Weaker than matches**: `p.matches(&q)` implies `p.contains(&q)`, but not vice versa
+    /// * **Not symmetric**: `p.contains(&q)` does NOT imply `q.contains(&p)`
+    ///
+    /// # Time Complexity
+    ///
+    /// * Best case: O(1) - if root matches subpattern
+    /// * Average case: O(n * m / 2) - where n = container size, m = subpattern size
+    /// * Worst case: O(n * m) - if subpattern not found or found at end
+    ///
+    /// # Space Complexity
+    ///
+    /// O(d) where d is the maximum nesting depth (recursion stack usage).
+    ///
+    /// # Examples
+    ///
+    /// ## Self-containment
+    ///
+    /// ```
+    /// use pattern_core::Pattern;
+    ///
+    /// let pattern = Pattern::pattern("root", vec![
+    ///     Pattern::point("child"),
+    /// ]);
+    ///
+    /// // Every pattern contains itself
+    /// assert!(pattern.contains(&pattern));
+    /// ```
+    ///
+    /// ## Direct element containment
+    ///
+    /// ```
+    /// use pattern_core::Pattern;
+    ///
+    /// let pattern = Pattern::pattern("root", vec![
+    ///     Pattern::point("a"),
+    ///     Pattern::point("b"),
+    /// ]);
+    ///
+    /// let subpattern = Pattern::point("a");
+    /// assert!(pattern.contains(&subpattern));
+    /// ```
+    ///
+    /// ## Nested descendant containment
+    ///
+    /// ```
+    /// use pattern_core::Pattern;
+    ///
+    /// let pattern = Pattern::pattern("root", vec![
+    ///     Pattern::pattern("branch", vec![
+    ///         Pattern::point("leaf"),
+    ///     ]),
+    /// ]);
+    ///
+    /// let subpattern = Pattern::point("leaf");
+    /// assert!(pattern.contains(&subpattern));
+    /// ```
+    ///
+    /// ## Non-existent subpattern
+    ///
+    /// ```
+    /// use pattern_core::Pattern;
+    ///
+    /// let pattern = Pattern::pattern("root", vec![
+    ///     Pattern::point("a"),
+    /// ]);
+    ///
+    /// let subpattern = Pattern::point("b");
+    /// assert!(!pattern.contains(&subpattern));
+    /// ```
+    ///
+    /// ## Transitivity
+    ///
+    /// ```
+    /// use pattern_core::Pattern;
+    ///
+    /// let a = Pattern::pattern("a", vec![
+    ///     Pattern::pattern("b", vec![
+    ///         Pattern::point("c"),
+    ///     ]),
+    /// ]);
+    /// let b = Pattern::pattern("b", vec![
+    ///     Pattern::point("c"),
+    /// ]);
+    /// let c = Pattern::point("c");
+    ///
+    /// // If a contains b and b contains c, then a contains c
+    /// assert!(a.contains(&b));
+    /// assert!(b.contains(&c));
+    /// assert!(a.contains(&c));  // Transitive
+    /// ```
+    ///
+    /// ## Contains is weaker than matches
+    ///
+    /// ```
+    /// use pattern_core::Pattern;
+    ///
+    /// let pattern = Pattern::pattern("root", vec![
+    ///     Pattern::pattern("branch", vec![
+    ///         Pattern::point("leaf"),
+    ///     ]),
+    /// ]);
+    /// let subpattern = Pattern::point("leaf");
+    ///
+    /// // pattern contains subpattern, but they don't match
+    /// assert!(pattern.contains(&subpattern));
+    /// assert!(!pattern.matches(&subpattern));
+    /// ```
+    ///
+    /// # Panics
+    ///
+    /// This method does not panic. All inputs are valid:
+    /// - Works with atomic patterns
+    /// - Works with patterns with empty elements
+    /// - Works with deeply nested structures (limited only by stack size)
+    /// - Handles multiple occurrences correctly
+    ///
+    /// # Relationship to Other Methods
+    ///
+    /// * **matches**: `p.matches(&q)` implies `p.contains(&q)`, but not vice versa
+    /// * **Short-circuit**: Returns `true` as soon as a match is found
+    pub fn contains(&self, subpattern: &Pattern<V>) -> bool
+    where
+        V: PartialEq,
+    {
+        // Check if this pattern matches the subpattern
+        if self.matches(subpattern) {
+            return true;
+        }
+
+        // Recursively check if any element contains the subpattern
+        self.elements
+            .iter()
+            .any(|element| element.contains(subpattern))
     }
 
     /// Maps a function over all values in the pattern, preserving structure.

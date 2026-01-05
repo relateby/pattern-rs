@@ -23,9 +23,9 @@
 
 **Purpose**: Verify existing implementation and prepare for new methods
 
-- [ ] T001 Verify existing predicate methods compile and pass tests (any_value, all_values, filter)
-- [ ] T002 Review gram-hs reference implementation at `../gram-hs/specs/012-predicate-matching/` for behavioral equivalence requirements
-- [ ] T003 [P] Create .gitignore entries for Rust project (target/, *.rs.bk, Cargo.lock for libraries, .idea/, *.log, .env*)
+- [x] T001 Verify existing predicate methods compile and pass tests (any_value, all_values, filter)
+- [x] T002 Review gram-hs reference implementation at `../gram-hs/specs/012-predicate-matching/` for behavioral equivalence requirements
+- [x] T003 [P] Create .gitignore entries for Rust project (target/, *.rs.bk, Cargo.lock for libraries, .idea/, *.log, .env*)
 
 ---
 
@@ -39,26 +39,26 @@
 
 > **NOTE: Write these tests FIRST, ensure they FAIL before implementation**
 
-- [ ] T004 [US2] Create test file crates/pattern-core/tests/query_find_first.rs with test module structure
-- [ ] T005 [P] [US2] Write tests for find_first returning Some when root matches predicate in crates/pattern-core/tests/query_find_first.rs
-- [ ] T006 [P] [US2] Write tests for find_first returning Some when element matches predicate in crates/pattern-core/tests/query_find_first.rs
-- [ ] T007 [P] [US2] Write tests for find_first returning Some for deeply nested matching pattern in crates/pattern-core/tests/query_find_first.rs
-- [ ] T008 [P] [US2] Write tests for find_first returning None when no patterns match in crates/pattern-core/tests/query_find_first.rs
-- [ ] T009 [P] [US2] Write tests for find_first returning first match in pre-order when multiple match in crates/pattern-core/tests/query_find_first.rs
-- [ ] T010 [P] [US2] Write tests for find_first with atomic patterns in crates/pattern-core/tests/query_find_first.rs
-- [ ] T011 [P] [US2] Write tests for find_first with empty elements in crates/pattern-core/tests/query_find_first.rs
-- [ ] T012 [P] [US2] Write tests for find_first with deep nesting (100+ levels) in crates/pattern-core/tests/query_find_first.rs
-- [ ] T013 [P] [US2] Write tests for predicate examining value and structure in crates/pattern-core/tests/query_find_first.rs
-- [ ] T014 [P] [US2] Write tests for find_first integration with other Pattern methods in crates/pattern-core/tests/query_find_first.rs
-- [ ] T015 [US2] Run tests to verify they fail before implementation: `cargo test --test query_find_first`
+- [x] T004 [US2] Create test file crates/pattern-core/tests/query_find_first.rs with test module structure
+- [x] T005 [P] [US2] Write tests for find_first returning Some when root matches predicate in crates/pattern-core/tests/query_find_first.rs
+- [x] T006 [P] [US2] Write tests for find_first returning Some when element matches predicate in crates/pattern-core/tests/query_find_first.rs
+- [x] T007 [P] [US2] Write tests for find_first returning Some for deeply nested matching pattern in crates/pattern-core/tests/query_find_first.rs
+- [x] T008 [P] [US2] Write tests for find_first returning None when no patterns match in crates/pattern-core/tests/query_find_first.rs
+- [x] T009 [P] [US2] Write tests for find_first returning first match in pre-order when multiple match in crates/pattern-core/tests/query_find_first.rs
+- [x] T010 [P] [US2] Write tests for find_first with atomic patterns in crates/pattern-core/tests/query_find_first.rs
+- [x] T011 [P] [US2] Write tests for find_first with empty elements in crates/pattern-core/tests/query_find_first.rs
+- [x] T012 [P] [US2] Write tests for find_first with deep nesting (100+ levels) in crates/pattern-core/tests/query_find_first.rs
+- [x] T013 [P] [US2] Write tests for predicate examining value and structure in crates/pattern-core/tests/query_find_first.rs
+- [x] T014 [P] [US2] Write tests for find_first integration with other Pattern methods in crates/pattern-core/tests/query_find_first.rs
+- [x] T015 [US2] Run tests to verify they fail before implementation: `cargo test --test query_find_first`
 
 ### Implementation for User Story 2
 
-- [ ] T016 [US2] Implement find_first public method in crates/pattern-core/src/pattern.rs (signature: `pub fn find_first<F>(&self, predicate: F) -> Option<&Pattern<V>> where F: Fn(&Pattern<V>) -> bool`)
-- [ ] T017 [US2] Implement find_first_recursive helper method in crates/pattern-core/src/pattern.rs (recursive traversal with early termination)
-- [ ] T018 [US2] Add comprehensive documentation for find_first in crates/pattern-core/src/pattern.rs (purpose, parameters, returns, examples, complexity, panics, relationships)
-- [ ] T019 [US2] Run tests to verify implementation: `cargo test --test query_find_first`
-- [ ] T020 [US2] Verify WASM compatibility: `cargo build --target wasm32-unknown-unknown`
+- [x] T016 [US2] Implement find_first public method in crates/pattern-core/src/pattern.rs (signature: `pub fn find_first<F>(&self, predicate: F) -> Option<&Pattern<V>> where F: Fn(&Pattern<V>) -> bool`)
+- [x] T017 [US2] Implement find_first_recursive helper method in crates/pattern-core/src/pattern.rs (recursive traversal with early termination)
+- [x] T018 [US2] Add comprehensive documentation for find_first in crates/pattern-core/src/pattern.rs (purpose, parameters, returns, examples, complexity, panics, relationships)
+- [x] T019 [US2] Run tests to verify implementation: `cargo test --test query_find_first`
+- [x] T020 [US2] Verify WASM compatibility: `cargo build --target wasm32-unknown-unknown`
 
 **Checkpoint**: At this point, find_first should be fully functional with all tests passing
 
@@ -74,52 +74,52 @@
 
 > **NOTE: Write these tests FIRST, ensure they FAIL before implementation**
 
-- [ ] T021 [US3] Create test file crates/pattern-core/tests/predicate_matches.rs with test module structure
-- [ ] T022 [P] [US3] Write tests for matches returning true for identical patterns in crates/pattern-core/tests/predicate_matches.rs
-- [ ] T023 [P] [US3] Write tests for matches returning true for self-comparison (reflexive) in crates/pattern-core/tests/predicate_matches.rs
-- [ ] T024 [P] [US3] Write tests for matches returning false for different values in crates/pattern-core/tests/predicate_matches.rs
-- [ ] T025 [P] [US3] Write tests for matches returning false for different element counts in crates/pattern-core/tests/predicate_matches.rs
-- [ ] T026 [P] [US3] Write tests for matches returning false for different element structures in crates/pattern-core/tests/predicate_matches.rs
-- [ ] T027 [P] [US3] Write tests for matches distinguishing same values but different structures in crates/pattern-core/tests/predicate_matches.rs
-- [ ] T028 [P] [US3] Write tests for matches symmetry property in crates/pattern-core/tests/predicate_matches.rs
-- [ ] T029 [P] [US3] Write tests for matches with atomic patterns in crates/pattern-core/tests/predicate_matches.rs
-- [ ] T030 [P] [US3] Write tests for matches with empty elements in crates/pattern-core/tests/predicate_matches.rs
-- [ ] T031 [P] [US3] Write tests for matches with deeply nested structures in crates/pattern-core/tests/predicate_matches.rs
-- [ ] T032 [US3] Run tests to verify they fail before implementation: `cargo test --test predicate_matches`
+- [x] T021 [US3] Create test file crates/pattern-core/tests/predicate_matches.rs with test module structure
+- [x] T022 [P] [US3] Write tests for matches returning true for identical patterns in crates/pattern-core/tests/predicate_matches.rs
+- [x] T023 [P] [US3] Write tests for matches returning true for self-comparison (reflexive) in crates/pattern-core/tests/predicate_matches.rs
+- [x] T024 [P] [US3] Write tests for matches returning false for different values in crates/pattern-core/tests/predicate_matches.rs
+- [x] T025 [P] [US3] Write tests for matches returning false for different element counts in crates/pattern-core/tests/predicate_matches.rs
+- [x] T026 [P] [US3] Write tests for matches returning false for different element structures in crates/pattern-core/tests/predicate_matches.rs
+- [x] T027 [P] [US3] Write tests for matches distinguishing same values but different structures in crates/pattern-core/tests/predicate_matches.rs
+- [x] T028 [P] [US3] Write tests for matches symmetry property in crates/pattern-core/tests/predicate_matches.rs
+- [x] T029 [P] [US3] Write tests for matches with atomic patterns in crates/pattern-core/tests/predicate_matches.rs
+- [x] T030 [P] [US3] Write tests for matches with empty elements in crates/pattern-core/tests/predicate_matches.rs
+- [x] T031 [P] [US3] Write tests for matches with deeply nested structures in crates/pattern-core/tests/predicate_matches.rs
+- [x] T032 [US3] Run tests to verify they fail before implementation: `cargo test --test predicate_matches`
 
 ### Tests for User Story 3 - contains method (TDD - Write First)
 
 > **NOTE: Write these tests FIRST, ensure they FAIL before implementation**
 
-- [ ] T033 [US3] Create test file crates/pattern-core/tests/predicate_contains.rs with test module structure
-- [ ] T034 [P] [US3] Write tests for contains returning true for self-containment in crates/pattern-core/tests/predicate_contains.rs
-- [ ] T035 [P] [US3] Write tests for contains returning true when subpattern is direct element in crates/pattern-core/tests/predicate_contains.rs
-- [ ] T036 [P] [US3] Write tests for contains returning true when subpattern is nested descendant in crates/pattern-core/tests/predicate_contains.rs
-- [ ] T037 [P] [US3] Write tests for contains returning false when subpattern not found in crates/pattern-core/tests/predicate_contains.rs
-- [ ] T038 [P] [US3] Write tests for contains transitivity property in crates/pattern-core/tests/predicate_contains.rs
-- [ ] T039 [P] [US3] Write tests for contains being weaker than matches in crates/pattern-core/tests/predicate_contains.rs
-- [ ] T040 [P] [US3] Write tests for contains with atomic patterns in crates/pattern-core/tests/predicate_contains.rs
-- [ ] T041 [P] [US3] Write tests for contains with empty elements in crates/pattern-core/tests/predicate_contains.rs
-- [ ] T042 [P] [US3] Write tests for contains with deeply nested structures in crates/pattern-core/tests/predicate_contains.rs
-- [ ] T043 [P] [US3] Write tests for contains handling multiple occurrences in crates/pattern-core/tests/predicate_contains.rs
-- [ ] T044 [US3] Run tests to verify they fail before implementation: `cargo test --test predicate_contains`
+- [x] T033 [US3] Create test file crates/pattern-core/tests/predicate_contains.rs with test module structure
+- [x] T034 [P] [US3] Write tests for contains returning true for self-containment in crates/pattern-core/tests/predicate_contains.rs
+- [x] T035 [P] [US3] Write tests for contains returning true when subpattern is direct element in crates/pattern-core/tests/predicate_contains.rs
+- [x] T036 [P] [US3] Write tests for contains returning true when subpattern is nested descendant in crates/pattern-core/tests/predicate_contains.rs
+- [x] T037 [P] [US3] Write tests for contains returning false when subpattern not found in crates/pattern-core/tests/predicate_contains.rs
+- [x] T038 [P] [US3] Write tests for contains transitivity property in crates/pattern-core/tests/predicate_contains.rs
+- [x] T039 [P] [US3] Write tests for contains being weaker than matches in crates/pattern-core/tests/predicate_contains.rs
+- [x] T040 [P] [US3] Write tests for contains with atomic patterns in crates/pattern-core/tests/predicate_contains.rs
+- [x] T041 [P] [US3] Write tests for contains with empty elements in crates/pattern-core/tests/predicate_contains.rs
+- [x] T042 [P] [US3] Write tests for contains with deeply nested structures in crates/pattern-core/tests/predicate_contains.rs
+- [x] T043 [P] [US3] Write tests for contains handling multiple occurrences in crates/pattern-core/tests/predicate_contains.rs
+- [x] T044 [US3] Run tests to verify they fail before implementation: `cargo test --test predicate_contains`
 
 ### Implementation for User Story 3 - matches method
 
-- [ ] T045 [US3] Implement matches public method in crates/pattern-core/src/pattern.rs (signature: `pub fn matches(&self, other: &Pattern<V>) -> bool where V: PartialEq`)
-- [ ] T046 [US3] Add comprehensive documentation for matches in crates/pattern-core/src/pattern.rs (purpose, parameters, returns, examples, complexity, panics, relationships)
-- [ ] T047 [US3] Run matches tests to verify implementation: `cargo test --test predicate_matches`
+- [x] T045 [US3] Implement matches public method in crates/pattern-core/src/pattern.rs (signature: `pub fn matches(&self, other: &Pattern<V>) -> bool where V: PartialEq`)
+- [x] T046 [US3] Add comprehensive documentation for matches in crates/pattern-core/src/pattern.rs (purpose, parameters, returns, examples, complexity, panics, relationships)
+- [x] T047 [US3] Run matches tests to verify implementation: `cargo test --test predicate_matches`
 
 ### Implementation for User Story 3 - contains method
 
-- [ ] T048 [US3] Implement contains public method in crates/pattern-core/src/pattern.rs (signature: `pub fn contains(&self, subpattern: &Pattern<V>) -> bool where V: PartialEq`, using matches internally)
-- [ ] T049 [US3] Add comprehensive documentation for contains in crates/pattern-core/src/pattern.rs (purpose, parameters, returns, examples, complexity, panics, relationships)
-- [ ] T050 [US3] Run contains tests to verify implementation: `cargo test --test predicate_contains`
+- [x] T048 [US3] Implement contains public method in crates/pattern-core/src/pattern.rs (signature: `pub fn contains(&self, subpattern: &Pattern<V>) -> bool where V: PartialEq`, using matches internally)
+- [x] T049 [US3] Add comprehensive documentation for contains in crates/pattern-core/src/pattern.rs (purpose, parameters, returns, examples, complexity, panics, relationships)
+- [x] T050 [US3] Run contains tests to verify implementation: `cargo test --test predicate_contains`
 
 ### User Story 3 Verification
 
-- [ ] T051 [US3] Run all US3 tests together: `cargo test predicate_matches predicate_contains`
-- [ ] T052 [US3] Verify WASM compatibility: `cargo build --target wasm32-unknown-unknown`
+- [x] T051 [US3] Run all US3 tests together: `cargo test predicate_matches predicate_contains`
+- [x] T052 [US3] Verify WASM compatibility: `cargo build --target wasm32-unknown-unknown`
 
 **Checkpoint**: At this point, matches and contains should be fully functional with all tests passing
 
