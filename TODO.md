@@ -120,7 +120,7 @@ This TODO tracks the incremental porting of features from the gram-hs reference 
 
 ## Phase 3: Pattern Typeclass Instances (Traits)
 
-**Progress**: 8/11 features complete
+**Progress**: 9/11 features complete
 - ✅ 008: Functor instance (idiomatic `map` method)
 - ✅ 009: Foldable instance (fold operations)
 - ✅ 010: Traversable instance (effectful transformations)
@@ -129,7 +129,8 @@ This TODO tracks the incremental porting of features from the gram-hs reference 
 - ✅ 013: Semigroup instance (Combinable trait, associative combination)
 - ✅ 014: Monoid instance (Default trait, identity element)
 - ✅ 015: Hash instance (hashing for HashMap/HashSet)
-- ⏸️ 016-018: Remaining typeclass instances (pending)
+- ✅ 016: Predicate matching (find_first, matches, contains)
+- ⏸️ 017-018: Remaining typeclass instances (pending)
 
 ### ✅ 008-functor-instance: Functor Trait
 **Primary Reference (Authoritative)**: `../gram-hs/libs/` - Haskell implementation source code
@@ -287,19 +288,30 @@ This TODO tracks the incremental porting of features from the gram-hs reference 
 - `crates/pattern-core/tests/hash_integration.rs` (13 integration tests)
 **Status**: Complete - hashing support implemented with comprehensive test coverage, property-based verification of hash/eq consistency, and behavioral equivalence with gram-hs confirmed. Enables O(1) HashMap/HashSet usage for patterns.
 
-### 016-predicate-matching: Pattern Matching
+### 016-predicate-matching: Pattern Matching ✅ COMPLETE
 **Primary Reference (Authoritative)**: `../gram-hs/libs/` - Haskell implementation source code
-**Documentation Reference**: `../gram-hs/docs/` - Up-to-date documentation about the implementation
-**Historical Reference (Context Only)**: `../gram-hs/specs/012-predicate-matching/` - Historical notes from incremental development (may be outdated)
+**Spec**: `specs/016-predicate-matching/spec.md` - Implementation-agnostic specification
+**Plan**: `specs/016-predicate-matching/plan.md` - Implementation plan and design decisions
+**Tasks**: `specs/016-predicate-matching/tasks.md` - 88 detailed implementation tasks (all complete)
 
-- [ ] Study Haskell implementation: `../gram-hs/libs/` - **This is the source of truth**
-- [ ] Review gram-hs documentation: `../gram-hs/docs/` - **Up-to-date information about the implementation**
-- [ ] Review gram-hs tests: `../gram-hs/libs/*/tests/` - **Shows expected behavior**
-- [ ] Review gram-hs spec: `../gram-hs/specs/012-predicate-matching/spec.md` (historical notes, for context only)
-- [ ] Port pattern matching algorithm (from actual Haskell source)
-- [ ] Port predicate matching functions (from actual Haskell source)
-- [ ] Port test cases (from actual test files)
-- [ ] Verify equivalence (against actual Haskell implementation)
+- [x] Study Haskell implementation: `../gram-hs/libs/` - **This is the source of truth**
+- [x] Review gram-hs documentation: `../gram-hs/docs/` - **Up-to-date information about the implementation**
+- [x] Review gram-hs tests: `../gram-hs/libs/*/tests/` - **Shows expected behavior**
+- [x] Review gram-hs spec: `../gram-hs/specs/012-predicate-matching/spec.md` (historical notes, for context only)
+- [x] Port pattern matching algorithm (from actual Haskell source)
+- [x] Port predicate matching functions (from actual Haskell source)
+- [x] Port test cases (from actual test files)
+- [x] Verify equivalence (against actual Haskell implementation)
+
+**Implementation**: 
+- `crates/pattern-core/src/pattern.rs` - find_first(), matches(), contains() methods
+**Tests**: 
+- `crates/pattern-core/tests/query_find_first.rs` (26 unit tests)
+- `crates/pattern-core/tests/predicate_matches.rs` (31 unit tests)
+- `crates/pattern-core/tests/predicate_contains.rs` (29 unit tests)
+- `crates/pattern-core/tests/predicate_properties.rs` (19 property tests with proptest)
+**Benchmarks**: `crates/pattern-core/benches/predicate_benchmarks.rs` (13 benchmark groups for find_first, matches, contains)
+**Status**: Complete - predicate-based pattern matching implemented with comprehensive test coverage, property-based verification of mathematical properties (reflexivity, symmetry, transitivity), and behavioral equivalence with gram-hs confirmed. All operations meet performance targets (<10ms for typical patterns).
 
 ### 017-applicative-instance: Applicative Trait
 **Primary Reference (Authoritative)**: `../gram-hs/libs/` - Haskell implementation source code
