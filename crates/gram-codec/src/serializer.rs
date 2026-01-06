@@ -320,9 +320,10 @@ fn needs_quoting(s: &str) -> bool {
         return true;
     }
 
-    // Check for special characters or whitespace
+    // Check for non-ASCII characters (Unicode), special characters, or whitespace
     s.chars().any(|c| {
-        c.is_whitespace()
+        !c.is_ascii()
+            || c.is_whitespace()
             || matches!(
                 c,
                 '{' | '}' | '[' | ']' | '(' | ')' | ':' | ',' | '@' | '#' | '-' | '~' | '"'

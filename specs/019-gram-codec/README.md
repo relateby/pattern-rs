@@ -177,12 +177,13 @@ The `contracts/` directory will contain technical contracts created during the p
 
 ### External References
 
-- **tree-sitter-gram**: `../tree-sitter-gram/` (authoritative grammar)
+- **tree-sitter-gram**: `external/tree-sitter-gram/` (git submodule - authoritative grammar)
   - Grammar: `grammar.js`
   - Test corpus: `test/corpus/`
   - Examples: `examples/data/`
   - Rust bindings: `bindings/rust/`
   - Python bindings: `bindings/python/`
+  - **Setup**: Run `git submodule update --init --recursive` after clone
 
 - **gram-lint**: CLI validator using tree-sitter-gram
   - Usage: `gram-lint [OPTIONS] [FILES]...`

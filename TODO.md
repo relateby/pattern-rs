@@ -440,22 +440,24 @@ impl<V> Pattern<V> {
 For all gram notation work, use the `gram-lint` CLI tool to validate
 snippets. 
 
-### 019-gram-serialization: Basic Gram Codec
-**Primary Reference (Authoritative)**: `../gram-hs/libs/` - Haskell implementation source code
-**Documentation Reference**: `../gram-hs/docs/` - Up-to-date documentation about the implementation
-**Historical Reference (Context Only)**: `../gram-hs/specs/014-gram-serialization/` - Historical notes from incremental development (may be outdated)
+### 019-gram-serialization: Basic Gram Codec ✅ **COMPLETE**
+**Implementation**: `crates/gram-codec/` - Full bidirectional codec with 139+ tests
+**Authority**: `external/tree-sitter-gram/` (git submodule) - **Deviation from gram-hs justified by requirement**
+**Documentation**: `specs/019-gram-codec/` - Comprehensive specification and implementation docs
+**Examples**: `crates/gram-codec/examples/` - Basic and advanced usage examples
 
-- [ ] Study Haskell implementation: `../gram-hs/libs/` - **This is the source of truth**
-- [ ] Review gram-hs documentation: `../gram-hs/docs/` - **Up-to-date information about the implementation**
-- [ ] Review gram-hs tests: `../gram-hs/libs/*/tests/` - **Shows expected behavior**
-- [ ] Review gram-hs spec: `../gram-hs/specs/014-gram-serialization/spec.md` (historical notes, for context only)
-- [ ] Review gram grammar definition (from actual Haskell source)
-- [ ] Choose parser library (recommended: winnow)
-- [ ] Implement gram → pattern decoder (from actual Haskell source)
-- [ ] Implement pattern → gram encoder (from actual Haskell source)
-- [ ] Port test cases (from actual test files)
-- [ ] Round-trip testing
-- [ ] Verify equivalence (against actual Haskell implementation)
+- [x] Study grammar authority: `tree-sitter-gram` (explicit requirement, validated with `gram-lint`)
+- [x] Review tree-sitter-gram tests: `external/tree-sitter-gram/test/corpus/`
+- [x] Created specification: `specs/019-gram-codec/spec.md`
+- [x] Chose parser library: tree-sitter-gram (WASM + Python support)
+- [x] Implemented gram → pattern parser (with error recovery)
+- [x] Implemented pattern → gram serializer (with format selection)
+- [x] Comprehensive test suite: 139+ tests (unit, integration, edge cases)
+- [x] Round-trip correctness validation
+- [x] Created examples (basic_usage.rs, advanced_usage.rs)
+- [x] Created comprehensive README
+
+**Note**: Uses tree-sitter-gram as authoritative grammar (not gram-hs) per feature requirement.
 
 ### 020-gram-parsing-conformance: Parser Conformance
 **Primary Reference (Authoritative)**: `../gram-hs/libs/` - Haskell implementation source code

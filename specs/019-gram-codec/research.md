@@ -552,13 +552,25 @@ pub struct Subject {
 
 ### Decision: Test Corpus Integration Approach
 **Date**: 2026-01-06  
+**Updated**: 2026-01-06 (Submodule approach)  
 **Question**: How should the tree-sitter-gram test corpus be incorporated?  
-**Decision**: Use programmatic parsing of corpus files with custom test generation
+**Decision**: Use git submodule for CI/CD reliability with programmatic test generation
 
 **Approach**:
-1. **Corpus location**: Keep test files in `../tree-sitter-gram/test/corpus/` (don't copy)
-2. **Test generation**: Write Rust code to parse corpus format and generate tests
-3. **Integration**: Use `build.rs` or test helper to dynamically load corpus
+1. **Corpus location**: Git submodule at `external/tree-sitter-gram/` (not peer directory `../`)
+2. **CI/CD compatibility**: Submodule ensures tests work in GitHub Actions and other CI systems
+3. **Version pinning**: Lock to specific tree-sitter-gram commit for reproducibility
+4. **Test generation**: Write Rust code to parse corpus format and generate tests
+5. **Conditional testing**: Tests gracefully skip if submodule not initialized (allows basic dev)
+
+**Why Submodule vs Peer Directory**:
+- ✅ **CI/CD**: Works automatically in GitHub Actions (just add `submodules: true`)
+- ✅ **Consistency**: All developers and CI use same corpus version
+- ✅ **Standard practice**: Git submodules are well-understood workflow
+- ✅ **Easy setup**: Single command (`git submodule update --init`)
+- ✅ **Updates**: Standard git commands to pull latest corpus
+
+See [CORPUS_TESTING.md](CORPUS_TESTING.md) for complete setup documentation.
 
 **Corpus File Format** (example from `nodes.txt`):
 ```

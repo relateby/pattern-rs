@@ -20,8 +20,13 @@ Gram notation is a human-readable text format for representing patterns. It foll
    - Example: `()`, `(hello)`, `(a:Person)`, `(a:Person {name: "Alice"})`
 
 2. **Relationship Pattern**: `(left)-[edge]->(right)` - represents a pattern with 2 elements
-   - Arrow types: `-->`, `<--`, `<-->`, `~~`, `~>`
+   - **Arrow Kinds** (semantic types normalized from visual styles):
+     - `right_arrow`: Directed left-to-right (visual: `-->`, `==>`, `~~>`)
+     - `left_arrow`: Directed right-to-left, **elements reversed** (visual: `<--`, `<==`, `<~~`)
+     - `bidirectional_arrow`: Mutual connection (visual: `<-->`, `<==>`)
+     - `undirected_arrow`: No directionality (visual: `~~`, `==`)
    - Example: `(a)-->(b)`, `(a)-[:KNOWS]->(b)`, `(a)<--(b)`
+   - **Note**: Multiple visual arrow styles normalize to 4 semantic kinds
 
 3. **Subject Pattern**: `[subject | elements]` - represents a pattern with arbitrary elements
    - Example: `[team | alice, bob]`, `[outer | [inner | leaf]]`
@@ -99,6 +104,29 @@ For gram notation, `V = Subject`.
 - **2 elements**: Relationship pattern (left node, right node)
 - **N elements**: Subject pattern (general form)
 
+### Arrow Style Variants and Normalized Kinds
+
+The tree-sitter-gram grammar accepts **multiple visual arrow styles** but normalizes them to **4 semantic arrow kinds** during parsing. This allows flexible notation while maintaining consistent internal representation.
+
+**Complete Arrow Mapping Table:**
+
+| Visual Form | Normalized Kind | Direction | Element Order | Example |
+|-------------|----------------|-----------|---------------|---------|
+| `-->` | `right_arrow` | Left-to-right | `[left, right]` | `(a)-->(b)` |
+| `==>` | `right_arrow` | Left-to-right | `[left, right]` | `(a)==>(b)` |
+| `~~>` | `right_arrow` | Left-to-right | `[left, right]` | `(a)~~>(b)` |
+| `<--` | `left_arrow` | Right-to-left | `[right, left]` ⚠️ | `(a)<--(b)` → `[b,a]` |
+| `<==` | `left_arrow` | Right-to-left | `[right, left]` ⚠️ | `(a)<==(b)` → `[b,a]` |
+| `<~~` | `left_arrow` | Right-to-left | `[right, left]` ⚠️ | `(a)<~~(b)` → `[b,a]` |
+| `<-->` | `bidirectional_arrow` | Both directions | `[left, right]` | `(a)<-->(b)` |
+| `<==>` | `bidirectional_arrow` | Both directions | `[left, right]` | `(a)<==>(b)` |
+| `~~` | `undirected_arrow` | No direction | `[first, second]` | `(a)~~(b)` |
+| `==` | `undirected_arrow` | No direction | `[first, second]` | `(a)==(b)` |
+
+**⚠️ Important**: Left arrow variants (`<--`, `<==`, `<~~`) **reverse the element order** during parsing. The visual notation `(a)<--(b)` means "b points to a", and is stored internally as `Pattern { elements: [b, a] }`.
+
+**Serialization**: The codec serializes using **canonical forms** (single-stroke arrows: `-->`, `<--`, `<-->`, `~~`) to ensure consistent output.
+
 ### Path Patterns
 
 Linear chains of relationships are flattened:
@@ -153,7 +181,9 @@ Note: Formatting details (whitespace, comments, syntactic form choice) may diffe
 
 ## Grammar Authority
 
-The tree-sitter-gram repository (`../tree-sitter-gram/grammar.js`) is the authoritative source for gram notation syntax rules. All parser behavior must conform to this grammar.
+The tree-sitter-gram repository (`external/tree-sitter-gram/grammar.js`) is the authoritative source for gram notation syntax rules. All parser behavior must conform to this grammar.
+
+**Note**: tree-sitter-gram is included as a git submodule. Run `git submodule update --init --recursive` after cloning.
 
 ## Validation
 

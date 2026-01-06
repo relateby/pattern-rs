@@ -21,6 +21,66 @@ This is a library crate in a workspace structure:
 - **Tests**: `crates/gram-codec/tests/`
 - **Benchmarks**: `crates/gram-codec/benches/`
 - **Examples**: `examples/`
+- **External dependencies**: `external/` (git submodules)
+
+## Git Submodule Setup
+
+The tree-sitter-gram test corpus is included as a git submodule for reliable CI/CD integration.
+
+### Initial Setup (One-Time)
+
+```bash
+# Add submodule (maintainers only, already done)
+git submodule add https://github.com/gram-data/tree-sitter-gram.git external/tree-sitter-gram
+git commit -m "Add tree-sitter-gram as submodule for corpus tests"
+```
+
+### Developer Setup
+
+When cloning the repository:
+
+```bash
+# Option 1: Clone with submodules
+git clone --recurse-submodules https://github.com/gram-data/gram-rs.git
+
+# Option 2: Initialize submodules after clone
+git clone https://github.com/gram-data/gram-rs.git
+cd gram-rs
+git submodule update --init --recursive
+```
+
+### Updating Submodule
+
+To update to latest tree-sitter-gram:
+
+```bash
+cd external/tree-sitter-gram
+git pull origin main
+cd ../..
+git add external/tree-sitter-gram
+git commit -m "Update tree-sitter-gram submodule"
+```
+
+### CI/CD Configuration
+
+GitHub Actions and other CI systems need submodule initialization:
+
+```yaml
+# .github/workflows/*.yml
+steps:
+  - uses: actions/checkout@v3
+    with:
+      submodules: true  # or 'recursive' for nested submodules
+```
+
+### Corpus Test Paths
+
+All corpus-related tasks use the submodule path:
+- **Corpus files**: `external/tree-sitter-gram/test/corpus/*.txt`
+- **Grammar**: `external/tree-sitter-gram/grammar.js`
+- **Examples**: `external/tree-sitter-gram/examples/data/*.gram`
+
+**Conditional Testing**: Corpus tests gracefully skip if submodule is not initialized, allowing basic development without full corpus.
 
 ---
 
@@ -132,11 +192,13 @@ This is a library crate in a workspace structure:
 
 ### Integration with tree-sitter-gram Test Corpus
 
+**Note**: Corpus tests use `external/tree-sitter-gram` submodule. See setup instructions below.
+
 - [ ] T059 [US1] Create `crates/gram-codec/tests/corpus_tests.rs` for corpus integration (deferred to Phase 5)
-- [ ] T060 [US1] Implement corpus file parser: reads `===` separator format from ../tree-sitter-gram/test/corpus/*.txt (deferred)
+- [ ] T060 [US1] Implement corpus file parser: reads `===` separator format from external/tree-sitter-gram/test/corpus/*.txt (deferred)
 - [ ] T061 [US1] Implement load_corpus_tests function: parses corpus files → Vec<CorpusTest> (deferred)
 - [ ] T062 [US1] Implement run_corpus_tests: iterates corpus tests, parses each, asserts success (deferred)
-- [ ] T063 [US1] Test all 27 corpus files from ../tree-sitter-gram/test/corpus/ (deferred)
+- [ ] T063 [US1] Test all 27 corpus files from external/tree-sitter-gram/test/corpus/ (deferred)
 
 **Checkpoint**: ✅ **User Story 1 Complete - MVP Delivered!** Parser is fully functional with 48 tests passing. Can parse all major gram notation forms into Pattern structures.
 

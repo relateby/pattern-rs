@@ -27,7 +27,7 @@ Implement bidirectional transformation between gram notation (human-readable tex
 **Language/Version**: Rust 1.75+ (edition 2021)  
 **Primary Dependencies**: 
 - `tree-sitter` (parser runtime)
-- `tree-sitter-gram` (grammar and bindings from `../tree-sitter-gram`)
+- `tree-sitter-gram` (grammar and bindings from `external/tree-sitter-gram` git submodule)
 - `pattern-core` (Pattern and Subject types)
 - `gram-lint` CLI for validation
 
@@ -68,9 +68,10 @@ This feature uses **`tree-sitter-gram` as the authoritative reference**, NOT `..
 - Validated by the `gram-lint` CLI tool
 
 **Reference Locations**:
-- **Grammar**: `../tree-sitter-gram/grammar.js` (authoritative)
-- **Test Corpus**: `../tree-sitter-gram/test/corpus/` (27 test files)
+- **Grammar**: `external/tree-sitter-gram/grammar.js` (authoritative, git submodule)
+- **Test Corpus**: `external/tree-sitter-gram/test/corpus/` (27 test files, git submodule)
 - **Validator**: `gram-lint` CLI tool (`~/.cargo/bin/gram-lint`)
+- **Submodule Setup**: `git submodule update --init --recursive` (see CORPUS_TESTING.md)
 - **Validation Documentation**: [VALIDATION.md](VALIDATION.md) (40+ validated examples)
 - **Parse Tree Analysis**: [research.md](research.md#11-parse-tree-structure-analysis)
 
@@ -246,8 +247,9 @@ examples/
 
 **Integration Points**:
 - `crates/pattern-core/`: Uses Pattern<V> and Subject types
-- `../tree-sitter-gram/`: Grammar, test corpus, Rust bindings
+- `external/tree-sitter-gram/`: Grammar, test corpus, Rust bindings (git submodule)
 - `gram-lint`: Validation tool for all codec output
+- See [CORPUS_TESTING.md](CORPUS_TESTING.md) for submodule setup
 
 ## Complexity Tracking
 
@@ -267,14 +269,14 @@ examples/
 | Value enum design | Low | Standard Rust pattern for heterogeneous data (like serde_json::Value) |
 | Arrow type handling | Medium | Syntactic sugar - needs clear rules for each arrow variation |
 | Subject refactoring | Medium | May need to refactor existing Subject to integrate Value enum without redundancy |
-| Test corpus integration | Low | Multiple options (copy, submodule, symlinks) - decision deferred to implementation |
+| Test corpus integration | Low | **RESOLVED**: Git submodule approach for CI/CD compatibility (see CORPUS_TESTING.md) |
 
 **Mitigation Strategies**:
 - **Parser library**: Research phase will evaluate tree-sitter-gram direct use vs manual port
 - **Value enum**: Standard pattern, well-documented in Rust ecosystem
 - **Arrow types**: Clarification phase identified need for explicit rules (planning phase will specify)
 - **Subject refactoring**: Review existing implementation, design unified Value enum
-- **Test corpus**: Planning phase will recommend integration approach
+- **Test corpus**: **RESOLVED** - Git submodule at `external/tree-sitter-gram/` for CI/CD compatibility
 
 ---
 
@@ -315,9 +317,11 @@ See [research.md](research.md) for detailed research findings.
    - Design CST → Pattern transformation approach
    - Error message extraction from tree-sitter errors
 
-4. **Test Corpus Integration** (LOW PRIORITY)
-   - Choose approach: copy, submodule, symlinks, programmatic
-   - Automate test generation from corpus format
+4. **Test Corpus Integration** ✅ **RESOLVED**
+   - **Decision**: Git submodule at `external/tree-sitter-gram/`
+   - **Benefits**: CI/CD compatibility, version pinning, standard workflow
+   - **Documentation**: See [CORPUS_TESTING.md](CORPUS_TESTING.md)
+   - **Remaining**: Automate test generation from corpus format (Phase 5)
 
 ---
 
@@ -403,7 +407,7 @@ See [quickstart.md](quickstart.md) for usage guide.
    - ⚠️ **Arrow type handling** - Specify element ordering rules for each arrow
    - ⚠️ **Value enum design** - Complete enum definition
    - ⚠️ **Subject refactoring** - Assess existing implementation
-   - ⏸️ Test corpus integration - Choose approach
+   - ✅ Test corpus integration - Git submodule approach (CORPUS_TESTING.md)
 
 2. **Complete Phase 1 Design**:
    - ⚠️ Create `contracts/` directory with API specifications

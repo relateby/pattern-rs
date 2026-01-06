@@ -77,10 +77,17 @@ View patterns in human-readable form during development:
 
 The gram codec follows the **tree-sitter-gram** grammar specification:
 
-- **Repository**: `../tree-sitter-gram/`
+- **Repository**: `external/tree-sitter-gram/` (git submodule)
 - **Grammar**: `grammar.js` defines all syntax rules
 - **Examples**: `examples/data/*.gram` provide sample gram notation
 - **Validation**: Use `gram-lint` CLI to validate gram notation
+
+### Submodule Setup
+
+```bash
+# Initialize submodule after cloning gram-rs
+git submodule update --init --recursive
+```
 
 ## Validation Tool
 
@@ -120,14 +127,34 @@ gram-lint -e "(a)-->(b)" -e "[team | alice, bob]"
 
 ### Relationship Patterns (2 elements)
 
+The grammar accepts **multiple visual arrow styles** that are normalized to **4 semantic arrow kinds**:
+
+#### Right Arrow (directed left-to-right)
 ```gram
-(a)-->(b)                       // Right arrow
-(a)<--(b)                       // Left arrow
-(a)<-->(b)                      // Bidirectional
-(a)~~(b)                        // Squiggle undirected
-(a)~>(b)                        // Squiggle directed
-(a)-[:KNOWS]->(b)               // Labeled relationship
-(a)-[:KNOWS {since: 2020}]->(b) // Relationship with properties
+(a)-->(b)                       // Single-stroke ✓
+(a)==>(b)                       // Double-stroke ✓
+(a)~~>(b)                       // Squiggle ✓
+(a)-[:KNOWS]->(b)               // With label ✓
+(a)-[:KNOWS {since: 2020}]->(b) // With properties ✓
+```
+
+#### Left Arrow (directed right-to-left, elements reversed!)
+```gram
+(a)<--(b)                       // Single-stroke ✓ → stored as [b, a]
+(a)<==(b)                       // Double-stroke ✓ → stored as [b, a]
+(a)<~~(b)                       // Squiggle ✓ → stored as [b, a]
+```
+
+#### Bidirectional Arrow (mutual connection)
+```gram
+(a)<-->(b)                      // Single-stroke ✓
+(a)<==>(b)                      // Double-stroke ✓
+```
+
+#### Undirected Arrow (no directionality)
+```gram
+(a)~~(b)                        // Squiggle ✓
+(a)==(b)                        // Double-stroke ✓
 ```
 
 ### Subject Patterns (N elements)
@@ -194,9 +221,9 @@ After this specification is approved:
 
 ## References
 
-- **Grammar**: `../tree-sitter-gram/grammar.js`
-- **Examples**: `../tree-sitter-gram/examples/data/`
-- **Tests**: `../tree-sitter-gram/test/corpus/`
+- **Grammar**: `external/tree-sitter-gram/grammar.js`
+- **Examples**: `external/tree-sitter-gram/examples/data/`
+- **Tests**: `external/tree-sitter-gram/test/corpus/`
 - **Validator**: `gram-lint` CLI tool
 - **Spec**: `spec.md` (this feature)
 - **Data Model**: `data-model.md`
