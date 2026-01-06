@@ -63,10 +63,7 @@ fn helper_functions() {
     let p = Pattern::pattern(
         "root",
         vec![
-            Pattern::pattern(
-                "a",
-                vec![Pattern::point("x"), Pattern::point("y")],
-            ),
+            Pattern::pattern("a", vec![Pattern::point("x"), Pattern::point("y")]),
             Pattern::pattern("b", vec![Pattern::point("z")]),
             Pattern::point("c"),
         ],
@@ -93,7 +90,10 @@ fn helper_functions() {
     println!("\nPaths from root:");
     println!("  root: {:?}", paths.extract());
     println!("  a: {:?}", paths.elements()[0].extract());
-    println!("  a's first child: {:?}", paths.elements()[0].elements()[0].extract());
+    println!(
+        "  a's first child: {:?}",
+        paths.elements()[0].elements()[0].extract()
+    );
     println!("  b: {:?}", paths.elements()[1].extract());
     println!("  c: {:?}\n", paths.elements()[2].extract());
 }
@@ -119,10 +119,7 @@ fn pattern_inspector() {
                     Pattern::point("paragraph3"),
                     Pattern::pattern(
                         "subsection",
-                        vec![
-                            Pattern::point("paragraph4"),
-                            Pattern::point("paragraph5"),
-                        ],
+                        vec![Pattern::point("paragraph4"), Pattern::point("paragraph5")],
                     ),
                 ],
             ),
@@ -159,11 +156,7 @@ fn find_heavy_subtrees(
     current_path: &[usize],
 ) {
     if *sizes.extract() > threshold {
-        println!(
-            "  Path {:?}: {} nodes",
-            paths.extract(),
-            sizes.extract()
-        );
+        println!("  Path {:?}: {} nodes", paths.extract(), sizes.extract());
     }
 
     for (i, (size_child, path_child)) in sizes
@@ -200,11 +193,8 @@ fn custom_computation() {
             let sizes: Vec<usize> = subp.elements().iter().map(|e| e.size()).collect();
 
             let avg = sizes.iter().sum::<usize>() as f64 / sizes.len() as f64;
-            let variance = sizes
-                .iter()
-                .map(|&s| (s as f64 - avg).powi(2))
-                .sum::<f64>()
-                / sizes.len() as f64;
+            let variance =
+                sizes.iter().map(|&s| (s as f64 - avg).powi(2)).sum::<f64>() / sizes.len() as f64;
 
             1.0 / (1.0 + variance) // Higher value = more balanced
         }
@@ -248,10 +238,7 @@ fn composition_example() {
 
     // Map over decorated pattern
     let depth_labels = p.depth_at().map(|d| format!("depth={}", d));
-    println!(
-        "\nDepth labels:\n  root: {}",
-        depth_labels.extract()
-    );
+    println!("\nDepth labels:\n  root: {}", depth_labels.extract());
     println!("  first child: {}", depth_labels.elements()[0].extract());
 
     // Combine multiple metrics in one pass
@@ -269,11 +256,8 @@ fn composition_example() {
             1.0
         } else {
             let avg = sizes.iter().sum::<usize>() as f64 / sizes.len() as f64;
-            let variance = sizes
-                .iter()
-                .map(|&s| (s as f64 - avg).powi(2))
-                .sum::<f64>()
-                / sizes.len() as f64;
+            let variance =
+                sizes.iter().map(|&s| (s as f64 - avg).powi(2)).sum::<f64>() / sizes.len() as f64;
             1.0 / (1.0 + variance)
         };
 
@@ -284,10 +268,7 @@ fn composition_example() {
         }
     });
 
-    println!(
-        "\nCombined metrics at root:\n  {:?}\n",
-        metrics.extract()
-    );
+    println!("\nCombined metrics at root:\n  {:?}\n", metrics.extract());
 }
 
 /// Helper to count positions with depth greater than threshold.
@@ -301,4 +282,3 @@ fn count_positions_with_depth(depths: &Pattern<usize>, threshold: usize) -> usiz
     }
     count
 }
-

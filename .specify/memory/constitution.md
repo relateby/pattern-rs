@@ -1,16 +1,19 @@
 <!--
 Sync Impact Report:
-Version: 1.0.0 → 1.0.1
+Version: 1.0.1 → 1.0.2
 Modified principles:
+  - Development Workflow: Added explicit code quality checks (formatting, linting, CI) to completion checklist
+Added sections:
+  - Code quality verification steps in Development Workflow (steps 7-8)
+Templates requiring updates:
+  - ✅ tasks-template.md (Updated Polish phase with code quality checks section)
+  - ✅ plan-template.md (no changes needed - compatible with principles)
+  - ✅ spec-template.md (no changes needed - compatible with principles)
+Follow-up TODOs: None
+Previous changes (1.0.0 → 1.0.1):
   - I. Reference Implementation Fidelity: Added reference to local path ../gram-hs and ../gram-hs/specs/
   - Development Workflow: Updated verification steps to include local reference paths
-Added sections:
   - Reference Implementation Location section with local path details
-Templates requiring updates:
-  - ✅ plan-template.md (Constitution Check section aligns with principles)
-  - ✅ spec-template.md (no changes needed - compatible with principles)
-  - ✅ tasks-template.md (no changes needed - compatible with principles)
-Follow-up TODOs: None
 -->
 
 # gram-rs Constitution
@@ -84,6 +87,12 @@ Before marking any feature as complete:
 4. Document any intentional deviations with rationale
 5. Include test cases that demonstrate equivalence (or document differences)
 6. Update examples if API changes affect external language bindings
+7. Run code quality checks:
+   - Format check: `cargo fmt --all -- --check` (or auto-format with `cargo fmt --all`)
+   - Linting: `cargo clippy --workspace -- -D warnings`
+   - Full CI validation: `scripts/ci-local.sh` (if available)
+   - All tests passing: `cargo test --workspace`
+8. Fix all formatting, linting, and test failures before marking feature complete
 
 ### Code Review Requirements
 - All PRs MUST verify compliance with reference implementation fidelity
@@ -107,7 +116,7 @@ This constitution supersedes all other development practices. Amendments require
 
 All PRs and code reviews MUST verify compliance with these principles. Complexity or deviations from the reference implementation MUST be justified. Use project documentation and examples for runtime development guidance.
 
-**Version**: 1.0.1 | **Ratified**: 2025-12-27 | **Last Amended**: 2025-12-27
+**Version**: 1.0.2 | **Ratified**: 2025-12-27 | **Last Amended**: 2026-01-05
 
 ## Reference Implementation Location
 

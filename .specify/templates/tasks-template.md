@@ -150,12 +150,38 @@ Examples of foundational tasks (adjust based on your project):
 
 **Purpose**: Improvements that affect multiple user stories
 
+### Documentation & Examples
+
 - [ ] TXXX [P] Documentation updates in docs/
+- [ ] TXXX [P] Add comprehensive examples in examples/ (if applicable)
+- [ ] TXXX Run quickstart.md validation
+
+### Code Quality
+
 - [ ] TXXX Code cleanup and refactoring
-- [ ] TXXX Performance optimization across all stories
 - [ ] TXXX [P] Additional unit tests (if requested) in tests/unit/
 - [ ] TXXX Security hardening
-- [ ] TXXX Run quickstart.md validation
+
+### Code Quality Checks (REQUIRED)
+
+- [ ] TXXX Run `cargo fmt --all` (or equivalent formatter) to ensure consistent code formatting
+- [ ] TXXX Run `cargo clippy --workspace -- -D warnings` (or equivalent linter) to check for issues
+- [ ] TXXX Run full CI checks with `scripts/ci-local.sh` (if available) or equivalent CI validation
+- [ ] TXXX Verify all tests pass (`cargo test --workspace` or equivalent)
+- [ ] TXXX Fix any formatting, linting, or test failures before completion
+
+### Performance & Optimization
+
+- [ ] TXXX Performance optimization across all stories
+- [ ] TXXX Benchmarking (if performance goals specified in plan.md)
+- [ ] TXXX Verify performance targets are met
+
+### Final Verification
+
+- [ ] TXXX Update CHANGELOG.md with feature changes (if applicable)
+- [ ] TXXX Update TODO.md to mark feature as complete
+- [ ] TXXX Update feature README and RECOMMENDATION docs with completion status
+- [ ] TXXX Ensure all acceptance criteria from spec.md are met
 
 ---
 
