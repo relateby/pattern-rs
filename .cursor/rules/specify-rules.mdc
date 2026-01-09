@@ -18,6 +18,8 @@ Auto-generated from all feature plans. Last updated: 2025-12-27
 - Rust 1.75+ (stable features only) (018-comonad-instance)
 - N/A (pure in-memory data structure operations) (018-comonad-instance)
 - N/A (in-memory transformations) (019-gram-codec)
+- Rust 1.70.0+ (edition 2021) (021-pure-rust-parser)
+- N/A (parser library, no persistent storage) (021-pure-rust-parser)
 
 - Rust (MSRV: 1.70.0, edition: 2021) (002-workspace-setup)
 
@@ -37,9 +39,9 @@ cargo test [ONLY COMMANDS FOR ACTIVE TECHNOLOGIES][ONLY COMMANDS FOR ACTIVE TECH
 Rust (MSRV: 1.70.0, edition: 2021): Follow standard conventions
 
 ## Recent Changes
+- 021-pure-rust-parser: Added Rust 1.70.0+ (edition 2021)
 - 019-gram-codec: Added Rust 1.75+ (edition 2021)
 - 018-comonad-instance: Added Rust 1.75+ (stable features only)
-- 016-predicate-matching: Added Rust 1.75+ (edition 2021) + None (std library only for core functionality)
 
 
 <!-- MANUAL ADDITIONS START -->
