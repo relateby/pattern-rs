@@ -114,8 +114,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         Ok(_) => println!("   Unexpected success!"),
         Err(e) => {
             println!("   Parse error detected:");
-            println!("   Message: {}", e.message);
-            println!("   Error count: {}\n", e.error_count());
+            println!("   {}\n", e);
         }
     }
 

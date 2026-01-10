@@ -9,8 +9,7 @@ description = "Bidirectional codec between Gram notation and Pattern data struct
 
 [dependencies]
 pattern-core = { path = "../pattern-core" }
-tree-sitter = "0.25"
-tree-sitter-gram = "0.2"
+nom = "7"
 thiserror.workspace = true
 
 # WASM support
@@ -22,6 +21,7 @@ pyo3 = { version = "0.23", optional = true, features = ["extension-module"] }
 [dev-dependencies]
 insta.workspace = true
 criterion.workspace = true
+proptest = "1.0"
 
 [features]
 default = []

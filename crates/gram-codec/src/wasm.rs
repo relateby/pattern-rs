@@ -67,14 +67,14 @@ impl ParseResult {
 /// Throws JavaScript error if parsing fails
 #[wasm_bindgen]
 pub fn parse_gram(input: &str) -> Result<ParseResult, JsValue> {
-    // Parse using the native parser
-    let patterns = crate::parse_gram_notation(input)
-        .map_err(|e| JsValue::from_str(&format!("Parse error: {}", e.message)))?;
+    // Parse using the native parser (now uses nom, not tree-sitter)
+    let patterns = crate::parse_gram(input)
+        .map_err(|e| JsValue::from_str(&format!("Parse error: {}", e)))?;
 
     // Extract identifiers from root patterns
     let identifiers: Vec<String> = patterns
         .iter()
-        .map(|p| p.value.identity.0.clone())
+        .map(|p| p.value().identity.0.clone())
         .collect();
 
     Ok(ParseResult {
@@ -96,7 +96,7 @@ pub fn parse_gram(input: &str) -> Result<ParseResult, JsValue> {
 /// `true` if valid, `false` if invalid
 #[wasm_bindgen]
 pub fn validate_gram(input: &str) -> bool {
-    crate::parse_gram_notation(input).is_ok()
+    crate::validate_gram(input).is_ok()
 }
 
 /// Round-trip test: parse and serialize back to gram notation
@@ -113,12 +113,12 @@ pub fn validate_gram(input: &str) -> bool {
 #[wasm_bindgen]
 pub fn round_trip(input: &str) -> Result<String, JsValue> {
     // Parse
-    let patterns = crate::parse_gram_notation(input)
-        .map_err(|e| JsValue::from_str(&format!("Parse error: {}", e.message)))?;
+    let patterns = crate::parse_gram(input)
+        .map_err(|e| JsValue::from_str(&format!("Parse error: {}", e)))?;
 
     // Serialize all patterns
     crate::serialize_patterns(&patterns)
-        .map_err(|e| JsValue::from_str(&format!("Serialize error: {}", e.reason)))
+        .map_err(|e| JsValue::from_str(&format!("Serialize error: {}", e)))
 }
 
 /// Get version information for the gram codec

@@ -37,9 +37,12 @@ pub enum Value {
 }
 
 impl Value {
-    /// Parse value from tree-sitter node
-    pub fn from_tree_sitter_node(
-        node: &tree_sitter::Node,
+    // TODO: tree-sitter parsing methods removed during nom parser migration
+    // Value parsing is now handled by parser::value module
+    
+    /* Commented out during migration to nom parser
+    pub fn from_tree_sitter_node_OLD(
+        node: &TREE_SITTER_NODE,
         source: &str,
     ) -> Result<Self, ParseError> {
         match node.kind() {
@@ -97,12 +100,10 @@ impl Value {
                 let (tag, content) = extract_tagged_string(node, source)?;
                 Ok(Value::TaggedString { tag, content })
             }
-            _ => Err(Self::node_parse_error(
-                node,
-                format!("Unsupported value type: {}", node.kind()),
-            )),
+            _ => panic!("tree-sitter parsing no longer supported"),
         }
     }
+    */ // End of commented tree-sitter code
 
     /// Serialize value to gram notation
     pub fn to_gram_notation(&self) -> String {
@@ -140,18 +141,7 @@ impl Value {
         }
     }
 
-    /// Helper to create parse error from node
-    fn node_parse_error(node: &tree_sitter::Node, message: String) -> ParseError {
-        let pos = node.start_position();
-        ParseError {
-            location: Location {
-                line: pos.row + 1,
-                column: pos.column + 1,
-            },
-            message,
-            errors: vec![],
-        }
-    }
+    // TODO: node_parse_error removed during migration
 }
 
 impl fmt::Display for Value {
@@ -216,77 +206,8 @@ pub(crate) fn format_decimal(f: f64) -> String {
     }
 }
 
-/// Extract string content from quoted string literal
-fn extract_string_content(node: &tree_sitter::Node, source: &str) -> Result<String, ParseError> {
-    let text = node
-        .utf8_text(source.as_bytes())
-        .map_err(|e| Value::node_parse_error(node, format!("UTF-8 error: {}", e)))?;
-
-    // Remove quotes and unescape
-    if text.len() >= 2 && text.starts_with('"') && text.ends_with('"') {
-        let content = &text[1..text.len() - 1];
-        Ok(unescape_string(content))
-    } else {
-        Ok(text.to_string())
-    }
-}
-
-/// Unescape string content
-fn unescape_string(s: &str) -> String {
-    s.replace("\\n", "\n")
-        .replace("\\t", "\t")
-        .replace("\\r", "\r")
-        .replace("\\\"", "\"")
-        .replace("\\\\", "\\")
-}
-
-/// Extract range bound from tree-sitter node
-fn extract_range_bound(
-    node: &tree_sitter::Node,
-    field: &str,
-    source: &str,
-) -> Result<i64, ParseError> {
-    let bound_node = node.child_by_field_name(field).ok_or_else(|| {
-        Value::node_parse_error(node, format!("Missing {} bound in range", field))
-    })?;
-
-    let text = bound_node
-        .utf8_text(source.as_bytes())
-        .map_err(|e| Value::node_parse_error(&bound_node, format!("UTF-8 error: {}", e)))?;
-
-    text.parse::<i64>()
-        .map_err(|e| Value::node_parse_error(&bound_node, format!("Invalid range bound: {}", e)))
-}
-
-/// Extract tag and content from tagged string
-fn extract_tagged_string(
-    node: &tree_sitter::Node,
-    source: &str,
-) -> Result<(String, String), ParseError> {
-    let text = node
-        .utf8_text(source.as_bytes())
-        .map_err(|e| Value::node_parse_error(node, format!("UTF-8 error: {}", e)))?;
-
-    // Tagged strings use """ syntax: """tag content""" or """content"""
-    if text.starts_with("\"\"\"") && text.ends_with("\"\"\"") && text.len() >= 6 {
-        let content = &text[3..text.len() - 3];
-
-        // Find first whitespace or newline to separate tag from content
-        if let Some(pos) = content.find(|c: char| c.is_whitespace()) {
-            let tag = content[..pos].to_string();
-            let text_content = content[pos..].trim_start().to_string();
-            Ok((tag, text_content))
-        } else {
-            // No whitespace, entire content is the text (no tag)
-            Ok((String::new(), content.to_string()))
-        }
-    } else {
-        Err(Value::node_parse_error(
-            node,
-            "Invalid tagged string format".to_string(),
-        ))
-    }
-}
+// TODO: tree-sitter helper functions removed during migration to nom parser
+// Value parsing is now handled by parser::value module
 
 #[cfg(test)]
 mod tests {

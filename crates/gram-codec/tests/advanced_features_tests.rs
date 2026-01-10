@@ -25,8 +25,10 @@ fn test_parse_root_record_with_multiple_patterns() {
     let result = parse_gram_notation(input);
     assert!(result.is_ok());
     let patterns = result.unwrap();
-    // Root record is ignored, patterns are extracted
-    assert!(patterns.len() >= 3);
+    // File-level pattern with root record and 3 elements
+    assert_eq!(patterns.len(), 1);
+    assert_eq!(patterns[0].elements().len(), 3);
+    assert!(!patterns[0].value().properties.is_empty());
 }
 
 // ============================================================================
@@ -209,7 +211,9 @@ fn test_parse_many_nodes() {
     let result = parse_gram_notation(&input);
     assert!(result.is_ok(), "Failed to parse many nodes");
     let patterns = result.unwrap();
-    assert_eq!(patterns.len(), 100);
+    // File-level pattern with 100 elements
+    assert_eq!(patterns.len(), 1);
+    assert_eq!(patterns[0].elements().len(), 100);
 }
 
 #[test]

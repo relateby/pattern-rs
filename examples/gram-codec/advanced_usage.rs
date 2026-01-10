@@ -158,9 +158,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     match parse_gram_notation(invalid_gram) {
         Ok(_) => println!("   Parsed despite issues"),
         Err(e) => {
-            println!("   Multiple errors detected: {}", e.error_count());
-            println!("   Primary message: {}", e.message);
-            println!("   Detailed errors: {}", e.errors.len());
+            println!("   Parse error: {}", e);
         }
     }
 

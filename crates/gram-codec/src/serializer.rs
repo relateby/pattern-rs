@@ -101,17 +101,38 @@ fn select_format(pattern: &Pattern<Subject>) -> GramFormat {
 
 /// Check if pattern qualifies for relationship notation
 ///
-/// True if:
+/// Relationship notation `(a)-->(b)` or `(a)-[edge]->(b)` is used when:
 /// - Exactly 2 elements
 /// - Both elements are atomic (0 elements each)
+/// - Root is compatible with current parser capabilities
 ///
-/// Per spec: relationship notation is used when both elements are atomic,
-/// regardless of whether the parent pattern has an identifier/labels/properties.
-/// Edge identifiers, labels, and properties are serialized as `[value]` between the nodes.
+/// Subject pattern notation `[root | elements]` is used when:
+/// - Root has labels (not yet supported in relationship notation by parser)
+/// - Root has identifier without labels/properties (container pattern)
+///
+/// Examples:
+/// - `(a)-->(b)` - anonymous root → relationship
+/// - `(a)-[r {prop: val}]->(b)` - root with properties → relationship (if supported by parser)
+/// - `[team | (a), (b)]` - root "team" without labels/props → subject pattern
+/// - `[team:Group | (a), (b)]` - root with labels → subject pattern (parser doesn't support `-[:Label]->` yet)
 fn is_relationship_pattern(pattern: &Pattern<Subject>) -> bool {
-    pattern.elements.len() == 2
-        && pattern.elements[0].elements.is_empty()
-        && pattern.elements[1].elements.is_empty()
+    // Must have exactly 2 atomic elements
+    if pattern.elements.len() != 2
+        || !pattern.elements[0].elements.is_empty()
+        || !pattern.elements[1].elements.is_empty()
+    {
+        return false;
+    }
+
+    // The parser NOW supports:
+    // - `(a)-->(b)` (anonymous)
+    // - `(a)-[id]->(b)` (identifier only)
+    // - `(a)-[:Label]->(b)` (labels only)
+    // - `(a)-[{prop: val}]->(b)` (properties only)
+    // - `(a)-[id:Label {prop: val}]->(b)` (all combined)
+    //
+    // So we can use relationship notation for all relationships!
+    true
 }
 
 /// Check if pattern is an annotation
@@ -208,21 +229,30 @@ fn serialize_annotation_pattern(pattern: &Pattern<Subject>) -> Result<String, Se
 fn serialize_subject(subject: &Subject) -> Result<String, SerializeError> {
     let mut parts = Vec::new();
 
+    // Build identifier with labels (no spaces between them)
+    let mut id_with_labels = String::new();
+    
     // Serialize identifier
     if !subject.identity.0.is_empty() {
-        parts.push(quote_identifier(&subject.identity.0));
+        id_with_labels.push_str(&quote_identifier(&subject.identity.0));
     }
 
-    // Serialize labels
+    // Serialize labels (concatenate directly without spaces)
     if !subject.labels.is_empty() {
         let mut labels: Vec<_> = subject.labels.iter().collect();
         labels.sort(); // Consistent ordering
         for label in labels {
-            parts.push(format!(":{}", quote_identifier(label)));
+            id_with_labels.push(':');
+            id_with_labels.push_str(&quote_identifier(label));
         }
     }
+    
+    // Add identifier+labels as a single part
+    if !id_with_labels.is_empty() {
+        parts.push(id_with_labels);
+    }
 
-    // Serialize properties
+    // Serialize properties (this goes as a separate part, with space before it)
     if !subject.properties.is_empty() {
         let record_str = serialize_record(&subject.properties)?;
         parts.push(record_str);

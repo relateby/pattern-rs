@@ -5,18 +5,25 @@ build-backend = "maturin"
 [project]
 name = "gram-codec"
 version = "0.1.0"
-description = "Bidirectional codec between Gram notation and Pattern data structures"
+description = "Gram notation parser and serializer"
 readme = "README.md"
-requires-python = ">=3.7"
+requires-python = ">=3.8"
+license = {text = "Apache-2.0"}
+keywords = ["gram", "graph", "parser", "codec"]
 classifiers = [
-    "Programming Language :: Rust",
-    "Programming Language :: Python :: Implementation :: CPython",
-    "Programming Language :: Python :: Implementation :: PyPy",
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: Developers",
     "License :: OSI Approved :: Apache Software License",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.8",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Rust",
+    "Topic :: Software Development :: Libraries",
 ]
 
 [tool.maturin]
 features = ["python"]
 module-name = "gram_codec"
-python-source = "python"
-

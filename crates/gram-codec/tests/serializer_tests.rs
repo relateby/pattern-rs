@@ -46,7 +46,7 @@ fn test_serialize_node_with_label() {
     let pattern = Pattern::point(subject);
     let result = serialize_pattern(&pattern);
     assert!(result.is_ok());
-    assert_eq!(result.unwrap(), "(a :Person)");
+    assert_eq!(result.unwrap(), "(a:Person)");
 }
 
 #[test]

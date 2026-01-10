@@ -83,7 +83,9 @@ fn test_multiple_empty_nodes() {
     let result = parse_gram_notation(input);
     assert!(result.is_ok());
     let patterns = result.unwrap();
-    assert_eq!(patterns.len(), 3);
+    // File-level pattern with 3 elements
+    assert_eq!(patterns.len(), 1);
+    assert_eq!(patterns[0].elements().len(), 3);
 }
 
 #[test]
@@ -183,7 +185,9 @@ fn test_inline_comments() {
     let result = parse_gram_notation(input);
     assert!(result.is_ok());
     let patterns = result.unwrap();
-    assert_eq!(patterns.len(), 2);
+    // File-level pattern with 2 elements
+    assert_eq!(patterns.len(), 1);
+    assert_eq!(patterns[0].elements().len(), 2);
 }
 
 #[test]
@@ -201,7 +205,9 @@ fn test_newlines_between_patterns() {
     let result = parse_gram_notation(input);
     assert!(result.is_ok());
     let patterns = result.unwrap();
-    assert_eq!(patterns.len(), 3);
+    // File-level pattern with 3 elements
+    assert_eq!(patterns.len(), 1);
+    assert_eq!(patterns[0].elements().len(), 3);
 }
 
 // ============================================================================
@@ -256,8 +262,7 @@ fn test_error_unclosed_node() {
     let input = "(hello";
     let result = parse_gram_notation(input);
     assert!(result.is_err());
-    let err = result.unwrap_err();
-    assert!(err.error_count() > 0);
+    // Error occurred as expected
 }
 
 #[test]

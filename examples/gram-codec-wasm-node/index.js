@@ -8,7 +8,7 @@
  *   3. Run: node examples/wasm-node/index.js
  */
 
-const { parse_gram, validate_gram, round_trip, version } = require('../../crates/gram-codec/pkg');
+const { parse_gram, validate_gram, round_trip, version } = require('gram-codec');
 
 console.log('=== Gram Codec WASM Examples (Node.js) ===\n');
 

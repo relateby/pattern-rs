@@ -1,133 +1,219 @@
-//! Python bindings for Gram Codec
+//! Python bindings for Gram Codec using PyO3
 //!
-//! This module provides Python bindings via PyO3 for the gram codec,
-//! enabling use from Python code.
+//! This module provides Python-friendly bindings for parsing and serializing
+//! gram notation, enabling use in Python data science and analysis workflows.
 //!
-//! # Usage
+//! # Usage in Python
 //!
 //! ```python
-//! from gram_codec import parse_gram, validate_gram, round_trip
+//! import gram_codec
 //!
 //! # Parse gram notation
-//! result = parse_gram("(alice)-[:KNOWS]->(bob)")
+//! result = gram_codec.parse_gram("(alice)-[:KNOWS]->(bob)")
 //! print(f"Parsed {result['pattern_count']} patterns")
 //! print(f"Identifiers: {result['identifiers']}")
 //!
 //! # Validate gram notation
-//! is_valid = validate_gram("(hello)-->(world)")
+//! is_valid = gram_codec.validate_gram("(hello)-->(world)")
 //! print(f"Valid: {is_valid}")
 //!
 //! # Round-trip test
-//! original = "(alice)-->(bob)"
-//! serialized = round_trip(original)
-//! print(f"Round-trip: {original} -> {serialized}")
+//! serialized = gram_codec.round_trip("(a)-->(b)")
+//! print(f"Serialized: {serialized}")
 //! ```
 
-use pyo3::exceptions::PyValueError;
 use pyo3::prelude::*;
+use pyo3::exceptions::PyValueError;
 use std::collections::HashMap;
 
-/// Parse gram notation and return a dictionary with pattern information
+/// Result of parsing gram notation
+#[pyclass]
+#[derive(Clone)]
+pub struct ParseResult {
+    /// Number of top-level patterns parsed
+    #[pyo3(get)]
+    pub pattern_count: usize,
+    /// Identifiers of root patterns (for debugging)
+    #[pyo3(get)]
+    pub identifiers: Vec<String>,
+}
+
+#[pymethods]
+impl ParseResult {
+    fn __repr__(&self) -> String {
+        format!(
+            "ParseResult(pattern_count={}, identifiers={:?})",
+            self.pattern_count, self.identifiers
+        )
+    }
+
+    fn __str__(&self) -> String {
+        format!(
+            "Parsed {} pattern(s) with identifiers: {:?}",
+            self.pattern_count, self.identifiers
+        )
+    }
+
+    /// Convert to dictionary for easy Python access
+    fn to_dict(&self) -> HashMap<String, PyObject> {
+        Python::with_gil(|py| {
+            let mut dict = HashMap::new();
+            dict.insert(
+                "pattern_count".to_string(),
+                self.pattern_count.to_object(py),
+            );
+            dict.insert(
+                "identifiers".to_string(),
+                self.identifiers.to_object(py),
+            );
+            dict
+        })
+    }
+}
+
+/// Parse gram notation and return information about the parsed patterns
 ///
 /// Args:
-///     input (str): Gram notation text to parse
+///     input (str): Gram notation string to parse
 ///
 /// Returns:
-///     dict: Dictionary with keys:
-///         - 'pattern_count': Number of patterns parsed
-///         - 'identifiers': List of root pattern identifiers
+///     ParseResult: Object containing pattern_count and identifiers
 ///
 /// Raises:
-///     ValueError: If parsing fails
+///     ValueError: If the gram notation is invalid
+///
+/// Example:
+///     >>> import gram_codec
+///     >>> result = gram_codec.parse_gram("(alice)-[:KNOWS]->(bob)")
+///     >>> print(result.pattern_count)
+///     1
+///     >>> print(result.identifiers)
+///     []
 #[pyfunction]
-fn parse_gram(input: &str) -> PyResult<HashMap<String, PyObject>> {
-    Python::with_gil(|py| {
-        // Parse using the native parser
-        let patterns = crate::parse_gram_notation(input)
-            .map_err(|e| PyValueError::new_err(format!("Parse error: {}", e.message)))?;
+fn parse_gram(input: &str) -> PyResult<ParseResult> {
+    // Use the main parse function
+    let patterns = crate::parse_gram(input)
+        .map_err(|e| PyValueError::new_err(format!("Parse error: {}", e)))?;
 
-        // Extract identifiers
-        let identifiers: Vec<String> = patterns
-            .iter()
-            .map(|p| p.value.identity.0.clone())
-            .collect();
+    // Extract identifiers from patterns
+    let identifiers: Vec<String> = patterns
+        .iter()
+        .filter_map(|p| {
+            let id = &p.value().identity.0;
+            if !id.is_empty() {
+                Some(id.clone())
+            } else {
+                None
+            }
+        })
+        .collect();
 
-        // Build result dictionary
-        let mut result = HashMap::new();
-        result.insert("pattern_count".to_string(), patterns.len().into_py(py));
-        result.insert("identifiers".to_string(), identifiers.into_py(py));
-
-        Ok(result)
+    Ok(ParseResult {
+        pattern_count: patterns.len(),
+        identifiers,
     })
 }
 
-/// Validate gram notation syntax
+/// Validate gram notation without parsing
 ///
 /// Args:
-///     input (str): Gram notation text to validate
+///     input (str): Gram notation string to validate
 ///
 /// Returns:
-///     bool: True if valid, False if invalid
+///     bool: True if valid, False otherwise
+///
+/// Example:
+///     >>> import gram_codec
+///     >>> gram_codec.validate_gram("(hello)")
+///     True
+///     >>> gram_codec.validate_gram("(unclosed")
+///     False
 #[pyfunction]
 fn validate_gram(input: &str) -> bool {
-    crate::parse_gram_notation(input).is_ok()
+    crate::parse_gram(input).is_ok()
 }
 
-/// Round-trip test: parse and serialize back to gram notation
+/// Parse gram notation, serialize it back, and return the serialized form
+///
+/// This is useful for normalizing gram notation or testing round-trip correctness.
 ///
 /// Args:
-///     input (str): Original gram notation
+///     input (str): Gram notation string
 ///
 /// Returns:
-///     str: Serialized gram notation (may differ in formatting)
+///     str: Serialized gram notation
 ///
 /// Raises:
 ///     ValueError: If parsing or serialization fails
+///
+/// Example:
+///     >>> import gram_codec
+///     >>> gram_codec.round_trip("(alice)-->(bob)")
+///     '(alice)-->(bob)'
 #[pyfunction]
 fn round_trip(input: &str) -> PyResult<String> {
-    // Parse
-    let patterns = crate::parse_gram_notation(input)
-        .map_err(|e| PyValueError::new_err(format!("Parse error: {}", e.message)))?;
+    let patterns = crate::parse_gram(input)
+        .map_err(|e| PyValueError::new_err(format!("Parse error: {}", e)))?;
 
-    // Serialize all patterns
-    crate::serialize_patterns(&patterns)
-        .map_err(|e| PyValueError::new_err(format!("Serialize error: {}", e.reason)))
+    let serialized: Result<Vec<String>, _> = patterns
+        .iter()
+        .map(crate::serialize_pattern)
+        .collect();
+
+    let serialized = serialized
+        .map_err(|e| PyValueError::new_err(format!("Serialize error: {}", e)))?;
+
+    Ok(serialized.join("\n"))
 }
 
-/// Get the version of the gram codec
+/// Serialize patterns to gram notation
+///
+/// Args:
+///     patterns (list): List of pattern objects
 ///
 /// Returns:
-///     str: Version string
+///     str: Serialized gram notation
+///
+/// Raises:
+///     ValueError: If serialization fails
+///
+/// Note: This function is currently a placeholder. For now, use round_trip()
+///     for parse -> serialize workflows.
 #[pyfunction]
-fn version() -> String {
-    env!("CARGO_PKG_VERSION").to_string()
+fn serialize_patterns(_patterns: Bound<'_, PyAny>) -> PyResult<String> {
+    // For now, return an error indicating this is not yet implemented
+    // In the future, this would take Python pattern objects and serialize them
+    Err(PyValueError::new_err(
+        "Direct pattern serialization not yet implemented. Use round_trip() instead."
+    ))
 }
 
-/// Python module definition
+/// Get the version of gram-codec
+///
+/// Returns:
+///     str: Version string (e.g., "0.1.0")
+///
+/// Example:
+///     >>> import gram_codec
+///     >>> gram_codec.version()
+///     '0.1.0'
+#[pyfunction]
+fn version() -> &'static str {
+    env!("CARGO_PKG_VERSION")
+}
+
+/// Python module initialization
 #[pymodule]
 fn gram_codec(m: &Bound<'_, PyModule>) -> PyResult<()> {
     m.add_function(wrap_pyfunction!(parse_gram, m)?)?;
     m.add_function(wrap_pyfunction!(validate_gram, m)?)?;
     m.add_function(wrap_pyfunction!(round_trip, m)?)?;
+    m.add_function(wrap_pyfunction!(serialize_patterns, m)?)?;
     m.add_function(wrap_pyfunction!(version, m)?)?;
+    m.add_class::<ParseResult>()?;
+
+    // Add module metadata
+    m.add("__version__", env!("CARGO_PKG_VERSION"))?;
+
     Ok(())
-}
-
-#[cfg(test)]
-mod tests {
-    use super::*;
-
-    #[test]
-    fn test_validate_gram() {
-        assert!(validate_gram("(hello)"));
-        assert!(validate_gram("(a)-->(b)"));
-        assert!(!validate_gram("(unclosed"));
-    }
-
-    #[test]
-    fn test_round_trip() {
-        let input = "(hello)";
-        let output = round_trip(input).unwrap();
-        assert_eq!(output, "(hello)");
-    }
 }

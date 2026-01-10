@@ -18,14 +18,8 @@ impl Location {
         Self { line, column }
     }
 
-    /// Create location from tree-sitter node
-    pub fn from_node(node: &tree_sitter::Node) -> Self {
-        let start = node.start_position();
-        Self {
-            line: start.row + 1,      // tree-sitter is 0-indexed
-            column: start.column + 1, // tree-sitter is 0-indexed
-        }
-    }
+    // TODO: tree-sitter methods removed during nom parser migration
+    // Location tracking is now handled by parser::Location
 
     /// Location at start of file
     pub fn start() -> Self {
@@ -69,38 +63,13 @@ impl ParseError {
         }
     }
 
-    /// Create parse error from tree-sitter node
-    pub fn from_node(node: &tree_sitter::Node, message: String) -> Self {
-        Self::new(Location::from_node(node), message)
-    }
+    // TODO: tree-sitter methods removed during nom parser migration
+    // Error construction is now handled by parser::ParseError
 
     /// Add additional error (for error recovery)
     pub fn with_error(mut self, error: ParseError) -> Self {
         self.errors.push(error);
         self
-    }
-
-    /// Create error for unexpected token
-    pub fn unexpected_token(node: &tree_sitter::Node, expected: &str) -> Self {
-        Self::from_node(
-            node,
-            format!("Unexpected token '{}', expected {}", node.kind(), expected),
-        )
-    }
-
-    /// Create error for missing required field
-    pub fn missing_field(node: &tree_sitter::Node, field: &str) -> Self {
-        Self::from_node(node, format!("Missing required field '{}'", field))
-    }
-
-    /// Create error for invalid value
-    pub fn invalid_value(node: &tree_sitter::Node, details: String) -> Self {
-        Self::from_node(node, format!("Invalid value: {}", details))
-    }
-
-    /// Create error for unsupported value type
-    pub fn unsupported_value_type(node: &tree_sitter::Node) -> Self {
-        Self::from_node(node, format!("Unsupported value type: {}", node.kind()))
     }
 
     /// Create error for invalid pattern structure

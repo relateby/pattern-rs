@@ -129,7 +129,7 @@ fn test_relationship_with_edge_identifier_and_labels() {
         "Should have both identifier and label, got: {}",
         serialized
     );
-    assert_eq!(serialized, "(alice)-[rel1 :KNOWS]->(bob)");
+    assert_eq!(serialized, "(alice)-[rel1:KNOWS]->(bob)");
 }
 
 #[test]
