@@ -3,69 +3,71 @@
 use super::combinators::ws;
 use super::error::ParseError;
 use super::types::ParseResult;
-use pattern_core::{RangeValue, Value};
 use nom::{
     branch::alt,
-    bytes::complete::{escaped, tag, take_until, take_while, take_while1},
-    character::complete::{char, digit1, multispace0, one_of},
+    bytes::complete::{tag, take_while, take_while1},
+    character::complete::{char, digit1},
     combinator::{cut, map, map_res, opt, recognize, value as nom_value},
     error::VerboseError,
     multi::{many0, separated_list0},
     number::complete::double,
-    sequence::{delimited, pair, preceded, separated_pair, tuple},
+    sequence::{delimited, pair, separated_pair, tuple},
 };
+use pattern_core::{RangeValue, Value};
 
 /// Parse an identifier (symbol or quoted string)
-pub fn identifier(input: &str) -> ParseResult<String> {
+pub fn identifier(input: &str) -> ParseResult<'_, String> {
     alt((quoted_identifier, unquoted_identifier))(input)
 }
 
 /// Parse an unquoted identifier (symbol)
 /// Supports: letters, digits, underscore, hyphen, @, . (not first char)
 /// Can start with: letter, underscore, or digit
-pub fn unquoted_identifier(input: &str) -> ParseResult<String> {
+pub fn unquoted_identifier(input: &str) -> ParseResult<'_, String> {
     map(
         recognize(pair(
             // First character: letter, underscore, or digit
             take_while1(|c: char| c.is_alphanumeric() || c == '_'),
             // Subsequent characters: letters, digits, underscore, hyphen, @, .
-            take_while(|c: char| c.is_alphanumeric() || c == '_' || c == '-' || c == '@' || c == '.'),
+            take_while(|c: char| {
+                c.is_alphanumeric() || c == '_' || c == '-' || c == '@' || c == '.'
+            }),
         )),
         |s: &str| s.to_string(),
     )(input)
 }
 
 /// Parse a quoted identifier (quoted string)
-fn quoted_identifier(input: &str) -> ParseResult<String> {
+fn quoted_identifier(input: &str) -> ParseResult<'_, String> {
     string_value(input)
 }
 
 /// Parse a string value - supports multiple quote styles
-pub fn string_value(input: &str) -> ParseResult<String> {
+pub fn string_value(input: &str) -> ParseResult<'_, String> {
     alt((
-        fenced_string,           // ``` ... ``` (triple backticks)
-        double_quoted_string,    // "..."
-        single_quoted_string,    // '...'
-        backtick_quoted_string,  // `...`
+        fenced_string,          // ``` ... ``` (triple backticks)
+        double_quoted_string,   // "..."
+        single_quoted_string,   // '...'
+        backtick_quoted_string, // `...`
     ))(input)
 }
 
 /// Parse a double-quoted string: "text"
-fn double_quoted_string(input: &str) -> ParseResult<String> {
+fn double_quoted_string(input: &str) -> ParseResult<'_, String> {
     delimited(
         char('"'),
         map(
             recognize(many0(alt((
-                nom_value((), tag("\\\\")),  // \\
-                nom_value((), tag("\\\"")),  // \"
-                nom_value((), tag("\\\'")),  // \'
-                nom_value((), tag("\\`")),   // \`
-                nom_value((), tag("\\/")),   // \/
-                nom_value((), tag("\\n")),   // \n
-                nom_value((), tag("\\r")),   // \r
-                nom_value((), tag("\\t")),   // \t
-                nom_value((), tag("\\b")),   // \b
-                nom_value((), tag("\\f")),   // \f
+                nom_value((), tag("\\\\")), // \\
+                nom_value((), tag("\\\"")), // \"
+                nom_value((), tag("\\\'")), // \'
+                nom_value((), tag("\\`")),  // \`
+                nom_value((), tag("\\/")),  // \/
+                nom_value((), tag("\\n")),  // \n
+                nom_value((), tag("\\r")),  // \r
+                nom_value((), tag("\\t")),  // \t
+                nom_value((), tag("\\b")),  // \b
+                nom_value((), tag("\\f")),  // \f
                 nom_value((), take_while1(|c| c != '\\' && c != '"')),
             )))),
             |s: &str| unescape_string(s),
@@ -75,21 +77,21 @@ fn double_quoted_string(input: &str) -> ParseResult<String> {
 }
 
 /// Parse a single-quoted string: 'text'
-fn single_quoted_string(input: &str) -> ParseResult<String> {
+fn single_quoted_string(input: &str) -> ParseResult<'_, String> {
     delimited(
         char('\''),
         map(
             recognize(many0(alt((
-                nom_value((), tag("\\\\")),  // \\
-                nom_value((), tag("\\\"")),  // \"
-                nom_value((), tag("\\\'")),  // \'
-                nom_value((), tag("\\`")),   // \`
-                nom_value((), tag("\\/")),   // \/
-                nom_value((), tag("\\n")),   // \n
-                nom_value((), tag("\\r")),   // \r
-                nom_value((), tag("\\t")),   // \t
-                nom_value((), tag("\\b")),   // \b
-                nom_value((), tag("\\f")),   // \f
+                nom_value((), tag("\\\\")), // \\
+                nom_value((), tag("\\\"")), // \"
+                nom_value((), tag("\\\'")), // \'
+                nom_value((), tag("\\`")),  // \`
+                nom_value((), tag("\\/")),  // \/
+                nom_value((), tag("\\n")),  // \n
+                nom_value((), tag("\\r")),  // \r
+                nom_value((), tag("\\t")),  // \t
+                nom_value((), tag("\\b")),  // \b
+                nom_value((), tag("\\f")),  // \f
                 nom_value((), take_while1(|c| c != '\\' && c != '\'')),
             )))),
             |s: &str| unescape_string(s),
@@ -99,21 +101,21 @@ fn single_quoted_string(input: &str) -> ParseResult<String> {
 }
 
 /// Parse a backtick-quoted string: `text`
-fn backtick_quoted_string(input: &str) -> ParseResult<String> {
+fn backtick_quoted_string(input: &str) -> ParseResult<'_, String> {
     delimited(
         char('`'),
         map(
             recognize(many0(alt((
-                nom_value((), tag("\\\\")),  // \\
-                nom_value((), tag("\\\"")),  // \"
-                nom_value((), tag("\\\'")),  // \'
-                nom_value((), tag("\\`")),   // \`
-                nom_value((), tag("\\/")),   // \/
-                nom_value((), tag("\\n")),   // \n
-                nom_value((), tag("\\r")),   // \r
-                nom_value((), tag("\\t")),   // \t
-                nom_value((), tag("\\b")),   // \b
-                nom_value((), tag("\\f")),   // \f
+                nom_value((), tag("\\\\")), // \\
+                nom_value((), tag("\\\"")), // \"
+                nom_value((), tag("\\\'")), // \'
+                nom_value((), tag("\\`")),  // \`
+                nom_value((), tag("\\/")),  // \/
+                nom_value((), tag("\\n")),  // \n
+                nom_value((), tag("\\r")),  // \r
+                nom_value((), tag("\\t")),  // \t
+                nom_value((), tag("\\b")),  // \b
+                nom_value((), tag("\\f")),  // \f
                 nom_value((), take_while1(|c| c != '\\' && c != '`')),
             )))),
             |s: &str| unescape_string(s),
@@ -123,16 +125,14 @@ fn backtick_quoted_string(input: &str) -> ParseResult<String> {
 }
 
 /// Parse a fenced string: ```text``` or ```tag\ntext```
-fn fenced_string(input: &str) -> ParseResult<String> {
+fn fenced_string(input: &str) -> ParseResult<'_, String> {
     // Look for opening ```
     let (input, _) = tag("```")(input)?;
-    
+
     // Check if there's a tag on the same line as opening ```
-    let (input, has_tag_and_newline) = opt(pair(
-        take_while(|c: char| c.is_alphanumeric()),
-        char('\n'),
-    ))(input)?;
-    
+    let (input, has_tag_and_newline) =
+        opt(pair(take_while(|c: char| c.is_alphanumeric()), char('\n')))(input)?;
+
     let input = if has_tag_and_newline.is_some() {
         // If tag + newline, content starts after newline
         input
@@ -141,18 +141,18 @@ fn fenced_string(input: &str) -> ParseResult<String> {
         let (input, _) = opt(char('\n'))(input)?;
         input
     };
-    
+
     // Collect everything until closing ```
     let mut content = String::new();
     let mut remaining = input;
-    
+
     loop {
         // Try to find closing ```
         if remaining.starts_with("```") {
             let (rest, _) = tag("```")(remaining)?;
             return Ok((rest, content));
         }
-        
+
         // Take one character
         if let Some(c) = remaining.chars().next() {
             content.push(c);
@@ -160,7 +160,10 @@ fn fenced_string(input: &str) -> ParseResult<String> {
         } else {
             // EOF without closing ```
             return Err(nom::Err::Error(VerboseError {
-                errors: vec![(input, nom::error::VerboseErrorKind::Context("Unclosed fenced string"))],
+                errors: vec![(
+                    input,
+                    nom::error::VerboseErrorKind::Context("Unclosed fenced string"),
+                )],
             }));
         }
     }
@@ -170,7 +173,7 @@ fn fenced_string(input: &str) -> ParseResult<String> {
 fn unescape_string(s: &str) -> String {
     let mut result = String::new();
     let mut chars = s.chars();
-    
+
     while let Some(c) = chars.next() {
         if c == '\\' {
             match chars.next() {
@@ -194,12 +197,12 @@ fn unescape_string(s: &str) -> String {
             result.push(c);
         }
     }
-    
+
     result
 }
 
 /// Parse an integer value (decimal or hexadecimal)
-pub fn integer(input: &str) -> ParseResult<i64> {
+pub fn integer(input: &str) -> ParseResult<'_, i64> {
     alt((
         // Hexadecimal: 0xABCD
         map_res(
@@ -209,26 +212,29 @@ pub fn integer(input: &str) -> ParseResult<i64> {
                 take_while1(|c: char| c.is_ascii_hexdigit()),
             ))),
             |s: &str| {
-                let s = s.strip_prefix('-').map(|rest| (true, rest)).unwrap_or((false, s));
+                let s = s
+                    .strip_prefix('-')
+                    .map(|rest| (true, rest))
+                    .unwrap_or((false, s));
                 let hex_part = s.1.strip_prefix("0x").unwrap();
                 i64::from_str_radix(hex_part, 16).map(|n| if s.0 { -n } else { n })
             },
         ),
         // Decimal: 123
-        map_res(
-            recognize(pair(opt(char('-')), digit1)),
-            |s: &str| s.parse::<i64>(),
-        ),
+        map_res(recognize(pair(opt(char('-')), digit1)), |s: &str| {
+            s.parse::<i64>()
+        }),
     ))(input)
 }
 
 /// Parse a decimal value
-pub fn decimal(input: &str) -> ParseResult<f64> {
+#[allow(dead_code)]
+pub fn decimal(input: &str) -> ParseResult<'_, f64> {
     double(input)
 }
 
 /// Parse a measurement: number followed by unit letters (e.g., "168cm", "3.5kg")
-fn measurement(input: &str) -> ParseResult<Value> {
+fn measurement(input: &str) -> ParseResult<'_, Value> {
     map(
         pair(
             alt((
@@ -251,7 +257,7 @@ fn measurement(input: &str) -> ParseResult<Value> {
 }
 
 /// Parse a number (integer, hexadecimal, or decimal)
-fn number(input: &str) -> ParseResult<Value> {
+fn number(input: &str) -> ParseResult<'_, Value> {
     alt((
         // Decimal: 123.45
         map(
@@ -264,23 +270,17 @@ fn number(input: &str) -> ParseResult<Value> {
 }
 
 /// Parse a boolean value
-pub fn boolean(input: &str) -> ParseResult<bool> {
-    alt((
-        nom_value(true, tag("true")),
-        nom_value(false, tag("false")),
-    ))(input)
+pub fn boolean(input: &str) -> ParseResult<'_, bool> {
+    alt((nom_value(true, tag("true")), nom_value(false, tag("false"))))(input)
 }
 
 /// Parse an array of values: [value1, value2, ...]
-pub fn array(input: &str) -> ParseResult<Vec<Value>> {
+pub fn array(input: &str) -> ParseResult<'_, Vec<Value>> {
     delimited(
         char('['),
         delimited(
             ws,
-            separated_list0(
-                delimited(ws, char(','), ws),
-                value_parser,
-            ),
+            separated_list0(delimited(ws, char(','), ws), value_parser),
             ws,
         ),
         cut(char(']')),
@@ -289,15 +289,11 @@ pub fn array(input: &str) -> ParseResult<Vec<Value>> {
 
 /// Parse a range: lower..upper, lower..., ...upper, or ...
 /// Supports both .. and ... separators
-pub fn range(input: &str) -> ParseResult<RangeValue> {
+pub fn range(input: &str) -> ParseResult<'_, RangeValue> {
     alt((
         // Bounded range: 0..10 or 0...10
         map(
-            separated_pair(
-                integer,
-                alt((tag("..."), tag(".."))),
-                integer
-            ),
+            separated_pair(integer, alt((tag("..."), tag(".."))), integer),
             |(lower, upper)| RangeValue {
                 lower: Some(lower as f64),
                 upper: Some(upper as f64),
@@ -320,18 +316,15 @@ pub fn range(input: &str) -> ParseResult<RangeValue> {
             },
         ),
         // Unbounded: ... or ..
-        map(
-            alt((tag("..."), tag(".."))),
-            |_| RangeValue {
-                lower: None,
-                upper: None,
-            },
-        ),
+        map(alt((tag("..."), tag(".."))), |_| RangeValue {
+            lower: None,
+            upper: None,
+        }),
     ))(input)
 }
 
 /// Parse a tagged string: ```tag content``` or """tag content"""
-pub fn tagged_string(input: &str) -> ParseResult<(String, String)> {
+pub fn tagged_string(input: &str) -> ParseResult<'_, (String, String)> {
     // Format: tag`content` - identifier followed by backtick-quoted string
     map(
         pair(
@@ -343,27 +336,28 @@ pub fn tagged_string(input: &str) -> ParseResult<(String, String)> {
 }
 
 /// Parse a tagged fenced string: ```tag\ncontent\n```
-fn tagged_fenced_string(input: &str) -> ParseResult<(String, String)> {
+#[allow(dead_code)]
+fn tagged_fenced_string(input: &str) -> ParseResult<'_, (String, String)> {
     // Opening ```
     let (input, _) = tag("```")(input)?;
-    
+
     // Tag (alphanumeric characters)
     let (input, tag_str) = take_while1(|c: char| c.is_alphanumeric())(input)?;
-    
+
     // Newline after tag
     let (input, _) = char('\n')(input)?;
-    
+
     // Collect content until closing ```
     let mut content = String::new();
     let mut remaining = input;
-    
+
     loop {
         // Check for closing ```
         if remaining.starts_with("```") {
             let (rest, _) = tag("```")(remaining)?;
             return Ok((rest, (tag_str.to_string(), content)));
         }
-        
+
         // Take one character
         if let Some(c) = remaining.chars().next() {
             content.push(c);
@@ -371,36 +365,48 @@ fn tagged_fenced_string(input: &str) -> ParseResult<(String, String)> {
         } else {
             // EOF without closing
             return Err(nom::Err::Error(VerboseError {
-                errors: vec![(input, nom::error::VerboseErrorKind::Context("Unclosed tagged fenced string"))],
+                errors: vec![(
+                    input,
+                    nom::error::VerboseErrorKind::Context("Unclosed tagged fenced string"),
+                )],
             }));
         }
     }
 }
 
 /// Parse a tagged triple-quoted string: """tag content"""
-fn tagged_triple_quoted(input: &str) -> ParseResult<(String, String)> {
-    use nom::bytes::complete::take_till;
-    
+#[allow(dead_code)]
+fn tagged_triple_quoted(input: &str) -> ParseResult<'_, (String, String)> {
     // Manual parsing to handle triple-quote correctly
     let (input, _) = tag(r#"""""#)(input)?;
-    
+
     // Find the closing """
     let content_end = input.find(r#"""""#).ok_or_else(|| {
         nom::Err::Error(VerboseError {
-            errors: vec![(input, nom::error::VerboseErrorKind::Context("unclosed tagged string"))],
+            errors: vec![(
+                input,
+                nom::error::VerboseErrorKind::Context("unclosed tagged string"),
+            )],
         })
     })?;
-    
+
     let content_str = &input[..content_end];
     let remaining = &input[content_end + 3..]; // Skip the closing """
-    
+
     // Parse tag and content from the extracted string
     let trimmed = content_str.trim_start();
     let (tag, content) = if let Some(pos) = trimmed.find(|c: char| c.is_whitespace()) {
         let maybe_tag = &trimmed[..pos];
-        if !maybe_tag.is_empty() && maybe_tag.chars().all(|c: char| c.is_alphanumeric() || c == '_') {
+        if !maybe_tag.is_empty()
+            && maybe_tag
+                .chars()
+                .all(|c: char| c.is_alphanumeric() || c == '_')
+        {
             // Found a tag
-            (maybe_tag.to_string(), trimmed[pos..].trim_start().to_string())
+            (
+                maybe_tag.to_string(),
+                trimmed[pos..].trim_start().to_string(),
+            )
         } else {
             // No tag, all content
             (String::new(), content_str.to_string())
@@ -409,13 +415,13 @@ fn tagged_triple_quoted(input: &str) -> ParseResult<(String, String)> {
         // No whitespace, treat as content (no tag)
         (String::new(), trimmed.to_string())
     };
-    
+
     Ok((remaining, (tag, content)))
 }
 
 /// Parse a map: { key: value, key2: value2 }
 /// Same syntax as records, but used in value context
-fn map_value(input: &str) -> ParseResult<Value> {
+fn map_value(input: &str) -> ParseResult<'_, Value> {
     map(
         delimited(
             char('{'),
@@ -444,13 +450,14 @@ fn map_value(input: &str) -> ParseResult<Value> {
 }
 
 /// Parse any value type
-pub fn value_parser(input: &str) -> ParseResult<Value> {
+pub fn value_parser(input: &str) -> ParseResult<'_, Value> {
     delimited(
         ws,
         alt((
             // Try tagged string first (starts with """)
-            map(tagged_string, |(tag, content)| {
-                Value::VTaggedString { tag, content }
+            map(tagged_string, |(tag, content)| Value::VTaggedString {
+                tag,
+                content,
             }),
             // String (quoted)
             map(string_value, Value::VString),
@@ -474,7 +481,11 @@ pub fn value_parser(input: &str) -> ParseResult<Value> {
 }
 
 /// Convert ParseError from nom error for value parsing
-pub fn value_parse_error(input: &str, error: nom::Err<nom::error::VerboseError<&str>>) -> ParseError {
+#[allow(dead_code)]
+pub fn value_parse_error(
+    input: &str,
+    error: nom::Err<nom::error::VerboseError<&str>>,
+) -> ParseError {
     ParseError::from_nom_error(input, error)
 }
 
@@ -578,7 +589,7 @@ mod tests {
         assert_eq!(range_val.upper, Some(10.0));
         assert_eq!(remaining, "");
     }
-    
+
     #[test]
     fn test_range_from() {
         let (remaining, range_val) = range("5..").unwrap();
@@ -586,7 +597,7 @@ mod tests {
         assert_eq!(range_val.upper, None);
         assert_eq!(remaining, "");
     }
-    
+
     #[test]
     fn test_range_to() {
         let (remaining, range_val) = range("..10").unwrap();
@@ -594,7 +605,7 @@ mod tests {
         assert_eq!(range_val.upper, Some(10.0));
         assert_eq!(remaining, "");
     }
-    
+
     #[test]
     fn test_range_unbounded() {
         let (remaining, range_val) = range("..").unwrap();

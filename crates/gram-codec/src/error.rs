@@ -41,6 +41,7 @@ impl Default for Location {
 
 /// Error during gram notation parsing
 #[derive(Debug, Clone, PartialEq)]
+#[allow(dead_code)]
 pub struct ParseError {
     /// Location where error occurred
     pub location: Location,
@@ -67,17 +68,20 @@ impl ParseError {
     // Error construction is now handled by parser::ParseError
 
     /// Add additional error (for error recovery)
+    #[allow(dead_code)]
     pub fn with_error(mut self, error: ParseError) -> Self {
         self.errors.push(error);
         self
     }
 
     /// Create error for invalid pattern structure
+    #[allow(dead_code)]
     pub fn invalid_structure(location: Location, details: String) -> Self {
         Self::new(location, format!("Invalid pattern structure: {}", details))
     }
 
     /// Total number of errors (including nested)
+    #[allow(dead_code)]
     pub fn error_count(&self) -> usize {
         1 + self.errors.len()
     }

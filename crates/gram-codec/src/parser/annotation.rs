@@ -17,7 +17,7 @@ pub struct Annotation {
 }
 
 /// Parse an annotation: @key or @key(value)
-pub fn annotation(input: &str) -> ParseResult<Annotation> {
+pub fn annotation(input: &str) -> ParseResult<'_, Annotation> {
     map(
         preceded(
             char('@'),

@@ -17,10 +17,7 @@ pub enum ParseError {
 
     /// Unexpected input after successful parse
     #[error("Unexpected input at {location}: {snippet}")]
-    UnexpectedInput {
-        location: Location,
-        snippet: String,
-    },
+    UnexpectedInput { location: Location, snippet: String },
 
     /// Invalid value (number, string, identifier)
     #[error("Invalid {kind} at {location}: {reason}")]
@@ -120,7 +117,7 @@ mod tests {
         };
 
         let err = err.with_context("in record".to_string());
-        
+
         match err {
             ParseError::SyntaxError { context, .. } => {
                 assert_eq!(context.len(), 1);

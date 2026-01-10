@@ -231,7 +231,7 @@ fn serialize_subject(subject: &Subject) -> Result<String, SerializeError> {
 
     // Build identifier with labels (no spaces between them)
     let mut id_with_labels = String::new();
-    
+
     // Serialize identifier
     if !subject.identity.0.is_empty() {
         id_with_labels.push_str(&quote_identifier(&subject.identity.0));
@@ -246,7 +246,7 @@ fn serialize_subject(subject: &Subject) -> Result<String, SerializeError> {
             id_with_labels.push_str(&quote_identifier(label));
         }
     }
-    
+
     // Add identifier+labels as a single part
     if !id_with_labels.is_empty() {
         parts.push(id_with_labels);

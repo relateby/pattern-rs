@@ -3,39 +3,38 @@
 use super::combinators::ws;
 use super::types::ParseResult;
 use super::value::{identifier, value_parser};
-use pattern_core::Value;
 use nom::{
     branch::alt,
     bytes::complete::tag,
     character::complete::char,
     combinator::{cut, map, opt},
     multi::{separated_list0, separated_list1},
-    sequence::{delimited, preceded, separated_pair, tuple},
+    sequence::{delimited, preceded, tuple},
 };
 use pattern_core::Subject;
+use pattern_core::Value;
 use std::collections::{HashMap, HashSet};
 
 /// Parse a label: :Label
-pub fn label(input: &str) -> ParseResult<String> {
+#[allow(dead_code)]
+pub fn label(input: &str) -> ParseResult<'_, String> {
     preceded(char(':'), identifier)(input)
 }
 
 /// Parse multiple labels: Label1:Label2:Label3 (without leading :)
-fn labels(input: &str) -> ParseResult<Vec<String>> {
+#[allow(dead_code)]
+fn labels(input: &str) -> ParseResult<'_, Vec<String>> {
     separated_list1(char(':'), identifier)(input)
 }
 
 /// Parse a property record: {key: value, key2: value2}
-pub fn record(input: &str) -> ParseResult<HashMap<String, Value>> {
+pub fn record(input: &str) -> ParseResult<'_, HashMap<String, Value>> {
     delimited(
         char('{'),
         delimited(
             ws,
             map(
-                separated_list0(
-                    delimited(ws, char(','), ws),
-                    property_pair,
-                ),
+                separated_list0(delimited(ws, char(','), ws), property_pair),
                 |pairs: Vec<(String, Value)>| pairs.into_iter().collect::<HashMap<String, Value>>(),
             ),
             ws,
@@ -45,13 +44,13 @@ pub fn record(input: &str) -> ParseResult<HashMap<String, Value>> {
 }
 
 /// Parse a key-value pair: key: value or key :: value (declare)
-fn property_pair(input: &str) -> ParseResult<(String, Value)> {
+fn property_pair(input: &str) -> ParseResult<'_, (String, Value)> {
     map(
         tuple((
             delimited(ws, identifier, ws),
             alt((
-                tag("::"),  // Declare separator (must come before single :)
-                tag(":"),   // Regular separator
+                tag("::"), // Declare separator (must come before single :)
+                tag(":"),  // Regular separator
             )),
             delimited(ws, value_parser, ws),
         )),
@@ -61,16 +60,16 @@ fn property_pair(input: &str) -> ParseResult<(String, Value)> {
 
 /// Parse a subject: identifier:labels {record}
 /// All components are optional, but at least one must be present
-pub fn subject(input: &str) -> ParseResult<Subject> {
+pub fn subject(input: &str) -> ParseResult<'_, Subject> {
     map(
         tuple((
             opt(identifier),
             opt(preceded(char(':'), separated_list1(char(':'), identifier))),
             opt(preceded(ws, record)),
         )),
-        |(id, label_list, props): (Option<String>, Option<Vec<String>>, Option<HashMap<String, Value>>)| {
+        |(id, label_list, props)| {
             let identity = id
-                .map(|s| pattern_core::Symbol(s))
+                .map(pattern_core::Symbol)
                 .unwrap_or_else(|| pattern_core::Symbol(String::new()));
 
             let labels = label_list

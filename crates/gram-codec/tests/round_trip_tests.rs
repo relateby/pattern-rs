@@ -8,16 +8,20 @@ use gram_codec::{parse_gram, serialize_patterns};
 /// Helper to test round-trip semantic equivalence
 fn assert_round_trip_equivalent(input: &str) {
     // First parse: gram1 -> pattern1
-    let patterns1 = parse_gram(input)
-        .unwrap_or_else(|e| panic!("First parse failed for '{}': {}", input, e));
+    let patterns1 =
+        parse_gram(input).unwrap_or_else(|e| panic!("First parse failed for '{}': {}", input, e));
 
     // Serialize: pattern1 -> gram2
     let gram2 = serialize_patterns(&patterns1)
         .unwrap_or_else(|e| panic!("Serialization failed for '{}': {}", input, e));
 
     // Second parse: gram2 -> pattern2
-    let patterns2 = parse_gram(&gram2)
-        .unwrap_or_else(|e| panic!("Second parse failed for '{}' (from '{}'): {}", gram2, input, e));
+    let patterns2 = parse_gram(&gram2).unwrap_or_else(|e| {
+        panic!(
+            "Second parse failed for '{}' (from '{}'): {}",
+            gram2, input, e
+        )
+    });
 
     // Verify semantic equivalence: pattern1 == pattern2
     assert_eq!(
@@ -131,9 +135,7 @@ fn test_round_trip_value_range_full() {
 #[test]
 fn test_round_trip_complex_pattern() {
     // Test complex node with labels and properties
-    assert_round_trip_equivalent(
-        "(alice:Person {name: \"Alice\", age: 30})"
-    );
+    assert_round_trip_equivalent("(alice:Person {name: \"Alice\", age: 30})");
 }
 
 #[test]
@@ -147,34 +149,46 @@ fn test_round_trip_whitespace_normalization() {
     let input1 = "(a)-->(b)";
     let input2 = "(a) --> (b)";
     let input3 = "( a )-->( b )";
-    
+
     let patterns1 = parse_gram(input1).unwrap();
     let patterns2 = parse_gram(input2).unwrap();
     let patterns3 = parse_gram(input3).unwrap();
-    
+
     // All should parse to the same semantic structure
-    assert_eq!(patterns1, patterns2, "Whitespace should not affect semantics");
-    assert_eq!(patterns1, patterns3, "Whitespace should not affect semantics");
+    assert_eq!(
+        patterns1, patterns2,
+        "Whitespace should not affect semantics"
+    );
+    assert_eq!(
+        patterns1, patterns3,
+        "Whitespace should not affect semantics"
+    );
 }
 
 /// Test that serialization is idempotent after first round-trip
 #[test]
 fn test_round_trip_idempotent() {
     let input = "(alice:Person {name: \"Alice\"})-->(bob:Person)";
-    
+
     // First round-trip: gram1 -> pattern1 -> gram2
     let patterns1 = parse_gram(input).unwrap();
     let gram2 = serialize_patterns(&patterns1).unwrap();
     let patterns2 = parse_gram(&gram2).unwrap();
-    
+
     // Second round-trip: gram2 -> pattern2 -> gram3
     let gram3 = serialize_patterns(&patterns2).unwrap();
     let patterns3 = parse_gram(&gram3).unwrap();
-    
+
     // Third round-trip: gram3 -> pattern3 -> gram4
     let gram4 = serialize_patterns(&patterns3).unwrap();
-    
+
     // After stabilization, output should be identical
-    assert_eq!(gram3, gram4, "Serialization should be idempotent after first round-trip");
-    assert_eq!(patterns2, patterns3, "Patterns should be identical after stabilization");
+    assert_eq!(
+        gram3, gram4,
+        "Serialization should be idempotent after first round-trip"
+    );
+    assert_eq!(
+        patterns2, patterns3,
+        "Patterns should be identical after stabilization"
+    );
 }

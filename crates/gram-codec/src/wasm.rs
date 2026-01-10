@@ -25,8 +25,8 @@
 //! console.log("Is valid:", isValid);
 //! ```
 
-use wasm_bindgen::prelude::*;
 use crate::ast::AstPattern;
+use wasm_bindgen::prelude::*;
 
 /// Result of parsing gram notation
 #[wasm_bindgen]
@@ -69,8 +69,8 @@ impl ParseResult {
 #[wasm_bindgen]
 pub fn parse_gram(input: &str) -> Result<ParseResult, JsValue> {
     // Parse using the native parser (now uses nom, not tree-sitter)
-    let patterns = crate::parse_gram(input)
-        .map_err(|e| JsValue::from_str(&format!("Parse error: {}", e)))?;
+    let patterns =
+        crate::parse_gram(input).map_err(|e| JsValue::from_str(&format!("Parse error: {}", e)))?;
 
     // Extract identifiers from root patterns
     let identifiers: Vec<String> = patterns
@@ -114,8 +114,8 @@ pub fn validate_gram(input: &str) -> bool {
 #[wasm_bindgen]
 pub fn round_trip(input: &str) -> Result<String, JsValue> {
     // Parse
-    let patterns = crate::parse_gram(input)
-        .map_err(|e| JsValue::from_str(&format!("Parse error: {}", e)))?;
+    let patterns =
+        crate::parse_gram(input).map_err(|e| JsValue::from_str(&format!("Parse error: {}", e)))?;
 
     // Serialize all patterns
     crate::serialize_patterns(&patterns)
@@ -154,10 +154,16 @@ pub fn round_trip(input: &str) -> Result<String, JsValue> {
 pub fn parse_to_ast(input: &str) -> Result<JsValue, JsValue> {
     let ast = crate::parse_to_ast(input)
         .map_err(|e| JsValue::from_str(&format!("Parse error: {}", e)))?;
-    
-    // Serialize to JsValue using serde-wasm-bindgen
-    serde_wasm_bindgen::to_value(&ast)
-        .map_err(|e| JsValue::from_str(&format!("Serialization error: {}", e)))
+
+    // Serialize to JSON string first (workaround for serde-wasm-bindgen HashMap issue)
+    let json_str = serde_json::to_string(&ast)
+        .map_err(|e| JsValue::from_str(&format!("Serialization error: {}", e)))?;
+
+    // Parse JSON string in JavaScript
+    let js_json = js_sys::JSON::parse(&json_str)
+        .map_err(|e| JsValue::from_str(&format!("JSON parse error: {:?}", e)))?;
+
+    Ok(js_json)
 }
 
 /// Get version information for the gram codec

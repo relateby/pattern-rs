@@ -4,26 +4,20 @@ use super::types::{Location, ParseResult, Span};
 use nom::{
     branch::alt,
     bytes::complete::{tag, take_until},
-    character::complete::{multispace0, multispace1},
-    combinator::{opt, recognize, rest, value},
+    character::complete::multispace1,
+    combinator::{recognize, rest, value},
     multi::many0,
     sequence::{delimited, pair},
     Parser,
 };
 
 /// Consume whitespace and comments
-pub fn ws(input: &str) -> ParseResult<()> {
-    value(
-        (),
-        many0(alt((
-            value((), multispace1),
-            comment,
-        ))),
-    )(input)
+pub fn ws(input: &str) -> ParseResult<'_, ()> {
+    value((), many0(alt((value((), multispace1), comment))))(input)
 }
 
 /// Parse a comment: // text until newline
-pub fn comment(input: &str) -> ParseResult<()> {
+pub fn comment(input: &str) -> ParseResult<'_, ()> {
     value(
         (),
         pair(
@@ -37,6 +31,7 @@ pub fn comment(input: &str) -> ParseResult<()> {
 }
 
 /// Wrap a parser with optional leading/trailing whitespace
+#[allow(dead_code)]
 pub fn padded<'a, O, F>(parser: F) -> impl FnMut(&'a str) -> ParseResult<O>
 where
     F: Parser<&'a str, O, nom::error::VerboseError<&'a str>>,
@@ -45,10 +40,11 @@ where
 }
 
 /// Wrap a parser to track its location in the input
+#[allow(dead_code)]
 pub fn with_span<'a, O, F>(
     original_input: &'a str,
     mut parser: F,
-) -> impl FnMut(&'a str) -> ParseResult<(O, Span)> + 'a
+) -> impl FnMut(&'a str) -> ParseResult<'a, (O, Span)> + 'a
 where
     F: Parser<&'a str, O, nom::error::VerboseError<&'a str>> + 'a,
 {
@@ -114,7 +110,7 @@ mod tests {
         let input = "hello world";
         let mut parser = with_span(input, alpha1);
         let (remaining, (output, span)) = parser(input).unwrap();
-        
+
         assert_eq!(output, "hello");
         assert_eq!(remaining, " world");
         assert_eq!(span.start.line, 1);

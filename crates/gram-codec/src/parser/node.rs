@@ -1,6 +1,6 @@
 //! Node pattern parser for gram notation
 
-use super::combinators::{padded, ws};
+use super::combinators::ws;
 use super::subject::subject;
 use super::types::ParseResult;
 use nom::{
@@ -12,14 +12,10 @@ use pattern_core::{Pattern, Subject};
 
 /// Parse a node pattern: (subject)
 /// Node patterns have 0 elements
-pub fn node(input: &str) -> ParseResult<Pattern<Subject>> {
+pub fn node(input: &str) -> ParseResult<'_, Pattern<Subject>> {
     map(
-        delimited(
-            char('('),
-            delimited(ws, subject, ws),
-            cut(char(')')),
-        ),
-        |subj| Pattern::point(subj),
+        delimited(char('('), delimited(ws, subject, ws), cut(char(')'))),
+        Pattern::point,
     )(input)
 }
 

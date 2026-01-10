@@ -22,10 +22,10 @@
 //! print(f"Serialized: {serialized}")
 //! ```
 
-use pyo3::prelude::*;
-use pyo3::exceptions::PyValueError;
-use std::collections::HashMap;
 use crate::ast::AstPattern;
+use pyo3::exceptions::PyValueError;
+use pyo3::prelude::*;
+use std::collections::HashMap;
 
 /// Result of parsing gram notation
 #[pyclass]
@@ -63,10 +63,7 @@ impl ParseResult {
                 "pattern_count".to_string(),
                 self.pattern_count.to_object(py),
             );
-            dict.insert(
-                "identifiers".to_string(),
-                self.identifiers.to_object(py),
-            );
+            dict.insert("identifiers".to_string(), self.identifiers.to_object(py));
             dict
         })
     }
@@ -156,13 +153,11 @@ fn round_trip(input: &str) -> PyResult<String> {
     let patterns = crate::parse_gram(input)
         .map_err(|e| PyValueError::new_err(format!("Parse error: {}", e)))?;
 
-    let serialized: Result<Vec<String>, _> = patterns
-        .iter()
-        .map(crate::serialize_pattern)
-        .collect();
+    let serialized: Result<Vec<String>, _> =
+        patterns.iter().map(crate::serialize_pattern).collect();
 
-    let serialized = serialized
-        .map_err(|e| PyValueError::new_err(format!("Serialize error: {}", e)))?;
+    let serialized =
+        serialized.map_err(|e| PyValueError::new_err(format!("Serialize error: {}", e)))?;
 
     Ok(serialized.join("\n"))
 }
@@ -185,7 +180,7 @@ fn serialize_patterns(_patterns: Bound<'_, PyAny>) -> PyResult<String> {
     // For now, return an error indicating this is not yet implemented
     // In the future, this would take Python pattern objects and serialize them
     Err(PyValueError::new_err(
-        "Direct pattern serialization not yet implemented. Use round_trip() instead."
+        "Direct pattern serialization not yet implemented. Use round_trip() instead.",
     ))
 }
 
@@ -222,12 +217,12 @@ fn serialize_patterns(_patterns: Bound<'_, PyAny>) -> PyResult<String> {
 fn parse_to_ast(py: Python, input: &str) -> PyResult<PyObject> {
     let ast = crate::parse_to_ast(input)
         .map_err(|e| PyValueError::new_err(format!("Parse error: {}", e)))?;
-    
+
     // Convert AST to Python dict manually
     // Serialize to JSON first, then parse as Python
     let json_str = serde_json::to_string(&ast)
         .map_err(|e| PyValueError::new_err(format!("Serialization error: {}", e)))?;
-    
+
     // Use Python's json module to parse the JSON string
     let json_module = py.import("json")?;
     let loads = json_module.getattr("loads")?;

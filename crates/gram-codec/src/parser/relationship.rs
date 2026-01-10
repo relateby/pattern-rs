@@ -15,7 +15,7 @@ use pattern_core::{Pattern, Subject};
 
 /// Parse an arrow: all gram notation arrow types
 /// Order matters: longer patterns must come first to avoid partial matches
-pub fn arrow(input: &str) -> ParseResult<ArrowType> {
+pub fn arrow(input: &str) -> ParseResult<'_, ArrowType> {
     delimited(
         ws,
         alt((
@@ -45,15 +45,14 @@ pub fn arrow(input: &str) -> ParseResult<ArrowType> {
 
 /// Parse a relationship: (a)-->(b) or (a)-[subject]->(b)
 /// Relationships have 2 elements (both atomic nodes)
-pub fn relationship(input: &str) -> ParseResult<Pattern<Subject>> {
-    alt((
-        relationship_with_edge_subject,
-        relationship_simple,
-    ))(input)
+#[allow(dead_code)]
+pub fn relationship(input: &str) -> ParseResult<'_, Pattern<Subject>> {
+    alt((relationship_with_edge_subject, relationship_simple))(input)
 }
 
 /// Parse a simple relationship without edge subject: (a)-->(b)
-fn relationship_simple(input: &str) -> ParseResult<Pattern<Subject>> {
+#[allow(dead_code)]
+fn relationship_simple(input: &str) -> ParseResult<'_, Pattern<Subject>> {
     map(
         pair(node, pair(arrow, node)),
         |(left, (arrow_type, right))| {
@@ -79,9 +78,10 @@ fn relationship_simple(input: &str) -> ParseResult<Pattern<Subject>> {
 }
 
 /// Parse a relationship with edge subject: (a)-[r:LABEL]->(b)
-fn relationship_with_edge_subject(input: &str) -> ParseResult<Pattern<Subject>> {
+#[allow(dead_code)]
+fn relationship_with_edge_subject(input: &str) -> ParseResult<'_, Pattern<Subject>> {
     use super::subject::subject;
-    
+
     map(
         tuple((
             node,
@@ -89,20 +89,16 @@ fn relationship_with_edge_subject(input: &str) -> ParseResult<Pattern<Subject>> 
             // Arrow left part: -, <-, ~, <~, =, <=, etc.
             arrow_left_part,
             // Edge subject in brackets
-            delimited(
-                char('['),
-                delimited(ws, subject, ws),
-                char(']'),
-            ),
+            delimited(char('['), delimited(ws, subject, ws), char(']')),
             // Arrow right part: ->, -, ~>, ~, =>, =, etc.
             arrow_right_part,
             ws,
             node,
         )),
-        |(left, _, arrow_left, edge_subject, arrow_right, _, right)| {
+        |(left, _, arrow_left, edge_subject, _arrow_right, _, right)| {
             // Determine directionality from arrow parts
             let is_backward = arrow_left.starts_with('<');
-            
+
             let (first, second) = if is_backward {
                 (right, left)
             } else {
@@ -115,7 +111,7 @@ fn relationship_with_edge_subject(input: &str) -> ParseResult<Pattern<Subject>> 
 }
 
 /// Parse left part of arrow: -, <-, ~, <~, =, <=
-fn arrow_left_part(input: &str) -> ParseResult<&str> {
+fn arrow_left_part(input: &str) -> ParseResult<'_, &str> {
     alt((
         tag("<~~"),
         tag("<=="),
@@ -133,7 +129,7 @@ fn arrow_left_part(input: &str) -> ParseResult<&str> {
 }
 
 /// Parse right part of arrow: ->, -, ~>, ~, =>, =
-fn arrow_right_part(input: &str) -> ParseResult<&str> {
+fn arrow_right_part(input: &str) -> ParseResult<'_, &str> {
     alt((
         tag("~~>"),
         tag("==>"),
@@ -152,34 +148,30 @@ fn arrow_right_part(input: &str) -> ParseResult<&str> {
 
 /// Parse an arrow segment (with or without edge subject)
 /// Returns: (ArrowType, Option<Subject>, Pattern<Subject>)
-fn arrow_segment(input: &str) -> ParseResult<(ArrowType, Option<Subject>, Pattern<Subject>)> {
-    alt((
-        arrow_segment_with_edge,
-        arrow_segment_simple,
-    ))(input)
+fn arrow_segment(input: &str) -> ParseResult<'_, (ArrowType, Option<Subject>, Pattern<Subject>)> {
+    alt((arrow_segment_with_edge, arrow_segment_simple))(input)
 }
 
 /// Parse simple arrow segment: --> (node)
-fn arrow_segment_simple(input: &str) -> ParseResult<(ArrowType, Option<Subject>, Pattern<Subject>)> {
-    map(
-        pair(arrow, node),
-        |(arrow_type, node_pattern)| (arrow_type, None, node_pattern),
-    )(input)
+fn arrow_segment_simple(
+    input: &str,
+) -> ParseResult<'_, (ArrowType, Option<Subject>, Pattern<Subject>)> {
+    map(pair(arrow, node), |(arrow_type, node_pattern)| {
+        (arrow_type, None, node_pattern)
+    })(input)
 }
 
 /// Parse arrow segment with edge subject: -[subject]-> (node)
-fn arrow_segment_with_edge(input: &str) -> ParseResult<(ArrowType, Option<Subject>, Pattern<Subject>)> {
+fn arrow_segment_with_edge(
+    input: &str,
+) -> ParseResult<'_, (ArrowType, Option<Subject>, Pattern<Subject>)> {
     use super::subject::subject;
-    
+
     map(
         tuple((
             ws,
             arrow_left_part,
-            delimited(
-                char('['),
-                delimited(ws, subject, ws),
-                char(']'),
-            ),
+            delimited(char('['), delimited(ws, subject, ws), char(']')),
             arrow_right_part,
             ws,
             node,
@@ -219,11 +211,10 @@ fn determine_arrow_type(left: &str, right: &str) -> ArrowType {
 
 /// Parse a path pattern: (a)-->(b)-->(c) or (a)-[:LABEL]->(b)
 /// Paths are flattened into nested structures from left to right
-pub fn path_pattern(input: &str) -> ParseResult<Pattern<Subject>> {
-    map(
-        pair(node, many1(arrow_segment)),
-        |(first, segments)| flatten_path_with_edges(first, segments),
-    )(input)
+pub fn path_pattern(input: &str) -> ParseResult<'_, Pattern<Subject>> {
+    map(pair(node, many1(arrow_segment)), |(first, segments)| {
+        flatten_path_with_edges(first, segments)
+    })(input)
 }
 
 /// Flatten path segments with optional edge subjects into nested pattern structure
@@ -369,14 +360,14 @@ mod tests {
     fn test_path_three_nodes() {
         let (remaining, pattern) = path_pattern("(a)-->(b)-->(c)").unwrap();
         assert_eq!(pattern.elements().len(), 2);
-        
+
         // Nested structure: outer pattern has 2 elements
         // Left element is itself a relationship (a)-->(b)
         let left_rel = &pattern.elements()[0];
         assert_eq!(left_rel.elements().len(), 2);
         assert_eq!(left_rel.elements()[0].value().identity.0, "a");
         assert_eq!(left_rel.elements()[1].value().identity.0, "b");
-        
+
         // Right element is node (c)
         assert_eq!(pattern.elements()[1].value().identity.0, "c");
         assert_eq!(remaining, "");

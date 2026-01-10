@@ -28,7 +28,7 @@ impl Location {
     pub fn from_offset(input: &str, offset: usize) -> Self {
         let offset = offset.min(input.len());
         let prefix = &input[..offset];
-        
+
         let line = prefix.matches('\n').count() + 1;
         let column = prefix
             .rfind('\n')
@@ -60,6 +60,7 @@ impl std::fmt::Display for Location {
 
 /// Represents a span of text in the input
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
+#[allow(dead_code)]
 pub struct Span {
     pub start: Location,
     pub end: Location,
@@ -67,11 +68,13 @@ pub struct Span {
 
 impl Span {
     /// Create a new span
+    #[allow(dead_code)]
     pub fn new(start: Location, end: Location) -> Self {
         Self { start, end }
     }
 
     /// Create a span for a single location (zero-width span)
+    #[allow(dead_code)]
     pub fn single(location: Location) -> Self {
         Self {
             start: location,
@@ -92,7 +95,7 @@ pub enum ArrowType {
     Bidirectional,
     /// Undirected arrow: --
     Undirected,
-    
+
     // Double-line arrows
     /// Double undirected arrow: ==
     DoubleUndirected,
@@ -102,7 +105,7 @@ pub enum ArrowType {
     DoubleLeft,
     /// Double bidirectional arrow: <==>
     DoubleBidirectional,
-    
+
     // Squiggle arrows
     /// Squiggle undirected: ~~
     Squiggle,
@@ -116,6 +119,7 @@ pub enum ArrowType {
 
 impl ArrowType {
     /// Returns true if arrow implies left-to-right directionality
+    #[allow(dead_code)]
     pub fn is_forward(&self) -> bool {
         matches!(
             self,
@@ -132,14 +136,18 @@ impl ArrowType {
     }
 
     /// Returns true if arrow is bidirectional
+    #[allow(dead_code)]
     pub fn is_bidirectional(&self) -> bool {
         matches!(
             self,
-            ArrowType::Bidirectional | ArrowType::DoubleBidirectional | ArrowType::SquiggleBidirectional
+            ArrowType::Bidirectional
+                | ArrowType::DoubleBidirectional
+                | ArrowType::SquiggleBidirectional
         )
     }
 
     /// Returns true if arrow is undirected
+    #[allow(dead_code)]
     pub fn is_undirected(&self) -> bool {
         matches!(
             self,
@@ -178,17 +186,17 @@ mod tests {
     #[test]
     fn test_location_from_offset() {
         let input = "line1\nline2\nline3";
-        
+
         // Start of input
         let loc = Location::from_offset(input, 0);
         assert_eq!(loc.line, 1);
         assert_eq!(loc.column, 1);
-        
+
         // After first newline
         let loc = Location::from_offset(input, 6);
         assert_eq!(loc.line, 2);
         assert_eq!(loc.column, 1);
-        
+
         // Middle of second line
         let loc = Location::from_offset(input, 8);
         assert_eq!(loc.line, 2);

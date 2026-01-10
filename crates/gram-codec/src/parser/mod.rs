@@ -4,45 +4,42 @@
 //! using nom parser combinators, enabling zero C dependencies and seamless WASM builds.
 
 // Module declarations
-pub mod types;
-pub mod error;
+pub mod annotation;
 pub mod combinators;
-pub mod value;
-pub mod subject;
+pub mod error;
 pub mod node;
 pub mod relationship;
-pub mod annotation;
+pub mod subject;
+pub mod types;
+pub mod value;
 
 // Re-exports
 pub use error::ParseError;
-pub use types::{Location, Span, ArrowType, ParseResult};
+pub use types::{Location, ParseResult};
 
 use combinators::ws;
 use nom::{
     branch::alt,
     character::complete::char,
     combinator::{cut, map, opt, success},
-    multi::{many0, separated_list0},
+    multi::separated_list0,
     sequence::{delimited, pair, separated_pair},
 };
 use pattern_core::{Pattern, Subject};
 
 /// Parse a pattern reference: just a bare identifier (e.g., `alice`)
-fn pattern_reference(input: &str) -> ParseResult<Pattern<Subject>> {
-    map(
-        value::unquoted_identifier,
-        |id| {
-            Pattern::point(Subject {
-                identity: pattern_core::Symbol(id),
-                labels: std::collections::HashSet::new(),
-                properties: std::collections::HashMap::new(),
-            })
-        },
-    )(input)
+fn pattern_reference(input: &str) -> ParseResult<'_, Pattern<Subject>> {
+    map(value::unquoted_identifier, |id| {
+        Pattern::point(Subject {
+            identity: pattern_core::Symbol(id),
+            labels: std::collections::HashSet::new(),
+            properties: std::collections::HashMap::new(),
+        })
+    })(input)
 }
 
 /// Parse an element in a subject pattern: can be a full pattern or just a reference
-fn subject_element(input: &str) -> ParseResult<Pattern<Subject>> {
+fn subject_element(input: &str) -> ParseResult<'_, Pattern<Subject>> {
     alt((
         gram_pattern,      // Try full pattern first
         pattern_reference, // Fall back to bare identifier reference
@@ -51,7 +48,7 @@ fn subject_element(input: &str) -> ParseResult<Pattern<Subject>> {
 
 /// Parse a subject pattern: [subject | elements] or [subject] or []
 /// This is defined here to avoid circular dependencies
-pub fn subject_pattern(input: &str) -> ParseResult<Pattern<Subject>> {
+pub fn subject_pattern(input: &str) -> ParseResult<'_, Pattern<Subject>> {
     delimited(
         char('['),
         delimited(
@@ -70,7 +67,7 @@ pub fn subject_pattern(input: &str) -> ParseResult<Pattern<Subject>> {
                     |(subj, elements)| Pattern::pattern(subj, elements),
                 ),
                 // Form 2: [subject] - just subject, no elements
-                map(subject::subject, |subj| Pattern::point(subj)),
+                map(subject::subject, Pattern::point),
                 // Form 3: [] - empty subject, no elements
                 map(success(()), |_| {
                     Pattern::point(Subject {
@@ -87,13 +84,10 @@ pub fn subject_pattern(input: &str) -> ParseResult<Pattern<Subject>> {
 }
 
 /// Parse an annotated pattern: @key(value) pattern
-fn annotated_pattern(input: &str) -> ParseResult<Pattern<Subject>> {
+fn annotated_pattern(input: &str) -> ParseResult<'_, Pattern<Subject>> {
     map(
-        pair(
-            delimited(ws, annotation::annotation, ws),
-            gram_pattern,
-        ),
-        |(ann, pattern)| {
+        pair(delimited(ws, annotation::annotation, ws), gram_pattern),
+        |(_ann, pattern)| {
             // For now, annotations are not stored in the Pattern structure
             // They would need to be added to the Pattern type in pattern-core
             // TODO: Handle annotation metadata properly
@@ -105,14 +99,14 @@ fn annotated_pattern(input: &str) -> ParseResult<Pattern<Subject>> {
 /// Parse any gram pattern (non-top-level)
 /// Dispatch to the appropriate parser based on syntax
 /// Note: Standalone records `{}` are only valid at top-level and handled by gram_patterns
-pub fn gram_pattern(input: &str) -> ParseResult<Pattern<Subject>> {
+pub fn gram_pattern(input: &str) -> ParseResult<'_, Pattern<Subject>> {
     delimited(
         ws,
         alt((
-            annotated_pattern,       // @key(value) pattern
-            subject_pattern,         // [subject | elements]
+            annotated_pattern,          // @key(value) pattern
+            subject_pattern,            // [subject | elements]
             relationship::path_pattern, // (a)-->(b)-->(c)
-            node::node,              // (subject)
+            node::node,                 // (subject)
         )),
         ws,
     )(input)
@@ -123,9 +117,9 @@ pub fn gram_pattern(input: &str) -> ParseResult<Pattern<Subject>> {
 /// - Optional leading `{}` becomes the file-level pattern's properties
 /// - All patterns in the file become the file-level pattern's elements
 /// - Always returns a single pattern (the file-level pattern)
-pub fn gram_patterns(input: &str) -> ParseResult<Vec<Pattern<Subject>>> {
+pub fn gram_patterns(input: &str) -> ParseResult<'_, Vec<Pattern<Subject>>> {
     use nom::multi::many0;
-    
+
     map(
         delimited(
             ws,
@@ -146,7 +140,10 @@ pub fn gram_patterns(input: &str) -> ParseResult<Vec<Pattern<Subject>>> {
             ),
             ws,
         ),
-        |(properties_opt, elements): (Option<std::collections::HashMap<String, pattern_core::Value>>, Vec<Pattern<Subject>>)| {
+        |(properties_opt, elements): (
+            Option<std::collections::HashMap<String, pattern_core::Value>>,
+            Vec<Pattern<Subject>>,
+        )| {
             // Special cases:
             // 1. Empty file → return empty vec
             if properties_opt.is_none() && elements.is_empty() {
@@ -220,4 +217,3 @@ mod tests {
         assert_eq!(remaining, "");
     }
 }
-

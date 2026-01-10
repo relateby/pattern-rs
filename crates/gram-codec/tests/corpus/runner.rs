@@ -22,7 +22,7 @@ impl CorpusTestStats {
         } else {
             0.0
         };
-        
+
         Self {
             total,
             passed,
@@ -44,11 +44,11 @@ impl CorpusTestReport {
     /// Generate a report from test results
     pub fn from_results(results: Vec<(CorpusTest, CorpusTestResult)>) -> Self {
         let stats = CorpusTestStats::from_results(&results);
-        
+
         // Group failures by file
         let mut failures_by_file: HashMap<String, Vec<(CorpusTest, CorpusTestResult)>> =
             HashMap::new();
-        
+
         for (test, result) in &results {
             if !result.is_pass() {
                 let file_name = test
@@ -57,43 +57,55 @@ impl CorpusTestReport {
                     .and_then(|n| n.to_str())
                     .unwrap_or("unknown")
                     .to_string();
-                
+
                 failures_by_file
                     .entry(file_name)
                     .or_insert_with(Vec::new)
                     .push((test.clone(), result.clone()));
             }
         }
-        
+
         Self {
             stats,
             results,
             failures_by_file,
         }
     }
-    
+
     /// Print a summary report
     pub fn print_summary(&self) {
         println!("\n╔════════════════════════════════════════════════════════════╗");
         println!("║           Corpus Test Report                               ║");
         println!("╠════════════════════════════════════════════════════════════╣");
-        println!("║  Total Tests:  {:>5}                                      ║", self.stats.total);
-        println!("║  Passed:       {:>5}  (✓)                                 ║", self.stats.passed);
-        println!("║  Failed:       {:>5}  (✗)                                 ║", self.stats.failed);
-        println!("║  Pass Rate:    {:>5.1}%                                    ║", self.stats.pass_rate);
+        println!(
+            "║  Total Tests:  {:>5}                                      ║",
+            self.stats.total
+        );
+        println!(
+            "║  Passed:       {:>5}  (✓)                                 ║",
+            self.stats.passed
+        );
+        println!(
+            "║  Failed:       {:>5}  (✗)                                 ║",
+            self.stats.failed
+        );
+        println!(
+            "║  Pass Rate:    {:>5.1}%                                    ║",
+            self.stats.pass_rate
+        );
         println!("╚════════════════════════════════════════════════════════════╝\n");
-        
+
         if !self.failures_by_file.is_empty() {
             println!("Failed Tests by File:");
             println!("─────────────────────");
-            
+
             let mut files: Vec<_> = self.failures_by_file.keys().collect();
             files.sort();
-            
+
             for file in files {
                 let failures = &self.failures_by_file[file];
                 println!("\n  📄 {} ({} failures)", file, failures.len());
-                
+
                 for (test, _) in failures {
                     println!("     ✗ {} (line {})", test.name, test.line);
                 }
@@ -101,22 +113,26 @@ impl CorpusTestReport {
             println!();
         }
     }
-    
+
     /// Print detailed failure information
     pub fn print_failures(&self) {
         if self.stats.failed == 0 {
             return;
         }
-        
+
         println!("\n╔════════════════════════════════════════════════════════════╗");
         println!("║           Detailed Failure Information                     ║");
         println!("╚════════════════════════════════════════════════════════════╝\n");
-        
+
         for (test, result) in &self.results {
             if let Some(msg) = result.failure_message() {
                 println!("─────────────────────────────────────────────────────────────");
                 println!("✗ Test: {}", test.name);
-                println!("  File: {} (line {})", test.source_file.display(), test.line);
+                println!(
+                    "  File: {} (line {})",
+                    test.source_file.display(),
+                    test.line
+                );
                 println!("\n{}\n", msg);
             }
         }
@@ -134,7 +150,7 @@ mod tests {
     use super::*;
     use crate::corpus::{CorpusTest, CorpusTestResult};
     use std::path::PathBuf;
-    
+
     #[test]
     fn test_stats_calculation() {
         let tests = vec![
@@ -162,7 +178,7 @@ mod tests {
                 },
             ),
         ];
-        
+
         let stats = CorpusTestStats::from_results(&tests);
         assert_eq!(stats.total, 2);
         assert_eq!(stats.passed, 1);

@@ -1,6 +1,5 @@
 //! Value enum for heterogeneous property types in Gram notation
 
-use crate::{error::Location, ParseError};
 use std::fmt;
 
 /// Represents all possible value types in Gram notation property records.
@@ -39,7 +38,7 @@ pub enum Value {
 impl Value {
     // TODO: tree-sitter parsing methods removed during nom parser migration
     // Value parsing is now handled by parser::value module
-    
+
     /* Commented out during migration to nom parser
     pub fn from_tree_sitter_node_OLD(
         node: &TREE_SITTER_NODE,
@@ -103,7 +102,8 @@ impl Value {
             _ => panic!("tree-sitter parsing no longer supported"),
         }
     }
-    */ // End of commented tree-sitter code
+    */
+    // End of commented tree-sitter code
 
     /// Serialize value to gram notation
     pub fn to_gram_notation(&self) -> String {

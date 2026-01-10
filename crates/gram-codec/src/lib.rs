@@ -146,7 +146,7 @@ pub fn parse_gram(input: &str) -> Result<Vec<Pattern<Subject>>, ParseError> {
 /// ```
 pub fn parse_to_ast(input: &str) -> Result<AstPattern, ParseError> {
     let patterns = parse_gram(input)?;
-    
+
     // Parser always returns a single file-level pattern (or none for empty input)
     match patterns.into_iter().next() {
         Some(pattern) => Ok(AstPattern::from_pattern(&pattern)),
