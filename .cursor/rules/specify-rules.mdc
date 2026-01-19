@@ -41,7 +41,6 @@ Rust (MSRV: 1.70.0, edition: 2021): Follow standard conventions
 ## Recent Changes
 - 021-pure-rust-parser: Added Rust 1.70.0+ (edition 2021)
 - 019-gram-codec: Added Rust 1.75+ (edition 2021)
-- 018-comonad-instance: Added Rust 1.75+ (stable features only)
 
 
 <!-- MANUAL ADDITIONS START -->
