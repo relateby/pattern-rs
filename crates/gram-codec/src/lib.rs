@@ -62,11 +62,19 @@ pub use ast::{AstPattern, AstSubject};
 pub use error::{Location, SerializeError};
 // Use the new nom-based ParseError from the parser module
 pub use parser::ParseError;
-pub use serializer::{serialize_pattern, serialize_patterns};
+pub use serializer::{serialize_pattern, serialize_patterns, to_gram, to_gram_with_header};
 pub use value::Value;
 
-// New nom-based parser API
-/// Parse gram notation text into a collection of Pattern structures
+// Re-export Pattern and Subject from pattern-core for convenience
+pub use pattern_core::{Pattern, PropertyRecord as Record, Subject};
+
+// --- New nom-based parser API ---
+
+/// Parse gram notation text into a collection of Pattern structures.
+///
+/// This is the foundational parser for gram notation. It returns all top-level elements,
+/// including any leading record (which appears as a bare pattern with properties but
+/// no identity, labels, or elements).
 ///
 /// # Arguments
 ///
@@ -76,15 +84,6 @@ pub use value::Value;
 ///
 /// * `Ok(Vec<Pattern<Subject>>)` - Successfully parsed patterns
 /// * `Err(ParseError)` - Parse error with location information
-///
-/// # Example
-///
-/// ```rust,no_run
-/// use gram_codec::parse_gram;
-///
-/// let patterns = parse_gram("(alice)-[:KNOWS]->(bob)")?;
-/// # Ok::<(), gram_codec::ParseError>(())
-/// ```
 pub fn parse_gram(input: &str) -> Result<Vec<Pattern<Subject>>, ParseError> {
     // Handle empty/whitespace-only input
     if input.trim().is_empty() {
@@ -109,18 +108,52 @@ pub fn parse_gram(input: &str) -> Result<Vec<Pattern<Subject>>, ParseError> {
     }
 }
 
-/// Parse gram notation to AST (Abstract Syntax Tree)
+/// Parse gram notation, separating an optional header record from the patterns.
+///
+/// If the first element is a bare record (identity and labels are empty, and it has no elements),
+/// it is returned separately as the header.
+///
+/// # Arguments
+///
+/// * `input` - Gram notation text to parse
+///
+/// # Returns
+///
+/// * `Ok((Option<Record>, Vec<Pattern<Subject>>))` - Successfully parsed header and patterns
+/// * `Err(ParseError)` - If parsing fails
+pub fn parse_gram_with_header(
+    input: &str,
+) -> Result<(Option<Record>, Vec<Pattern<Subject>>), ParseError> {
+    let mut patterns = parse_gram(input)?;
+
+    if patterns.is_empty() {
+        return Ok((None, vec![]));
+    }
+
+    // Check if the first pattern is a bare record
+    let first = &patterns[0];
+    if first.value.identity.0.is_empty()
+        && first.value.labels.is_empty()
+        && first.elements.is_empty()
+        && !first.value.properties.is_empty()
+    {
+        let header_record = patterns.remove(0).value.properties;
+        Ok((Some(header_record), patterns))
+    } else {
+        Ok((None, patterns))
+    }
+}
+
+/// Parse gram notation to AST (Abstract Syntax Tree).
 ///
 /// Returns a single AstPattern representing the file-level pattern.
-/// This is the **recommended output format** for cross-language consumption
-/// by gram-js, gram-py, and other language implementations.
+/// This is the **recommended output format** for cross-language consumption.
 ///
 /// # Why AST?
 ///
-/// - **Language-agnostic**: Pure JSON, works everywhere
-/// - **Complete**: No information loss
-/// - **Simple**: Just patterns and subjects (no graph concepts)
-/// - **Serializable**: Can store, transmit, or cache as JSON
+/// - **Language-agnostic**: Pure JSON, works everywhere.
+/// - **Complete**: No information loss.
+/// - **Simple**: Just patterns and subjects (no graph concepts).
 ///
 /// # Arguments
 ///
@@ -130,75 +163,64 @@ pub fn parse_gram(input: &str) -> Result<Vec<Pattern<Subject>>, ParseError> {
 ///
 /// * `Ok(AstPattern)` - The parsed pattern as AST
 /// * `Err(ParseError)` - If parsing fails
-///
-/// # Example
-///
-/// ```rust
-/// use gram_codec::parse_to_ast;
-///
-/// let ast = parse_to_ast("(alice:Person {name: \"Alice\"})")?;
-/// println!("Identity: {}", ast.subject.identity);
-/// println!("Labels: {:?}", ast.subject.labels);
-///
-/// // Serialize to JSON
-/// let json = serde_json::to_string(&ast)?;
-/// # Ok::<(), Box<dyn std::error::Error>>(())
-/// ```
 pub fn parse_to_ast(input: &str) -> Result<AstPattern, ParseError> {
     let patterns = parse_gram(input)?;
 
-    // Parser always returns a single file-level pattern (or none for empty input)
-    match patterns.into_iter().next() {
-        Some(pattern) => Ok(AstPattern::from_pattern(&pattern)),
-        None => {
-            // Empty file - return empty pattern
-            Ok(AstPattern::empty())
-        }
+    if patterns.is_empty() {
+        return Ok(AstPattern::empty());
     }
+
+    // Maintain "single file-level pattern" contract for AST
+    // If there's exactly one pattern and it's not a bare record, return it.
+    // Otherwise, wrap everything in a file-level pattern.
+    let document_pattern = wrap_as_document(patterns);
+    Ok(AstPattern::from_pattern(&document_pattern))
 }
 
-/// Validate gram notation syntax without constructing patterns
-///
-/// This is faster than `parse_gram` for validation-only use cases.
-///
-/// # Arguments
-///
-/// * `input` - Gram notation text to validate
-///
-/// # Returns
-///
-/// * `Ok(())` - Input is valid gram notation
-/// * `Err(ParseError)` - Syntax error
-///
-/// # Example
-///
-/// ```rust,no_run
-/// use gram_codec::validate_gram;
-///
-/// if validate_gram("(hello)").is_ok() {
-///     println!("Valid gram notation");
-/// }
-/// # Ok::<(), gram_codec::ParseError>(())
-/// ```
+/// Internal helper to wrap multiple patterns into a single document-level pattern.
+fn wrap_as_document(mut patterns: Vec<Pattern<Subject>>) -> Pattern<Subject> {
+    if patterns.len() == 1 {
+        let first = &patterns[0];
+        // If it's a "real" pattern (has identity or labels or elements), return it.
+        // Also return it if it has properties but no other fields (a bare record),
+        // because as a single pattern it represents the whole document.
+        if !first.value.identity.0.is_empty()
+            || !first.value.labels.is_empty()
+            || !first.elements.is_empty()
+            || !first.value.properties.is_empty()
+        {
+            return patterns.remove(0);
+        }
+    }
+
+    // Otherwise wrap everything (including the bare record if present)
+    // Actually, if the first is a bare record, it becomes the document's properties
+    let mut properties = Record::new();
+    if !patterns.is_empty() {
+        let first = &patterns[0];
+        if first.value.identity.0.is_empty()
+            && first.value.labels.is_empty()
+            && first.elements.is_empty()
+            && !first.value.properties.is_empty()
+        {
+            properties = patterns.remove(0).value.properties;
+        }
+    }
+
+    let subject = Subject {
+        identity: pattern_core::Symbol(String::new()),
+        labels: std::collections::HashSet::new(),
+        properties,
+    };
+    Pattern::pattern(subject, patterns)
+}
+
+/// Validate gram notation syntax without constructing patterns.
 pub fn validate_gram(input: &str) -> Result<(), ParseError> {
     parse_gram(input).map(|_| ())
 }
 
-// Backward compatibility aliases
-pub use parse_gram as parse_gram_notation;
-
-/// Parse a single Gram pattern from text
-///
-/// Convenience function that expects exactly one pattern in the input.
-///
-/// # Arguments
-///
-/// * `input` - Gram notation text containing a single pattern
-///
-/// # Returns
-///
-/// * `Ok(Pattern<Subject>)` - Successfully parsed pattern
-/// * `Err(ParseError)` - Parse error or multiple patterns found
+/// Parse a single Gram pattern from text.
 pub fn parse_single_pattern(input: &str) -> Result<Pattern<Subject>, ParseError> {
     let patterns = parse_gram(input)?;
 
@@ -215,5 +237,5 @@ pub fn parse_single_pattern(input: &str) -> Result<Pattern<Subject>, ParseError>
     }
 }
 
-// Re-export Pattern and Subject from pattern-core for convenience
-pub use pattern_core::{Pattern, Subject};
+// Backward compatibility aliases
+pub use parse_gram as parse_gram_notation;

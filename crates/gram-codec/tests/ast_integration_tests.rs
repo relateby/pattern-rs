@@ -65,3 +65,16 @@ fn test_parse_to_ast_invalid_input() {
     let result = parse_to_ast("(unclosed");
     assert!(result.is_err());
 }
+
+#[test]
+fn test_parse_to_ast_empty_node() {
+    let ast = parse_to_ast("() (a)").unwrap();
+    // Both nodes should be present as elements of the document
+    assert_eq!(
+        ast.elements.len(),
+        2,
+        "Expected 2 elements for '() (a)', but found {}",
+        ast.elements.len()
+    );
+    assert_eq!(ast.elements[1].subject.identity, "a");
+}

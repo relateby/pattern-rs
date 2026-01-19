@@ -25,7 +25,6 @@
 //! console.log("Is valid:", isValid);
 //! ```
 
-use crate::ast::AstPattern;
 use wasm_bindgen::prelude::*;
 
 /// Result of parsing gram notation

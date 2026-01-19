@@ -4,6 +4,16 @@ Rust port of [gram-hs](https://github.com/gram-data/gram-hs) pattern data struct
 
 This library provides a faithful port of the gram-hs reference implementation, emphasizing correctness and compatibility while adopting Rust-native idioms. The library is designed as a shared library that compiles for native Rust, WebAssembly, and other target environments.
 
+## Documentation
+
+This project provides comprehensive documentation for understanding the Pattern data structure and Gram notation:
+
+- **[Introduction to Patterns](docs/introduction.md)**: Core concepts, terminology, and the "decorated sequence" model.
+- **[Gram Notation Reference](docs/gram-notation.md)**: A detailed guide to Gram syntax and how it maps to Pattern structures.
+- **[Rust Usage Guide](docs/rust-usage.md)**: Practical examples for using the library in Rust projects.
+
+For information on the project's testing infrastructure, see **[Testing Infrastructure](docs/testing-infrastructure.md)**.
+
 ## Reference Implementation
 
 This project is a port of the [gram-hs](https://github.com/gram-data/gram-hs) reference implementation. The reference implementation is available locally at `../gram-hs` (relative to this repository root).
