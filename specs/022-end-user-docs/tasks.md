@@ -105,6 +105,23 @@
 
 ---
 
+## Phase 7: Parser & API Redesign (Priority: P1)
+
+**Goal**: Update `gram-codec` API to better handle top-level records and headers.
+
+### Implementation for Redesign
+
+- [X] T025 Redesign `parse_gram` to return `Vec<Pattern<Subject>>` directly (no implicit wrapping)
+- [X] T026 Implement `parse_gram_with_header` to separate optional leading records as document metadata
+- [X] T027 Implement `to_gram` for space-delimited pattern serialization
+- [X] T028 Implement `to_gram_with_header` for serialization with a leading header record
+- [X] T029 Add internal AST helper to maintain the "single file-level pattern" contract for `AstPattern`
+- [X] T030 Update `docs/rust-usage.md` to reflect the new `parse_gram` and header-aware functions
+
+**Checkpoint**: Parser API refined - documentation and implementation are in sync.
+
+---
+
 ## Dependencies & Execution Order
 
 ### Phase Dependencies

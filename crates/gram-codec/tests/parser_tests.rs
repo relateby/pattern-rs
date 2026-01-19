@@ -43,9 +43,8 @@ fn test_parse_multiple_patterns() {
     let result = parse_gram_notation("(a) (b) (c)");
     assert!(result.is_ok());
     let patterns = result.unwrap();
-    // File-level pattern with 3 elements
-    assert_eq!(patterns.len(), 1);
-    assert_eq!(patterns[0].elements().len(), 3);
+    // Returns all 3 node patterns
+    assert_eq!(patterns.len(), 3);
 }
 
 #[test]
@@ -85,10 +84,8 @@ fn test_parse_single_pattern_success() {
 #[test]
 fn test_parse_single_pattern_multiple_error() {
     let result = parse_single_pattern("(a) (b)");
-    // Accepts as file-level pattern with 2 elements
-    assert!(result.is_ok());
-    let pattern = result.unwrap();
-    assert_eq!(pattern.elements().len(), 2);
+    // Should fail because it contains multiple patterns
+    assert!(result.is_err());
 }
 
 #[test]

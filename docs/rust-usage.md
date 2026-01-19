@@ -14,33 +14,44 @@ gram-codec = { path = "crates/gram-codec" }
 
 ## Programmatic Construction
 
-The `pattern-core` crate provides the `Pattern` type and its core constructors.
+The `pattern-core` crate provides the `Pattern` type and its core constructors. Most patterns in `gram-rs` use `Subject` as their value type, which includes an identity, labels, and properties.
 
 ### Creating an Atomic Pattern (Node)
 Use `Pattern::point` to create a pattern with no elements.
 
 ```rust
-use pattern_core::Pattern;
+use pattern_core::{Pattern, Subject, Symbol};
+use std::collections::{HashSet, HashMap};
 
-// Create a node with a string value
-let node = Pattern::point("Person".to_string());
+// Create a node with identity "alice" and label "Person"
+let subject = Subject {
+    identity: Symbol("alice".to_string()),
+    labels: {
+        let mut s = HashSet::new();
+        s.insert("Person".to_string());
+        s
+    },
+    properties: HashMap::new(),
+};
+let node = Pattern::point(subject);
 
 assert!(node.is_atomic());
-assert_eq!(node.value(), &"Person".to_string());
+assert_eq!(node.value().identity.0, "alice");
 ```
 
 ### Creating a Nested Pattern
 Use `Pattern::pattern` to create a pattern with elements.
 
 ```rust
-use pattern_core::Pattern;
+use pattern_core::{Pattern, Subject, Symbol};
 
-let alice = Pattern::point("Alice".to_string());
-let bob = Pattern::point("Bob".to_string());
+// Simplified point patterns for elements
+let alice = Pattern::point(Subject::from_identity("alice"));
+let bob = Pattern::point(Subject::from_identity("bob"));
 
 // Create a relationship pattern "Alice knows Bob"
 let knows = Pattern::pattern(
-    "KNOWS".to_string(),
+    Subject::from_label("KNOWS"),
     vec![alice, bob]
 );
 
@@ -52,28 +63,59 @@ assert_eq!(knows.elements().len(), 2);
 The `gram-codec` crate handles conversion between Gram notation and Rust `Pattern` structures. For more details on Gram syntax, see the **[Gram Notation Reference](gram-notation.md)**.
 
 ### Parsing Gram Notation
-Use `parse_gram` to create a `Pattern` from a Gram string.
+Use `parse_gram` to parse a string into a collection of patterns.
 
 ```rust
 use gram_codec::parse_gram;
 
 let gram = "(a:Person)-[r:KNOWS]->(b:Person)";
-let pattern = parse_gram(gram).expect("Failed to parse Gram notation");
+let patterns = parse_gram(gram).expect("Failed to parse Gram notation");
 
-println!("Relationship value: {}", pattern.value());
+// parse_gram returns a Vec of all top-level patterns
+assert_eq!(patterns.len(), 1);
+println!("Relationship labels: {:?}", patterns[0].value().labels);
+```
+
+### Parsing with Headers
+Use `parse_gram_with_header` when your document uses a leading record as metadata.
+
+```rust
+use gram_codec::parse_gram_with_header;
+
+let input = "{version: 1.0} (a)-->(b)";
+let (header, patterns) = parse_gram_with_header(input).unwrap();
+
+if let Some(h) = header {
+    println!("Document version: {:?}", h.get("version"));
+}
+assert_eq!(patterns.len(), 1);
 ```
 
 ### Serializing to Gram Notation
-*(Note: Ensure `to_gram` or equivalent is available in your version of `gram-codec`)*
+Use `to_gram` to serialize patterns back to notation.
 
 ```rust
 use gram_codec::to_gram;
-use pattern_core::Pattern;
+use pattern_core::{Pattern, Subject};
 
-let node = Pattern::point("Node".to_string());
-let gram_string = to_gram(&node);
+let node = Pattern::point(Subject::from_identity("node"));
+let gram_string = to_gram(vec![node]).unwrap();
 
-assert_eq!(gram_string, "(Node)");
+assert_eq!(gram_string, "(node)");
+```
+
+### Serializing with a Header
+```rust
+use gram_codec::{to_gram_with_header, Record};
+use pattern_core::{Pattern, Subject, Value};
+
+let mut header = Record::new();
+header.insert("type".to_string(), Value::VString("graph".to_string()));
+
+let node = Pattern::point(Subject::from_identity("a"));
+let output = to_gram_with_header(header, vec![node]).unwrap();
+
+assert_eq!(output, "{type: \"graph\"} (a)");
 ```
 
 ## Basic Queries
@@ -81,30 +123,32 @@ assert_eq!(gram_string, "(Node)");
 `Pattern` provides several utilities for inspecting and querying its structure and values.
 
 ### Checking Values
-You can check if any or all values in a pattern (including elements recursively) satisfy a predicate.
+You can check if any or all values in a pattern satisfy a predicate.
 
 ```rust
-use pattern_core::Pattern;
+use pattern_core::{Pattern, Subject};
 
-let pattern = Pattern::pattern("root".to_string(), vec![
-    Pattern::point("child1".to_string()),
-    Pattern::point("child2".to_string()),
-]);
+let pattern = Pattern::pattern(
+    Subject::from_identity("root"), 
+    vec![
+        Pattern::point(Subject::from_identity("child1")),
+        Pattern::point(Subject::from_identity("child2")),
+    ]
+);
 
-// Does any value contain "child"?
-let has_child = pattern.any_value(|v| v.contains("child"));
+// Does any subject identity contain "child"?
+let has_child = pattern.any_value(|v| v.identity.0.contains("child"));
 assert!(has_child);
-
-// Do all values have length > 3?
-let all_long = pattern.all_values(|v| v.len() > 3);
-assert!(all_long);
 ```
 
 ### Structural Inspection
 ```rust
-let pattern = parse_gram("(a)-[r]->(b)").unwrap();
+use gram_codec::parse_gram;
 
-println!("Length: {}", pattern.length()); // Direct elements: 2
-println!("Size: {}", pattern.size());     // Total nodes: 3
-println!("Depth: {}", pattern.depth());   // Max nesting: 1
+let patterns = parse_gram("(a)-[r]->(b)").unwrap();
+let rel = &patterns[0];
+
+println!("Length: {}", rel.length()); // Direct elements: 2
+println!("Size: {}", rel.size());     // Total subjects: 3
+println!("Depth: {}", rel.depth());   // Max nesting: 1
 ```

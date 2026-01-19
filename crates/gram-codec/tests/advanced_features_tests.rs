@@ -8,15 +8,15 @@ use gram_codec::{parse_gram_notation, serialize_pattern};
 
 #[test]
 fn test_parse_root_record_with_pattern() {
-    // Root records are supported by grammar but currently ignored during parsing
-    // This documents current behavior
+    // Root records are now returned as the first pattern in the sequence
     let input = "{graph: \"social\"} (a)-->(b)";
     let result = parse_gram_notation(input);
     assert!(result.is_ok(), "Failed to parse: {:?}", result.err());
 
-    // Parser should extract the patterns, ignoring the root record for now
     let patterns = result.unwrap();
-    assert_eq!(patterns.len(), 1); // Relationship pattern parsed
+    assert_eq!(patterns.len(), 2); // Bare record pattern + Relationship pattern
+    assert!(!patterns[0].value.properties.is_empty());
+    assert_eq!(patterns[1].elements.len(), 2);
 }
 
 #[test]
@@ -25,10 +25,10 @@ fn test_parse_root_record_with_multiple_patterns() {
     let result = parse_gram_notation(input);
     assert!(result.is_ok());
     let patterns = result.unwrap();
-    // File-level pattern with root record and 3 elements
-    assert_eq!(patterns.len(), 1);
-    assert_eq!(patterns[0].elements().len(), 3);
-    assert!(!patterns[0].value().properties.is_empty());
+    // Bare record pattern + 3 node patterns
+    assert_eq!(patterns.len(), 4);
+    assert!(!patterns[0].value.properties.is_empty());
+    assert_eq!(patterns[1].value.identity.0, "a");
 }
 
 // ============================================================================
@@ -211,9 +211,8 @@ fn test_parse_many_nodes() {
     let result = parse_gram_notation(&input);
     assert!(result.is_ok(), "Failed to parse many nodes");
     let patterns = result.unwrap();
-    // File-level pattern with 100 elements
-    assert_eq!(patterns.len(), 1);
-    assert_eq!(patterns[0].elements().len(), 100);
+    // 100 patterns (one for each node)
+    assert_eq!(patterns.len(), 100);
 }
 
 #[test]

@@ -5,32 +5,6 @@ use pattern_core::{Pattern, Subject};
 use std::collections::HashMap;
 
 /// Serialize a Pattern structure to Gram notation
-///
-/// # Arguments
-///
-/// * `pattern` - Pattern to serialize
-///
-/// # Returns
-///
-/// * `Ok(String)` - Valid Gram notation
-/// * `Err(SerializeError)` - Serialization error
-///
-/// # Example
-///
-/// ```rust,no_run
-/// use gram_codec::serialize_pattern;
-/// use pattern_core::{Pattern, Subject, Symbol};
-/// use std::collections::{HashMap, HashSet};
-///
-/// let subject = Subject {
-///     identity: Symbol("node".to_string()),
-///     labels: HashSet::new(),
-///     properties: HashMap::new(),
-/// };
-/// let pattern = Pattern::point(subject);
-/// let gram_text = serialize_pattern(&pattern)?;
-/// # Ok::<(), gram_codec::SerializeError>(())
-/// ```
 pub fn serialize_pattern(pattern: &Pattern<Subject>) -> Result<String, SerializeError> {
     let format = select_format(pattern);
 
@@ -39,10 +13,13 @@ pub fn serialize_pattern(pattern: &Pattern<Subject>) -> Result<String, Serialize
         GramFormat::Relationship => serialize_relationship_pattern(pattern),
         GramFormat::SubjectPattern => serialize_subject_pattern(pattern),
         GramFormat::Annotation => serialize_annotation_pattern(pattern),
+        GramFormat::BareRecord => serialize_record(&pattern.value.properties),
     }
 }
 
-/// Serialize multiple Pattern structures to Gram notation
+/// Serialize a sequence of patterns to gram notation.
+///
+/// Writes each pattern in sequence, space-delimited.
 ///
 /// # Arguments
 ///
@@ -50,8 +27,47 @@ pub fn serialize_pattern(pattern: &Pattern<Subject>) -> Result<String, Serialize
 ///
 /// # Returns
 ///
-/// * `Ok(String)` - Valid Gram notation with newline-separated patterns
-/// * `Err(SerializeError)` - Serialization error
+/// * `Ok(String)` - Valid Gram notation
+pub fn to_gram<I>(patterns: I) -> Result<String, SerializeError>
+where
+    I: IntoIterator<Item = Pattern<Subject>>,
+{
+    patterns
+        .into_iter()
+        .map(|p| serialize_pattern(&p))
+        .collect::<Result<Vec<_>, _>>()
+        .map(|lines| lines.join(" "))
+}
+
+/// Serializes patterns with a leading header record.
+///
+/// Emits the header as a top-level record followed by the patterns.
+///
+/// # Arguments
+///
+/// * `header` - Header record to serialize
+/// * `patterns` - Patterns to serialize
+///
+/// # Returns
+///
+/// * `Ok(String)` - Valid Gram notation with header
+pub fn to_gram_with_header<I>(header: crate::Record, patterns: I) -> Result<String, SerializeError>
+where
+    I: IntoIterator<Item = Pattern<Subject>>,
+{
+    let header_str = serialize_record(&header)?;
+    let patterns_str = to_gram(patterns)?;
+
+    if patterns_str.is_empty() {
+        Ok(header_str)
+    } else {
+        Ok(format!("{} {}", header_str, patterns_str))
+    }
+}
+
+/// Serialize multiple Pattern structures to Gram notation
+///
+/// This is a convenience wrapper around `to_gram` that uses newlines as separators.
 pub fn serialize_patterns(patterns: &[Pattern<Subject>]) -> Result<String, SerializeError> {
     patterns
         .iter()
@@ -71,31 +87,39 @@ enum GramFormat {
     SubjectPattern,
     /// Annotation pattern: `@key(value) element` - 1 element with anonymous subject
     Annotation,
+    /// Bare record: `{}` - 0 elements, no identity, no labels, has properties
+    BareRecord,
 }
 
 /// Select appropriate gram notation format for a pattern
 fn select_format(pattern: &Pattern<Subject>) -> GramFormat {
     let elem_count = pattern.elements.len();
 
-    match elem_count {
-        0 => GramFormat::Node,
-        1 => {
-            // Check if this is an annotation (anonymous subject with properties)
-            if is_annotation_pattern(pattern) {
-                GramFormat::Annotation
-            } else {
-                GramFormat::SubjectPattern
-            }
+    if elem_count == 0 {
+        if pattern.value.identity.0.is_empty()
+            && pattern.value.labels.is_empty()
+            && !pattern.value.properties.is_empty()
+        {
+            GramFormat::BareRecord
+        } else {
+            GramFormat::Node
         }
-        2 => {
-            // Check if both elements are atomic (relationship notation)
-            if is_relationship_pattern(pattern) {
-                GramFormat::Relationship
-            } else {
-                GramFormat::SubjectPattern
-            }
+    } else if elem_count == 1 {
+        // Check if this is an annotation (anonymous subject with properties)
+        if is_annotation_pattern(pattern) {
+            GramFormat::Annotation
+        } else {
+            GramFormat::SubjectPattern
         }
-        _ => GramFormat::SubjectPattern,
+    } else if elem_count == 2 {
+        // Check if both elements are atomic (relationship notation)
+        if is_relationship_pattern(pattern) {
+            GramFormat::Relationship
+        } else {
+            GramFormat::SubjectPattern
+        }
+    } else {
+        GramFormat::SubjectPattern
     }
 }
 

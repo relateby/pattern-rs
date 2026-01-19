@@ -113,10 +113,10 @@ pub fn gram_pattern(input: &str) -> ParseResult<'_, Pattern<Subject>> {
 }
 
 /// Parse multiple gram patterns (top-level)
-/// A gram file itself is a pattern:
-/// - Optional leading `{}` becomes the file-level pattern's properties
-/// - All patterns in the file become the file-level pattern's elements
-/// - Always returns a single pattern (the file-level pattern)
+///
+/// Returns all top-level patterns found in the input.
+/// If a leading record `{}` is present, it is returned as the first pattern
+/// (a bare pattern with properties but no identity/labels/elements).
 pub fn gram_patterns(input: &str) -> ParseResult<'_, Vec<Pattern<Subject>>> {
     use nom::multi::many0;
 
@@ -124,9 +124,9 @@ pub fn gram_patterns(input: &str) -> ParseResult<'_, Vec<Pattern<Subject>>> {
         delimited(
             ws,
             pair(
-                // Optional leading record = file properties
+                // Optional leading record
                 opt(subject::record),
-                // All patterns = file elements
+                // All patterns
                 many0(delimited(
                     ws,
                     alt((
@@ -140,28 +140,19 @@ pub fn gram_patterns(input: &str) -> ParseResult<'_, Vec<Pattern<Subject>>> {
             ),
             ws,
         ),
-        |(properties_opt, elements): (
+        |(properties_opt, mut elements): (
             Option<std::collections::HashMap<String, pattern_core::Value>>,
             Vec<Pattern<Subject>>,
         )| {
-            // Special cases:
-            // 1. Empty file → return empty vec
-            if properties_opt.is_none() && elements.is_empty() {
-                return vec![];
-            }
-            // 2. Single pattern, no properties → return it directly
-            if properties_opt.is_none() && elements.len() == 1 {
-                vec![elements.into_iter().next().unwrap()]
-            }
-            // 3. Multiple patterns OR has properties → wrap in file-level pattern
-            else {
-                let subject = Subject {
+            if let Some(properties) = properties_opt {
+                let header_subject = Subject {
                     identity: pattern_core::Symbol(String::new()),
                     labels: std::collections::HashSet::new(),
-                    properties: properties_opt.unwrap_or_default(),
+                    properties,
                 };
-                vec![Pattern::pattern(subject, elements)]
+                elements.insert(0, Pattern::point(header_subject));
             }
+            elements
         },
     )(input)
 }
@@ -195,9 +186,11 @@ mod tests {
     #[test]
     fn test_gram_patterns_multiple() {
         let (remaining, patterns) = gram_patterns("(a) (b) (c)").unwrap();
-        // Multiple patterns → wrapped in file-level pattern
-        assert_eq!(patterns.len(), 1);
-        assert_eq!(patterns[0].elements().len(), 3); // File-level pattern with 3 elements
+        // Returns all 3 patterns directly
+        assert_eq!(patterns.len(), 3);
+        assert_eq!(patterns[0].value().identity.0, "a");
+        assert_eq!(patterns[1].value().identity.0, "b");
+        assert_eq!(patterns[2].value().identity.0, "c");
         assert_eq!(remaining, "");
     }
 
@@ -211,9 +204,21 @@ mod tests {
     #[test]
     fn test_gram_patterns_with_whitespace() {
         let (remaining, patterns) = gram_patterns("  (a)  \n  (b)  ").unwrap();
-        // Multiple patterns → wrapped in file-level pattern
-        assert_eq!(patterns.len(), 1);
-        assert_eq!(patterns[0].elements().len(), 2); // File-level pattern with 2 elements
+        assert_eq!(patterns.len(), 2);
+        assert_eq!(patterns[0].value().identity.0, "a");
+        assert_eq!(patterns[1].value().identity.0, "b");
+        assert_eq!(remaining, "");
+    }
+
+    #[test]
+    fn test_gram_patterns_with_leading_record() {
+        let (remaining, patterns) = gram_patterns("{k:'v'} (a)").unwrap();
+        assert_eq!(patterns.len(), 2);
+        // First pattern is the bare record
+        assert_eq!(patterns[0].value().identity.0, "");
+        assert_eq!(patterns[0].value().properties.len(), 1);
+        // Second pattern is the node
+        assert_eq!(patterns[1].value().identity.0, "a");
         assert_eq!(remaining, "");
     }
 }
