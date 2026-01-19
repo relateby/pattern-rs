@@ -1,6 +1,6 @@
 //! Serializer integration tests
 
-use gram_codec::{parse_gram_notation, serialize_pattern, serialize_patterns};
+use gram_codec::{parse_gram_notation, serialize_pattern, serialize_patterns, to_gram_with_header};
 use pattern_core::{Pattern, Subject, Symbol};
 use std::collections::{HashMap, HashSet};
 
@@ -200,4 +200,37 @@ fn test_round_trip_subject_pattern() {
     // Check structural equivalence
     assert_eq!(parsed[0].elements.len(), reparsed[0].elements.len());
     assert_eq!(parsed[0].value.identity.0, reparsed[0].value.identity.0);
+}
+
+#[test]
+fn test_to_gram_with_header_empty() {
+    let header = HashMap::new();
+    let patterns = vec![Pattern::point(subject_with_id("a"))];
+
+    let result = to_gram_with_header(header, patterns).unwrap();
+    assert_eq!(result, "(a)");
+}
+
+#[test]
+fn test_to_gram_with_header_non_empty() {
+    let mut header = HashMap::new();
+    header.insert(
+        "key".to_string(),
+        pattern_core::Value::VString("val".to_string()),
+    );
+    let patterns = vec![Pattern::point(subject_with_id("a"))];
+
+    let result = to_gram_with_header(header, patterns).unwrap();
+    assert_eq!(result, "{key: \"val\"} (a)");
+}
+
+#[test]
+fn test_to_gram_with_custom_separator() {
+    let patterns = vec![
+        Pattern::point(subject_with_id("a")),
+        Pattern::point(subject_with_id("b")),
+    ];
+
+    let result = gram_codec::to_gram(patterns, Some("\n")).unwrap();
+    assert_eq!(result, "(a)\n(b)");
 }

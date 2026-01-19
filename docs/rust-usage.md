@@ -99,7 +99,8 @@ use gram_codec::to_gram;
 use pattern_core::{Pattern, Subject};
 
 let node = Pattern::point(Subject::from_identity("node"));
-let gram_string = to_gram(vec![node]).unwrap();
+// to_gram takes a Vec of patterns and an optional separator (defaults to space)
+let gram_string = to_gram(vec![node], None).unwrap();
 
 assert_eq!(gram_string, "(node)");
 ```

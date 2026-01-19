@@ -153,13 +153,8 @@ fn round_trip(input: &str) -> PyResult<String> {
     let patterns = crate::parse_gram(input)
         .map_err(|e| PyValueError::new_err(format!("Parse error: {}", e)))?;
 
-    let serialized: Result<Vec<String>, _> =
-        patterns.iter().map(crate::serialize_pattern).collect();
-
-    let serialized =
-        serialized.map_err(|e| PyValueError::new_err(format!("Serialize error: {}", e)))?;
-
-    Ok(serialized.join("\n"))
+    crate::serialize_patterns(&patterns)
+        .map_err(|e| PyValueError::new_err(format!("Serialize error: {}", e)))
 }
 
 /// Serialize patterns to gram notation
