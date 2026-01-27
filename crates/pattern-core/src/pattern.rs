@@ -2786,11 +2786,7 @@ impl<V: crate::Combinable> Pattern<V> {
     /// assert_eq!(relationships[0].value, "WORKS_FOR");
     /// assert_eq!(relationships[0].elements.len(), 2);
     /// ```
-    pub fn zip3(
-        left: Vec<Pattern<V>>,
-        right: Vec<Pattern<V>>,
-        values: Vec<V>,
-    ) -> Vec<Pattern<V>> {
+    pub fn zip3(left: Vec<Pattern<V>>, right: Vec<Pattern<V>>, values: Vec<V>) -> Vec<Pattern<V>> {
         left.into_iter()
             .zip(right)
             .zip(values)

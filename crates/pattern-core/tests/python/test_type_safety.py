@@ -105,7 +105,7 @@ def test_pattern_construction_types() -> None:
     # Type checkers should infer Pattern type correctly
     atomic: Pattern = Pattern.point("hello")
     nested: Pattern = Pattern.pattern("parent", [Pattern.point("child")])
-    from_list: Pattern = Pattern.from_list("root", ["a", "b", "c"])
+    from_list: Pattern = Pattern.pattern("root", Pattern.from_values(["a", "b", "c"]))
     
     assert isinstance(atomic, Pattern) or not PATTERN_CORE_AVAILABLE
     assert isinstance(nested, Pattern) or not PATTERN_CORE_AVAILABLE

@@ -71,5 +71,5 @@ def test_pattern_subject_construction():
     assert "Person" in labels
     assert "Employee" in labels
     props = pattern_subject.get_properties()
-    assert props["name"].as_string() == "Alice"
-    assert props["age"].as_int() == 30
+    assert props["name"] == "Alice"
+    assert props["age"] == 30

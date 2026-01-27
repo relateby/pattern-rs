@@ -19,6 +19,42 @@ except ImportError:
     sys.exit(1)
 
 
+def example_pattern_of_alias():
+    """Pattern.of() is an alias for Pattern.point() (functor/applicative convention)."""
+    print("=" * 60)
+    print("Example 0: Pattern.of() Alias")
+    print("=" * 60)
+    
+    # Both create atomic patterns
+    p1 = pattern_core.Pattern.point(42)
+    p2 = pattern_core.Pattern.of(42)
+    
+    print(f"Pattern.point(42): {p1}")
+    print(f"Pattern.of(42): {p2}")
+    print(f"Both have same value: {p1.value == p2.value}")
+    print()
+
+
+def example_from_values():
+    """Pattern.from_values() converts a list of values to a list of atomic patterns."""
+    print("=" * 60)
+    print("Example 0b: Pattern.from_values()")
+    print("=" * 60)
+    
+    # Convert list of values to list of patterns
+    values = [1, 2, 3, 4, 5]
+    patterns = pattern_core.Pattern.from_values(values)
+    
+    print(f"Input values: {values}")
+    print(f"Number of patterns created: {len(patterns)}")
+    print(f"Pattern values: {[p.value for p in patterns]}")
+    
+    # Use with Pattern.pattern() to create nested structure
+    root = pattern_core.Pattern.pattern("numbers", patterns)
+    print(f"\nNested pattern: value='{root.value}', elements={root.length()}")
+    print()
+
+
 def example_atomic_pattern():
     """Create and inspect atomic patterns."""
     print("=" * 60)
@@ -43,35 +79,36 @@ def example_nested_pattern():
     print("Example 2: Nested Patterns")
     print("=" * 60)
     
-    # Create children
-    child1 = pattern_core.Pattern.point("child1")
-    child2 = pattern_core.Pattern.point("child2")
-    child3 = pattern_core.Pattern.point("child3")
+    # Create atomic patterns (elements)
+    elem1 = pattern_core.Pattern.point("elem1")
+    elem2 = pattern_core.Pattern.point("elem2")
+    elem3 = pattern_core.Pattern.point("elem3")
     
-    # Create parent with children
-    parent = pattern_core.Pattern.pattern("parent", [child1, child2, child3])
+    # Create decorated pattern (value decorates the elements)
+    decorated = pattern_core.Pattern.pattern("decoration", [elem1, elem2, elem3])
     
-    print(f"Parent value: {parent.value}")
-    print(f"Number of children (length): {parent.length()}")
-    print(f"Total nodes (size): {parent.size()}")
-    print(f"Maximum depth: {parent.depth()}")
-    print(f"Is atomic: {parent.is_atomic()}")
+    print(f"Decoration value: {decorated.value}")
+    print(f"Number of elements (length): {decorated.length()}")
+    print(f"Total nodes (size): {decorated.size()}")
+    print(f"Maximum depth: {decorated.depth()}")
+    print(f"Is atomic: {decorated.is_atomic()}")
     
-    # Access children
-    print(f"\nChildren:")
-    for i, child in enumerate(parent.elements):
-        print(f"  Child {i}: {child.value}")
+    # Access elements
+    print(f"\nElements:")
+    for i, elem in enumerate(decorated.elements):
+        print(f"  Element {i}: {elem.value}")
     print()
 
 
 def example_pattern_from_list():
-    """Create pattern from list of values."""
+    """Create pattern from list of values using from_values()."""
     print("=" * 60)
-    print("Example 3: Pattern from List")
+    print("Example 3: Pattern from List (using from_values)")
     print("=" * 60)
     
-    # Create pattern from list (convenience method)
-    pattern = pattern_core.Pattern.from_list("root", ["a", "b", "c", "d"])
+    # Convert values to patterns (elements), then create decorated pattern
+    elements = pattern_core.Pattern.from_values(["a", "b", "c", "d"])
+    pattern = pattern_core.Pattern.pattern("root", elements)
     
     print(f"Root value: {pattern.value}")
     print(f"Length: {pattern.length()}")
@@ -297,6 +334,8 @@ def main():
     print("PATTERN-CORE PYTHON BINDINGS - BASIC USAGE EXAMPLES")
     print("=" * 60 + "\n")
     
+    example_pattern_of_alias()
+    example_from_values()
     example_atomic_pattern()
     example_nested_pattern()
     example_pattern_from_list()

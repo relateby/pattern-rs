@@ -32,7 +32,7 @@ uv pip install pattern_core-*.whl
 ```python
 import pattern_core
 
-# Create atomic pattern (no children)
+# Create atomic pattern (no elements)
 atomic = pattern_core.Pattern.point("hello")
 print(f"Value: {atomic.value}")  # "hello"
 print(f"Is atomic: {atomic.is_atomic()}")  # True
@@ -41,14 +41,15 @@ print(f"Is atomic: {atomic.is_atomic()}")  # True
 ### 2. Create a Nested Pattern
 
 ```python
-# Create nested pattern with children
-child1 = pattern_core.Pattern.point("child1")
-child2 = pattern_core.Pattern.point("child2")
-parent = pattern_core.Pattern.pattern("parent", [child1, child2])
+# Create nested pattern with elements
+# The value decorates/describes the pattern represented by the elements
+elem1 = pattern_core.Pattern.point("elem1")
+elem2 = pattern_core.Pattern.point("elem2")
+decorated = pattern_core.Pattern.pattern("decoration", [elem1, elem2])
 
-print(f"Length: {parent.length()}")  # 2
-print(f"Depth: {parent.depth()}")    # 1
-print(f"Size: {parent.size()}")      # 3 (parent + 2 children)
+print(f"Length: {decorated.length()}")  # 2
+print(f"Depth: {decorated.depth()}")    # 1
+print(f"Size: {decorated.size()}")      # 3 (root + 2 elements)
 ```
 
 ### 3. Work with Subjects

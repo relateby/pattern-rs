@@ -28,8 +28,8 @@ def test_subject_construction():
     assert "Person" in labels
     assert "Employee" in labels
     props = subject.get_properties()
-    assert props["name"].as_string() == "Alice"
-    assert props["age"].as_int() == 30
+    assert props["name"] == "Alice"
+    assert props["age"] == 30
 
 
 def test_subject_labels():

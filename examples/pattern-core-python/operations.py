@@ -272,21 +272,21 @@ def example_contains():
     print("Example 8: Contains - Subpattern Search")
     print("=" * 60)
     
-    # Create parent pattern
-    parent = pattern_core.Pattern.pattern("parent", [
-        pattern_core.Pattern.point("child1"),
-        pattern_core.Pattern.point("child2"),
-        pattern_core.Pattern.point("child3")
+    # Create decorated pattern (value decorates the elements)
+    decorated = pattern_core.Pattern.pattern("decoration", [
+        pattern_core.Pattern.point("elem1"),
+        pattern_core.Pattern.point("elem2"),
+        pattern_core.Pattern.point("elem3")
     ])
     
     # Create search patterns
-    child1 = pattern_core.Pattern.point("child1")
-    child4 = pattern_core.Pattern.point("child4")
+    elem1 = pattern_core.Pattern.point("elem1")
+    elem4 = pattern_core.Pattern.point("elem4")
     
-    print(f"Parent values: {parent.values()}")
+    print(f"Pattern values: {decorated.values()}")
     
-    print(f"Contains 'child1': {parent.contains(child1)}")
-    print(f"Contains 'child4': {parent.contains(child4)}")
+    print(f"Contains 'elem1': {decorated.contains(elem1)}")
+    print(f"Contains 'elem4': {decorated.contains(elem4)}")
     print()
 
 
@@ -327,7 +327,7 @@ def example_structural_properties():
         pattern_core.Pattern.point("leaf3")
     ])
     
-    print(f"Length (direct children): {pattern.length()}")
+    print(f"Length (direct elements): {pattern.length()}")
     print(f"Size (total nodes): {pattern.size()}")
     print(f"Depth (max nesting): {pattern.depth()}")
     print(f"Is atomic: {pattern.is_atomic()}")

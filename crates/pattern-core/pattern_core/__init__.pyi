@@ -263,7 +263,11 @@ class Pattern:
     """
     Recursive, nested structure (s-expression-like) that can hold any value type.
     
-    A pattern consists of a value and zero or more child patterns (elements).
+    Pattern<V> is fully generic - V can be primitives, objects, or even other Patterns,
+    enabling true nesting like Pattern<Pattern<T>>.
+    
+    A pattern consists of a value (decoration) and zero or more elements (patterns).
+    The value decorates or says something about the pattern represented by the elements.
     Atomic patterns have no elements.
     """
     
@@ -283,41 +287,70 @@ class Pattern:
     @staticmethod
     def pattern(value: Any, elements: List['Pattern']) -> 'Pattern':
         """
-        Create a pattern with child elements.
+        Create a pattern with value decoration and elements.
+        
+        The value decorates or describes the pattern represented by the elements.
         
         Args:
-            value: The value for this pattern
-            elements: List of child Pattern instances
+            value: The value decoration for this pattern
+            elements: List of Pattern instances that form the pattern
             
         Returns:
-            Pattern instance with elements
+            Pattern instance with value and elements
         """
         ...
     
     @staticmethod
-    def from_list(value: Any, values: List[Any]) -> 'Pattern':
+    def of(value: Any) -> 'Pattern':
         """
-        Create a pattern from a list of values (convenience method).
+        Alias for point(). Lift a value into a Pattern.
         
-        Each value becomes an atomic child pattern.
+        This follows the functional programming convention where
+        'of' is used to lift a value into a functor/applicative.
         
         Args:
-            value: The value for the root pattern
-            values: List of values to convert to child patterns
+            value: The value for this pattern (any Python type)
             
         Returns:
-            Pattern instance with children from values
+            Atomic Pattern instance
+        """
+        ...
+    
+    @staticmethod
+    def from_values(values: List[Any]) -> List['Pattern']:
+        """
+        Convert a list of values into a list of patterns.
+        
+        Applies Pattern.of() (which is Pattern.point()) uniformly to every value,
+        lifting each into a Pattern. Works on any type including Patterns.
+        
+        Args:
+            values: List of values to convert (any type)
+            
+        Returns:
+            List of Pattern instances
+            
+        Example:
+            >>> # From primitives
+            >>> patterns = Pattern.from_values([1, 2, 3])
+            >>> len(patterns)
+            3
+            >>> # From patterns (creates Pattern<Pattern<T>>)
+            >>> p1 = Pattern.point("a")
+            >>> patterns = Pattern.from_values([p1])
+            >>> patterns[0].value  # This is a Pattern!
+            Pattern(value="a", elements=0)
         """
         ...
     
     @property
-    def value(self) -> str:
-        """Get the pattern's value (serialized as string)."""
+    def value(self) -> Any:
+        """Get the pattern's value (can be any Python type including Pattern)."""
         ...
     
     @property
     def elements(self) -> List['Pattern']:
-        """Get the pattern's child elements."""
+        """Get the pattern's elements (the patterns that make up this pattern)."""
         ...
     
     def is_atomic(self) -> bool:
@@ -331,10 +364,10 @@ class Pattern:
     
     def length(self) -> int:
         """
-        Get the number of direct child elements.
+        Get the number of direct elements in this pattern.
         
         Returns:
-            Number of direct children
+            Number of elements
         """
         ...
     
@@ -356,12 +389,12 @@ class Pattern:
         """
         ...
     
-    def values(self) -> List[str]:
+    def values(self) -> List[Any]:
         """
         Get all values as a flat list (pre-order traversal).
         
         Returns:
-            List of all values in traversal order
+            List of all values (any type) in traversal order
         """
         ...
     
@@ -534,12 +567,12 @@ class Pattern:
         """
         ...
     
-    def extract(self) -> str:
+    def extract(self) -> Any:
         """
         Extract value at current position (comonad operation).
         
         Returns:
-            The pattern's value
+            The pattern's value (can be any type)
         """
         ...
     
@@ -626,14 +659,16 @@ class PatternSubject:
     @staticmethod
     def pattern(subject: Subject, elements: List['PatternSubject']) -> 'PatternSubject':
         """
-        Create a pattern with Subject value and child elements.
+        Create a pattern with Subject value decoration and elements.
+        
+        The subject decorates or describes the pattern represented by the elements.
         
         Args:
-            subject: Subject instance
-            elements: List of child PatternSubject instances
+            subject: Subject instance to use as pattern decoration
+            elements: List of PatternSubject instances that form the pattern
             
         Returns:
-            PatternSubject instance with elements
+            PatternSubject instance with subject decoration and elements
         """
         ...
     
@@ -642,7 +677,7 @@ class PatternSubject:
         ...
     
     def get_elements(self) -> List['PatternSubject']:
-        """Get the pattern's child elements."""
+        """Get the pattern's elements (the patterns that make up this pattern)."""
         ...
     
     def is_atomic(self) -> bool:
@@ -650,7 +685,7 @@ class PatternSubject:
         ...
     
     def length(self) -> int:
-        """Get the number of direct child elements."""
+        """Get the number of direct elements in this pattern."""
         ...
     
     def size(self) -> int:

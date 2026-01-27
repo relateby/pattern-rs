@@ -37,7 +37,7 @@ def example_comonad_extract():
     
     # Extract from nested pattern
     nested = pattern_core.Pattern.pattern("root", [
-        pattern_core.Pattern.point("child")
+        pattern_core.Pattern.point("elem")
     ])
     root_value = nested.extract()
     print(f"Extracted root value: {root_value}")
@@ -129,9 +129,9 @@ def example_indices_at():
     
     # Create pattern
     pattern = pattern_core.Pattern.pattern("root", [
-        pattern_core.Pattern.point("child0"),
-        pattern_core.Pattern.point("child1"),
-        pattern_core.Pattern.point("child2")
+        pattern_core.Pattern.point("elem0"),
+        pattern_core.Pattern.point("elem1"),
+        pattern_core.Pattern.point("elem2")
     ])
     
     print(f"Original structure: {pattern.values()}")
@@ -197,8 +197,8 @@ def example_validation():
     
     # Create pattern
     pattern = pattern_core.Pattern.pattern("root", [
-        pattern_core.Pattern.point("child1"),
-        pattern_core.Pattern.point("child2")
+        pattern_core.Pattern.point("elem1"),
+        pattern_core.Pattern.point("elem2")
     ])
     
     # Create validation rules
