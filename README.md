@@ -67,10 +67,7 @@ gram-rs/
 ├── Cargo.toml              # Workspace root configuration
 ├── crates/
 │   ├── pattern-core/        # Core pattern data structures
-│   ├── pattern-ops/          # Pattern operations and algorithms
-│   ├── gram-codec/          # Gram notation serialization/deserialization
-│   ├── pattern-store/       # Optimized storage (placeholder)
-│   └── pattern-wasm/        # WASM bindings (placeholder)
+│   └── gram-codec/          # Gram notation serialization/deserialization
 └── .github/workflows/       # CI/CD configuration
 ```
 

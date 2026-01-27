@@ -13,6 +13,5 @@ harness = false
 [dependencies]
 criterion = { workspace = true }
 pattern-core = { path = "../crates/pattern-core" }
-pattern-ops = { path = "../crates/pattern-ops" }
 gram-codec = { path = "../crates/gram-codec" }
 
