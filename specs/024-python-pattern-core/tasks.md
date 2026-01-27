@@ -25,11 +25,11 @@
 
 **Purpose**: Project initialization and basic structure
 
-- [ ] T001 Add pyo3 dependency with python feature flag to crates/pattern-core/Cargo.toml
-- [ ] T002 Create crates/pattern-core/pyproject.toml with maturin configuration
-- [ ] T003 [P] Create crates/pattern-core/tests/python/ directory structure
-- [ ] T004 [P] Create crates/pattern-core/pattern_core/ directory for type stubs
-- [ ] T005 [P] Create examples/pattern-core-python/ directory structure
+- [x] T001 Add pyo3 dependency with python feature flag to crates/pattern-core/Cargo.toml
+- [x] T002 Create crates/pattern-core/pyproject.toml with maturin configuration
+- [x] T003 [P] Create crates/pattern-core/tests/python/ directory structure
+- [x] T004 [P] Create crates/pattern-core/pattern_core/ directory for type stubs
+- [x] T005 [P] Create examples/pattern-core-python/ directory structure
 
 ---
 
@@ -39,12 +39,12 @@
 
 **⚠️ CRITICAL**: No user story work can begin until this phase is complete
 
-- [ ] T006 Create crates/pattern-core/src/python.rs module with feature gate
-- [ ] T007 [P] Implement error conversion helpers in crates/pattern-core/src/python.rs (Rust errors → Python exceptions)
-- [ ] T008 [P] Implement type conversion helpers in crates/pattern-core/src/python.rs (Python ↔ Rust types)
-- [ ] T009 Implement Python module initialization function in crates/pattern-core/src/python.rs
-- [ ] T010 Update crates/pattern-core/src/lib.rs to conditionally re-export python module when feature enabled
-- [ ] T011 [P] Create crates/pattern-core/tests/python/conftest.py for pytest configuration
+- [x] T006 Create crates/pattern-core/src/python.rs module with feature gate
+- [x] T007 [P] Implement error conversion helpers in crates/pattern-core/src/python.rs (Rust errors → Python exceptions)
+- [x] T008 [P] Implement type conversion helpers in crates/pattern-core/src/python.rs (Python ↔ Rust types)
+- [x] T009 Implement Python module initialization function in crates/pattern-core/src/python.rs
+- [x] T010 Update crates/pattern-core/src/lib.rs to conditionally re-export python module when feature enabled
+- [x] T011 [P] Create crates/pattern-core/tests/python/conftest.py for pytest configuration
 
 **Checkpoint**: Foundation ready - user story implementation can now begin in parallel
 
@@ -60,23 +60,23 @@
 
 > **NOTE: Write these tests FIRST, ensure they FAIL before implementation**
 
-- [ ] T012 [P] [US1] Create test_pattern_construction in crates/pattern-core/tests/python/test_pattern.py
-- [ ] T013 [P] [US1] Create test_subject_construction in crates/pattern-core/tests/python/test_subject.py
-- [ ] T014 [P] [US1] Create test_pattern_subject_construction in crates/pattern-core/tests/python/test_pattern.py
+- [x] T012 [P] [US1] Create test_pattern_construction in crates/pattern-core/tests/python/test_pattern.py
+- [x] T013 [P] [US1] Create test_subject_construction in crates/pattern-core/tests/python/test_subject.py
+- [x] T014 [P] [US1] Create test_pattern_subject_construction in crates/pattern-core/tests/python/test_pattern.py
 
 ### Implementation for User Story 1
 
-- [ ] T015 [US1] Implement Value Python class with all variants in crates/pattern-core/src/python.rs
-- [ ] T016 [US1] Implement Value automatic conversion from Python types in crates/pattern-core/src/python.rs
-- [ ] T017 [US1] Implement Subject Python class with identity, labels, properties in crates/pattern-core/src/python.rs
-- [ ] T018 [US1] Implement Subject methods (add_label, remove_label, has_label, get_property, set_property, remove_property) in crates/pattern-core/src/python.rs
-- [ ] T019 [US1] Implement Pattern Python class with value and elements attributes in crates/pattern-core/src/python.rs
-- [ ] T020 [US1] Implement Pattern.point static method in crates/pattern-core/src/python.rs
-- [ ] T021 [US1] Implement Pattern.pattern static method in crates/pattern-core/src/python.rs
-- [ ] T022 [US1] Implement Pattern.from_list static method in crates/pattern-core/src/python.rs
-- [ ] T023 [US1] Implement PatternSubject Python class extending Pattern in crates/pattern-core/src/python.rs
-- [ ] T024 [US1] Register all Python classes in module initialization in crates/pattern-core/src/python.rs
-- [ ] T025 [US1] Add docstrings to all Python classes and methods in crates/pattern-core/src/python.rs
+- [x] T015 [US1] Implement Value Python class with all variants in crates/pattern-core/src/python.rs
+- [x] T016 [US1] Implement Value automatic conversion from Python types in crates/pattern-core/src/python.rs
+- [x] T017 [US1] Implement Subject Python class with identity, labels, properties in crates/pattern-core/src/python.rs
+- [x] T018 [US1] Implement Subject methods (add_label, remove_label, has_label, get_property, set_property, remove_property) in crates/pattern-core/src/python.rs
+- [x] T019 [US1] Implement Pattern Python class with value and elements attributes in crates/pattern-core/src/python.rs
+- [x] T020 [US1] Implement Pattern.point static method in crates/pattern-core/src/python.rs
+- [x] T021 [US1] Implement Pattern.pattern static method in crates/pattern-core/src/python.rs
+- [x] T022 [US1] Implement Pattern.from_list static method in crates/pattern-core/src/python.rs
+- [x] T023 [US1] Implement PatternSubject Python class extending Pattern in crates/pattern-core/src/python.rs
+- [x] T024 [US1] Register all Python classes in module initialization in crates/pattern-core/src/python.rs
+- [x] T025 [US1] Add docstrings to all Python classes and methods in crates/pattern-core/src/python.rs
 
 **Checkpoint**: At this point, User Story 1 should be fully functional and testable independently. Python developers can create Pattern and Subject instances programmatically.
 
@@ -90,39 +90,39 @@
 
 ### Tests for User Story 2
 
-- [ ] T026 [P] [US2] Create test_pattern_operations in crates/pattern-core/tests/python/test_operations.py
-- [ ] T027 [P] [US2] Create test_pattern_inspection in crates/pattern-core/tests/python/test_operations.py
-- [ ] T028 [P] [US2] Create test_pattern_queries in crates/pattern-core/tests/python/test_operations.py
-- [ ] T029 [P] [US2] Create test_pattern_combination in crates/pattern-core/tests/python/test_operations.py
-- [ ] T030 [P] [US2] Create test_pattern_comonad in crates/pattern-core/tests/python/test_operations.py
+- [x] T026 [P] [US2] Create test_pattern_operations in crates/pattern-core/tests/python/test_operations.py
+- [x] T027 [P] [US2] Create test_pattern_inspection in crates/pattern-core/tests/python/test_operations.py
+- [x] T028 [P] [US2] Create test_pattern_queries in crates/pattern-core/tests/python/test_operations.py
+- [x] T029 [P] [US2] Create test_pattern_combination in crates/pattern-core/tests/python/test_operations.py
+- [x] T030 [P] [US2] Create test_pattern_comonad in crates/pattern-core/tests/python/test_operations.py
 
 ### Implementation for User Story 2
 
-- [ ] T031 [US2] Implement Pattern.length method in crates/pattern-core/src/python.rs
-- [ ] T032 [US2] Implement Pattern.size method in crates/pattern-core/src/python.rs
-- [ ] T033 [US2] Implement Pattern.depth method in crates/pattern-core/src/python.rs
-- [ ] T034 [US2] Implement Pattern.is_atomic method in crates/pattern-core/src/python.rs
-- [ ] T035 [US2] Implement Pattern.values method in crates/pattern-core/src/python.rs
-- [ ] T036 [US2] Implement Pattern.any_value method with Python callback support in crates/pattern-core/src/python.rs
-- [ ] T037 [US2] Implement Pattern.all_values method with Python callback support in crates/pattern-core/src/python.rs
-- [ ] T038 [US2] Implement Pattern.filter method with Python callback support in crates/pattern-core/src/python.rs
-- [ ] T039 [US2] Implement Pattern.find_first method with Python callback support in crates/pattern-core/src/python.rs
-- [ ] T040 [US2] Implement Pattern.matches method in crates/pattern-core/src/python.rs
-- [ ] T041 [US2] Implement Pattern.contains method in crates/pattern-core/src/python.rs
-- [ ] T042 [US2] Implement Pattern.map method with Python callback support in crates/pattern-core/src/python.rs
-- [ ] T043 [US2] Implement Pattern.fold method with Python callback support in crates/pattern-core/src/python.rs
-- [ ] T044 [US2] Implement Pattern.combine method in crates/pattern-core/src/python.rs
-- [ ] T045 [US2] Implement Pattern.extract method (comonad) in crates/pattern-core/src/python.rs
-- [ ] T046 [US2] Implement Pattern.extend method with Python callback support (comonad) in crates/pattern-core/src/python.rs
-- [ ] T047 [US2] Implement Pattern.depth_at method in crates/pattern-core/src/python.rs
-- [ ] T048 [US2] Implement Pattern.size_at method in crates/pattern-core/src/python.rs
-- [ ] T049 [US2] Implement Pattern.indices_at method in crates/pattern-core/src/python.rs
-- [ ] T050 [US2] Implement Pattern.validate method with ValidationRules in crates/pattern-core/src/python.rs
-- [ ] T051 [US2] Implement Pattern.analyze_structure method returning StructureAnalysis in crates/pattern-core/src/python.rs
-- [ ] T052 [US2] Implement ValidationRules Python class in crates/pattern-core/src/python.rs
-- [ ] T053 [US2] Implement ValidationError Python exception class in crates/pattern-core/src/python.rs
-- [ ] T054 [US2] Implement StructureAnalysis Python class in crates/pattern-core/src/python.rs
-- [ ] T055 [US2] Add docstrings to all new methods in crates/pattern-core/src/python.rs
+- [x] T031 [US2] Implement Pattern.length method in crates/pattern-core/src/python.rs
+- [x] T032 [US2] Implement Pattern.size method in crates/pattern-core/src/python.rs
+- [x] T033 [US2] Implement Pattern.depth method in crates/pattern-core/src/python.rs
+- [x] T034 [US2] Implement Pattern.is_atomic method in crates/pattern-core/src/python.rs
+- [x] T035 [US2] Implement Pattern.values method in crates/pattern-core/src/python.rs
+- [x] T036 [US2] Implement Pattern.any_value method with Python callback support in crates/pattern-core/src/python.rs
+- [x] T037 [US2] Implement Pattern.all_values method with Python callback support in crates/pattern-core/src/python.rs
+- [x] T038 [US2] Implement Pattern.filter method with Python callback support in crates/pattern-core/src/python.rs
+- [x] T039 [US2] Implement Pattern.find_first method with Python callback support in crates/pattern-core/src/python.rs
+- [x] T040 [US2] Implement Pattern.matches method in crates/pattern-core/src/python.rs
+- [x] T041 [US2] Implement Pattern.contains method in crates/pattern-core/src/python.rs
+- [x] T042 [US2] Implement Pattern.map method with Python callback support in crates/pattern-core/src/python.rs
+- [x] T043 [US2] Implement Pattern.fold method with Python callback support in crates/pattern-core/src/python.rs
+- [x] T044 [US2] Implement Pattern.combine method in crates/pattern-core/src/python.rs
+- [x] T045 [US2] Implement Pattern.extract method (comonad) in crates/pattern-core/src/python.rs
+- [x] T046 [US2] Implement Pattern.extend method with Python callback support (comonad) in crates/pattern-core/src/python.rs
+- [x] T047 [US2] Implement Pattern.depth_at method in crates/pattern-core/src/python.rs
+- [x] T048 [US2] Implement Pattern.size_at method in crates/pattern-core/src/python.rs
+- [x] T049 [US2] Implement Pattern.indices_at method in crates/pattern-core/src/python.rs
+- [x] T050 [US2] Implement Pattern.validate method with ValidationRules in crates/pattern-core/src/python.rs
+- [x] T051 [US2] Implement Pattern.analyze_structure method returning StructureAnalysis in crates/pattern-core/src/python.rs
+- [x] T052 [US2] Implement ValidationRules Python class in crates/pattern-core/src/python.rs
+- [x] T053 [US2] Implement ValidationError Python exception class in crates/pattern-core/src/python.rs
+- [x] T054 [US2] Implement StructureAnalysis Python class in crates/pattern-core/src/python.rs
+- [x] T055 [US2] Add docstrings to all new methods in crates/pattern-core/src/python.rs
 
 **Checkpoint**: At this point, User Stories 1 AND 2 should both work independently. Python developers can create patterns and perform operations on them.
 

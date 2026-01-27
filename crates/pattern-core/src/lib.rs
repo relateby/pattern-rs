@@ -174,6 +174,9 @@ pub mod pattern;
 pub mod subject;
 pub mod test_utils;
 
+#[cfg(feature = "python")]
+pub mod python;
+
 pub use pattern::{Pattern, StructureAnalysis, ValidationError, ValidationRules};
 pub use subject::{PropertyRecord, RangeValue, Subject, Symbol, Value};
 
@@ -291,11 +294,377 @@ impl Combinable for () {
     fn combine(self, _other: Self) -> Self {}
 }
 
+// ============================================================================
+// Subject Combination Strategies
+// ============================================================================
+
+/// Combination strategy for Subject that merges labels and properties.
+///
+/// This strategy combines two subjects by:
+/// - Using the identity from the first subject
+/// - Taking the union of labels from both subjects
+/// - Merging properties (values from the second subject overwrite the first)
+///
+/// # Semigroup Laws
+///
+/// This implementation satisfies associativity:
+/// - Identity choice is associative (always picks leftmost)
+/// - Label union is associative (set union is associative)
+/// - Property merge is associative with right-bias (latter values win)
+///
+/// # Examples
+///
+/// ```rust
+/// use pattern_core::{Subject, Symbol, Combinable};
+/// use std::collections::{HashMap, HashSet};
+///
+/// let s1 = Subject {
+///     identity: Symbol("n1".to_string()),
+///     labels: {
+///         let mut s = HashSet::new();
+///         s.insert("Person".to_string());
+///         s
+///     },
+///     properties: HashMap::new(),
+/// };
+///
+/// let s2 = Subject {
+///     identity: Symbol("n2".to_string()),
+///     labels: {
+///         let mut s = HashSet::new();
+///         s.insert("Employee".to_string());
+///         s
+///     },
+///     properties: HashMap::new(),
+/// };
+///
+/// // Merge combines labels and uses first identity
+/// let merged = s1.combine(s2);
+/// assert_eq!(merged.identity.0, "n1");
+/// assert!(merged.labels.contains("Person"));
+/// assert!(merged.labels.contains("Employee"));
+/// ```
+impl Combinable for Subject {
+    fn combine(self, other: Self) -> Self {
+        use std::collections::HashMap;
+        
+        // Keep first identity (leftmost in associative chain)
+        let identity = self.identity;
+        
+        // Union of labels (set union is associative)
+        let labels = self.labels.union(&other.labels).cloned().collect();
+        
+        // Merge properties (right overwrites left)
+        let mut properties = self.properties;
+        properties.extend(other.properties);
+        
+        Subject {
+            identity,
+            labels,
+            properties,
+        }
+    }
+}
+
+/// Newtype wrapper for "first wins" combination strategy.
+///
+/// When combining two FirstSubject instances, the first subject is returned
+/// and the second is discarded. This is useful for scenarios where you want
+/// to keep the initial subject and ignore subsequent ones.
+///
+/// # Semigroup Laws
+///
+/// This satisfies associativity trivially: first(first(a, b), c) = first(a, first(b, c)) = a
+///
+/// # Examples
+///
+/// ```rust
+/// use pattern_core::{Subject, Symbol, Combinable};
+/// use std::collections::HashSet;
+///
+/// let s1 = Subject {
+///     identity: Symbol("alice".to_string()),
+///     labels: HashSet::new(),
+///     properties: Default::default(),
+/// };
+///
+/// let s2 = Subject {
+///     identity: Symbol("bob".to_string()),
+///     labels: HashSet::new(),
+///     properties: Default::default(),
+/// };
+///
+/// // First wins - s2 is discarded
+/// let result = s1.combine(s2);
+/// assert_eq!(result.identity.0, "alice");
+/// ```
+#[derive(Clone, PartialEq)]
+pub struct FirstSubject(pub Subject);
+
+impl Combinable for FirstSubject {
+    fn combine(self, _other: Self) -> Self {
+        self  // Always return first, discard second
+    }
+}
+
+/// Newtype wrapper for "last wins" combination strategy.
+///
+/// When combining two LastSubject instances, the second subject is returned
+/// and the first is discarded. This is useful for scenarios where you want
+/// the most recent subject to take precedence.
+///
+/// # Semigroup Laws
+///
+/// This satisfies associativity trivially: last(last(a, b), c) = last(a, last(b, c)) = c
+///
+/// # Examples
+///
+/// ```rust
+/// use pattern_core::{Subject, Symbol, Combinable};
+/// use std::collections::HashSet;
+///
+/// let s1 = Subject {
+///     identity: Symbol("alice".to_string()),
+///     labels: HashSet::new(),
+///     properties: Default::default(),
+/// };
+///
+/// let s2 = Subject {
+///     identity: Symbol("bob".to_string()),
+///     labels: HashSet::new(),
+///     properties: Default::default(),
+/// };
+///
+/// // Last wins - s1 is discarded
+/// let result = s2.combine(s1);
+/// assert_eq!(result.identity.0, "alice");
+/// ```
+#[derive(Clone, PartialEq)]
+pub struct LastSubject(pub Subject);
+
+impl Combinable for LastSubject {
+    fn combine(self, other: Self) -> Self {
+        other  // Always return second, discard first
+    }
+}
+
+/// Newtype wrapper for "empty" combination strategy that creates anonymous subjects.
+///
+/// When combining two EmptySubject instances, the result is always an anonymous
+/// subject with no labels or properties. This serves as the identity element for
+/// a Monoid-like structure.
+///
+/// # Semigroup Laws
+///
+/// This satisfies associativity trivially: empty(empty(a, b), c) = empty(a, empty(b, c)) = empty
+///
+/// # Monoid Laws
+///
+/// When used with Default, this provides monoid identity:
+/// - Left identity: empty.combine(s) = empty
+/// - Right identity: s.combine(empty) = empty
+///
+/// # Examples
+///
+/// ```rust
+/// use pattern_core::{Subject, Symbol, Combinable};
+/// use std::collections::HashSet;
+///
+/// let s1 = Subject {
+///     identity: Symbol("alice".to_string()),
+///     labels: {
+///         let mut s = HashSet::new();
+///         s.insert("Person".to_string());
+///         s
+///     },
+///     properties: Default::default(),
+/// };
+///
+/// let empty = Subject {
+///     identity: Symbol("_".to_string()),
+///     labels: HashSet::new(),
+///     properties: Default::default(),
+/// };
+///
+/// // Always returns empty (anonymous)
+/// let result = s1.combine(empty);
+/// assert_eq!(result.identity.0, "_");
+/// assert!(result.labels.is_empty());
+/// ```
+#[derive(Clone, PartialEq)]
+pub struct EmptySubject(pub Subject);
+
+impl Combinable for EmptySubject {
+    fn combine(self, _other: Self) -> Self {
+        // Always return anonymous empty subject
+        EmptySubject(Subject {
+            identity: Symbol("_".to_string()),
+            labels: Default::default(),
+            properties: Default::default(),
+        })
+    }
+}
+
+impl Default for EmptySubject {
+    fn default() -> Self {
+        EmptySubject(Subject {
+            identity: Symbol("_".to_string()),
+            labels: Default::default(),
+            properties: Default::default(),
+        })
+    }
+}
+
 #[cfg(test)]
 mod tests {
+    use super::*;
+    use std::collections::{HashMap, HashSet};
+    
     #[test]
-    fn it_works() {
-        // Placeholder test - will be expanded as functionality is ported
-        assert!(true);
+    fn subject_merge_combines_labels_and_properties() {
+        let s1 = Subject {
+            identity: Symbol("n1".to_string()),
+            labels: {
+                let mut s = HashSet::new();
+                s.insert("Person".to_string());
+                s
+            },
+            properties: {
+                let mut m = HashMap::new();
+                m.insert("name".to_string(), Value::VString("Alice".to_string()));
+                m
+            },
+        };
+        
+        let s2 = Subject {
+            identity: Symbol("n2".to_string()),
+            labels: {
+                let mut s = HashSet::new();
+                s.insert("Employee".to_string());
+                s
+            },
+            properties: {
+                let mut m = HashMap::new();
+                m.insert("role".to_string(), Value::VString("Engineer".to_string()));
+                m
+            },
+        };
+        
+        let merged = s1.combine(s2);
+        
+        assert_eq!(merged.identity.0, "n1");
+        assert_eq!(merged.labels.len(), 2);
+        assert!(merged.labels.contains("Person"));
+        assert!(merged.labels.contains("Employee"));
+        assert_eq!(merged.properties.len(), 2);
+    }
+    
+    #[test]
+    fn subject_merge_is_associative() {
+        let s1 = Subject {
+            identity: Symbol("a".to_string()),
+            labels: {
+                let mut s = HashSet::new();
+                s.insert("L1".to_string());
+                s
+            },
+            properties: HashMap::new(),
+        };
+        
+        let s2 = Subject {
+            identity: Symbol("b".to_string()),
+            labels: {
+                let mut s = HashSet::new();
+                s.insert("L2".to_string());
+                s
+            },
+            properties: HashMap::new(),
+        };
+        
+        let s3 = Subject {
+            identity: Symbol("c".to_string()),
+            labels: {
+                let mut s = HashSet::new();
+                s.insert("L3".to_string());
+                s
+            },
+            properties: HashMap::new(),
+        };
+        
+        // (s1 + s2) + s3
+        let left = s1.clone().combine(s2.clone()).combine(s3.clone());
+        
+        // s1 + (s2 + s3)
+        let right = s1.combine(s2.combine(s3));
+        
+        assert_eq!(left.identity, right.identity);
+        assert_eq!(left.labels, right.labels);
+    }
+    
+    #[test]
+    fn first_subject_keeps_first() {
+        let s1 = FirstSubject(Subject {
+            identity: Symbol("alice".to_string()),
+            labels: HashSet::new(),
+            properties: HashMap::new(),
+        });
+        
+        let s2 = FirstSubject(Subject {
+            identity: Symbol("bob".to_string()),
+            labels: HashSet::new(),
+            properties: HashMap::new(),
+        });
+        
+        let result = s1.clone().combine(s2);
+        assert_eq!(result.0.identity.0, "alice");
+    }
+    
+    #[test]
+    fn last_subject_keeps_last() {
+        let s1 = LastSubject(Subject {
+            identity: Symbol("alice".to_string()),
+            labels: HashSet::new(),
+            properties: HashMap::new(),
+        });
+        
+        let s2 = LastSubject(Subject {
+            identity: Symbol("bob".to_string()),
+            labels: HashSet::new(),
+            properties: HashMap::new(),
+        });
+        
+        let result = s1.combine(s2.clone());
+        assert_eq!(result.0.identity.0, "bob");
+    }
+    
+    #[test]
+    fn empty_subject_returns_anonymous() {
+        let s1 = EmptySubject(Subject {
+            identity: Symbol("alice".to_string()),
+            labels: {
+                let mut s = HashSet::new();
+                s.insert("Person".to_string());
+                s
+            },
+            properties: HashMap::new(),
+        });
+        
+        let s2 = EmptySubject(Subject {
+            identity: Symbol("bob".to_string()),
+            labels: HashSet::new(),
+            properties: HashMap::new(),
+        });
+        
+        let result = s1.combine(s2);
+        assert_eq!(result.0.identity.0, "_");
+        assert!(result.0.labels.is_empty());
+        assert!(result.0.properties.is_empty());
+    }
+    
+    #[test]
+    fn empty_subject_is_identity() {
+        let empty = EmptySubject::default();
+        let result = empty.clone().combine(empty);
+        assert_eq!(result.0.identity.0, "_");
     }
 }

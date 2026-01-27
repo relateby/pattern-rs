@@ -11,6 +11,9 @@ description = "Core pattern data structures"
 serde = { workspace = true }
 serde_json = { workspace = true }
 
+# Python support
+pyo3 = { version = "0.23", optional = true, features = ["extension-module"] }
+
 [dev-dependencies]
 proptest = { workspace = true }
 insta = { workspace = true }
@@ -19,6 +22,11 @@ criterion = { version = "0.5", features = ["html_reports"] }
 [lib]
 name = "pattern_core"
 path = "src/lib.rs"
+crate-type = ["cdylib", "rlib"]
+
+[features]
+default = []
+python = ["pyo3"]
 
 [[bench]]
 name = "fold_benchmarks"
