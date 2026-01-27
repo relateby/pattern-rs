@@ -22,6 +22,7 @@ Auto-generated from all feature plans. Last updated: 2025-12-27
 - N/A (parser library, no persistent storage) (021-pure-rust-parser)
 - Rust 1.70.0+ (edition 2021) + Cargo workspace managemen (023-remove-placeholder-crates)
 - N/A (no data persistence involved) (023-remove-placeholder-crates)
+- Python 3.8+ (type hints support), Rust 1.75+ (edition 2021) + PyO3 0.23+ (Rust-Python bindings), maturin (Python packaging), pattern-core crate (existing Rust library) (024-python-pattern-core)
 
 - Rust (MSRV: 1.70.0, edition: 2021) (002-workspace-setup)
 
@@ -41,9 +42,9 @@ cargo test [ONLY COMMANDS FOR ACTIVE TECHNOLOGIES][ONLY COMMANDS FOR ACTIVE TECH
 Rust (MSRV: 1.70.0, edition: 2021): Follow standard conventions
 
 ## Recent Changes
+- 024-python-pattern-core: Added Python 3.8+ (type hints support), Rust 1.75+ (edition 2021) + PyO3 0.23+ (Rust-Python bindings), maturin (Python packaging), pattern-core crate (existing Rust library)
 - 023-remove-placeholder-crates: Added Rust 1.70.0+ (edition 2021) + Cargo workspace managemen
 - 021-pure-rust-parser: Added Rust 1.70.0+ (edition 2021)
-- 019-gram-codec: Added Rust 1.75+ (edition 2021)
 
 
 <!-- MANUAL ADDITIONS START -->
