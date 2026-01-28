@@ -3,14 +3,18 @@ Type safety tests for pattern_core Python bindings.
 
 These tests verify that type hints work correctly with static type checkers
 (mypy, pyright) and that the API provides good type inference.
+
+Note: Some assertions use values that type checkers infer as Optional (e.g. result
+of Value.string, Pattern.point). Those usages are intentional to validate that
+type hints and narrowing work correctly.
 """
 
-import sys
 from typing import List, Optional
+
+import pytest
 
 # These imports will be used by type checkers
 try:
-    import pattern_core
     from pattern_core import (
         Pattern,
         PatternSubject,
@@ -33,6 +37,10 @@ except ImportError:
         def decimal(f: float) -> 'Value': ...
         @staticmethod
         def boolean(b: bool) -> 'Value': ...
+        @staticmethod
+        def symbol(s: str) -> 'Value': ...
+        @staticmethod
+        def array(items: list) -> 'Value': ...
     
     class Subject:  # type: ignore
         def __init__(self, identity: str, labels: Optional[set] = None, properties: Optional[dict] = None): ...
@@ -42,10 +50,14 @@ except ImportError:
         def point(value) -> 'Pattern': ...
         @staticmethod
         def pattern(value, elements: List['Pattern']) -> 'Pattern': ...
+        @staticmethod
+        def from_values(values: list) -> List['Pattern']: ...
     
     class PatternSubject:  # type: ignore
         @staticmethod
         def point(subject: Subject) -> 'PatternSubject': ...
+        @staticmethod
+        def pattern(subject: Subject, elements: list) -> 'PatternSubject': ...
     
     class ValidationRules:  # type: ignore
         def __init__(self, max_depth: Optional[int] = None, max_elements: Optional[int] = None): ...
@@ -55,6 +67,8 @@ except ImportError:
     
     class StructureAnalysis:  # type: ignore
         pass
+
+    pytest.skip("pattern_core not built", allow_module_level=True)
 
 
 def test_value_type_annotations() -> None:

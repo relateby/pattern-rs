@@ -2848,13 +2848,12 @@ impl<V: crate::Combinable> Pattern<V> {
     ) -> Vec<Pattern<V>>
     where
         F: Fn(&Pattern<V>, &Pattern<V>) -> V,
-        V: Clone,
     {
-        left.iter()
-            .zip(right.iter())
+        left.into_iter()
+            .zip(right)
             .map(|(l, r)| {
-                let value = value_fn(l, r);
-                Pattern::pattern(value, vec![l.clone(), r.clone()])
+                let value = value_fn(&l, &r);
+                Pattern::pattern(value, vec![l, r])
             })
             .collect()
     }

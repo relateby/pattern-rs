@@ -18,8 +18,14 @@ import sys
 from typing import List, Optional, Callable, Any
 
 try:
-    import pattern_core
-    from pattern_core import Pattern, PatternSubject, Subject, Value, ValidationRules
+    from pattern_core import (
+    Pattern,
+    PatternSubject,
+    Subject,
+    Value,
+    ValidationError,
+    ValidationRules,
+)
 except ImportError:
     print("ERROR: pattern_core module not found.")
     print("Build it with: cd crates/pattern-core && maturin develop --uv --features python")
@@ -33,13 +39,13 @@ def example_typed_pattern_construction() -> None:
     print("=" * 60)
     
     # Type checkers verify these are Pattern instances
-    atomic: Pattern = pattern_core.Pattern.point("hello")
-    nested: Pattern = pattern_core.Pattern.pattern("root", [atomic])
-    from_list: Pattern = pattern_core.Pattern.from_list("data", ["a", "b", "c"])
+    atomic: Pattern = Pattern.point("hello")
+    nested: Pattern = Pattern.pattern("root", [atomic])
+    from_values_pattern: Pattern = Pattern.pattern("data", Pattern.from_values(["a", "b", "c"]))
     
     print(f"Atomic value: {atomic.value}")
     print(f"Nested length: {nested.length()}")
-    print(f"From list size: {from_list.size()}")
+    print(f"From values size: {from_values_pattern.size()}")
     print()
 
 
@@ -50,12 +56,12 @@ def example_typed_subject_construction() -> None:
     print("=" * 60)
     
     # Type checkers verify parameter types
-    subject: Subject = pattern_core.Subject(
+    subject: Subject = Subject(
         identity="alice",
         labels={"Person", "Employee"},
         properties={
-            "name": pattern_core.Value.string("Alice"),
-            "age": pattern_core.Value.int(30)
+            "name": Value.string("Alice"),
+            "age": Value.int(30)
         }
     )
     
@@ -77,7 +83,7 @@ def example_typed_operations() -> None:
     print("Example 3: Type-Annotated Operations")
     print("=" * 60)
     
-    pattern: Pattern = pattern_core.Pattern.from_list("data", ["a", "b", "c"])
+    pattern: Pattern = Pattern.pattern("data", Pattern.from_values(["a", "b", "c"]))
     
     # Type checkers verify return types
     length: int = pattern.length()
@@ -101,7 +107,7 @@ def example_typed_callbacks() -> None:
     print("Example 4: Type-Annotated Callbacks")
     print("=" * 60)
     
-    pattern: Pattern = pattern_core.Pattern.from_list("data", ["hello", "world"])
+    pattern: Pattern = Pattern.pattern("data", Pattern.from_values(["hello", "world"]))
     
     # Type checker verifies callback signature: Callable[[Any], Any]
     def to_upper(value: Any) -> str:
@@ -133,13 +139,13 @@ def example_typed_pattern_subject() -> None:
     print("=" * 60)
     
     # Create typed Subject
-    subject: Subject = pattern_core.Subject(
+    subject: Subject = Subject(
         identity="alice",
         labels={"Person"}
     )
     
     # Type checkers know this is PatternSubject
-    pattern: PatternSubject = pattern_core.PatternSubject.point(subject)
+    pattern: PatternSubject = PatternSubject.point(subject)
     
     # Type checkers know get_value returns Subject
     value: Subject = pattern.get_value()
@@ -157,7 +163,7 @@ def example_optional_handling() -> None:
     print("Example 6: Optional Type Handling")
     print("=" * 60)
     
-    pattern: Pattern = pattern_core.Pattern.from_list("data", ["a", "b", "c"])
+    pattern: Pattern = Pattern.pattern("data", Pattern.from_values(["a", "b", "c"]))
     
     # Type checker knows find_first returns Optional[Pattern]
     found: Optional[Pattern] = pattern.find_first(lambda p: p.value == "b")
@@ -171,9 +177,9 @@ def example_optional_handling() -> None:
         print("Not found")
     
     # Subject property access with Optional
-    subject: Subject = pattern_core.Subject(
+    subject: Subject = Subject(
         identity="alice",
-        properties={"name": pattern_core.Value.string("Alice")}
+        properties={"name": Value.string("Alice")}
     )
     
     prop: Optional[Value] = subject.get_property("name")
@@ -193,10 +199,10 @@ def example_validation_with_types() -> None:
     print("Example 7: Type-Annotated Validation")
     print("=" * 60)
     
-    pattern: Pattern = pattern_core.Pattern.from_list("data", ["a", "b"])
+    pattern: Pattern = Pattern.pattern("data", Pattern.from_values(["a", "b"]))
     
     # Type checker knows ValidationRules constructor signature
-    rules: ValidationRules = pattern_core.ValidationRules(
+    rules: ValidationRules = ValidationRules(
         max_depth=10,
         max_elements=100
     )
@@ -205,11 +211,11 @@ def example_validation_with_types() -> None:
     try:
         pattern.validate(rules)
         print("Pattern is valid")
-    except pattern_core.ValidationError as e:
+    except ValidationError as e:
         # Type checker knows ValidationError properties
         message: str = e.message
         rule: str = e.rule
-        location: List[str] = e.location
+        location: Optional[str] = e.location
         print(f"Validation failed: {message}")
         print(f"Rule: {rule}, Location: {location}")
     print()
@@ -236,7 +242,7 @@ def example_higher_order_functions() -> None:
     print("=" * 60)
     
     # Create pattern
-    pattern: Pattern = pattern_core.Pattern.from_list("data", ["x", "y", "z"])
+    pattern: Pattern = Pattern.pattern("data", Pattern.from_values(["x", "y", "z"]))
     
     # Get typed processor
     processor: Callable[[Pattern], List[str]] = create_typed_processor()
@@ -261,7 +267,7 @@ def example_generic_transformation() -> None:
         return p.map(transformer)
     
     # Create pattern
-    pattern: Pattern = pattern_core.Pattern.from_list("data", ["a", "b", "c"])
+    pattern: Pattern = Pattern.pattern("data", Pattern.from_values(["a", "b", "c"]))
     
     # Transform with uppercase
     upper: Pattern = transform_pattern(pattern, str.upper)
@@ -280,7 +286,7 @@ def example_type_narrowing() -> None:
     print("=" * 60)
     
     # Create pattern
-    pattern: Pattern = pattern_core.Pattern.point("test")
+    pattern: Pattern = Pattern.point("test")
     
     # Type checker understands conditional type narrowing
     found: Optional[Pattern] = pattern.find_first(lambda p: True)
@@ -291,7 +297,7 @@ def example_type_narrowing() -> None:
         print(f"Found (type narrowed): {val}")
     
     # Type narrowing with isinstance
-    subject: Subject = pattern_core.Subject(identity="test")
+    subject: Subject = Subject(identity="test")
     prop: Optional[Value] = subject.get_property("key")
     
     if prop is not None:
@@ -300,7 +306,7 @@ def example_type_narrowing() -> None:
         try:
             s: str = prop.as_string()
             print(f"Property value: {s}")
-        except:
+        except (TypeError, ValueError):
             print("Property exists but is not a string")
     print()
 

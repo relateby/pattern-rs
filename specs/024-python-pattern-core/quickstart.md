@@ -219,7 +219,7 @@ result: List[str] = process_pattern(pattern)  # Type checker validates types
 import pattern_core
 
 # Create pattern from list of values
-pattern = pattern_core.Pattern.from_list("root", ["a", "b", "c"])
+pattern = pattern_core.Pattern.pattern("root", pattern_core.Pattern.from_values(["a", "b", "c"]))
 
 print(pattern.value)  # "root"
 print(pattern.length())  # 3

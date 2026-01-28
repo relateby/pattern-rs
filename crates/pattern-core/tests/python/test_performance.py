@@ -20,7 +20,7 @@ class TestConstructionPerformance:
         
         start = time.time()
         for i in range(iterations):
-            p = Pattern.point(i)
+            _ = Pattern.point(i)
         elapsed = time.time() - start
         
         # Should complete in reasonable time (< 1 second for 1000 iterations)
@@ -33,9 +33,9 @@ class TestConstructionPerformance:
         
         start = time.time()
         for i in range(iterations):
-            p = Pattern.point(i)
+            node = Pattern.point(i)
             for j in range(10):
-                p = Pattern.pattern(j, [p])
+                node = Pattern.pattern(j, [node])
         elapsed = time.time() - start
         
         # Should complete in reasonable time
@@ -50,7 +50,7 @@ class TestConstructionPerformance:
         start = time.time()
         for i in range(iterations):
             data = list(range(list_size))
-            p = Pattern.pattern("root", Pattern.from_values(data))
+            _ = Pattern.pattern("root", Pattern.from_values(data))
         elapsed = time.time() - start
         
         # Should complete in reasonable time
@@ -68,7 +68,7 @@ class TestOperationPerformance:
         p = Pattern.pattern("root", Pattern.from_values(list(range(size))))
         
         start = time.time()
-        result = p.map(lambda x: x * 2)
+        _ = p.map(lambda x: x * 2)
         elapsed = time.time() - start
         
         # Should complete in reasonable time (< 100ms for 1000 elements)
@@ -81,7 +81,7 @@ class TestOperationPerformance:
         p = Pattern.pattern("root", Pattern.from_values(list(range(size))))
         
         start = time.time()
-        result = p.filter(lambda x: x % 2 == 0)
+        _ = p.filter(lambda x: x % 2 == 0)
         elapsed = time.time() - start
         
         # Should complete in reasonable time
@@ -94,7 +94,7 @@ class TestOperationPerformance:
         p = Pattern.pattern("root", Pattern.from_values(list(range(size))))
         
         start = time.time()
-        result = p.fold(0, lambda acc, x: acc + 1)
+        _ = p.fold(0, lambda acc, x: acc + 1)
         elapsed = time.time() - start
         
         # Should complete in reasonable time
@@ -128,7 +128,7 @@ class TestSubjectPerformance:
         
         start = time.time()
         for i in range(iterations):
-            s = Subject(f"subj-{i}")
+            _ = Subject(f"subj-{i}")
         elapsed = time.time() - start
         
         # Should complete in reasonable time
@@ -180,21 +180,21 @@ class TestLargeStructurePerformance:
         
         # Test length
         start = time.time()
-        length = p.length()
+        _ = p.length()
         elapsed_length = time.time() - start
-        assert length == size
+        assert p.length() == size
         
         # Test size
         start = time.time()
-        size_val = p.size()
+        _ = p.size()
         elapsed_size = time.time() - start
-        assert size_val >= size
+        assert p.size() >= size
         
         # Test depth
         start = time.time()
-        depth = p.depth()
+        _ = p.depth()
         elapsed_depth = time.time() - start
-        assert depth >= 0
+        assert p.depth() >= 0
         
         # All operations should be fast (< 10ms)
         assert elapsed_length < 0.01
@@ -213,13 +213,13 @@ class TestLargeStructurePerformance:
         
         # Map operation
         start = time.time()
-        result = p.map(lambda x: x * 2)
+        transformed = p.map(lambda x: x * 2)
         elapsed = time.time() - start
         
         # Should maintain < 2x overhead target
         # For 1000 elements, should complete in < 200ms
         assert elapsed < 0.2
-        assert result.length() == size
+        assert transformed.length() == size
         
         print(f"\nLarge pattern transformation ({size} nodes): {elapsed*1000:.2f}ms")
     
@@ -236,12 +236,12 @@ class TestLargeStructurePerformance:
         
         # Extract from deep structure
         extract_start = time.time()
-        value = p.extract()
+        _ = p.extract()
         extract_elapsed = time.time() - extract_start
         
         # Depth query
         depth_start = time.time()
-        d = p.depth()
+        _ = p.depth()
         depth_elapsed = time.time() - depth_start
         
         # All operations should complete in reasonable time
@@ -277,14 +277,14 @@ class TestComplexWorkflowPerformance:
         
         # Query graph
         query_start = time.time()
-        length = graph.length()
-        size = graph.size()
-        depth = graph.depth()
+        _ = graph.length()
+        _ = graph.size()
+        _ = graph.depth()
         query_elapsed = time.time() - query_start
         
         # Transform graph
         transform_start = time.time()
-        transformed = graph.map(lambda x: x)
+        _ = graph.map(lambda x: x)
         transform_elapsed = time.time() - transform_start
         
         # Should complete in reasonable time

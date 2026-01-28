@@ -20,9 +20,10 @@ A recursive, nested structure (s-expression-like) that can hold any value type.
 - `elements` (List[Pattern]): List of child patterns (empty for atomic patterns)
 
 **Construction**:
+- `Pattern.of(value)` → `Pattern`: Create atomic pattern (alias for point)
 - `Pattern.point(value)` → `Pattern`: Create atomic pattern (no elements)
 - `Pattern.pattern(value, elements)` → `Pattern`: Create pattern with elements
-- `Pattern.from_list(value, values)` → `Pattern`: Create pattern from list of values
+- `Pattern.from_values(values)` → `List[Pattern]`: Convert list of values to list of patterns (lift each via point)
 
 **Inspection Methods**:
 - `length()` → `int`: Number of direct elements
@@ -144,10 +145,9 @@ Configuration for pattern validation.
 **Attributes**:
 - `max_depth` (Optional[int]): Maximum allowed nesting depth
 - `max_elements` (Optional[int]): Maximum allowed elements per pattern
-- `max_size` (Optional[int]): Maximum total nodes in pattern
 
 **Construction**:
-- `ValidationRules(max_depth: Optional[int] = None, max_elements: Optional[int] = None, max_size: Optional[int] = None)` → `ValidationRules`
+- `ValidationRules(max_depth: Optional[int] = None, max_elements: Optional[int] = None)` → `ValidationRules`
 
 ### ValidationError
 
@@ -168,7 +168,7 @@ Result of pattern structure analysis.
 
 **Attributes**:
 - `summary` (str): Human-readable summary
-- `depth_distribution` (Dict[int, int]): Count of nodes at each depth
+- `depth_distribution` (List[int]): Count of nodes at each depth (index = depth)
 - `element_counts` (List[int]): Element counts at each level
 - `nesting_patterns` (List[str]): Description of nesting patterns
 

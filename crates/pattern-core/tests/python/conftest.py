@@ -2,8 +2,6 @@
 Pytest configuration for pattern-core Python tests
 """
 import pytest
-import sys
-import os
 
 # Add the pattern-core module to the path if needed
 # This will be updated once the module is built and installed

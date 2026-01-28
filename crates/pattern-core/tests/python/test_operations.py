@@ -1,14 +1,11 @@
 """
 Tests for Pattern operations (inspection, queries, transformations, combination, comonad)
 """
-import pytest
 import pattern_core
 
 
 def test_pattern_inspection():
     """Test Pattern inspection methods (length, size, depth, is_atomic, values)"""
-    import pattern_core
-    
     # Atomic pattern
     atomic = pattern_core.Pattern.point("hello")
     assert atomic.length() == 0
@@ -37,8 +34,6 @@ def test_pattern_inspection():
 
 def test_pattern_queries():
     """Test Pattern query methods (any_value, all_values, filter, find_first, matches, contains)"""
-    import pattern_core
-    
     # Create test pattern
     pattern = pattern_core.Pattern.pattern("root", [
         pattern_core.Pattern.point("hello"),
@@ -77,8 +72,6 @@ def test_pattern_queries():
 
 def test_pattern_transformations():
     """Test Pattern transformation methods (map, fold)"""
-    import pattern_core
-    
     # Create test pattern
     pattern = pattern_core.Pattern.pattern("hello", [
         pattern_core.Pattern.point("world"),
@@ -98,8 +91,6 @@ def test_pattern_transformations():
 
 def test_pattern_combination():
     """Test Pattern combination method"""
-    import pattern_core
-    
     # Combine atomic patterns
     p1 = pattern_core.Pattern.point("hello")
     p2 = pattern_core.Pattern.point(" world")
@@ -123,8 +114,6 @@ def test_pattern_combination():
 
 def test_pattern_comonad():
     """Test Pattern comonad operations (extract, extend, depth_at, size_at, indices_at)"""
-    import pattern_core
-    
     # Create test pattern
     pattern = pattern_core.Pattern.pattern("root", [
         pattern_core.Pattern.pattern("a", [
@@ -162,8 +151,6 @@ def test_pattern_comonad():
 
 def test_pattern_subject_operations():
     """Test PatternSubject operations"""
-    import pattern_core
-    
     # Create PatternSubject
     subject1 = pattern_core.Subject(
         identity="alice",

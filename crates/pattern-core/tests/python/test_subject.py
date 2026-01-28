@@ -1,7 +1,6 @@
 """
 Tests for Subject construction and operations
 """
-import pytest
 
 
 def test_subject_construction():

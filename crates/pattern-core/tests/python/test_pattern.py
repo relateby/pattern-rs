@@ -1,7 +1,6 @@
 """
 Tests for Pattern construction and basic operations
 """
-import pytest
 
 
 def test_pattern_point():

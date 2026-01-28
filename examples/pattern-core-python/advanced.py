@@ -11,7 +11,6 @@ Demonstrates:
 """
 
 import sys
-from typing import List, Dict, Any
 
 try:
     import pattern_core
@@ -369,6 +368,7 @@ def example_social_graph():
     
     print("Social Network:")
     print(f"  Alice knows {alice_graph.length()} people")
+    print(f"  Charlie's network: {charlie_with_friends.size()} people")
     print(f"  Total people in Alice's network: {alice_graph.size()}")
     
     # Query: Find all developers
@@ -396,9 +396,9 @@ def example_data_pipeline():
     print("=" * 60)
     
     # Create data pattern
-    data = pattern_core.Pattern.from_list("data", [
+    data = pattern_core.Pattern.pattern("data", pattern_core.Pattern.from_values([
         "apple", "banana", "cherry", "date", "elderberry", "fig", "grape"
-    ])
+    ]))
     
     print(f"Input data: {data.values()[1:]}")  # Skip root "data"
     

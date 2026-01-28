@@ -26,7 +26,7 @@ def example_map():
     print("=" * 60)
     
     # Create pattern
-    pattern = pattern_core.Pattern.from_list("hello", ["world", "python", "patterns"])
+    pattern = pattern_core.Pattern.pattern("hello", pattern_core.Pattern.from_values(["world", "python", "patterns"]))
     
     print(f"Original values: {pattern.values()}")
     
@@ -47,7 +47,7 @@ def example_filter():
     print("=" * 60)
     
     # Create pattern
-    pattern = pattern_core.Pattern.from_list("numbers", ["1", "2", "3", "4", "5"])
+    pattern = pattern_core.Pattern.pattern("numbers", pattern_core.Pattern.from_values(["1", "2", "3", "4", "5"]))
     
     print(f"All values: {pattern.values()}")
     
@@ -68,7 +68,7 @@ def example_any_all():
     print("=" * 60)
     
     # Create pattern
-    pattern = pattern_core.Pattern.from_list("data", ["apple", "apricot", "avocado"])
+    pattern = pattern_core.Pattern.pattern("data", pattern_core.Pattern.from_values(["apple", "apricot", "avocado"]))
     
     print(f"Values: {pattern.values()}")
     
@@ -93,9 +93,9 @@ def example_find_first():
     print("=" * 60)
     
     # Create pattern
-    pattern = pattern_core.Pattern.from_list("fruits", [
+    pattern = pattern_core.Pattern.pattern("fruits", pattern_core.Pattern.from_values([
         "apple", "banana", "cherry", "date", "elderberry"
-    ])
+    ]))
     
     print(f"All fruits: {pattern.values()}")
     
@@ -341,9 +341,9 @@ def example_complex_transformation():
     print("=" * 60)
     
     # Create data pattern
-    data = pattern_core.Pattern.from_list("data", [
+    data = pattern_core.Pattern.pattern("data", pattern_core.Pattern.from_values([
         "apple", "banana", "cherry", "date", "elderberry", "fig"
-    ])
+    ]))
     
     print(f"Original data: {data.values()[1:]}")  # Skip root "data"
     

@@ -19,6 +19,11 @@ class Pattern:
     elements: List[Pattern]
     
     @staticmethod
+    def of(value: Any) -> Pattern:
+        """Create atomic pattern (alias for point)."""
+        ...
+    
+    @staticmethod
     def point(value: Any) -> Pattern:
         """Create atomic pattern (no elements)."""
         ...
@@ -29,8 +34,8 @@ class Pattern:
         ...
     
     @staticmethod
-    def from_list(value: Any, values: List[Any]) -> Pattern:
-        """Create pattern from list of values."""
+    def from_values(values: List[Any]) -> List[Pattern]:
+        """Convert list of values to list of patterns (each value lifted via point)."""
         ...
     
     def length(self) -> int:
@@ -259,13 +264,11 @@ Configuration for pattern validation.
 class ValidationRules:
     max_depth: Optional[int]
     max_elements: Optional[int]
-    max_size: Optional[int]
     
     def __init__(
         self,
         max_depth: Optional[int] = None,
-        max_elements: Optional[int] = None,
-        max_size: Optional[int] = None
+        max_elements: Optional[int] = None
     ) -> None:
         """Create validation rules."""
         ...
@@ -278,7 +281,7 @@ Result of pattern structure analysis.
 ```python
 class StructureAnalysis:
     summary: str
-    depth_distribution: Dict[int, int]
+    depth_distribution: List[int]  # Count of nodes at each depth (index = depth)
     element_counts: List[int]
     nesting_patterns: List[str]
 ```

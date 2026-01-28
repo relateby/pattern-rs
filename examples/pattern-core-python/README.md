@@ -74,7 +74,7 @@ print(f"Identity: {pattern.get_value().identity}")  # "alice"
 
 ```python
 # Map: Transform all values to uppercase
-pattern = pattern_core.Pattern.from_list("hello", ["world", "python"])
+pattern = pattern_core.Pattern.pattern("hello", pattern_core.Pattern.from_values(["world", "python"]))
 upper = pattern.map(str.upper)
 print(upper.values())  # ["HELLO", "WORLD", "PYTHON"]
 ```
@@ -83,7 +83,7 @@ print(upper.values())  # ["HELLO", "WORLD", "PYTHON"]
 
 ```python
 # Filter: Find patterns matching predicate
-pattern = pattern_core.Pattern.from_list("root", ["a", "b", "c"])
+pattern = pattern_core.Pattern.pattern("root", pattern_core.Pattern.from_values(["a", "b", "c"]))
 filtered = pattern.filter(lambda p: p.value in ["a", "c"])
 print(f"Filtered count: {len(filtered)}")  # 2
 ```

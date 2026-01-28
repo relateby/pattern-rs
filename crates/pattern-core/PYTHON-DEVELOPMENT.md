@@ -26,7 +26,7 @@ Python bindings for pattern-core have been implemented to enable Python develope
 - [x] Subject Python class with identity, labels, properties
 - [x] Subject methods (add_label, remove_label, has_label, get/set/remove_property)
 - [x] Pattern Python class with value and elements attributes
-- [x] Pattern.point, Pattern.pattern, Pattern.from_list static methods
+- [x] Pattern.of, Pattern.point, Pattern.pattern, Pattern.from_values static methods
 - [x] PatternSubject Python class extending Pattern
 - [x] All classes registered in module initialization
 - [x] Comprehensive docstrings
@@ -204,7 +204,7 @@ subject = pattern_core.Subject(
 # Pattern (recursive tree structure)
 pattern = pattern_core.Pattern.point("hello")
 pattern = pattern_core.Pattern.pattern("root", [child1, child2])
-pattern = pattern_core.Pattern.from_list("data", ["a", "b", "c"])
+pattern = pattern_core.Pattern.pattern("data", pattern_core.Pattern.from_values(["a", "b", "c"]))
 
 # PatternSubject (Pattern specialized for Subject)
 pattern = pattern_core.PatternSubject.point(subject)

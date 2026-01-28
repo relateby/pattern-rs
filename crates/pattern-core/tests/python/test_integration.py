@@ -8,7 +8,7 @@ Tests complete workflows combining multiple features:
 """
 
 import pytest
-from pattern_core import Pattern, PatternSubject, Subject, Value
+from pattern_core import Pattern, PatternSubject, Subject
 
 
 class TestCompleteWorkflow:

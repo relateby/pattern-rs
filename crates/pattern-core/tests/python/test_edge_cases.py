@@ -7,7 +7,7 @@ Tests for:
 """
 
 import pytest
-from pattern_core import Pattern, PatternSubject, Subject, Value
+from pattern_core import Pattern, PatternSubject, Subject
 
 
 class TestNoneValueHandling:
