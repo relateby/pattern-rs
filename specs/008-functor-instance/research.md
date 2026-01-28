@@ -177,7 +177,7 @@ where
 1. **Standard library convention**: All Rust types use `map`, not `fmap`
 2. **Developer expectations**: Rust developers expect `map` methods
 3. **Discoverability**: IDE autocomplete will suggest `map` for transformations
-4. **Idiomatic Rust**: Per PORTING_GUIDE.md, prefer Rust idioms over Haskell syntax
+4. **Idiomatic Rust**: Per docs/porting-guide.md, prefer Rust idioms over Haskell syntax
 5. **No confusion**: No other `map` method exists on Pattern that would conflict
 
 **Alternatives Considered**:
@@ -295,5 +295,5 @@ The design is ready for Phase 1 (detailed design and contracts).
 
 4. **Standard library is the guide**: When in doubt, follow what Rust's standard library does (`Option::map`, `Result::map`)
 
-This research supports the core principle from PORTING_GUIDE.md: **port concepts and behavior, not syntax**.
+This research supports the core principle from docs/porting-guide.md: **port concepts and behavior, not syntax**.
 

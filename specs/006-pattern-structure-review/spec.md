@@ -155,7 +155,7 @@ A developer needs to verify that pattern validation and structure analysis funct
 
 - **gram-hs Design Documents** (Context Only): `../gram-hs/specs/003-pattern-structure-review/`
   - Feature Specification: `../gram-hs/specs/003-pattern-structure-review/spec.md` (for context, may be outdated)
-- **Porting Guide**: `PORTING_GUIDE.md` - Systematic approach for porting from gram-hs (includes Library vs CLI distinction)
+- **Porting Guide**: `docs/porting-guide.md` - Systematic approach for porting from gram-hs (includes Library vs CLI distinction)
 - **Project Plan**: `docs/gram-rs-project-plan.md` - Overall architecture and design decisions
 - **TODO**: `TODO.md` - Feature tracking and porting checklist
 

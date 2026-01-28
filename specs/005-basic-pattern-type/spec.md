@@ -160,7 +160,7 @@ A developer needs to verify that pattern construction, access, and inspection fu
 - **Secondary Source (Context Only)**: gram-hs Design Documents: `../gram-hs/specs/002-basic-pattern-type/`
   - Feature Specification: `../gram-hs/specs/002-basic-pattern-type/spec.md` (for context, may be outdated)
   - Type Signatures: `../gram-hs/specs/002-basic-pattern-type/contracts/type-signatures.md` (for context, verify against actual code)
-- **Porting Guide**: `PORTING_GUIDE.md` - Systematic approach for porting from gram-hs
+- **Porting Guide**: `docs/porting-guide.md` - Systematic approach for porting from gram-hs
 - **Project Plan**: `docs/gram-rs-project-plan.md` - Overall architecture and design decisions
 - **TODO**: `TODO.md` - Feature tracking and porting checklist
 

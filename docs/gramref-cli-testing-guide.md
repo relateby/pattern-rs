@@ -320,7 +320,7 @@ echo '(node1)' | gramref parse --format json --deterministic --canonical > snaps
 - **Test Sync Format**: `specs/002-workspace-setup/contracts/test-sync-format.md`
 - **Test Utilities API**: `specs/003-test-infrastructure/contracts/test-utilities-api.md`
 - **Testing Infrastructure**: `specs/003-test-infrastructure/`
-- **Porting Guide**: `PORTING_GUIDE.md` - Distinction between library and CLI tool
+- **Porting Guide**: [porting-guide.md](porting-guide.md) - Distinction between library and CLI tool
 
 ---
 

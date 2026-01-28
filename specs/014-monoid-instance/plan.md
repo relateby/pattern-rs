@@ -83,7 +83,7 @@ Implement identity element support for Pattern<V> by adding a `Default` trait im
 - **Status**: Future consideration
 - **Justification**: Default patterns are internal to Rust; WASM bindings may expose default pattern functionality in future if needed for JavaScript interop
 
-**Note**: When porting features from gram-hs, reference the local implementation at `../gram-hs` and corresponding feature specifications in `../gram-hs/specs/`. See [PORTING_GUIDE.md](../../../PORTING_GUIDE.md) for detailed porting instructions.
+**Note**: When porting features from gram-hs, reference the local implementation at `../gram-hs` and corresponding feature specifications in `../gram-hs/specs/`. See [porting guide](../../../docs/porting-guide.md) for detailed porting instructions.
 
 ## Project Structure
 
@@ -416,7 +416,7 @@ Expected tasks will include:
 - **Haskell Source**: `../gram-hs/libs/pattern/src/Pattern.hs` (Monoid instance)
 - **Haskell Spec**: `../gram-hs/specs/011-monoid-instance/` (development notes)
 - **Rust Default**: https://doc.rust-lang.org/std/default/trait.Default.html
-- **Porting Guide**: `../../../PORTING_GUIDE.md`
+- **Porting Guide**: `../../../docs/porting-guide.md`
 - **Feature 013 Plan**: `../013-semigroup-instance/plan.md` (Semigroup/Combinable)
 
 ## Next Steps

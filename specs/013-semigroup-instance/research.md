@@ -404,5 +404,5 @@ Provide Combinable implementations for common types:
 - **Haskell Spec**: `../gram-hs/specs/010-semigroup-instance/` (for context)
 - **Rust API Guidelines**: https://rust-lang.github.io/api-guidelines/
 - **Vec extend**: https://doc.rust-lang.org/std/vec/struct.Vec.html#method.extend
-- **Porting Guide**: `../../../PORTING_GUIDE.md`
+- **Porting Guide**: `../../../docs/porting-guide.md`
 

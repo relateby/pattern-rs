@@ -87,7 +87,7 @@ Port pattern validation functions and structure analysis utilities from gram-hs 
 - **Verification**: WASM bindings are out of scope for this feature
 - **Plan**: Functions must compile for WASM but bindings deferred to later features
 
-**Note**: When porting features from gram-hs, **always use the Haskell implementation in `../gram-hs/libs/` as the authoritative source of truth**. Design documents in `../gram-hs/specs/` are useful for context but may contain outdated information or design mistakes that were corrected in the actual implementation. See [PORTING_GUIDE.md](../../../PORTING_GUIDE.md) for detailed porting instructions.
+**Note**: When porting features from gram-hs, **always use the Haskell implementation in `../gram-hs/libs/` as the authoritative source of truth**. Design documents in `../gram-hs/specs/` are useful for context but may contain outdated information or design mistakes that were corrected in the actual implementation. See [porting guide](../../../docs/porting-guide.md) for detailed porting instructions.
 
 ## Project Structure
 

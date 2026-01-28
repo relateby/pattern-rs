@@ -58,7 +58,7 @@ Convert the gram-rs project from a single crate structure to a Cargo workspace w
 
 **Gate Status**: ✅ **ALL GATES PASS** - Workspace setup aligns with all constitutional principles and enables future compliance.
 
-**Note**: When porting features from gram-hs, reference the local implementation at `../gram-hs` and corresponding feature specifications in `../gram-hs/specs/`. See [PORTING_GUIDE.md](../../../PORTING_GUIDE.md) for detailed porting instructions.
+**Note**: When porting features from gram-hs, reference the local implementation at `../gram-hs` and corresponding feature specifications in `../gram-hs/specs/`. See [porting guide](../../../docs/porting-guide.md) for detailed porting instructions.
 
 ## Project Structure
 

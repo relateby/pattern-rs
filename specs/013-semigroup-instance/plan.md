@@ -77,7 +77,7 @@ Implement associative combination operations for Pattern<V> to enable merging tw
 - **Status**: Future consideration
 - **Justification**: Combination operations are internal to Rust; WASM bindings may expose combination functionality in future if needed
 
-**Note**: When porting features from gram-hs, reference the local implementation at `../gram-hs` and corresponding feature specifications in `../gram-hs/specs/`. See [PORTING_GUIDE.md](../../../PORTING_GUIDE.md) for detailed porting instructions.
+**Note**: When porting features from gram-hs, reference the local implementation at `../gram-hs` and corresponding feature specifications in `../gram-hs/specs/`. See [porting guide](../../../docs/porting-guide.md) for detailed porting instructions.
 
 ## Project Structure
 
@@ -370,4 +370,4 @@ Expected tasks will include:
 - **Haskell Source**: `../gram-hs/libs/pattern/src/Pattern.hs` (Semigroup instance)
 - **Haskell Spec**: `../gram-hs/specs/010-semigroup-instance/` (development notes)
 - **Rust Idioms**: https://rust-lang.github.io/api-guidelines/
-- **Porting Guide**: `../../../PORTING_GUIDE.md`
+- **Porting Guide**: `../../../docs/porting-guide.md`

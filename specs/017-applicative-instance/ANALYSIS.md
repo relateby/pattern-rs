@@ -329,5 +329,5 @@ Add a documentation section explaining how to achieve Applicative-like operation
 - **Haskell Implementation**: `../gram-hs/libs/pattern/src/Pattern/Core.hs` (lines 670-676)
 - **Haskell Tests**: `../gram-hs/libs/pattern/tests/Spec/Pattern/Properties.hs` (lines 1075-1189)
 - **Feature Spec**: `../gram-hs/specs/013-applicative-instance/spec.md` (Note: spec semantics don't match implementation)
-- **Porting Guide**: `PORTING_GUIDE.md` - Idiomatic Rust principles
+- **Porting Guide**: `docs/porting-guide.md` - Idiomatic Rust principles
 

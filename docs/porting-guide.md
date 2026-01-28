@@ -35,7 +35,7 @@ The gram-hs reference implementation is available locally at:
 - **Read** from the **library** (`../gram-hs/libs/`) when implementing functionality
 - **Execute** the **CLI tool** (`gramref`) when testing that functionality
 
-For detailed usage of the `gramref` CLI tool, see: `docs/gramref-cli-testing-guide.md`
+For detailed usage of the `gramref` CLI tool, see: [gramref-cli-testing-guide.md](gramref-cli-testing-guide.md)
 
 ## Core Principle: Idiomatic Rust vs Literal Translation
 
@@ -272,7 +272,7 @@ Port test cases from `../gram-hs/libs/*/tests/`:
 1. Create test file in `tests/equivalence/` or `tests/integration/`
 2. Port test cases maintaining the same test data and expected outputs
    - **Tip**: Use `gramref generate --type suite` to generate test cases in the correct format
-   - See [gramref CLI Testing Guide](docs/gramref-cli-testing-guide.md) for test suite generation
+   - See [gramref CLI Testing Guide](gramref-cli-testing-guide.md) for test suite generation
 3. Run tests (they should fail initially)
 4. Implement functionality to make tests pass
 
@@ -285,7 +285,7 @@ gramref generate --type suite --count 100 --seed 42 --complexity standard \
     --format json --value-only > tests/common/test_cases.json
 ```
 
-See [gramref CLI Testing Guide](docs/gramref-cli-testing-guide.md) for more details on test case generation and extraction.
+See [gramref CLI Testing Guide](gramref-cli-testing-guide.md) for more details on test case generation and extraction.
 
 ### 6. Implement Functionality (Idiomatically)
 
@@ -312,7 +312,7 @@ Before marking complete:
 
 1. **Compare outputs**: Run both implementations on same inputs
    - Use `gramref` CLI tool with `--value-only` and `--canonical` flags for reliable comparison
-   - See [gramref CLI Testing Guide](docs/gramref-cli-testing-guide.md) for detailed usage
+   - See [gramref CLI Testing Guide](gramref-cli-testing-guide.md) for detailed usage
 2. **Check edge cases**: Ensure all edge cases from gram-hs tests pass
 3. **Verify documentation**: Ensure Rust docs match Haskell semantics
 4. **Test WASM compilation**: Verify `cargo build --target wasm32-unknown-unknown`
@@ -324,7 +324,7 @@ The `gramref` CLI tool provides several flags that make equivalence checking eas
 - `--deterministic`: Use fixed timestamp and hash for reproducible outputs
 - `--canonical`: Sort JSON keys for byte-for-byte identical output
 
-See [gram-hs CLI Testing Guide](docs/gram-hs-cli-testing-guide.md) for comprehensive examples and integration patterns.
+See [gramref CLI Testing Guide](gramref-cli-testing-guide.md) for comprehensive examples and integration patterns.
 
 ### 8. Update Examples
 
@@ -434,7 +434,7 @@ The primary goal is **behavioral equivalence** - ensuring that the Rust implemen
 2. **Breaking Changes**: When gram-hs introduces breaking API changes, adopt them to maintain equivalence
    - Example: gram-hs changed from `pattern :: v -> Pattern v` to `point :: v -> Pattern v` for atomic patterns
    - Example: gram-hs changed from `patternWith :: v -> [Pattern v] -> Pattern v` to `pattern :: v -> [Pattern v] -> Pattern v` for the primary constructor
-   - Always update Rust implementation to match the current gram-hs API
+   - Always update Rust implementation to match current gram-hs API
 
 3. **Documentation**: Clearly document the API and its relationship to gram-hs
    - Note which functions match gram-hs exactly
@@ -540,10 +540,9 @@ Each feature directory in `specs/` contains (historical notes for context only, 
 - **gram-hs Repository**: https://github.com/gram-data/gram-hs
 - **Local Reference**: `../gram-hs`
 - **gram-hs CLI Tool**: `/Users/akollegger/.cabal/bin/gram-hs` (or `gram-hs` if in PATH)
-  - **Testing Guide**: [gram-hs CLI Testing Guide](docs/gram-hs-cli-testing-guide.md) - Comprehensive guide for using gram-hs CLI for testing and equivalence checking
+  - **Testing Guide**: [gramref CLI Testing Guide](gramref-cli-testing-guide.md) - Comprehensive guide for using gramref CLI for testing and equivalence checking
   - **Manpage**: `/Users/akollegger/.cabal/share/man/man1/gram-hs.1` or `man gram-hs`
 - **Constitution**: `.specify/memory/constitution.md`
 - **Rust Book**: https://doc.rust-lang.org/book/
 - **Haskell → Rust Patterns**: See translation guide above
-- **Testing Infrastructure**: [Testing Infrastructure Guide](docs/testing-infrastructure.md) - Overview of testing tools and utilities
-
+- **Testing Infrastructure**: [Testing Infrastructure Guide](testing-infrastructure.md) - Overview of testing tools and utilities

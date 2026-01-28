@@ -70,7 +70,7 @@ Establish comprehensive testing infrastructure for gram-rs including property-ba
 ### V. External Language Bindings & Examples
 ✅ **PASS**: Testing infrastructure is internal to the Rust codebase and does not directly affect external language bindings. However, ensuring correctness through testing indirectly supports reliable external bindings.
 
-**Note**: When porting features from gram-hs, reference the local implementation at `../gram-hs` and corresponding feature specifications in `../gram-hs/specs/`. See [PORTING_GUIDE.md](../../../PORTING_GUIDE.md) for detailed porting instructions.
+**Note**: When porting features from gram-hs, reference the local implementation at `../gram-hs` and corresponding feature specifications in `../gram-hs/specs/`. See [porting guide](../../../docs/porting-guide.md) for detailed porting instructions.
 
 ## Project Structure
 

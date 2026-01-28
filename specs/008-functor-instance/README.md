@@ -75,7 +75,7 @@ let result = Pattern::point(5)
 - [x] Specification complete
 - [x] Plan complete
 - [x] Design rationale documented
-- [x] PORTING_GUIDE.md updated with idiomatic principles
+- [x] docs/porting-guide.md updated with idiomatic principles
 - [ ] Phase 0: Research (to be done)
 - [ ] Phase 1: Design details
 - [ ] Phase 2: Core implementation
@@ -99,7 +99,7 @@ All from [spec.md](./spec.md):
 
 - **Haskell Implementation**: `../gram-hs/libs/pattern/src/Pattern/Core.hs` (lines 536-617)
 - **Haskell Tests**: `../gram-hs/libs/pattern/tests/Spec/Pattern/Properties.hs` (lines 176-203)
-- **Porting Guide**: `../../../PORTING_GUIDE.md` - Updated with idiomatic principles
+- **Porting Guide**: `../../../docs/porting-guide.md` - Updated with idiomatic principles
 - **Rust Patterns**: Standard library `map` methods for conventions
 
 ## Next Steps

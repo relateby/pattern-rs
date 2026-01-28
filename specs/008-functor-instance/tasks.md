@@ -181,7 +181,7 @@ Foundational (Phase 2) ← Must complete before any user story
 - [x] T033 Run clippy: cargo clippy --all-targets --all-features
 - [x] T034 Run rustfmt: cargo fmt --check
 - [x] T035 Verify WASM compilation: cargo build --target wasm32-unknown-unknown
-- [x] T036 Review and update PORTING_GUIDE.md examples if needed
+- [x] T036 Review and update docs/porting-guide.md examples if needed
 
 **Phase Complete**: All tests pass, documentation complete, feature ready for merge
 
@@ -282,7 +282,7 @@ From [plan.md](./plan.md):
 
 ### Behavioral Equivalence
 
-Per [PORTING_GUIDE.md](../../../PORTING_GUIDE.md):
+Per [porting guide](../../../docs/porting-guide.md):
 - Port concepts and behavior from gram-hs, not syntax
 - Maintain functor laws through property tests
 - Use idiomatic Rust patterns

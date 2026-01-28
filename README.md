@@ -185,7 +185,7 @@ See the [examples/](examples/) directory for usage examples:
 
 ## Porting Features
 
-When porting features from gram-hs, see [PORTING_GUIDE.md](PORTING_GUIDE.md) for detailed instructions. The guide covers:
+When porting features from gram-hs, see [porting guide](docs/porting-guide.md) for detailed instructions. The guide covers:
 
 - How to reference the local gram-hs implementation at `../gram-hs`
 - Systematic workflow for porting features

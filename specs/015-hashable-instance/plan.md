@@ -82,7 +82,7 @@ Implement hashing support for Pattern<V> by adding a `std::hash::Hash` trait imp
 - **Status**: Future consideration
 - **Justification**: Hash trait enables efficient JavaScript Map/Set usage in WASM bindings (future work)
 
-**Note**: When porting features from gram-hs, reference the local implementation at `../gram-hs` and corresponding feature specifications in `../gram-hs/specs/`. See [PORTING_GUIDE.md](../../../PORTING_GUIDE.md) for detailed porting instructions.
+**Note**: When porting features from gram-hs, reference the local implementation at `../gram-hs` and corresponding feature specifications in `../gram-hs/specs/`. See [porting guide](../../../docs/porting-guide.md) for detailed porting instructions.
 
 ## Project Structure
 
@@ -312,7 +312,7 @@ See [tasks.md](tasks.md) for detailed task breakdown.
 - **Haskell Source**: `../gram-hs/libs/pattern/src/Pattern/Core.hs` (lines 477-535)
 - **Haskell Spec**: `../gram-hs/specs/012-hashable-instance/` (development notes)
 - **Rust Hash**: https://doc.rust-lang.org/std/hash/trait.Hash.html
-- **Porting Guide**: `../../../PORTING_GUIDE.md`
+- **Porting Guide**: `../../../docs/porting-guide.md`
 - **Analysis**: [ANALYSIS.md](ANALYSIS.md) (comprehensive evaluation)
 
 ## Next Steps

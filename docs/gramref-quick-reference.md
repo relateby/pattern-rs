@@ -220,7 +220,7 @@ gramref generate --seed 42 --deterministic --format json
 ## Related Documentation
 
 - **Detailed Guide**: [gramref CLI Testing Guide](gramref-cli-testing-guide.md)
-- **Porting Guide**: [PORTING_GUIDE.md](../PORTING_GUIDE.md) - Library vs CLI distinction
+- **Porting Guide**: [porting-guide.md](porting-guide.md) - Library vs CLI distinction
 - **Test Infrastructure**: [specs/003-test-infrastructure/](../specs/003-test-infrastructure/)
 
 ---

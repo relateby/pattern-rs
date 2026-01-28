@@ -56,7 +56,7 @@ Create Python bindings for the pattern-core Rust crate using PyO3, enabling Pyth
 
 **Constitution Check Result**: ✅ **ALL GATES PASS** - No violations detected. Feature aligns with all constitution principles.
 
-**Note**: When porting features from gram-hs, reference the local implementation at `../gram-hs` and corresponding feature specifications in `../gram-hs/specs/`. See [PORTING_GUIDE.md](../../../PORTING_GUIDE.md) for detailed porting instructions.
+**Note**: When porting features from gram-hs, reference the local implementation at `../gram-hs` and corresponding feature specifications in `../gram-hs/specs/`. See [porting guide](../../../docs/porting-guide.md) for detailed porting instructions.
 
 ## Project Structure
 

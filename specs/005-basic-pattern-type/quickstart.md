@@ -386,5 +386,5 @@ Reference: `../gram-hs/libs/pattern/src/Pattern/Core.hs`
 ## Next Steps
 
 - See `specs/004-pattern-data-structure/` for Pattern type definition
-- See `PORTING_GUIDE.md` for porting workflow
+- See `docs/porting-guide.md` for porting workflow
 - See `docs/gram-rs-project-plan.md` for overall architecture

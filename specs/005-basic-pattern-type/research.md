@@ -231,7 +231,7 @@ All NEEDS CLARIFICATION items from Technical Context have been resolved by verif
 - **Secondary Source (Context Only)**: gram-hs Design Documents: `../gram-hs/specs/002-basic-pattern-type/`
   - Type Signatures: `../gram-hs/specs/002-basic-pattern-type/contracts/type-signatures.md` (may be outdated)
   - Feature Spec: `../gram-hs/specs/002-basic-pattern-type/spec.md` (for context)
-- Porting Guide: `PORTING_GUIDE.md`
+- Porting Guide: `docs/porting-guide.md`
 - Test Infrastructure: `specs/003-test-infrastructure/`
 - gram-hs CLI Testing Guide: `docs/gram-hs-cli-testing-guide.md`
 - Existing Pattern Implementation: `crates/pattern-core/src/pattern.rs`

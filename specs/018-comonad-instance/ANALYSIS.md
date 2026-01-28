@@ -452,4 +452,4 @@ But still **not strong enough to justify immediate implementation**.
 - **Haskell Tests**: `../gram-hs/libs/pattern/tests/Spec/Pattern/CoreSpec.hs` (lines 4242-4400)
 - **Haskell Property Tests**: `../gram-hs/libs/pattern/tests/Spec/Pattern/Properties.hs` (lines 1287-1332)
 - **Feature Spec**: `../gram-hs/specs/014-comonad-instance/spec.md`
-- **Porting Guide**: `PORTING_GUIDE.md` - Idiomatic Rust principles
+- **Porting Guide**: `docs/porting-guide.md` - Idiomatic Rust principles

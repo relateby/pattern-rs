@@ -183,7 +183,7 @@ A developer needs to use patterns in web applications via WebAssembly. They need
 - **Secondary Source (Context Only)**: gram-hs Design Documents: `../gram-hs/specs/001-pattern-data-structure/`
   - Feature Specification: `../gram-hs/specs/001-pattern-data-structure/spec.md` (for context, may be outdated)
   - Type Signatures: `../gram-hs/specs/001-pattern-data-structure/contracts/type-signatures.md` (for context, may be outdated)
-- **Porting Guide**: `PORTING_GUIDE.md` - Systematic approach for porting from gram-hs
+- **Porting Guide**: `docs/porting-guide.md` - Systematic approach for porting from gram-hs
 - **Project Plan**: `docs/gram-rs-project-plan.md` - Overall architecture and design decisions
 - **TODO**: `TODO.md` - Feature tracking and porting checklist
 

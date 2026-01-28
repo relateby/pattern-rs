@@ -183,6 +183,6 @@ If answers are unclear or "no", keep feature deferred.
 - Haskell Tests: `../gram-hs/libs/pattern/tests/Spec/Pattern/CoreSpec.hs:4242-4400`
 - Haskell Property Tests: `../gram-hs/libs/pattern/tests/Spec/Pattern/Properties.hs:1287-1332`
 - Feature Spec: `../gram-hs/specs/014-comonad-instance/spec.md`
-- Porting Guide: `../../PORTING_GUIDE.md`
+- Porting Guide: `../../docs/porting-guide.md`
 - TODO: `../../TODO.md` (updated with DEFER status)
 

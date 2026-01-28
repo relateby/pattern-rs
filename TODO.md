@@ -2,7 +2,7 @@
 
 This TODO tracks the incremental porting of features from the gram-hs reference implementation (`../gram-hs`) to gram-rs. Features are organized by development phase and follow the gram-hs feature numbering where applicable.
 
-**Reference**: See `PORTING_GUIDE.md` for porting workflow and `docs/gram-rs-project-plan.md` for overall architecture.
+**Reference**: See `docs/porting-guide.md` for porting workflow and `docs/gram-rs-project-plan.md` for overall architecture.
 
 ## Phase 1: Foundation & Infrastructure
 
@@ -753,7 +753,7 @@ snippets.
 
 - **Feature Numbering**: Features 001-039 in gram-rs correspond to incremental development phases. Some gram-hs features (e.g., 001-pattern-data-structure) map to later gram-rs features (004-pattern-data-structure) because infrastructure setup comes first.
 
-- **Reference Implementation**: Always verify against the actual Haskell source code in `../gram-hs/libs/` before marking features complete. The Haskell implementation is the authoritative source of truth. Documentation in `../gram-hs/docs/` provides up-to-date information about the implementation. Historical notes in `../gram-hs/specs/` guided incremental development but may be outdated. See `PORTING_GUIDE.md` for detailed workflow.
+- **Reference Implementation**: Always verify against the actual Haskell source code in `../gram-hs/libs/` before marking features complete. The Haskell implementation is the authoritative source of truth. Documentation in `../gram-hs/docs/` provides up-to-date information about the implementation. Historical notes in `../gram-hs/specs/` guided incremental development but may be outdated. See `docs/porting-guide.md` for detailed workflow.
 
 - **Priority**: Focus on Phase 1-4 first to establish core functionality. Phases 5-8 can proceed in parallel once core is stable.
 

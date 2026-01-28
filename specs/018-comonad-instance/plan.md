@@ -149,7 +149,7 @@ impl<V> Pattern<V> {
 - Multi-target: Pure functions, WASM-compatible
 - Examples: Will demonstrate all operations with practical use cases
 
-**Note**: When porting features from gram-hs, reference the local implementation at `../gram-hs` and corresponding feature specifications in `../gram-hs/specs/`. See [PORTING_GUIDE.md](../../../PORTING_GUIDE.md) for detailed porting instructions.
+**Note**: When porting features from gram-hs, reference the local implementation at `../gram-hs` and corresponding feature specifications in `../gram-hs/specs/`. See [porting guide](../../../docs/porting-guide.md) for detailed porting instructions.
 
 ## Project Structure
 
@@ -291,4 +291,4 @@ From spec.md Success Criteria:
 - **Analysis**: [ANALYSIS.md](./ANALYSIS.md)
 - **Recommendation**: [RECOMMENDATION.md](./RECOMMENDATION.md)
 - **Constitution**: `../../.specify/memory/constitution.md`
-- **Porting Guide**: `../../PORTING_GUIDE.md`
+- **Porting Guide**: `../../docs/porting-guide.md`

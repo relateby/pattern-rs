@@ -406,6 +406,6 @@ Reference: `../gram-hs/libs/pattern/src/Pattern.hs` (to be verified during imple
 
 - See `specs/004-pattern-data-structure/` for Pattern type definition
 - See `specs/005-basic-pattern-type/` for construction, access, and basic inspection
-- See `PORTING_GUIDE.md` for porting workflow
+- See `docs/porting-guide.md` for porting workflow
 - See `docs/gram-rs-project-plan.md` for overall architecture
 

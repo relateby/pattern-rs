@@ -143,6 +143,6 @@ Analysis completed:
 - Haskell Implementation: `../gram-hs/libs/pattern/src/Pattern/Core.hs:670-676`
 - Haskell Tests: `../gram-hs/libs/pattern/tests/Spec/Pattern/Properties.hs:1075-1189`
 - Feature Spec (outdated): `../gram-hs/specs/013-applicative-instance/spec.md`
-- Porting Guide: `../../PORTING_GUIDE.md`
+- Porting Guide: `../../docs/porting-guide.md`
 - TODO: `../../TODO.md` (updated with DEFER status)
 

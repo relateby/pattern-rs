@@ -76,7 +76,7 @@ Implement PartialOrd and Ord traits for Pattern<V> to enable deterministic order
 - **Status**: No changes needed
 - **Justification**: Ordering is internal to Rust; WASM bindings can expose comparison results if needed in future
 
-**Note**: When porting features from gram-hs, reference the local implementation at `../gram-hs` and corresponding feature specifications in `../gram-hs/specs/`. See [PORTING_GUIDE.md](../../../PORTING_GUIDE.md) for detailed porting instructions.
+**Note**: When porting features from gram-hs, reference the local implementation at `../gram-hs` and corresponding feature specifications in `../gram-hs/specs/`. See [porting guide](../../../docs/porting-guide.md) for detailed porting instructions.
 
 ## Project Structure
 
@@ -346,4 +346,4 @@ Expected tasks will include:
 - **Haskell Source**: `../gram-hs/libs/pattern/src/Pattern.hs` (Ord instance)
 - **Haskell Spec**: `../gram-hs/specs/009-ord-instance/` (development notes)
 - **Rust Ord Trait**: https://doc.rust-lang.org/std/cmp/trait.Ord.html
-- **Porting Guide**: `../../../PORTING_GUIDE.md`
+- **Porting Guide**: `../../../docs/porting-guide.md`

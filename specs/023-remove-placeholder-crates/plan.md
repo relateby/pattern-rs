@@ -40,7 +40,7 @@ Remove three unused placeholder crates (pattern-store, pattern-ops, pattern-wasm
 ### V. External Language Bindings & Examples
 ✅ **PASS** - No impact on external bindings. Only unused placeholder crates are removed.
 
-**Note**: When porting features from gram-hs, reference the local implementation at `../gram-hs` and corresponding feature specifications in `../gram-hs/specs/`. See [PORTING_GUIDE.md](../../../PORTING_GUIDE.md) for detailed porting instructions.
+**Note**: When porting features from gram-hs, reference the local implementation at `../gram-hs` and corresponding feature specifications in `../gram-hs/specs/`. See [porting guide](../../../docs/porting-guide.md) for detailed porting instructions.
 
 ## Project Structure
 

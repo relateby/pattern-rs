@@ -307,7 +307,7 @@ This is a library crate within the gram-rs workspace:
 - [ ] T084 [P] Update crates/gram-codec/README.md (if exists) or create with usage examples
 - [ ] T085 [P] Update examples/gram-codec/basic_usage.rs if API examples need changes
 - [ ] T086 [P] Update examples/gram-codec/advanced_usage.rs if needed
-- [ ] T087 [P] Update WASM_BUILD_NOTES.md to mark as resolved and reference new simple workflow
+- [ ] T087 [P] Update docs/wasm-build-notes.md to mark as resolved and reference new simple workflow
 - [ ] T088 [P] Create migration guide in specs/021-pure-rust-parser/MIGRATION.md (for users of old tree-sitter version)
 
 ### Performance Benchmarking

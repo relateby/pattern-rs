@@ -41,7 +41,7 @@ Complete the predicate-based pattern matching implementation for the Pattern typ
 
 **External Language Bindings & Examples**: N/A for this feature. Pattern matching functions are Rust-native and don't require changes to existing WASM bindings or examples. Future work may expose these functions through WASM interface if needed.
 
-**Note**: When porting features from gram-hs, reference the local implementation at `../gram-hs` and corresponding feature specifications in `../gram-hs/specs/`. See [PORTING_GUIDE.md](../../../PORTING_GUIDE.md) for detailed porting instructions.
+**Note**: When porting features from gram-hs, reference the local implementation at `../gram-hs` and corresponding feature specifications in `../gram-hs/specs/`. See [porting guide](../../../docs/porting-guide.md) for detailed porting instructions.
 
 ### Post-Phase 1 Design Review
 
