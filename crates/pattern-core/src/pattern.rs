@@ -2771,14 +2771,14 @@ impl<V: crate::Combinable> Pattern<V> {
     ///
     /// // Create relationship patterns
     /// let sources = vec![
-    ///     Pattern::point("Alice"),
-    ///     Pattern::point("Bob"),
+    ///     Pattern::point("Alice".to_string()),
+    ///     Pattern::point("Bob".to_string()),
     /// ];
     /// let targets = vec![
-    ///     Pattern::point("Company"),
-    ///     Pattern::point("Project"),
+    ///     Pattern::point("Company".to_string()),
+    ///     Pattern::point("Project".to_string()),
     /// ];
-    /// let rel_types = vec!["WORKS_FOR", "MANAGES"];
+    /// let rel_types = vec!["WORKS_FOR".to_string(), "MANAGES".to_string()];
     ///
     /// let relationships = Pattern::zip3(sources, targets, rel_types);
     ///
@@ -2826,12 +2826,12 @@ impl<V: crate::Combinable> Pattern<V> {
     /// use pattern_core::Pattern;
     ///
     /// let people = vec![
-    ///     Pattern::point("Alice"),
-    ///     Pattern::point("Bob"),
+    ///     Pattern::point("Alice".to_string()),
+    ///     Pattern::point("Bob".to_string()),
     /// ];
     /// let companies = vec![
-    ///     Pattern::point("TechCorp"),
-    ///     Pattern::point("StartupInc"),
+    ///     Pattern::point("TechCorp".to_string()),
+    ///     Pattern::point("StartupInc".to_string()),
     /// ];
     ///
     /// // Derive relationship type from patterns

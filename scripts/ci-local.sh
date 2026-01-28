@@ -64,7 +64,34 @@ else
 fi
 echo ""
 
-# 5. Tests
+# 5. Python build (optional - requires maturin and Python)
+echo -n "Checking Python build setup... "
+if command -v maturin >/dev/null 2>&1 && command -v python3 >/dev/null 2>&1; then
+    echo -e "${GREEN}✓${NC}"
+    # Python build is optional for now, so don't fail the script if it fails
+    echo -n "Running Python build... "
+    cd crates/pattern-core
+    if maturin build --release --features python > /tmp/ci-check.log 2>&1; then
+        echo -e "${GREEN}✓${NC}"
+    else
+        echo -e "${YELLOW}⚠${NC} (failed, but non-blocking)"
+        echo "  Python build failed - this is optional for now"
+        tail -10 /tmp/ci-check.log
+    fi
+    cd ../..
+else
+    echo -e "${YELLOW}⚠${NC} (not available, skipping)"
+    if ! command -v maturin >/dev/null 2>&1; then
+        echo "  Install maturin with: pip install maturin"
+        echo "  Or with uv: cd crates/pattern-core && uv pip install -e '.[dev]'"
+    fi
+    if ! command -v python3 >/dev/null 2>&1; then
+        echo "  Install Python 3.8+ (python3)"
+    fi
+fi
+echo ""
+
+# 6. Tests
 run_check "Tests" cargo test --workspace
 echo ""
 

@@ -346,7 +346,6 @@ impl Combinable for () {
 /// ```
 impl Combinable for Subject {
     fn combine(self, other: Self) -> Self {
-
         // Keep first identity (leftmost in associative chain)
         let identity = self.identity;
 
@@ -419,24 +418,24 @@ impl Combinable for FirstSubject {
 /// # Examples
 ///
 /// ```rust
-/// use pattern_core::{Subject, Symbol, Combinable};
+/// use pattern_core::{Subject, Symbol, Combinable, LastSubject};
 /// use std::collections::HashSet;
 ///
-/// let s1 = Subject {
+/// let s1 = LastSubject(Subject {
 ///     identity: Symbol("alice".to_string()),
 ///     labels: HashSet::new(),
 ///     properties: Default::default(),
-/// };
+/// });
 ///
-/// let s2 = Subject {
+/// let s2 = LastSubject(Subject {
 ///     identity: Symbol("bob".to_string()),
 ///     labels: HashSet::new(),
 ///     properties: Default::default(),
-/// };
+/// });
 ///
-/// // Last wins - s1 is discarded
+/// // Last wins - s1 is the last argument, so it wins
 /// let result = s2.combine(s1);
-/// assert_eq!(result.identity.0, "alice");
+/// assert_eq!(result.0.identity.0, "alice");
 /// ```
 #[derive(Clone, PartialEq)]
 pub struct LastSubject(pub Subject);
@@ -466,10 +465,10 @@ impl Combinable for LastSubject {
 /// # Examples
 ///
 /// ```rust
-/// use pattern_core::{Subject, Symbol, Combinable};
+/// use pattern_core::{Subject, Symbol, Combinable, EmptySubject};
 /// use std::collections::HashSet;
 ///
-/// let s1 = Subject {
+/// let s1 = EmptySubject(Subject {
 ///     identity: Symbol("alice".to_string()),
 ///     labels: {
 ///         let mut s = HashSet::new();
@@ -477,18 +476,18 @@ impl Combinable for LastSubject {
 ///         s
 ///     },
 ///     properties: Default::default(),
-/// };
+/// });
 ///
-/// let empty = Subject {
+/// let empty = EmptySubject(Subject {
 ///     identity: Symbol("_".to_string()),
 ///     labels: HashSet::new(),
 ///     properties: Default::default(),
-/// };
+/// });
 ///
 /// // Always returns empty (anonymous)
 /// let result = s1.combine(empty);
-/// assert_eq!(result.identity.0, "_");
-/// assert!(result.labels.is_empty());
+/// assert_eq!(result.0.identity.0, "_");
+/// assert!(result.0.labels.is_empty());
 /// ```
 #[derive(Clone, PartialEq)]
 pub struct EmptySubject(pub Subject);

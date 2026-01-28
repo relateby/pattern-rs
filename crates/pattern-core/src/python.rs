@@ -601,7 +601,11 @@ fn find_first_pattern_recursive(
 }
 
 /// Helper to recursively compute indices_at
-fn indices_at_pattern_recursive(py: Python, pattern: &PyPattern, path: &mut Vec<usize>) -> PyPattern {
+fn indices_at_pattern_recursive(
+    py: Python,
+    pattern: &PyPattern,
+    path: &mut Vec<usize>,
+) -> PyPattern {
     // Convert path to Python list
     let path_list = PyList::new(py, path.iter().copied()).unwrap();
     let mut new_elements = Vec::new();
@@ -638,7 +642,7 @@ fn to_rust_pattern(pattern: &PyPattern) -> Pattern<String> {
 /// Python wrapper for Pattern<V> (generic pattern).
 ///
 /// Pattern is a recursive, nested structure (s-expression-like) that can hold any value type.
-/// 
+///
 /// Pattern<V> is fully generic - it can hold primitives, complex objects, or even other Patterns,
 /// enabling nested structures like Pattern<Pattern<T>>.
 #[cfg(feature = "python")]
@@ -812,30 +816,26 @@ impl PyPattern {
     /// Check if any value satisfies the predicate.
     fn any_value(&self, py: Python, predicate: &Bound<'_, PyAny>) -> PyResult<bool> {
         let values = self.values(py);
-        let result = values
-            .iter()
-            .any(|v| {
-                let bound_value = v.bind(py);
-                match predicate.call1((bound_value,)) {
-                    Ok(result) => result.extract::<bool>().unwrap_or(false),
-                    Err(_) => false,
-                }
-            });
+        let result = values.iter().any(|v| {
+            let bound_value = v.bind(py);
+            match predicate.call1((bound_value,)) {
+                Ok(result) => result.extract::<bool>().unwrap_or(false),
+                Err(_) => false,
+            }
+        });
         Ok(result)
     }
 
     /// Check if all values satisfy the predicate.
     fn all_values(&self, py: Python, predicate: &Bound<'_, PyAny>) -> PyResult<bool> {
         let values = self.values(py);
-        let result = values
-            .iter()
-            .all(|v| {
-                let bound_value = v.bind(py);
-                match predicate.call1((bound_value,)) {
-                    Ok(result) => result.extract::<bool>().unwrap_or(false),
-                    Err(_) => false,
-                }
-            });
+        let result = values.iter().all(|v| {
+            let bound_value = v.bind(py);
+            match predicate.call1((bound_value,)) {
+                Ok(result) => result.extract::<bool>().unwrap_or(false),
+                Err(_) => false,
+            }
+        });
         Ok(result)
     }
 
@@ -860,7 +860,7 @@ impl PyPattern {
                 .eq(other.value.bind(py))
                 .unwrap_or(false)
         });
-        
+
         if !values_equal || self.elements.len() != other.elements.len() {
             return false;
         }
@@ -886,7 +886,7 @@ impl PyPattern {
             Ok(result) => result.unbind(),
             Err(_) => self.value.clone_ref(py),
         };
-        
+
         let new_elements: Vec<PyPattern> = self
             .elements
             .iter()
@@ -919,14 +919,14 @@ impl PyPattern {
         let combined_value = Python::with_gil(|py| {
             let left_val = self.value.bind(py);
             let right_val = other.value.bind(py);
-            
+
             // Try to add/concatenate the values
             match left_val.call_method1("__add__", (right_val,)) {
                 Ok(result) => result.unbind(),
                 Err(_) => self.value.clone_ref(py),
             }
         });
-        
+
         let mut combined_elements = self.elements.clone();
         combined_elements.extend(other.elements);
         Ok(PyPattern {
@@ -1028,7 +1028,7 @@ impl PyPattern {
             Ok(result) => result.unbind(),
             Err(_) => self.value.clone_ref(py),
         };
-        
+
         let new_elements: Vec<PyPattern> = self
             .elements
             .iter()
