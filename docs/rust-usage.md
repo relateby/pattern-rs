@@ -160,4 +160,63 @@ let rel = &patterns[0];
 println!("Length: {}", rel.length()); // Direct elements: 2
 println!("Size: {}", rel.size());     // Total subjects: 3
 println!("Depth: {}", rel.depth());   // Max nesting: 1
+
+## Advanced Pattern Operations
+
+### Structure-Aware Folding with Paramorphism
+
+The `para` method provides structure-aware folding, giving you access to both the pattern structure and recursively computed results from elements. This is more powerful than `fold` (which only sees values) and enables sophisticated aggregations.
+
+#### Basic Sum (equivalent to fold)
+```rust
+use pattern_core::Pattern;
+
+let p = Pattern::pattern(10, vec![Pattern::point(5), Pattern::point(3)]);
+let sum: i32 = p.para(|pat, rs| *pat.value() + rs.iter().sum::<i32>());
+assert_eq!(sum, 18);  // 10 + 5 + 3
+```
+
+#### Depth-Weighted Computation
+Access pattern structure during folding:
+```rust
+use pattern_core::Pattern;
+
+let p = Pattern::pattern(10, vec![Pattern::point(5), Pattern::point(3)]);
+let depth_weighted: i32 = p.para(|pat, rs| {
+    *pat.value() * pat.depth() as i32 + rs.iter().sum::<i32>()
+});
+// Root at depth 1: 10*1 = 10
+// Leaves at depth 0: 5*0 + 3*0 = 0
+assert_eq!(depth_weighted, 10);
+```
+
+#### Computing Multiple Statistics in One Pass
+```rust
+use pattern_core::Pattern;
+
+let p = Pattern::pattern(1, vec![
+    Pattern::pattern(2, vec![Pattern::point(3)]),
+]);
+
+let (sum, count, max_depth): (i32, usize, usize) = p.para(|pat, rs| {
+    let (child_sum, child_count, child_depth) = rs.iter()
+        .fold((0_i32, 0_usize, 0_usize), |(s, c, d), (s2, c2, d2)| {
+            (s + s2, c + c2, d.max(*d2))
+        });
+    (*pat.value() + child_sum, 1 + child_count, pat.depth().max(child_depth))
+});
+
+assert_eq!(sum, 6);        // 1 + 2 + 3
+assert_eq!(count, 3);      // 3 nodes total
+assert_eq!(max_depth, 2);  // Maximum nesting depth
+```
+
+#### When to Use Para vs Fold
+
+| Operation | Access | Use When |
+|-----------|--------|----------|
+| `fold` | Values only | Simple aggregation (sum, count, concatenation) |
+| `para` | Pattern + element results | Structure-aware computation (depth-weighted, element-count-aware, nesting statistics) |
+| `extend` | Pattern for transformation | Creating new patterns based on structure |
+
 ```
