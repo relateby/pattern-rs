@@ -8,6 +8,30 @@ The pattern-core crate is the foundation for pattern data structures in gram-rs.
 
 ## Examples
 
+### `paramorphism_usage.rs`
+
+Comprehensive demonstration of paramorphism (structure-aware folding) on patterns.
+
+**Run:**
+```bash
+cargo run --package pattern-core --example paramorphism_usage
+```
+
+**What it demonstrates:**
+
+1. **Basic Sum** - Para can do everything fold can do
+2. **Depth-Weighted Computation** - Access pattern structure during folding
+3. **Element-Count-Aware Aggregation** - Compute based on number of elements
+4. **Nesting Statistics** - Calculate multiple statistics in one traversal
+5. **Structure-Preserving Transformation** - Transform while maintaining structure
+
+**Key Concepts:**
+- `para` provides access to both pattern structure and element results
+- Bottom-up evaluation (elements processed first, then parent)
+- Single traversal with O(n) time complexity
+- More powerful than `fold` for structure-aware computations
+
+
 ### `comonad_usage.rs`
 
 Comprehensive demonstration of comonad operations on patterns.

@@ -40,3 +40,7 @@ harness = false
 name = "comonad_usage"
 path = "../../examples/pattern-core/comonad_usage.rs"
 
+[[example]]
+name = "paramorphism_usage"
+path = "../../examples/pattern-core/paramorphism_usage.rs"
+

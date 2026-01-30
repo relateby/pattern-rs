@@ -1843,7 +1843,7 @@ impl<V> Pattern<V> {
     ///
     /// assert_eq!(sum, 6);        // 1 + 2 + 3
     /// assert_eq!(count, 3);      // 3 nodes total
-    /// assert_eq!(max_depth, 1);  // Maximum nesting depth
+    /// assert_eq!(max_depth, 2);  // Maximum nesting depth (root -> pattern(2) -> point(3))
     /// ```
     ///
     /// # Reference
@@ -1866,10 +1866,12 @@ impl<V> Pattern<V> {
         F: Fn(&Pattern<V>, &[R]) -> R,
     {
         // Recursively compute results for all elements (left to right)
-        let child_results: Vec<R> = self.elements.iter()
+        let child_results: Vec<R> = self
+            .elements
+            .iter()
             .map(|child| child.para_with(f))
             .collect();
-        
+
         // Apply folding function to current pattern and element results
         f(self, &child_results)
     }
@@ -3340,7 +3342,11 @@ mod para_tests {
         let result = atom.para(|p, rs| {
             // Verify atomic pattern has no elements
             assert!(rs.is_empty(), "Atomic pattern should receive empty slice");
-            assert_eq!(p.elements().len(), 0, "Atomic pattern should have no elements");
+            assert_eq!(
+                p.elements().len(),
+                0,
+                "Atomic pattern should have no elements"
+            );
             *p.value()
         });
         assert_eq!(result, 42);
@@ -3417,10 +3423,7 @@ mod para_tests {
 
         // Test 2: Access element count at each position
         let element_count_at_root = p.para(|pat, _| pat.elements().len());
-        assert_eq!(
-            element_count_at_root, 2,
-            "Root should have 2 elements"
-        );
+        assert_eq!(element_count_at_root, 2, "Root should have 2 elements");
 
         // Test 3: Verify structure access matches direct calls
         assert_eq!(p.depth(), depth_at_root);
@@ -3447,7 +3450,7 @@ mod para_tests {
             let value = *pat.value();
             let depth = pat.depth();
             let elem_count = pat.elements().len();
-            
+
             // Verify child infos match expected structure
             if value == 1 {
                 // Root: should have 2 children
@@ -3483,14 +3486,14 @@ mod para_tests {
         // Formula: value * element_count + sum(element_results)
         // Expected: 10*2 + (5*0 + 3*0) = 20 + 0 = 20
         let p = Pattern::pattern(10, vec![Pattern::point(5), Pattern::point(3)]);
-        
+
         let result: i32 = p.para(|pat, rs| {
             let value = *pat.value();
             let elem_count = pat.elements().len() as i32;
             let element_sum: i32 = rs.iter().sum();
             value * elem_count + element_sum
         });
-        
+
         assert_eq!(result, 20, "Root: 10*2 + (0+0) = 20");
     }
 
@@ -3508,14 +3511,14 @@ mod para_tests {
                 Pattern::point(3),
             ],
         );
-        
+
         let result: i32 = p.para(|pat, rs| {
             let value = *pat.value();
             let elem_count = pat.elements().len() as i32;
             let element_sum: i32 = rs.iter().sum();
             value * elem_count + element_sum
         });
-        
+
         // Root: 10*2 + (5 + 0) = 25
         // Middle pattern(5): 5*1 + 0 = 5
         // Leaves: 2*0=0, 3*0=0
@@ -3555,7 +3558,10 @@ mod para_tests {
         // Third element has 0 elements
         // Total: 3 + 2 + 1 + 0 = 6
         assert_eq!(result.0, 1, "Root value should be 1");
-        assert_eq!(result.1, 6, "Total element count across all levels should be 6");
+        assert_eq!(
+            result.1, 6,
+            "Total element count across all levels should be 6"
+        );
     }
 
     /// T011 (additional): Element count aggregation with depth
@@ -3575,17 +3581,17 @@ mod para_tests {
         let result: DepthCounts = p.para(|pat, rs: &[DepthCounts]| {
             let elem_count = pat.elements().len();
             let max_depth = rs.iter().map(|v| v.len()).max().unwrap_or(0);
-            
+
             let mut counts = vec![0; max_depth + 1];
             counts[0] = elem_count; // Current level
-            
+
             // Aggregate from elements
             for child_counts in rs {
                 for (depth, &count) in child_counts.iter().enumerate() {
                     counts[depth + 1] += count;
                 }
             }
-            
+
             counts
         });
 
@@ -3604,19 +3610,24 @@ mod para_tests {
     #[test]
     fn para_atomic_nesting_statistics() {
         let atom = Pattern::point(42);
-        
+
         // Compute (sum, count, max_depth) for atomic pattern
         type Stats = (i32, usize, usize);
         let stats: Stats = atom.para(|pat, rs: &[Stats]| {
             let value = *pat.value();
-            let (child_sum, child_count, child_max_depth) = rs.iter()
+            let (child_sum, child_count, child_max_depth) = rs
+                .iter()
                 .fold((0_i32, 0_usize, 0_usize), |(s, c, d), (s2, c2, d2)| {
                     (s + s2, c + c2, d.max(*d2))
                 });
-            
-            (value + child_sum, 1 + child_count, pat.depth().max(child_max_depth))
+
+            (
+                value + child_sum,
+                1 + child_count,
+                pat.depth().max(child_max_depth),
+            )
         });
-        
+
         assert_eq!(stats.0, 42, "Sum should be the value itself");
         assert_eq!(stats.1, 1, "Count should be 1 (single node)");
         assert_eq!(stats.2, 0, "Max depth should be 0 (atomic pattern)");
@@ -3638,19 +3649,24 @@ mod para_tests {
                 Pattern::point(4),
             ],
         );
-        
+
         // Compute (sum, count, max_depth) in a single traversal
         type Stats = (i32, usize, usize);
         let stats: Stats = p.para(|pat, rs: &[Stats]| {
             let value = *pat.value();
-            let (child_sum, child_count, child_max_depth) = rs.iter()
+            let (child_sum, child_count, child_max_depth) = rs
+                .iter()
                 .fold((0_i32, 0_usize, 0_usize), |(s, c, d), (s2, c2, d2)| {
                     (s + s2, c + c2, d.max(*d2))
                 });
-            
-            (value + child_sum, 1 + child_count, pat.depth().max(child_max_depth))
+
+            (
+                value + child_sum,
+                1 + child_count,
+                pat.depth().max(child_max_depth),
+            )
         });
-        
+
         assert_eq!(stats.0, 10, "Sum: 1 + 2 + 3 + 4 = 10");
         assert_eq!(stats.1, 4, "Count: 4 nodes total");
         assert_eq!(stats.2, 2, "Max depth: 2 (root -> pattern(2) -> point(3))");
@@ -3669,24 +3685,27 @@ mod para_tests {
             1,
             vec![
                 Pattern::pattern(2, vec![Pattern::point(3), Pattern::point(4)]),
-                Pattern::pattern(5, vec![
-                    Pattern::pattern(6, vec![Pattern::point(7)])
-                ]),
+                Pattern::pattern(5, vec![Pattern::pattern(6, vec![Pattern::point(7)])]),
                 Pattern::point(8),
             ],
         );
-        
+
         type Stats = (i32, usize, usize);
         let stats: Stats = p.para(|pat, rs: &[Stats]| {
             let value = *pat.value();
-            let (child_sum, child_count, child_max_depth) = rs.iter()
+            let (child_sum, child_count, child_max_depth) = rs
+                .iter()
                 .fold((0_i32, 0_usize, 0_usize), |(s, c, d), (s2, c2, d2)| {
                     (s + s2, c + c2, d.max(*d2))
                 });
-            
-            (value + child_sum, 1 + child_count, pat.depth().max(child_max_depth))
+
+            (
+                value + child_sum,
+                1 + child_count,
+                pat.depth().max(child_max_depth),
+            )
         });
-        
+
         // Sum: 1+2+3+4+5+6+7+8 = 36
         assert_eq!(stats.0, 36, "Sum of all values");
         // Count: 8 nodes
@@ -3705,34 +3724,272 @@ mod para_tests {
                 Pattern::point(50),
             ],
         );
-        
+
         // Use a counter to verify single traversal
         use std::cell::RefCell;
         let visit_count = RefCell::new(0);
-        
+
         type Stats = (i32, usize, usize);
         let stats: Stats = p.para(|pat, rs: &[Stats]| {
             *visit_count.borrow_mut() += 1;
-            
+
             let value = *pat.value();
-            let (child_sum, child_count, child_max_depth) = rs.iter()
+            let (child_sum, child_count, child_max_depth) = rs
+                .iter()
                 .fold((0_i32, 0_usize, 0_usize), |(s, c, d), (s2, c2, d2)| {
                     (s + s2, c + c2, d.max(*d2))
                 });
-            
-            (value + child_sum, 1 + child_count, pat.depth().max(child_max_depth))
+
+            (
+                value + child_sum,
+                1 + child_count,
+                pat.depth().max(child_max_depth),
+            )
         });
-        
+
         // Verify statistics
         assert_eq!(stats.0, 150, "Sum: 10+20+30+40+50");
         assert_eq!(stats.1, 5, "Count: 5 nodes");
         assert_eq!(stats.2, 2, "Max depth: 2");
-        
+
         // Verify single traversal: each node visited exactly once
-        assert_eq!(*visit_count.borrow(), 5, "Should visit each node exactly once");
+        assert_eq!(
+            *visit_count.borrow(),
+            5,
+            "Should visit each node exactly once"
+        );
+    }
+
+    // ========================================================================
+    // Phase 6: User Story 4 – Custom Structure-Aware Folding
+    // ========================================================================
+
+    /// T014: Para simulates fold – equivalence test
+    #[test]
+    fn para_simulates_fold() {
+        let p = Pattern::pattern(
+            10,
+            vec![
+                Pattern::pattern(20, vec![Pattern::point(30), Pattern::point(40)]),
+                Pattern::point(50),
+            ],
+        );
+
+        // Para version: sum all values
+        let para_sum: i32 = p.para(|pat, rs| *pat.value() + rs.iter().sum::<i32>());
+
+        // Fold version: sum all values
+        let fold_sum: i32 = p.fold(0, |acc, v| acc + v);
+
+        assert_eq!(para_sum, fold_sum, "Para should produce same sum as fold");
+        assert_eq!(para_sum, 150, "Sum: 10+20+30+40+50 = 150");
+    }
+
+    /// T014 (additional): Para simulates fold for different operations
+    #[test]
+    fn para_simulates_fold_product() {
+        let p = Pattern::pattern(
+            2,
+            vec![
+                Pattern::pattern(3, vec![Pattern::point(4)]),
+                Pattern::point(5),
+            ],
+        );
+
+        // Para version: product of all values
+        let para_product: i32 = p.para(|pat, rs| {
+            let element_product: i32 = rs.iter().product();
+            if element_product == 0 {
+                *pat.value() // No elements, just the value
+            } else {
+                *pat.value() * element_product
+            }
+        });
+
+        // Fold version: product of all values
+        let fold_product: i32 = p.fold(1, |acc, v| acc * v);
+
+        assert_eq!(
+            para_product, fold_product,
+            "Para should produce same product as fold"
+        );
+        assert_eq!(para_product, 120, "Product: 2*3*4*5 = 120");
+    }
+
+    /// T015: Para preserves element order (toList property)
+    #[test]
+    fn para_preserves_order_tolist() {
+        let p = Pattern::pattern(
+            1,
+            vec![
+                Pattern::pattern(2, vec![Pattern::point(3), Pattern::point(4)]),
+                Pattern::point(5),
+            ],
+        );
+
+        // Use para to build value list (pre-order: root first, then elements)
+        let para_values: Vec<i32> = p.para(|pat, rs: &[Vec<i32>]| {
+            let mut result = vec![*pat.value()];
+            for child_vec in rs {
+                result.extend(child_vec);
+            }
+            result
+        });
+
+        // Expected pre-order: 1, 2, 3, 4, 5
+        assert_eq!(
+            para_values,
+            vec![1, 2, 3, 4, 5],
+            "Para should preserve pre-order"
+        );
+
+        // Verify it matches values() method
+        let values_method: Vec<i32> = p.values().into_iter().copied().collect();
+        assert_eq!(
+            para_values, values_method,
+            "Para toList should match values()"
+        );
+    }
+
+    /// T015 (additional): Para order preservation with different structures
+    #[test]
+    fn para_order_preservation_wide() {
+        // Wide pattern: many siblings
+        let p = Pattern::pattern(
+            0,
+            vec![
+                Pattern::point(1),
+                Pattern::point(2),
+                Pattern::point(3),
+                Pattern::point(4),
+            ],
+        );
+
+        let para_values: Vec<i32> = p.para(|pat, rs: &[Vec<i32>]| {
+            let mut result = vec![*pat.value()];
+            for child_vec in rs {
+                result.extend(child_vec);
+            }
+            result
+        });
+
+        assert_eq!(
+            para_values,
+            vec![0, 1, 2, 3, 4],
+            "Should preserve left-to-right order"
+        );
+    }
+
+    /// T016: Custom folding function with structure access
+    #[test]
+    fn para_custom_structure_aware_folding() {
+        let p = Pattern::pattern(
+            "root",
+            vec![
+                Pattern::pattern(
+                    "branch",
+                    vec![Pattern::point("leaf1"), Pattern::point("leaf2")],
+                ),
+                Pattern::point("leaf3"),
+            ],
+        );
+
+        // Custom folding: build a description of the structure
+        type Description = String;
+        let description: Description = p.para(|pat, rs: &[Description]| {
+            let value = *pat.value();
+            let elem_count = pat.elements().len();
+            let depth = pat.depth();
+
+            if elem_count == 0 {
+                // Atomic pattern
+                format!("Leaf({})", value)
+            } else {
+                // Pattern with elements
+                let children_desc = rs.join(", ");
+                format!(
+                    "Node({}, depth={}, elements=[{}])",
+                    value, depth, children_desc
+                )
+            }
+        });
+
+        // Verify structure description
+        assert!(description.contains("root"), "Should mention root");
+        assert!(description.contains("branch"), "Should mention branch");
+        assert!(description.contains("leaf1"), "Should mention leaf1");
+        assert!(description.contains("depth="), "Should include depth info");
+    }
+
+    /// T016 (additional): Structure-aware transformation returning Pattern
+    #[test]
+    fn para_structure_preserving_transformation() {
+        let p = Pattern::pattern(
+            1,
+            vec![
+                Pattern::pattern(2, vec![Pattern::point(3)]),
+                Pattern::point(4),
+            ],
+        );
+
+        // Use para to transform: multiply each value by its depth + 1
+        let transformed: Pattern<i32> = p.para(|pat, rs: &[Pattern<i32>]| {
+            let value = *pat.value();
+            let depth = pat.depth();
+            let new_value = value * (depth as i32 + 1);
+
+            Pattern::pattern(new_value, rs.to_vec())
+        });
+
+        // Verify structure is preserved
+        assert_eq!(transformed.size(), p.size(), "Size should be preserved");
+        assert_eq!(transformed.depth(), p.depth(), "Depth should be preserved");
+        assert_eq!(
+            transformed.elements().len(),
+            p.elements().len(),
+            "Element count should be preserved"
+        );
+
+        // Verify values are transformed correctly
+        // Root (depth=2): 1 * 3 = 3
+        assert_eq!(*transformed.value(), 3);
+    }
+
+    /// T016 (additional): Para with complex custom logic
+    #[test]
+    fn para_complex_custom_logic() {
+        let p = Pattern::pattern(
+            10,
+            vec![
+                Pattern::pattern(20, vec![Pattern::point(30)]),
+                Pattern::point(40),
+            ],
+        );
+
+        // Custom logic: compute weighted sum where each value is weighted by
+        // (1 + number of descendants)
+        type WeightedSum = (i32, usize); // (weighted_sum, descendant_count)
+        let result: WeightedSum = p.para(|pat, rs: &[WeightedSum]| {
+            let value = *pat.value();
+            let (child_sum, child_descendants): (i32, usize) =
+                rs.iter().fold((0, 0), |(s, d), (s2, d2)| (s + s2, d + d2));
+
+            let my_descendants = child_descendants + pat.elements().len();
+            let my_weighted_value = value * (1 + my_descendants) as i32;
+
+            (my_weighted_value + child_sum, my_descendants)
+        });
+
+        // Verify the computation
+        // Leaf 30: 30 * 1 = 30, descendants=0
+        // Leaf 40: 40 * 1 = 40, descendants=0
+        // Branch 20: 20 * 2 = 40, descendants=1 (point 30)
+        // Root 10: 10 * 4 = 40, descendants=3 (branch 20, point 30, point 40)
+        // Total: 30 + 40 + 40 + 40 = 150
+        assert_eq!(result.0, 150, "Weighted sum should be 150");
+        assert_eq!(result.1, 3, "Root should have 3 descendants");
     }
 }
-
 
 // ============================================================================
 // Comonad Operations
