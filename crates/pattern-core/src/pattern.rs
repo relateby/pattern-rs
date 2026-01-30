@@ -3595,6 +3595,142 @@ mod para_tests {
         assert_eq!(result[0], 2, "Root has 2 elements");
         assert_eq!(result[1], 2, "Second level has 2 elements");
     }
+
+    // ========================================================================
+    // Phase 5: User Story 3 – Nesting Statistics
+    // ========================================================================
+
+    /// T012: Atomic pattern nesting statistics
+    #[test]
+    fn para_atomic_nesting_statistics() {
+        let atom = Pattern::point(42);
+        
+        // Compute (sum, count, max_depth) for atomic pattern
+        type Stats = (i32, usize, usize);
+        let stats: Stats = atom.para(|pat, rs: &[Stats]| {
+            let value = *pat.value();
+            let (child_sum, child_count, child_max_depth) = rs.iter()
+                .fold((0_i32, 0_usize, 0_usize), |(s, c, d), (s2, c2, d2)| {
+                    (s + s2, c + c2, d.max(*d2))
+                });
+            
+            (value + child_sum, 1 + child_count, pat.depth().max(child_max_depth))
+        });
+        
+        assert_eq!(stats.0, 42, "Sum should be the value itself");
+        assert_eq!(stats.1, 1, "Count should be 1 (single node)");
+        assert_eq!(stats.2, 0, "Max depth should be 0 (atomic pattern)");
+    }
+
+    /// T013: Nested pattern computing (sum, count, max_depth) in single traversal
+    #[test]
+    fn para_nested_nesting_statistics() {
+        // Pattern: root(1) with [pattern(2, [point(3)]), point(4)]
+        // Structure:
+        //   1
+        //   ├─ 2
+        //   │  └─ 3
+        //   └─ 4
+        let p = Pattern::pattern(
+            1,
+            vec![
+                Pattern::pattern(2, vec![Pattern::point(3)]),
+                Pattern::point(4),
+            ],
+        );
+        
+        // Compute (sum, count, max_depth) in a single traversal
+        type Stats = (i32, usize, usize);
+        let stats: Stats = p.para(|pat, rs: &[Stats]| {
+            let value = *pat.value();
+            let (child_sum, child_count, child_max_depth) = rs.iter()
+                .fold((0_i32, 0_usize, 0_usize), |(s, c, d), (s2, c2, d2)| {
+                    (s + s2, c + c2, d.max(*d2))
+                });
+            
+            (value + child_sum, 1 + child_count, pat.depth().max(child_max_depth))
+        });
+        
+        assert_eq!(stats.0, 10, "Sum: 1 + 2 + 3 + 4 = 10");
+        assert_eq!(stats.1, 4, "Count: 4 nodes total");
+        assert_eq!(stats.2, 2, "Max depth: 2 (root -> pattern(2) -> point(3))");
+    }
+
+    /// T013 (additional): Complex nested pattern statistics
+    #[test]
+    fn para_complex_nesting_statistics() {
+        // More complex pattern:
+        // root(1) with [
+        //   pattern(2, [point(3), point(4)]),
+        //   pattern(5, [pattern(6, [point(7)])]),
+        //   point(8)
+        // ]
+        let p = Pattern::pattern(
+            1,
+            vec![
+                Pattern::pattern(2, vec![Pattern::point(3), Pattern::point(4)]),
+                Pattern::pattern(5, vec![
+                    Pattern::pattern(6, vec![Pattern::point(7)])
+                ]),
+                Pattern::point(8),
+            ],
+        );
+        
+        type Stats = (i32, usize, usize);
+        let stats: Stats = p.para(|pat, rs: &[Stats]| {
+            let value = *pat.value();
+            let (child_sum, child_count, child_max_depth) = rs.iter()
+                .fold((0_i32, 0_usize, 0_usize), |(s, c, d), (s2, c2, d2)| {
+                    (s + s2, c + c2, d.max(*d2))
+                });
+            
+            (value + child_sum, 1 + child_count, pat.depth().max(child_max_depth))
+        });
+        
+        // Sum: 1+2+3+4+5+6+7+8 = 36
+        assert_eq!(stats.0, 36, "Sum of all values");
+        // Count: 8 nodes
+        assert_eq!(stats.1, 8, "Total node count");
+        // Max depth: 3 (root -> pattern(5) -> pattern(6) -> point(7))
+        assert_eq!(stats.2, 3, "Maximum nesting depth");
+    }
+
+    /// T013 (additional): Verify single traversal efficiency
+    #[test]
+    fn para_single_traversal_statistics() {
+        let p = Pattern::pattern(
+            10,
+            vec![
+                Pattern::pattern(20, vec![Pattern::point(30), Pattern::point(40)]),
+                Pattern::point(50),
+            ],
+        );
+        
+        // Use a counter to verify single traversal
+        use std::cell::RefCell;
+        let visit_count = RefCell::new(0);
+        
+        type Stats = (i32, usize, usize);
+        let stats: Stats = p.para(|pat, rs: &[Stats]| {
+            *visit_count.borrow_mut() += 1;
+            
+            let value = *pat.value();
+            let (child_sum, child_count, child_max_depth) = rs.iter()
+                .fold((0_i32, 0_usize, 0_usize), |(s, c, d), (s2, c2, d2)| {
+                    (s + s2, c + c2, d.max(*d2))
+                });
+            
+            (value + child_sum, 1 + child_count, pat.depth().max(child_max_depth))
+        });
+        
+        // Verify statistics
+        assert_eq!(stats.0, 150, "Sum: 10+20+30+40+50");
+        assert_eq!(stats.1, 5, "Count: 5 nodes");
+        assert_eq!(stats.2, 2, "Max depth: 2");
+        
+        // Verify single traversal: each node visited exactly once
+        assert_eq!(*visit_count.borrow(), 5, "Should visit each node exactly once");
+    }
 }
 
 

@@ -77,8 +77,8 @@
 
 **Independent Test**: Run para that returns `(sum, count, max_depth)`; assert atomic gives (value, 1, 0); assert nested pattern gives correct tuple.
 
-- [ ] T012 [P] [US3] Add unit test in `crates/pattern-core/src/pattern.rs`: atomic pattern – para returning (sum, count, max_depth) gives (value, 1, 0)
-- [ ] T013 [US3] Add unit test in `crates/pattern-core/src/pattern.rs`: nested pattern – para computing (sum, count, maxDepth) in one traversal matches hand-computed tuple (e.g. pattern 1 [pattern 2 [point 3]] gives (6, 3, 1))
+- [x] T012 [P] [US3] Add unit test in `crates/pattern-core/src/pattern.rs`: atomic pattern – para returning (sum, count, max_depth) gives (value, 1, 0)
+- [x] T013 [US3] Add unit test in `crates/pattern-core/src/pattern.rs`: nested pattern – para computing (sum, count, maxDepth) in one traversal matches hand-computed tuple (e.g. pattern 1 [pattern 2 [point 3]] gives (6, 3, 1))
 
 **Checkpoint**: US3 (nesting statistics) is verified by tests.
 
