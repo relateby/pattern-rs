@@ -148,12 +148,12 @@ impl<V> Pattern<V> {
 ```
 
 **Tasks**:
-- [ ] Study Haskell implementation
-- [ ] Implement `para()` function
-- [ ] Add comprehensive tests (unit + property-based)
-- [ ] Add examples (depth-weighted sums, element-count aggregations)
-- [ ] Document usage patterns and relationship to Foldable/Comonad
-- [ ] Verify equivalence with gram-hs
+- [x] Study Haskell implementation
+- [x] Implement `para()` function
+- [x] Add comprehensive tests (unit + property-based)
+- [x] Add examples (depth-weighted sums, element-count aggregations)
+- [x] Document usage patterns and relationship to Foldable/Comonad
+- [x] Verify equivalence with gram-hs
 
 ### 026-graph-lens: Graph Lens Operations (P1 - HIGH PRIORITY)
 **Primary Reference**: `../gram-hs/libs/pattern/src/Pattern/Graph.hs`
