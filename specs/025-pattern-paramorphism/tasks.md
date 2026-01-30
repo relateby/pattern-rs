@@ -64,8 +64,8 @@
 
 **Independent Test**: Build patterns with 2 elements, then nested (e.g. 3 elements each with 2); run para with element-count-weighted formula; assert results match expected values.
 
-- [ ] T010 [P] [US2] Add unit test in `crates/pattern-core/src/pattern.rs`: pattern with 2 elements – `para(|p, rs| *p.value() * p.elements().len() as i32 + rs.iter().sum::<i32>())` equals expected (e.g. 10*2 + (5+3) = 28 for pattern 10 [point 5, point 3])
-- [ ] T011 [US2] Add unit test in `crates/pattern-core/src/pattern.rs`: nested pattern with varying element counts – aggregate element counts and assert correct totals at each level per spec acceptance scenario 2
+- [x] T010 [P] [US2] Add unit test in `crates/pattern-core/src/pattern.rs`: pattern with 2 elements – `para(|p, rs| *p.value() * p.elements().len() as i32 + rs.iter().sum::<i32>())` equals expected (e.g. 10*2 + (5+3) = 28 for pattern 10 [point 5, point 3])
+- [x] T011 [US2] Add unit test in `crates/pattern-core/src/pattern.rs`: nested pattern with varying element counts – aggregate element counts and assert correct totals at each level per spec acceptance scenario 2
 
 **Checkpoint**: US2 (element-count-aware) is verified by tests.
 

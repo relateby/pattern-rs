@@ -3471,6 +3471,130 @@ mod para_tests {
         assert_eq!(info.1, 2); // Root depth (max nesting: root -> pattern(2) -> point)
         assert_eq!(info.2, 2); // Root has 2 elements
     }
+
+    // ========================================================================
+    // Phase 4: User Story 2 – Element-Count-Aware Computation
+    // ========================================================================
+
+    /// T010: Element-count-weighted computation
+    #[test]
+    fn para_element_count_weighted_computation() {
+        // Pattern: root(10) with [point(5), point(3)]
+        // Formula: value * element_count + sum(element_results)
+        // Expected: 10*2 + (5*0 + 3*0) = 20 + 0 = 20
+        let p = Pattern::pattern(10, vec![Pattern::point(5), Pattern::point(3)]);
+        
+        let result: i32 = p.para(|pat, rs| {
+            let value = *pat.value();
+            let elem_count = pat.elements().len() as i32;
+            let element_sum: i32 = rs.iter().sum();
+            value * elem_count + element_sum
+        });
+        
+        assert_eq!(result, 20, "Root: 10*2 + (0+0) = 20");
+    }
+
+    /// T010 (additional): Element-count-weighted with nested pattern
+    #[test]
+    fn para_element_count_weighted_nested() {
+        // Pattern: root(10) with [pattern(5, [point(2)]), point(3)]
+        // Root: 10*2 + (middle_result + 0) = 20 + middle_result
+        // Middle: 5*1 + (0) = 5
+        // Expected: 20 + 5 = 25
+        let p = Pattern::pattern(
+            10,
+            vec![
+                Pattern::pattern(5, vec![Pattern::point(2)]),
+                Pattern::point(3),
+            ],
+        );
+        
+        let result: i32 = p.para(|pat, rs| {
+            let value = *pat.value();
+            let elem_count = pat.elements().len() as i32;
+            let element_sum: i32 = rs.iter().sum();
+            value * elem_count + element_sum
+        });
+        
+        // Root: 10*2 + (5 + 0) = 25
+        // Middle pattern(5): 5*1 + 0 = 5
+        // Leaves: 2*0=0, 3*0=0
+        assert_eq!(result, 25);
+    }
+
+    /// T011: Nested patterns with varying element counts
+    #[test]
+    fn para_varying_element_counts() {
+        // Build pattern with varying element counts at each level:
+        // root(1) with [
+        //   pattern(2, [point(3), point(4)]),  // 2 elements
+        //   pattern(5, [point(6)]),             // 1 element
+        //   point(7)                            // 0 elements
+        // ]
+        let p = Pattern::pattern(
+            1,
+            vec![
+                Pattern::pattern(2, vec![Pattern::point(3), Pattern::point(4)]),
+                Pattern::pattern(5, vec![Pattern::point(6)]),
+                Pattern::point(7),
+            ],
+        );
+
+        // Aggregate element counts at each level
+        type CountInfo = (i32, usize); // (value, total_element_count_in_subtree)
+        let result: CountInfo = p.para(|pat, rs: &[CountInfo]| {
+            let value = *pat.value();
+            let elem_count = pat.elements().len();
+            let subtree_count: usize = rs.iter().map(|(_, count)| count).sum();
+            (value, elem_count + subtree_count)
+        });
+
+        // Root has 3 direct elements
+        // First element has 2 elements
+        // Second element has 1 element
+        // Third element has 0 elements
+        // Total: 3 + 2 + 1 + 0 = 6
+        assert_eq!(result.0, 1, "Root value should be 1");
+        assert_eq!(result.1, 6, "Total element count across all levels should be 6");
+    }
+
+    /// T011 (additional): Element count aggregation with depth
+    #[test]
+    fn para_element_count_by_depth() {
+        // Pattern: root(1) with [pattern(2, [point(3), point(4)]), point(5)]
+        let p = Pattern::pattern(
+            1,
+            vec![
+                Pattern::pattern(2, vec![Pattern::point(3), Pattern::point(4)]),
+                Pattern::point(5),
+            ],
+        );
+
+        // Count elements at each depth level
+        type DepthCounts = Vec<usize>; // counts[depth] = number of elements at that depth
+        let result: DepthCounts = p.para(|pat, rs: &[DepthCounts]| {
+            let elem_count = pat.elements().len();
+            let max_depth = rs.iter().map(|v| v.len()).max().unwrap_or(0);
+            
+            let mut counts = vec![0; max_depth + 1];
+            counts[0] = elem_count; // Current level
+            
+            // Aggregate from elements
+            for child_counts in rs {
+                for (depth, &count) in child_counts.iter().enumerate() {
+                    counts[depth + 1] += count;
+                }
+            }
+            
+            counts
+        });
+
+        // Depth 0 (root level): 2 elements [pattern(2), point(5)]
+        // Depth 1 (pattern(2) level): 2 elements [point(3), point(4)]
+        // Depth 2: 0 elements (all leaves)
+        assert_eq!(result[0], 2, "Root has 2 elements");
+        assert_eq!(result[1], 2, "Second level has 2 elements");
+    }
 }
 
 
