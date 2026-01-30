@@ -77,7 +77,10 @@ fn element_count_aggregation() {
 
     let p = Pattern::pattern(
         10,
-        vec![Pattern::pattern(5, vec![Pattern::point(2)]), Pattern::point(3)],
+        vec![
+            Pattern::pattern(5, vec![Pattern::point(2)]),
+            Pattern::point(3),
+        ],
     );
 
     let result: i32 = p.para(|pat, rs| {
@@ -102,7 +105,10 @@ fn nesting_statistics() {
 
     let p = Pattern::pattern(
         1,
-        vec![Pattern::pattern(2, vec![Pattern::point(3)]), Pattern::point(4)],
+        vec![
+            Pattern::pattern(2, vec![Pattern::point(3)]),
+            Pattern::point(4),
+        ],
     );
 
     type Stats = (i32, usize, usize); // (sum, count, max_depth)
@@ -118,7 +124,11 @@ fn nesting_statistics() {
                 (s + s2, c + c2, d.max(*d2))
             });
 
-        (value + child_sum, 1 + child_count, depth.max(child_max_depth))
+        (
+            value + child_sum,
+            1 + child_count,
+            depth.max(child_max_depth),
+        )
     });
 
     println!("   Sum: {} (1 + 2 + 3 + 4)", sum);
