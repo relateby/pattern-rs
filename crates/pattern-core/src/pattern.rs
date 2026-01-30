@@ -1737,6 +1737,143 @@ impl<V> Pattern<V> {
         }
     }
 
+    /// Paramorphism: structure-aware folding over patterns.
+    ///
+    /// Folds the pattern into a single value using a structure-aware folding function.
+    /// Unlike `fold` (which only provides values), paramorphism gives the folding function
+    /// access to the full pattern structure at each position, enabling sophisticated
+    /// aggregations that consider depth, element count, and nesting level.
+    ///
+    /// # Type Parameters
+    ///
+    /// * `R` - Result type produced by the folding function (can differ from `V`)
+    /// * `F` - Folding function type `Fn(&Pattern<V>, &[R]) -> R`
+    ///
+    /// # Parameters
+    ///
+    /// * `f` - Folding function with signature `Fn(&Pattern<V>, &[R]) -> R`
+    ///   - First parameter: Reference to the current pattern subtree
+    ///   - Second parameter: Slice of results from the pattern's elements (left-to-right order)
+    ///   - Returns: Result for this node (type `R`)
+    ///
+    /// # Returns
+    ///
+    /// The result produced by applying the folding function at the root after all elements
+    /// have been processed recursively.
+    ///
+    /// # Semantics
+    ///
+    /// - **Evaluation order**: Bottom-up. For each node, para is first applied to all
+    ///   elements (left to right); then the folding function is called with the current
+    ///   pattern and the slice of those results.
+    /// - **Atomic patterns**: If the pattern has no elements, the folding function receives
+    ///   an empty slice `&[]` for the second argument.
+    /// - **Element order**: The slice of results is in the same order as `self.elements()`.
+    /// - **Non-destructive**: The pattern is not modified. The pattern can be reused after the call.
+    /// - **Single traversal**: Each node is visited exactly once.
+    ///
+    /// # Complexity
+    ///
+    /// - **Time**: O(n) where n = total number of nodes in the pattern
+    /// - **Space**: O(n) for collecting element results (plus O(d) stack where d = max depth)
+    ///
+    /// # Relationship to Other Operations
+    ///
+    /// | Operation | Access | Use when |
+    /// |-----------|--------|----------|
+    /// | `fold` | Values only | Reducing to a single value without structure (e.g. sum, count) |
+    /// | `para` | Pattern + element results | Structure-aware aggregation (e.g. depth-weighted sum) |
+    /// | `extend` | Pattern for transformation | Structure-aware transformation returning new Pattern |
+    ///
+    /// # Examples
+    ///
+    /// ## Sum all values (equivalent to fold)
+    ///
+    /// ```
+    /// use pattern_core::Pattern;
+    ///
+    /// let p = Pattern::pattern(10, vec![Pattern::point(5), Pattern::point(3)]);
+    /// let sum: i32 = p.para(|pat, rs| *pat.value() + rs.iter().sum::<i32>());
+    /// assert_eq!(sum, 18);  // 10 + 5 + 3
+    /// ```
+    ///
+    /// ## Depth-weighted sum
+    ///
+    /// ```
+    /// use pattern_core::Pattern;
+    ///
+    /// let p = Pattern::pattern(10, vec![Pattern::point(5), Pattern::point(3)]);
+    /// let depth_weighted: i32 = p.para(|pat, rs| {
+    ///     *pat.value() * pat.depth() as i32 + rs.iter().sum::<i32>()
+    /// });
+    /// // Root: 10*1 + (0+0) = 10
+    /// // Elements are atomic (depth 0): 5*0=0, 3*0=0
+    /// assert_eq!(depth_weighted, 10);
+    /// ```
+    ///
+    /// ## Atomic pattern receives empty slice
+    ///
+    /// ```
+    /// use pattern_core::Pattern;
+    ///
+    /// let atom = Pattern::point(42);
+    /// let result = atom.para(|pat, rs| {
+    ///     assert!(rs.is_empty());  // Atomic pattern has no elements
+    ///     *pat.value()
+    /// });
+    /// assert_eq!(result, 42);
+    /// ```
+    ///
+    /// ## Nesting statistics (sum, count, max_depth)
+    ///
+    /// ```
+    /// use pattern_core::Pattern;
+    ///
+    /// let p = Pattern::pattern(1, vec![
+    ///     Pattern::pattern(2, vec![Pattern::point(3)]),
+    /// ]);
+    ///
+    /// let (sum, count, max_depth): (i32, usize, usize) = p.para(|pat, rs| {
+    ///     let (child_sum, child_count, child_depth) = rs.iter()
+    ///         .fold((0_i32, 0_usize, 0_usize), |(s, c, d), (s2, c2, d2)| {
+    ///             (s + s2, c + c2, d.max(*d2))
+    ///         });
+    ///     (*pat.value() + child_sum, 1 + child_count, pat.depth().max(child_depth))
+    /// });
+    ///
+    /// assert_eq!(sum, 6);        // 1 + 2 + 3
+    /// assert_eq!(count, 3);      // 3 nodes total
+    /// assert_eq!(max_depth, 1);  // Maximum nesting depth
+    /// ```
+    ///
+    /// # Reference
+    ///
+    /// Ported from gram-hs: `../gram-hs/libs/pattern/src/Pattern/Core.hs` (lines 1188-1190)
+    pub fn para<R, F>(&self, f: F) -> R
+    where
+        F: Fn(&Pattern<V>, &[R]) -> R,
+    {
+        self.para_with(&f)
+    }
+
+    /// Internal helper for paramorphism that takes the folding function by reference.
+    ///
+    /// This avoids moving the closure on each recursive call, which would require
+    /// the closure to be `Clone`. By taking `&F` instead of `F`, we can recursively
+    /// call `para_with` without ownership issues.
+    fn para_with<R, F>(&self, f: &F) -> R
+    where
+        F: Fn(&Pattern<V>, &[R]) -> R,
+    {
+        // Recursively compute results for all elements (left to right)
+        let child_results: Vec<R> = self.elements.iter()
+            .map(|child| child.para_with(f))
+            .collect();
+        
+        // Apply folding function to current pattern and element results
+        f(self, &child_results)
+    }
+
     /// Validates pattern structure against configurable rules and constraints.
     ///
     /// Returns `Ok(())` if the pattern is valid according to the rules,
@@ -3183,6 +3320,159 @@ impl<V: Hash> Hash for Pattern<V> {
         self.elements.hash(state);
     }
 }
+
+// ============================================================================
+// Paramorphism Tests
+// ============================================================================
+
+#[cfg(test)]
+mod para_tests {
+    use super::*;
+
+    // ========================================================================
+    // Phase 3: User Story 1 – Pattern-of-Elements Analysis
+    // ========================================================================
+
+    /// T007: Atomic pattern receives empty slice
+    #[test]
+    fn para_atomic_pattern_receives_empty_slice() {
+        let atom = Pattern::point(42);
+        let result = atom.para(|p, rs| {
+            // Verify atomic pattern has no elements
+            assert!(rs.is_empty(), "Atomic pattern should receive empty slice");
+            assert_eq!(p.elements().len(), 0, "Atomic pattern should have no elements");
+            *p.value()
+        });
+        assert_eq!(result, 42);
+    }
+
+    /// T008: Pattern with elements receives results in element order
+    #[test]
+    fn para_preserves_element_order() {
+        // Build pattern: root(10) with elements [point(5), point(3), point(7)]
+        let p = Pattern::pattern(
+            10,
+            vec![Pattern::point(5), Pattern::point(3), Pattern::point(7)],
+        );
+
+        // Use para to collect values in pre-order (root first, then elements left-to-right)
+        let values: Vec<i32> = p.para(|pat, child_results| {
+            let mut result = vec![*pat.value()];
+            for child_vec in child_results {
+                result.extend(child_vec);
+            }
+            result
+        });
+
+        // Should be: [10, 5, 3, 7] (root, then elements in order)
+        assert_eq!(values, vec![10, 5, 3, 7]);
+    }
+
+    /// T008 (additional): Nested pattern preserves element order
+    #[test]
+    fn para_preserves_element_order_nested() {
+        // Build nested pattern:
+        // root(1) with elements [
+        //   pattern(2) with [point(3), point(4)],
+        //   point(5)
+        // ]
+        let p = Pattern::pattern(
+            1,
+            vec![
+                Pattern::pattern(2, vec![Pattern::point(3), Pattern::point(4)]),
+                Pattern::point(5),
+            ],
+        );
+
+        // Collect values in pre-order
+        let values: Vec<i32> = p.para(|pat, child_results| {
+            let mut result = vec![*pat.value()];
+            for child_vec in child_results {
+                result.extend(child_vec);
+            }
+            result
+        });
+
+        // Should be: [1, 2, 3, 4, 5] (pre-order traversal)
+        assert_eq!(values, vec![1, 2, 3, 4, 5]);
+    }
+
+    /// T009: Structure access – para can access pattern structure
+    #[test]
+    fn para_provides_structure_access() {
+        // Build pattern with known structure
+        // Root(10) with [Pattern(20, [Point(30)]), Point(40)]
+        // Depth: 2 (root -> pattern(20) -> point(30))
+        let p = Pattern::pattern(
+            10,
+            vec![
+                Pattern::pattern(20, vec![Pattern::point(30)]),
+                Pattern::point(40),
+            ],
+        );
+
+        // Test 1: Access depth at each position
+        let depth_at_root = p.para(|pat, _| pat.depth());
+        assert_eq!(depth_at_root, 2, "Root should have depth 2 (max nesting)");
+
+        // Test 2: Access element count at each position
+        let element_count_at_root = p.para(|pat, _| pat.elements().len());
+        assert_eq!(
+            element_count_at_root, 2,
+            "Root should have 2 elements"
+        );
+
+        // Test 3: Verify structure access matches direct calls
+        assert_eq!(p.depth(), depth_at_root);
+        assert_eq!(p.elements().len(), element_count_at_root);
+    }
+
+    /// T009 (additional): Structure access for nested patterns
+    #[test]
+    fn para_structure_access_nested() {
+        // Pattern structure:
+        // Root(1) with [Pattern(2, [Point(3), Point(4)]), Point(5)]
+        // Depth: 2 (root -> pattern(2) -> point(3/4))
+        let p = Pattern::pattern(
+            1,
+            vec![
+                Pattern::pattern(2, vec![Pattern::point(3), Pattern::point(4)]),
+                Pattern::point(5),
+            ],
+        );
+
+        // Collect (value, depth, element_count) at each position
+        type Info = (i32, usize, usize);
+        let info: Info = p.para(|pat, child_infos: &[Info]| {
+            let value = *pat.value();
+            let depth = pat.depth();
+            let elem_count = pat.elements().len();
+            
+            // Verify child infos match expected structure
+            if value == 1 {
+                // Root: should have 2 children
+                assert_eq!(child_infos.len(), 2);
+                assert_eq!(child_infos[0].0, 2); // First child value
+                assert_eq!(child_infos[1].0, 5); // Second child value
+            } else if value == 2 {
+                // Middle node: should have 2 children
+                assert_eq!(child_infos.len(), 2);
+                assert_eq!(child_infos[0].0, 3);
+                assert_eq!(child_infos[1].0, 4);
+            } else {
+                // Leaf nodes: no children
+                assert_eq!(child_infos.len(), 0);
+            }
+
+            (value, depth, elem_count)
+        });
+
+        assert_eq!(info.0, 1); // Root value
+        assert_eq!(info.1, 2); // Root depth (max nesting: root -> pattern(2) -> point)
+        assert_eq!(info.2, 2); // Root has 2 elements
+    }
+}
+
 
 // ============================================================================
 // Comonad Operations
