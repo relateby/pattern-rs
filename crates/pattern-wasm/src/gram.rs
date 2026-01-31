@@ -57,8 +57,8 @@ impl Gram {
     #[wasm_bindgen]
     pub fn parse(gram: &str) -> Result<js_sys::Array, String> {
         // Parse gram notation (handles empty input by returning empty Vec)
-        let rust_patterns = gram_codec::parse_gram(gram)
-            .map_err(|e| format!("Parse error: {}", e))?;
+        let rust_patterns =
+            gram_codec::parse_gram(gram).map_err(|e| format!("Parse error: {}", e))?;
 
         // Convert to JS array of WasmPattern instances
         let js_array = js_sys::Array::new_with_length(rust_patterns.len() as u32);
@@ -99,8 +99,8 @@ impl Gram {
     #[wasm_bindgen(js_name = parseOne)]
     pub fn parse_one(gram: &str) -> Result<JsValue, String> {
         // Parse gram notation
-        let rust_patterns = gram_codec::parse_gram(gram)
-            .map_err(|e| format!("Parse error: {}", e))?;
+        let rust_patterns =
+            gram_codec::parse_gram(gram).map_err(|e| format!("Parse error: {}", e))?;
 
         // Return null for empty input
         if rust_patterns.is_empty() {
@@ -202,16 +202,22 @@ fn js_value_to_subject_or_pattern(
         *index += 1;
 
         let mut properties = HashMap::new();
-        properties.insert("value".to_string(), pattern_core::subject::Value::VBoolean(b));
+        properties.insert(
+            "value".to_string(),
+            pattern_core::subject::Value::VBoolean(b),
+        );
 
         let mut labels = HashSet::new();
         labels.insert("Bool".to_string());
 
-        return Ok((Subject {
-            identity: Symbol(format!("_{}", current_index)),
-            labels,
-            properties,
-        }, vec![]));
+        return Ok((
+            Subject {
+                identity: Symbol(format!("_{}", current_index)),
+                labels,
+                properties,
+            },
+            vec![],
+        ));
     }
 
     // String
@@ -220,16 +226,22 @@ fn js_value_to_subject_or_pattern(
         *index += 1;
 
         let mut properties = HashMap::new();
-        properties.insert("value".to_string(), pattern_core::subject::Value::VString(s));
+        properties.insert(
+            "value".to_string(),
+            pattern_core::subject::Value::VString(s),
+        );
 
         let mut labels = HashSet::new();
         labels.insert("String".to_string());
 
-        return Ok((Subject {
-            identity: Symbol(format!("_{}", current_index)),
-            labels,
-            properties,
-        }, vec![]));
+        return Ok((
+            Subject {
+                identity: Symbol(format!("_{}", current_index)),
+                labels,
+                properties,
+            },
+            vec![],
+        ));
     }
 
     // Number
@@ -248,11 +260,14 @@ fn js_value_to_subject_or_pattern(
         let mut labels = HashSet::new();
         labels.insert("Number".to_string());
 
-        return Ok((Subject {
-            identity: Symbol(format!("_{}", current_index)),
-            labels,
-            properties,
-        }, vec![]));
+        return Ok((
+            Subject {
+                identity: Symbol(format!("_{}", current_index)),
+                labels,
+                properties,
+            },
+            vec![],
+        ));
     }
 
     // Array - create List pattern with elements as children
@@ -274,11 +289,14 @@ fn js_value_to_subject_or_pattern(
         let mut labels = HashSet::new();
         labels.insert("List".to_string());
 
-        return Ok((Subject {
-            identity: Symbol("".to_string()),
-            labels,
-            properties: HashMap::new(),
-        }, elements));
+        return Ok((
+            Subject {
+                identity: Symbol("".to_string()),
+                labels,
+                properties: HashMap::new(),
+            },
+            elements,
+        ));
     }
 
     // Check if this is a WasmSubject instance (passthrough)
@@ -314,11 +332,14 @@ fn js_value_to_subject_or_pattern(
                         HashMap::new()
                     };
 
-                    return Ok((Subject {
-                        identity: Symbol(identity),
-                        labels,
-                        properties,
-                    }, vec![]));
+                    return Ok((
+                        Subject {
+                            identity: Symbol(identity),
+                            labels,
+                            properties,
+                        },
+                        vec![],
+                    ));
                 }
             }
         }
@@ -335,7 +356,10 @@ fn js_value_to_subject_or_pattern(
                 *index += 1;
 
                 let mut key_properties = HashMap::new();
-                key_properties.insert("value".to_string(), pattern_core::subject::Value::VString(key_str.clone()));
+                key_properties.insert(
+                    "value".to_string(),
+                    pattern_core::subject::Value::VString(key_str.clone()),
+                );
                 let mut key_labels = HashSet::new();
                 key_labels.insert("String".to_string());
 
@@ -361,11 +385,14 @@ fn js_value_to_subject_or_pattern(
         let mut labels = HashSet::new();
         labels.insert("Map".to_string());
 
-        return Ok((Subject {
-            identity: Symbol("".to_string()),
-            labels,
-            properties: HashMap::new(),
-        }, elements));
+        return Ok((
+            Subject {
+                identity: Symbol("".to_string()),
+                labels,
+                properties: HashMap::new(),
+            },
+            elements,
+        ));
     }
 
     Err(format!("Cannot convert value to Subject: {:?}", value))

@@ -855,7 +855,13 @@ impl WasmSubject {
         let label_override = if options.is_object() && !options.is_null() {
             js_sys::Reflect::get(&options, &JsValue::from_str("label"))
                 .ok()
-                .and_then(|v| if v.is_undefined() { None } else { v.as_string() })
+                .and_then(|v| {
+                    if v.is_undefined() {
+                        None
+                    } else {
+                        v.as_string()
+                    }
+                })
         } else {
             None
         };
@@ -863,7 +869,13 @@ impl WasmSubject {
         let value_property = if options.is_object() && !options.is_null() {
             js_sys::Reflect::get(&options, &JsValue::from_str("valueProperty"))
                 .ok()
-                .and_then(|v| if v.is_undefined() { None } else { v.as_string() })
+                .and_then(|v| {
+                    if v.is_undefined() {
+                        None
+                    } else {
+                        v.as_string()
+                    }
+                })
                 .unwrap_or_else(|| "value".to_string())
         } else {
             "value".to_string()
@@ -887,7 +899,8 @@ impl WasmSubject {
             let obj: &js_sys::Object = value.unchecked_ref();
 
             // Check for __wbg_ptr (wasm-bindgen wrapper)
-            let is_wasm_subject = js_sys::Reflect::has(obj, &JsValue::from_str("__wbg_ptr")).unwrap_or(false);
+            let is_wasm_subject =
+                js_sys::Reflect::has(obj, &JsValue::from_str("__wbg_ptr")).unwrap_or(false);
 
             if is_wasm_subject {
                 // Try to extract as existing WasmSubject
@@ -899,7 +912,9 @@ impl WasmSubject {
 
         // Convert based on type
         if value.is_null() || value.is_undefined() {
-            return Err(JsValue::from_str("Cannot convert null/undefined to Subject"));
+            return Err(JsValue::from_str(
+                "Cannot convert null/undefined to Subject",
+            ));
         }
 
         // Boolean - use "Bool" for pattern-lisp compatibility
@@ -966,13 +981,13 @@ impl WasmSubject {
         // For arrays and objects, recommend using Gram.from instead
         if js_sys::Array::is_array(&value) {
             return Err(JsValue::from_str(
-                "Arrays should use Gram.from() for pattern-lisp compatible serialization"
+                "Arrays should use Gram.from() for pattern-lisp compatible serialization",
             ));
         }
 
         if value.is_object() {
             return Err(JsValue::from_str(
-                "Objects should use Gram.from() for pattern-lisp compatible serialization"
+                "Objects should use Gram.from() for pattern-lisp compatible serialization",
             ));
         }
 
