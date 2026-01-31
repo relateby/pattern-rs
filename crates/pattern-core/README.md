@@ -70,11 +70,105 @@ assert_eq!(result.value(), "abc");
 
 ## WASM Compilation
 
-This crate is fully compatible with WebAssembly targets. To compile for WASM:
+This crate is fully compatible with WebAssembly targets and provides JavaScript/TypeScript bindings.
+
+### Building for WASM
+
+Use `wasm-pack` to build the WASM module with JavaScript bindings:
 
 ```bash
-cargo build --package pattern-core --target wasm32-unknown-unknown
+cd crates/pattern-core
+
+# For web (browser)
+wasm-pack build --target web --features wasm
+
+# For Node.js
+wasm-pack build --target nodejs --features wasm
 ```
+
+This generates a `pkg/` directory with:
+- `pattern_core_bg.wasm` - compiled WebAssembly module
+- `pattern_core.js` - JavaScript glue code
+- `pattern_core.d.ts` - TypeScript type definitions
+
+### JavaScript/TypeScript Usage
+
+```typescript
+import init, { Pattern, Subject, Value } from 'pattern_core';
+
+await init();
+
+// Create patterns
+const atomic = Pattern.point("hello");
+
+// Create nested pattern using builder pattern
+const nested = Pattern.pattern("parent");
+nested.addElement(Pattern.point("child"));
+
+// Transform and query
+const doubled = nested.map(x => x + x);
+const filtered = nested.filter(p => p.value.length > 3);
+
+// Validation returns Either-like result
+const rules = ValidationRules.new({ maxDepth: 10 });
+const result = nested.validate(rules);
+
+if (result._tag === 'Right') {
+    console.log('Valid pattern');
+} else {
+    console.error('Validation failed:', result.left.message);
+}
+```
+
+### TypeScript Generics
+
+The TypeScript bindings provide full generic type safety with `Pattern<V>`:
+
+```typescript
+// Type inference works across transformations
+const strings: Pattern<string> = Pattern.point("hello");
+const lengths: Pattern<number> = strings.map(s => s.length); // ✓ type-safe
+
+// Pattern<Subject> for graph patterns
+const subject = Subject.new("n", ["Person"], { name: Value.string("Alice") });
+const pattern: Pattern<Subject> = Pattern.point(subject);
+```
+
+### effect-ts Integration
+
+Fallible operations (e.g., `validate`) return an Either-like shape that is directly compatible with [effect-ts](https://effect.website/):
+
+```typescript
+import { Either } from 'effect';
+import { Pattern, ValidationRules } from 'pattern_core';
+
+const pattern = Pattern.point("hello");
+const rules = ValidationRules.new({ maxDepth: 10 });
+const result = pattern.validate(rules); // Either<ValidationError, void>
+
+// Use with effect-ts directly - no wrapper needed
+Either.match(result, {
+    onLeft: (err) => console.error('Failed:', err.message),
+    onRight: () => console.log('Valid')
+});
+
+// Or use in Effect pipelines
+import { pipe } from 'effect';
+
+pipe(
+    pattern.validate(rules),
+    Either.map(() => pattern),
+    Either.flatMap(p => p.validate(otherRules)),
+    Either.match({
+        onLeft: handleError,
+        onRight: processValid
+    })
+);
+```
+
+**Return Shape**: `{ _tag: 'Right' | 'Left', right: T, left: E }`
+
+This shape matches the effect-ts `Either` type exactly, so no conversion is needed. All fallible operations (validation, etc.) follow this pattern and **never throw exceptions**.
 
 ### WASM Compatibility Verification
 
@@ -87,12 +181,19 @@ All types in this crate are WASM-compatible:
 
 No platform-specific code is used. The crate compiles successfully for `wasm32-unknown-unknown` without any modifications.
 
+### Examples
+
+See `examples/pattern-core-wasm/` for complete examples:
+- `browser.html` - browser usage with visual output
+- `node.mjs` - Node.js usage with all operations
+- `typescript-demo.ts` - TypeScript with full type safety
+
 ### Verification Status
 
-- **Last Verified**: 2025-01-27
+- **Last Verified**: 2026-01-31
 - **Target**: `wasm32-unknown-unknown`
-- **Status**: ✅ Compiles successfully
-- **Notes**: All types use only standard library collections and traits that are WASM-compatible
+- **Status**: ✅ Compiles successfully with WASM bindings
+- **Features**: Full API parity with Python bindings, TypeScript generics, effect-ts compatibility
 
 ## Traits
 

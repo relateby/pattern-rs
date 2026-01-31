@@ -177,6 +177,9 @@ pub mod test_utils;
 #[cfg(feature = "python")]
 pub mod python;
 
+#[cfg(feature = "wasm")]
+pub mod wasm;
+
 pub use pattern::{Pattern, StructureAnalysis, ValidationError, ValidationRules};
 pub use subject::{PropertyRecord, RangeValue, Subject, Symbol, Value};
 

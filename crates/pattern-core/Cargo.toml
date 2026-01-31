@@ -14,6 +14,10 @@ serde_json = { workspace = true }
 # Python support
 pyo3 = { version = "0.23", optional = true, features = ["extension-module"] }
 
+# WASM support
+wasm-bindgen = { version = "0.2", optional = true }
+js-sys = { version = "0.3", optional = true }
+
 [dev-dependencies]
 proptest = { workspace = true }
 insta = { workspace = true }
@@ -27,6 +31,7 @@ crate-type = ["cdylib", "rlib"]
 [features]
 default = []
 python = ["pyo3"]
+wasm = ["wasm-bindgen", "js-sys"]
 
 [[bench]]
 name = "fold_benchmarks"
@@ -43,4 +48,3 @@ path = "../../examples/pattern-core/comonad_usage.rs"
 [[example]]
 name = "paramorphism_usage"
 path = "../../examples/pattern-core/paramorphism_usage.rs"
-

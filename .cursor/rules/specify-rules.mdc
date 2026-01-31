@@ -25,6 +25,10 @@ Auto-generated from all feature plans. Last updated: 2025-12-27
 - Python 3.8+ (type hints support), Rust 1.75+ (edition 2021) + PyO3 0.23+ (Rust-Python bindings), maturin (Python packaging), pattern-core crate (existing Rust library) (024-python-pattern-core)
 - Rust (existing workspace; use same toolchain as pattern-core) + None new (pattern-core crate existing) (025-pattern-paramorphism)
 - N/A (in-memory pattern structure only) (025-pattern-paramorphism)
+- Rust 1.75+ (edition 2021), TypeScript 4.x+ (for .d.ts), JavaScript ES2020+ (consumers) + wasm-bindgen (optional, feature `wasm`), pattern-core (existing), 024 Python bindings as parity reference (027-wasm-pattern-typescript-parity)
+- N/A (in-memory only) (027-wasm-pattern-typescript-parity)
+- Rust (existing workspace; same toolchain as pattern-core) + wasm-bindgen (optional / target cfg for wasm32); js-sys, web-sys as needed for callbacks and bindings (027-wasm-pattern-typescript-parity)
+- N/A (in-memory pattern structure; no persistence in this feature) (027-wasm-pattern-typescript-parity)
 - Python 3.8+ (type hints), Rust 1.75+ (edition 2021) + PyO3 (existing, pattern-core `python` feature), maturin, pattern-core crate with existing `para` (spec 025) (026-paramorphism-python-bindings)
 - N/A (in-memory only) (026-paramorphism-python-bindings)
 - Python 3.8+ (type hints, Generic), Rust 1.75+ (edition 2021) + PyO3 (existing, pattern-core `python` feature), maturin, pattern-core crate with existing `para` (spec 025), `typing.TypeVar` and `typing.Generic` for Pattern[V] (026-paramorphism-python-bindings)
@@ -47,6 +51,9 @@ cargo test [ONLY COMMANDS FOR ACTIVE TECHNOLOGIES][ONLY COMMANDS FOR ACTIVE TECH
 Rust (MSRV: 1.70.0, edition: 2021): Follow standard conventions
 
 ## Recent Changes
+- 027-wasm-pattern-typescript-parity: Added Rust (existing workspace; same toolchain as pattern-core) + wasm-bindgen (optional / target cfg for wasm32); js-sys, web-sys as needed for callbacks and bindings
+- 027-wasm-pattern-typescript-parity: Added Rust 1.75+ (edition 2021), TypeScript 4.x+ (for .d.ts), JavaScript ES2020+ (consumers) + wasm-bindgen (optional, feature `wasm`), pattern-core (existing), 024 Python bindings as parity reference
+- 027-wasm-pattern-typescript-parity: Added Rust 1.75+ (edition 2021), TypeScript 4.x+ (for .d.ts), JavaScript ES2020+ (consumers) + wasm-bindgen (optional, feature `wasm`), pattern-core (existing), 024 Python bindings as parity reference
 - 026-paramorphism-python-bindings: Added Python 3.8+ (type hints, Generic), Rust 1.75+ (edition 2021) + PyO3 (existing, pattern-core `python` feature), maturin, pattern-core crate with existing `para` (spec 025), `typing.TypeVar` and `typing.Generic` for Pattern[V]
 - 026-paramorphism-python-bindings: Added Python 3.8+ (type hints), Rust 1.75+ (edition 2021) + PyO3 (existing, pattern-core `python` feature), maturin, pattern-core crate with existing `para` (spec 025)
 - 025-pattern-paramorphism: Added Rust (existing workspace; use same toolchain as pattern-core) + None new (pattern-core crate existing)
