@@ -811,6 +811,177 @@ impl WasmSubject {
         })
     }
 
+    /// Convert a primitive JavaScript value to a Subject using pattern-lisp compatible mapping.
+    ///
+    /// This method provides sensible defaults for converting primitive JavaScript types to Subjects,
+    /// using labels compatible with pattern-lisp's Codec.hs for interoperability:
+    /// - **string**: Label "String", value stored in "value" property
+    /// - **number**: Label "Number", value stored in "value" property
+    /// - **boolean**: Label "Bool", value stored in "value" property
+    /// - **Subject instance**: Passthrough unchanged
+    ///
+    /// **Note**: Arrays and objects should use `Gram.from()` instead, which creates proper
+    /// Pattern structures with elements (not Subject properties) for pattern-lisp compatibility.
+    ///
+    /// # Arguments
+    /// * `value` - A primitive JavaScript value (string, number, boolean) or Subject
+    /// * `options` - Optional conversion options object with fields:
+    ///   - `label?: string` - Custom label override (default: type-based)
+    ///   - `valueProperty?: string` - Property name for value (default: "value")
+    ///   - `index?: number` - Index for identity generation (default: 0)
+    ///
+    /// # Returns
+    /// A new Subject instance
+    ///
+    /// # Example (JavaScript)
+    /// ```javascript
+    /// // Primitive conversion with pattern-lisp compatible defaults
+    /// const s1 = Subject.fromValue("hello");
+    /// // Result: { identity: "_0", labels: ["String"], properties: { value: "hello" } }
+    ///
+    /// const s2 = Subject.fromValue(42);
+    /// // Result: { identity: "_0", labels: ["Number"], properties: { value: 42 } }
+    ///
+    /// const s3 = Subject.fromValue(true);
+    /// // Result: { identity: "_0", labels: ["Bool"], properties: { value: true } }
+    ///
+    /// // Subject passthrough
+    /// const subject = new Subject("alice", ["Person"], {name: "Alice"});
+    /// const s4 = Subject.fromValue(subject); // Returns same subject
+    /// ```
+    #[wasm_bindgen(js_name = fromValue)]
+    pub fn from_value(value: JsValue, options: JsValue) -> Result<WasmSubject, JsValue> {
+        // Extract options (all optional)
+        let label_override = if options.is_object() && !options.is_null() {
+            js_sys::Reflect::get(&options, &JsValue::from_str("label"))
+                .ok()
+                .and_then(|v| if v.is_undefined() { None } else { v.as_string() })
+        } else {
+            None
+        };
+
+        let value_property = if options.is_object() && !options.is_null() {
+            js_sys::Reflect::get(&options, &JsValue::from_str("valueProperty"))
+                .ok()
+                .and_then(|v| if v.is_undefined() { None } else { v.as_string() })
+                .unwrap_or_else(|| "value".to_string())
+        } else {
+            "value".to_string()
+        };
+
+        let index = if options.is_object() && !options.is_null() {
+            js_sys::Reflect::get(&options, &JsValue::from_str("index"))
+                .ok()
+                .and_then(|v| if v.is_undefined() { None } else { v.as_f64() })
+                .map(|f| f as usize)
+                .unwrap_or(0)
+        } else {
+            0
+        };
+
+        // Auto-generate identity: _0, _1, _2, ...
+        let identity = format!("_{}", index);
+
+        // Check if value is already a WasmSubject instance (passthrough)
+        if value.is_object() && !value.is_null() {
+            let obj: &js_sys::Object = value.unchecked_ref();
+
+            // Check for __wbg_ptr (wasm-bindgen wrapper)
+            let is_wasm_subject = js_sys::Reflect::has(obj, &JsValue::from_str("__wbg_ptr")).unwrap_or(false);
+
+            if is_wasm_subject {
+                // Try to extract as existing WasmSubject
+                if let Some(existing) = WasmSubject::from_js_value(&value) {
+                    return Ok(existing);
+                }
+            }
+        }
+
+        // Convert based on type
+        if value.is_null() || value.is_undefined() {
+            return Err(JsValue::from_str("Cannot convert null/undefined to Subject"));
+        }
+
+        // Boolean - use "Bool" for pattern-lisp compatibility
+        if let Some(b) = value.as_bool() {
+            let label = label_override.unwrap_or_else(|| "Bool".to_string());
+            let mut properties = HashMap::new();
+            properties.insert(value_property, Value::VBoolean(b));
+
+            let mut labels = std::collections::HashSet::new();
+            labels.insert(label);
+
+            return Ok(WasmSubject {
+                inner: Subject {
+                    identity: Symbol(identity),
+                    labels,
+                    properties,
+                },
+            });
+        }
+
+        // String
+        if let Some(s) = value.as_string() {
+            let label = label_override.unwrap_or_else(|| "String".to_string());
+            let mut properties = HashMap::new();
+            properties.insert(value_property, Value::VString(s));
+
+            let mut labels = std::collections::HashSet::new();
+            labels.insert(label);
+
+            return Ok(WasmSubject {
+                inner: Subject {
+                    identity: Symbol(identity),
+                    labels,
+                    properties,
+                },
+            });
+        }
+
+        // Number
+        if let Some(n) = value.as_f64() {
+            let label = label_override.unwrap_or_else(|| "Number".to_string());
+            let mut properties = HashMap::new();
+
+            // Check if it's a safe integer
+            let val = if n.fract() == 0.0 && n >= i64::MIN as f64 && n <= i64::MAX as f64 {
+                Value::VInteger(n as i64)
+            } else {
+                Value::VDecimal(n)
+            };
+            properties.insert(value_property, val);
+
+            let mut labels = std::collections::HashSet::new();
+            labels.insert(label);
+
+            return Ok(WasmSubject {
+                inner: Subject {
+                    identity: Symbol(identity),
+                    labels,
+                    properties,
+                },
+            });
+        }
+
+        // For arrays and objects, recommend using Gram.from instead
+        if js_sys::Array::is_array(&value) {
+            return Err(JsValue::from_str(
+                "Arrays should use Gram.from() for pattern-lisp compatible serialization"
+            ));
+        }
+
+        if value.is_object() {
+            return Err(JsValue::from_str(
+                "Objects should use Gram.from() for pattern-lisp compatible serialization"
+            ));
+        }
+
+        Err(JsValue::from_str(&format!(
+            "Cannot convert value to Subject: {:?}",
+            value
+        )))
+    }
+
     /// Get the identity symbol as a string.
     ///
     /// # Returns

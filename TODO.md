@@ -307,6 +307,38 @@ impl<V> Pattern<V> {
 - [ ] Add example documentation
 - [ ] Test examples in target environments
 
+### 🆕 Cross-Platform Conventional Conversion Parity (P2 - MEDIUM PRIORITY)
+**Reference**: `specs/028-unified-gram-wasm/` and `../pattern-lisp/src/PatternLisp/Codec.hs`
+**Status**: **PARTIAL** - JavaScript/WASM complete, Rust/Python missing
+
+The unified gram-wasm package (028) introduced pattern-lisp compatible conventional conversion
+for JavaScript via `Subject.fromValue()` and `Gram.from()`. These APIs convert arbitrary values
+to `Pattern<Subject>` with labels compatible with pattern-lisp's Codec.hs:
+
+| Value Type | Label | Properties | Pattern Elements |
+|------------|-------|------------|------------------|
+| string | `String` | `{value: s}` | none |
+| number | `Number` | `{value: n}` | none |
+| boolean | `Bool` | `{value: b}` | none |
+| array | `List` | none | `[elem1, elem2, ...]` |
+| object/map | `Map` | none | `[key1, val1, key2, val2, ...]` |
+
+**Current Status by Platform**:
+- ✅ **JavaScript/WASM**: `Subject.fromValue()` and `Gram.from()` implemented in `crates/pattern-wasm/`
+- ❌ **Python**: No equivalent conversion APIs
+- ❌ **Rust**: No equivalent conversion APIs (can construct Subject manually)
+
+**Tasks**:
+- [ ] Add `Subject.from_value()` to Python bindings (`crates/pattern-core/src/python.rs`)
+- [ ] Add `Gram.from_pattern()` equivalent to Python bindings
+- [ ] Consider adding `Subject::from_primitive()` trait implementations or builder for Rust
+- [ ] Ensure all platforms produce identical gram notation for same input values
+- [ ] Add cross-platform round-trip tests
+
+**Priority**: P2 - Medium priority (JavaScript is primary consumer, but parity enables consistent behavior)
+**Effort**: 2-3 days
+**Impact**: MEDIUM - Enables pattern-lisp compatible serialization from all platforms
+
 ---
 
 ## Phase 9: Production Features (FUTURE)

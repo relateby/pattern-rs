@@ -88,28 +88,79 @@ This ensures `pattern.value instanceof Subject` is true for both parsed and manu
 
 ---
 
-## Phase 4: User Story 2 - Serialize and parse feel like JSON (Priority: P2)
+## Phase 4: User Story 2 - Serialize and parse feel like JSON (Priority: P2) ✅ COMPLETE
 
 **Goal**: parseOne available; empty/whitespace input returns [] and null; invalid input reports a clear error without exposing internal AST.
 
 **Independent Test**: Call Gram.parseOne on valid string (get first pattern or null); on empty/whitespace get null; on invalid string get clear error message, not parser internals.
 
-- [ ] T010 [US2] Implement Gram::parseOne in crates/pattern-wasm/src/gram.rs (parse and return first pattern or null)
-- [ ] T011 [US2] Implement empty and whitespace-only parse behavior in crates/pattern-wasm/src/gram.rs: parse returns [], parseOne returns null; no throw
-- [ ] T012 [US2] Implement parse error handling in crates/pattern-wasm/src/gram.rs so invalid gram notation produces a clear error (e.g. thrown Error with message) and does not expose internal parser or AST types
+- [x] T010 [US2] Implement Gram::parseOne in crates/pattern-wasm/src/gram.rs (parse and return first pattern or null)
+- [x] T011 [US2] Implement empty and whitespace-only parse behavior in crates/pattern-wasm/src/gram.rs: parse returns [], parseOne returns null; no throw
+- [x] T012 [US2] Implement parse error handling in crates/pattern-wasm/src/gram.rs so invalid gram notation produces a clear error (e.g. thrown Error with message) and does not expose internal parser or AST types
+
+**Status**: ✅ Phase 4 Complete (2026-01-31)
+
+**Implementation Notes**:
+1. Implemented `Gram::parseOne()` in `pattern-wasm/src/gram.rs:72-110`:
+   - Returns `Result<JsValue, String>` where Ok(null) for empty input, Ok(WasmPattern) for valid input
+   - Parses using `gram_codec::parse_gram` and returns first pattern or null if empty
+   - Includes comprehensive documentation with JavaScript examples
+
+2. Empty/whitespace handling:
+   - `Gram::parse("")` returns empty js_sys::Array (verified by gram_codec::parse_gram behavior)
+   - `Gram::parseOne("")` returns JsValue::null()
+   - Both leverage gram_codec's built-in empty input handling
+
+3. Error handling:
+   - Both `parse()` and `parseOne()` wrap gram_codec errors with `format!("Parse error: {}", e)`
+   - Errors are returned as String in Result, which wasm-bindgen converts to thrown JavaScript errors
+   - Internal parser/AST types are not exposed to JavaScript
 
 **Checkpoint**: User Story 2 is complete; parseOne, empty input, and error behavior match contract.
 
 ---
 
-## Phase 5: User Story 3 - Convert generic patterns to serializable form (Priority: P3)
+## Phase 5: User Story 3 - Convert generic patterns to serializable form (Priority: P3) ✅ COMPLETE
 
 **Goal**: Subject.fromValue(value, options?) implements conventional mapping; Gram.from(pattern, options?) is implemented as pattern.map(v => Subject.fromValue(v, options)).
 
 **Independent Test**: Build Pattern of primitives (e.g. numbers), call Gram.from with default or minimal options, then Gram.stringify; parse back and assert round-trip. Optionally use pattern.map(Subject.fromValue) explicitly.
 
-- [ ] T013 [US3] Implement Subject.fromValue(value, options?) in crates/pattern-wasm/src/convert.rs (or extend Subject surface) with conventional mapping for string, number, boolean, object, Subject passthrough; options: label, valueProperty, identity (e.g. (value, index) => string)
-- [ ] T014 [US3] Implement Gram::from(pattern, options?) in crates/pattern-wasm/src/gram.rs as pattern.map(v => Subject.fromValue(v, options)), passing options through to Subject.fromValue
+- [x] T013 [US3] Implement Subject.fromValue(value, options?) in crates/pattern-wasm/src/convert.rs (or extend Subject surface) with conventional mapping for string, number, boolean, object, Subject passthrough; options: label, valueProperty, identity (e.g. (value, index) => string)
+- [x] T014 [US3] Implement Gram::from(pattern, options?) in crates/pattern-wasm/src/gram.rs as pattern.map(v => Subject.fromValue(v, options)), passing options through to Subject.fromValue
+
+**Status**: ✅ Phase 5 Complete (2026-01-31)
+
+**Implementation Notes**:
+
+1. **pattern-lisp Compatibility**: Implemented with full compatibility with pattern-lisp's Codec.hs serialization format:
+   - Primitives use pattern-lisp labels: `String`, `Number`, `Bool` (not `Boolean`)
+   - Arrays serialize as Pattern with `List` label and elements as children
+   - Objects serialize as Pattern with `Map` label and alternating key-value elements
+   - Subject instances pass through unchanged
+
+2. `Subject.fromValue(value, options?)` in `pattern-core/src/wasm.rs`:
+   - Handles primitives (string, number, boolean) with pattern-lisp compatible labels
+   - Subject passthrough for existing Subject instances
+   - Rejects arrays/objects with helpful error message directing to `Gram.from()`
+   - Supports options: `label`, `valueProperty`, `index`
+   - Auto-generates identities as `_0`, `_1`, `_2`, ...
+
+3. `Gram::from(pattern, options?)` in `pattern-wasm/src/gram.rs:113-150`:
+   - Recursively converts Pattern<JsValue> to Pattern<Subject>
+   - Creates proper pattern structure with elements for collections (not properties)
+   - Helper `js_value_to_subject_or_pattern()` returns (Subject, Vec<elements>)
+   - Helper `convert_js_pattern_to_subject_pattern()` handles recursive traversal
+
+4. **Serialization Format Compatibility**:
+   | JS Type | Label | Properties | Elements |
+   |---------|-------|------------|----------|
+   | number | `Number` | `{value: n}` | none |
+   | string | `String` | `{value: s}` | none |
+   | boolean | `Bool` | `{value: b}` | none |
+   | array | `List` | none | `[elem1, elem2, ...]` |
+   | object | `Map` | none | `[key1, val1, key2, val2, ...]` |
+   | Subject | passthrough | passthrough | none |
 
 **Checkpoint**: User Story 3 is complete; conventional conversion and Gram.from work per data-model.
 
