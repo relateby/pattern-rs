@@ -100,7 +100,10 @@ await init();
 
 // Create patterns
 const atomic = Pattern.point("hello");
-const nested = Pattern.pattern("parent", [Pattern.point("child")]);
+
+// Create nested pattern using builder pattern
+const nested = Pattern.pattern("parent");
+nested.addElement(Pattern.point("child"));
 
 // Transform and query
 const doubled = nested.map(x => x + x);

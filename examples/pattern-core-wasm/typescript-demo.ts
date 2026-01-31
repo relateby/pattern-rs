@@ -7,90 +7,95 @@
 //   2. Ensure TypeScript definitions are in pkg/
 //   3. Type-check: tsc --noEmit typescript-demo.ts
 
-import init, { Pattern, Subject, Value, ValidationRules, Either } from './pkg/pattern_core.js';
+import init, {
+  Pattern,
+  Subject,
+  Value,
+  ValidationRules,
+} from "./pkg/pattern_core.js";
+import type { Either } from "./pkg/pattern_core.js";
 
 async function typeScriptDemo() {
-    await init();
+  await init();
 
-    // ===== Type Inference Demo =====
+  // ===== Type Inference Demo =====
 
-    // Pattern<string> - type inferred from literal
-    const stringPattern: Pattern<string> = Pattern.point("hello");
+  // Pattern<string> - type inferred from literal
+  const stringPattern: Pattern<string> = Pattern.point("hello");
 
-    // Pattern<number> - type inferred from literal
-    const numberPattern: Pattern<number> = Pattern.point(42);
+  // Pattern<number> - type inferred from literal
+  const numberPattern: Pattern<number> = Pattern.point(42);
 
-    // Pattern<Subject> - explicitly typed
-    const subject = Subject.new("n", ["Person"], {
-        name: Value.string("Alice")
-    });
-    const subjectPattern: Pattern<Subject> = Pattern.point(subject);
+  // Pattern<Subject> - explicitly typed
+  const subject = Subject.new("n", ["Person"], {
+    name: Value.string("Alice"),
+  });
+  const subjectPattern: Pattern<Subject> = Pattern.point(subject);
 
-    // ===== Generic Type Flow Through Operations =====
+  // ===== Generic Type Flow Through Operations =====
 
-    // Map: Pattern<number> -> Pattern<string>
-    const numbers = Pattern.pattern(1, [Pattern.point(2), Pattern.point(3)]);
-    const asStrings: Pattern<string> = numbers.map(n => `Number: ${n}`);
+  // Map: Pattern<number> -> Pattern<string>
+  const numbers = Pattern.pattern(1, [Pattern.point(2), Pattern.point(3)]);
+  const asStrings: Pattern<string> = numbers.map((n) => `Number: ${n}`);
 
-    // Map: Pattern<string> -> Pattern<number>
-    const lengths: Pattern<number> = stringPattern.map(s => s.length);
+  // Map: Pattern<string> -> Pattern<number>
+  const lengths: Pattern<number> = stringPattern.map((s) => s.length);
 
-    // Filter preserves type
-    const filtered: Pattern<number> = numbers.filter(p => p.value > 1);
+  // Filter returns array of patterns
+  const filtered: Pattern<number>[] = numbers.filter((p) => p.value > 1);
 
-    // Fold produces output type
-    const sum: number = numbers.fold(0, (acc, val) => acc + val);
-    const concatenated: string = asStrings.fold("", (acc, val) => acc + val);
+  // Fold produces output type
+  const sum: number = numbers.fold(0, (acc, val) => acc + val);
+  const concatenated: string = asStrings.fold("", (acc, val) => acc + val);
 
-    // Para (paramorphism) - type inference from callback
-    const paraSum: number = numbers.para((value, childResults) => {
-        return value + childResults.reduce((a, b) => a + b, 0);
-    });
+  // Para (paramorphism) - type inference from callback
+  const paraSum: number = numbers.para((value, childResults) => {
+    return value + childResults.reduce((a, b) => a + b, 0);
+  });
 
-    // ===== Nested Patterns: Pattern<Pattern<V>> =====
+  // ===== Nested Patterns: Pattern<Pattern<V>> =====
 
-    const nested: Pattern<Pattern<number>> = Pattern.pattern(
-        Pattern.point(1),
-        [Pattern.point(Pattern.point(2))]
-    );
+  const nested: Pattern<Pattern<number>> = Pattern.pattern(Pattern.point(1), [
+    Pattern.point(Pattern.point(2)),
+  ]);
 
-    // Extract unwraps one level: Pattern<Pattern<V>> -> Pattern<V>
-    const unwrapped: Pattern<number> = nested.extract();
+  // Extract unwraps one level: Pattern<Pattern<V>> -> Pattern<V>
+  const unwrapped: Pattern<number> = nested.extract();
 
-    // ===== Comonad Operations with Type Safety =====
+  // ===== Comonad Operations with Type Safety =====
 
-    // depthAt returns Pattern<number>
-    const depths: Pattern<number> = numbers.depthAt();
+  // depthAt returns Pattern<number>
+  const depths: Pattern<number> = numbers.depthAt();
 
-    // sizeAt returns Pattern<number>
-    const sizes: Pattern<number> = numbers.sizeAt();
+  // sizeAt returns Pattern<number>
+  const sizes: Pattern<number> = numbers.sizeAt();
 
-    // indicesAt returns Pattern<number[]>
-    const indices: Pattern<number[]> = numbers.indicesAt();
+  // indicesAt returns Pattern<number[]>
+  const indices: Pattern<number[]> = numbers.indicesAt();
 
-    // extend: replace each subpattern with function result
-    const extended: Pattern<number> = numbers.extend(p => p.size());
+  // extend: replace each subpattern with function result
+  const extended: Pattern<number> = numbers.extend((p) => p.size());
 
-    // ===== Either-like Validation =====
+  // ===== Either-like Validation =====
 
-    const rules = ValidationRules.new({ maxDepth: 2, maxElements: 10 });
+  const rules = ValidationRules.new({ maxDepth: 2, maxElements: 10 });
 
-    // validate returns Either<ValidationError, void>
-    const validResult: Either<ValidationError, void> = numbers.validate(rules);
+  // validate returns Either<ValidationError, void>
+  const validResult: Either<ValidationError, void> = numbers.validate(rules);
 
-    // Pattern matching on Either
-    if (validResult._tag === 'Right') {
-        console.log('Validation passed');
-    } else {
-        // TypeScript knows validResult.left exists here
-        console.error('Validation failed:', validResult.left.message);
-        console.error('Rule violated:', validResult.left.ruleViolated);
-    }
+  // Pattern matching on Either
+  if (validResult._tag === "Right") {
+    console.log("Validation passed");
+  } else {
+    // TypeScript knows validResult.left exists here
+    console.error("Validation failed:", validResult.left.message);
+    console.error("Rule violated:", validResult.left.ruleViolated);
+  }
 
-    // ===== effect-ts Integration (if installed) =====
+  // ===== effect-ts Integration (if installed) =====
 
-    // The Either shape is directly compatible with effect-ts:
-    /*
+  // The Either shape is directly compatible with effect-ts:
+  /*
     import { Either } from 'effect';
 
     const result = pattern.validate(rules);
@@ -117,58 +122,60 @@ async function typeScriptDemo() {
     );
     */
 
-    // ===== Query Operations with Type-Safe Callbacks =====
+  // ===== Query Operations with Type-Safe Callbacks =====
 
-    // Predicates are type-checked
-    const hasPositive: boolean = numbers.anyValue((v: number) => v > 0);
-    const allEven: boolean = numbers.allValues((v: number) => v % 2 === 0);
+  // Predicates are type-checked
+  const hasPositive: boolean = numbers.anyValue((v: number) => v > 0);
+  const allEven: boolean = numbers.allValues((v: number) => v % 2 === 0);
 
-    // Filter with pattern predicate
-    const largeValues: Pattern<number> = numbers.filter((p: Pattern<number>) => p.value > 1);
+  // Filter with pattern predicate returns array
+  const largeValues: Pattern<number>[] = numbers.filter(
+    (p: Pattern<number>) => p.value > 1,
+  );
+  console.log(`Filtered to ${largeValues.length} patterns with value > 1`);
 
-    // findFirst returns Pattern<V> | null
-    const first: Pattern<number> | null = numbers.findFirst(p => p.value === 2);
-    if (first) {
-        const val: number = first.value; // Type-safe access
-    }
+  // findFirst returns Pattern<V> | null
+  const first: Pattern<number> | null = numbers.findFirst((p) => p.value === 2);
+  if (first) {
+    console.log(`Found first match: ${first.value}`); // Type-safe access
+  }
 
-    // ===== Structure Analysis =====
+  // ===== Structure Analysis =====
 
-    const analysis = numbers.analyzeStructure();
-    console.log(`Summary: ${analysis.summary}`);
-    console.log(`Depths: [${analysis.depthDistribution}]`);
-    console.log(`Element counts: [${analysis.elementCounts}]`);
+  const analysis = numbers.analyzeStructure();
+  console.log(`Summary: ${analysis.summary}`);
+  console.log(`Depths: [${analysis.depthDistribution}]`);
+  console.log(`Element counts: [${analysis.elementCounts}]`);
 
-    // ===== Combination =====
+  // ===== Combination =====
 
-    const combined: Pattern<string> =
-        Pattern.point("hello").combine(Pattern.point(" world"));
+  const combined: Pattern<string> = Pattern.point("hello").combine(
+    Pattern.point(" world"),
+  );
+  console.log(`Combined pattern: ${combined.value}`);
 
-    // ===== Complex Generic Example: Tree of Trees =====
+  // ===== Complex Generic Example: Tree of Trees =====
 
-    // Pattern<Pattern<Pattern<string>>>
-    const deepTree: Pattern<Pattern<Pattern<string>>> = Pattern.pattern(
-        Pattern.pattern(
-            Pattern.point("leaf"),
-            []
-        ),
-        []
-    );
+  // Pattern<Pattern<Pattern<string>>>
+  const deepTree: Pattern<Pattern<Pattern<string>>> = Pattern.pattern(
+    Pattern.pattern(Pattern.point("leaf"), []),
+    [],
+  );
 
-    // Extract unwraps one level at a time
-    const level2: Pattern<Pattern<string>> = deepTree.extract();
-    const level1: Pattern<string> = level2.extract();
-    const leaf: string = level1.extract();
+  // Extract unwraps one level at a time
+  const level2: Pattern<Pattern<string>> = deepTree.extract();
+  const level1: Pattern<string> = level2.extract();
+  const leaf: string = level1.extract();
+  console.log(`Extracted leaf value: ${leaf}`);
 
-    console.log('TypeScript type safety verified! All operations type-check correctly.');
+  console.log(
+    "TypeScript type safety verified! All operations type-check correctly.",
+  );
 }
-
-// Type assertion to verify signature
-const demo: () => Promise<void> = typeScriptDemo;
 
 // Run if executed directly
 if (import.meta.url === `file://${process.argv[1]}`) {
-    typeScriptDemo().catch(console.error);
+  typeScriptDemo().catch(console.error);
 }
 
 export { typeScriptDemo };

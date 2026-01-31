@@ -72,7 +72,7 @@ const p: Pattern<string> = Pattern.point("hello");
 const mapped: Pattern<number> = p.map(s => s.length);
 
 // Pattern<Subject>
-const subject = Subject.new("n", ["Person"], { name: Value.string("Alice") });
+const subject = new Subject("n", ["Person"], { name: Value.string("Alice") });
 const patternSubject: Pattern<Subject> = Pattern.point(subject);
 const depth = patternSubject.depth();
 ```
