@@ -45,7 +45,7 @@
 
 ---
 
-## Phase 3: User Story 1 - Construct Patterns in Browser/Node (Priority: P1) 🎯 MVP
+## Phase 3: User Story 1 - Construct Patterns in Browser/Node (Priority: P1) ✅ COMPLETE
 
 **Goal**: Developers can create Pattern and Subject instances from JavaScript/TypeScript (atomic, nested, Pattern with Subject) and access value/elements; behavior matches Python bindings.
 
@@ -53,17 +53,30 @@
 
 ### Implementation for User Story 1
 
-- [ ] T007 [P] [US1] Expose Pattern constructors (point, of, pattern, fromValues) in crates/pattern-core/src/wasm.rs
-- [ ] T008 [P] [US1] Expose Pattern accessors (value, elements) in crates/pattern-core/src/wasm.rs
-- [ ] T009 [P] [US1] Expose Value factories (string, int, decimal, boolean, symbol, array, map, range, measurement) in crates/pattern-core/src/wasm.rs
-- [ ] T010 [US1] Expose Subject constructor and accessors (identity, labels, properties) in crates/pattern-core/src/wasm.rs
-- [ ] T011 [US1] Wire Pattern constructors to accept JsValue/Subject from JS and round-trip in crates/pattern-core/src/wasm.rs
+- [x] T007 [P] [US1] Expose Pattern constructors (point, of, pattern, fromValues) in crates/pattern-core/src/wasm.rs
+- [x] T008 [P] [US1] Expose Pattern accessors (value, elements) in crates/pattern-core/src/wasm.rs
+- [x] T009 [P] [US1] Expose Value factories (string, int, decimal, boolean, symbol, array, map, range, measurement) in crates/pattern-core/src/wasm.rs
+- [x] T010 [US1] Expose Subject constructor and accessors (identity, labels, properties) in crates/pattern-core/src/wasm.rs
+- [x] T011 [US1] Wire Pattern constructors to accept JsValue/Subject from JS and round-trip in crates/pattern-core/src/wasm.rs
 
 **Checkpoint**: User Story 1 fully functional — construct and access patterns from JS/TS; testable independently
 
+### Phase 3 Implementation Notes
+
+**Critical Design Corrections Applied** (2026-01-31):
+- WasmPattern changed from `Pattern<Subject>` to `Pattern<JsValue>` to match Python's generic design
+- `point()` and `of()` now accept any `JsValue` (not just Subject) - matches Python's `PyAny` approach
+- `of()` is now a true alias for `point()` (just delegates) - matches Python exactly
+- `fromValues()` correctly returns array of atomic patterns (not single nested pattern)
+- `elements` property accessor added (returns JS array, not just `getElement(index)`)
+- `value` property returns `JsValue` (not forced to Subject type)
+- JavaScript exports renamed: `WasmPattern` → `Pattern`, `WasmSubject` → `Subject`, `ValueFactory` → `Value`
+
+See `specs/027-wasm-pattern-typescript-parity/phase3-issues.md` and `phase3-fixes-applied.md` for detailed analysis and changes.
+
 ---
 
-## Phase 4: User Story 2 - Perform Pattern Operations from WASM (Priority: P2)
+## Phase 4: User Story 2 - Perform Pattern Operations from WASM (Priority: P2) ✅ COMPLETE
 
 **Goal**: Developers can run inspection, query, transformation (map, fold, para), combination, comonad, and validate/analyzeStructure from JS/TS with behavior equivalent to Rust and Python; fallible ops return Either-like.
 
@@ -71,14 +84,39 @@
 
 ### Implementation for User Story 2
 
-- [ ] T012 [P] [US2] Expose Pattern inspection methods (length, size, depth, isAtomic, values) in crates/pattern-core/src/wasm.rs
-- [ ] T013 [P] [US2] Expose Pattern query methods (anyValue, allValues, filter, findFirst, matches, contains) with JS callbacks in crates/pattern-core/src/wasm.rs
-- [ ] T014 [US2] Expose Pattern transformation methods (map, fold, para) with JS callbacks in crates/pattern-core/src/wasm.rs
-- [ ] T015 [US2] Expose Pattern combine and comonad methods (combine, extract, extend, depthAt, sizeAt, indicesAt) in crates/pattern-core/src/wasm.rs
-- [ ] T016 [US2] Expose validate returning Either-like and analyzeStructure in crates/pattern-core/src/wasm.rs
-- [ ] T017 [US2] Expose ValidationRules, StructureAnalysis, and ValidationError shape in crates/pattern-core/src/wasm.rs
+- [x] T012 [P] [US2] Expose Pattern inspection methods (length, size, depth, isAtomic, values) in crates/pattern-core/src/wasm.rs
+- [x] T013 [P] [US2] Expose Pattern query methods (anyValue, allValues, filter, findFirst, matches, contains) with JS callbacks in crates/pattern-core/src/wasm.rs
+- [x] T014 [US2] Expose Pattern transformation methods (map, fold, para) with JS callbacks in crates/pattern-core/src/wasm.rs
+- [x] T015 [US2] Expose Pattern combine and comonad methods (combine, extract, extend, depthAt, sizeAt, indicesAt) in crates/pattern-core/src/wasm.rs
+- [x] T016 [US2] Expose validate returning Either-like and analyzeStructure in crates/pattern-core/src/wasm.rs
+- [x] T017 [US2] Expose ValidationRules, StructureAnalysis, and ValidationError shape in crates/pattern-core/src/wasm.rs
 
 **Checkpoint**: User Story 2 fully functional — all pattern operations callable from JS/TS; validate returns Either-like
+
+### Phase 4 Implementation Notes
+
+**Completed** (2026-01-31):
+
+All pattern operations from the Rust core API have been successfully exposed to JavaScript/TypeScript:
+
+- **Inspection Methods**: `size()`, `depth()`, `values()` (in addition to existing `length()`, `isAtomic()`)
+- **Query Methods**: `anyValue()`, `allValues()`, `filter()`, `findFirst()`, `matches()`, `contains()` - all support JavaScript callback functions with proper error handling
+- **Transformation Methods**: `map()`, `fold()`, `para()` - full support for JavaScript callbacks, including paramorphism (bottom-up fold)
+- **Combination**: `combine()` with custom combiner function for JavaScript value types
+- **Comonad Operations**: `extract()`, `extend()`, `depthAt()`, `sizeAt()`, `indicesAt()`
+- **Validation**: `validate()` returns Either-like `{ _tag: 'Right'/'Left', right/left: ... }` compatible with effect-ts
+- **Analysis**: `analyzeStructure()` returns `StructureAnalysis` with depth distribution, element counts, and summary
+
+All methods properly handle:
+- JavaScript callbacks with error propagation
+- Either-like return values for fallible operations (no throwing)
+- Pre-order traversal and short-circuit evaluation where applicable
+- Type conversions between JavaScript and Rust at the WASM boundary
+
+Build verification:
+- `cargo build --package pattern-core --features wasm` ✅
+- `cargo fmt --all` ✅
+- `cargo clippy --package pattern-core --features wasm -- -D warnings` ✅
 
 ---
 

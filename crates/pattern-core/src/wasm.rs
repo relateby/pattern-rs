@@ -71,6 +71,142 @@ use crate::subject::{RangeValue, Subject, Symbol, Value};
 // ============================================================================
 
 // ============================================================================
+// Validation/Analysis Types (T016, T017 - Phase 4)
+// ============================================================================
+
+/// Configurable validation rules for pattern structure.
+///
+/// Rules can specify limits on nesting depth, element counts, or other structural properties.
+/// All rules are optional (undefined/null means no limit).
+///
+/// Exported to JavaScript as `ValidationRules`.
+#[wasm_bindgen(js_name = ValidationRules)]
+pub struct WasmValidationRules {
+    /// Maximum nesting depth allowed (undefined = no limit)
+    #[wasm_bindgen(skip)]
+    pub max_depth: Option<usize>,
+    /// Maximum element count allowed (undefined = no limit)
+    #[wasm_bindgen(skip)]
+    pub max_elements: Option<usize>,
+}
+
+#[wasm_bindgen]
+impl WasmValidationRules {
+    /// Create new validation rules.
+    ///
+    /// # Arguments
+    /// * `max_depth` - Maximum nesting depth (undefined for no limit)
+    /// * `max_elements` - Maximum element count (undefined for no limit)
+    ///
+    /// # Example (JavaScript)
+    /// ```javascript
+    /// const rules = new ValidationRules(10, 100); // Max depth 10, max elements 100
+    /// const noLimits = new ValidationRules(undefined, undefined); // No limits
+    /// ```
+    #[wasm_bindgen(constructor)]
+    pub fn new(max_depth: JsValue, max_elements: JsValue) -> WasmValidationRules {
+        let max_depth = js_to_option(&max_depth, js_to_i64).map(|v| v as usize);
+        let max_elements = js_to_option(&max_elements, js_to_i64).map(|v| v as usize);
+
+        WasmValidationRules {
+            max_depth,
+            max_elements,
+        }
+    }
+
+    /// Get the max_depth value.
+    #[wasm_bindgen(getter, js_name = maxDepth)]
+    pub fn max_depth(&self) -> JsValue {
+        match self.max_depth {
+            Some(d) => JsValue::from_f64(d as f64),
+            None => JsValue::undefined(),
+        }
+    }
+
+    /// Get the max_elements value.
+    #[wasm_bindgen(getter, js_name = maxElements)]
+    pub fn max_elements(&self) -> JsValue {
+        match self.max_elements {
+            Some(e) => JsValue::from_f64(e as f64),
+            None => JsValue::undefined(),
+        }
+    }
+}
+
+impl WasmValidationRules {
+    /// Convert to internal ValidationRules type.
+    fn to_internal(&self) -> crate::pattern::ValidationRules {
+        crate::pattern::ValidationRules {
+            max_depth: self.max_depth,
+            max_elements: self.max_elements,
+            required_fields: vec![], // Not exposed in WASM yet
+        }
+    }
+}
+
+/// Results from structure analysis utilities.
+///
+/// Provides detailed information about pattern structural characteristics.
+///
+/// Exported to JavaScript as `StructureAnalysis`.
+#[wasm_bindgen(js_name = StructureAnalysis)]
+pub struct WasmStructureAnalysis {
+    #[wasm_bindgen(skip)]
+    inner: crate::pattern::StructureAnalysis,
+}
+
+#[wasm_bindgen]
+impl WasmStructureAnalysis {
+    /// Get the depth distribution (count of nodes at each depth level).
+    ///
+    /// # Returns
+    /// A JavaScript array where index = depth, value = count
+    #[wasm_bindgen(getter, js_name = depthDistribution)]
+    pub fn depth_distribution(&self) -> js_sys::Array {
+        let arr = js_sys::Array::new();
+        for count in &self.inner.depth_distribution {
+            arr.push(&JsValue::from_f64(*count as f64));
+        }
+        arr
+    }
+
+    /// Get the element counts at each level.
+    ///
+    /// # Returns
+    /// A JavaScript array where index = level, value = element count
+    #[wasm_bindgen(getter, js_name = elementCounts)]
+    pub fn element_counts(&self) -> js_sys::Array {
+        let arr = js_sys::Array::new();
+        for count in &self.inner.element_counts {
+            arr.push(&JsValue::from_f64(*count as f64));
+        }
+        arr
+    }
+
+    /// Get the identified nesting patterns.
+    ///
+    /// # Returns
+    /// A JavaScript array of pattern description strings (e.g., "linear", "tree", "balanced")
+    #[wasm_bindgen(getter, js_name = nestingPatterns)]
+    pub fn nesting_patterns(&self) -> js_sys::Array {
+        let arr = js_sys::Array::new();
+        for pattern in &self.inner.nesting_patterns {
+            arr.push(&JsValue::from_str(pattern));
+        }
+        arr
+    }
+
+    /// Get a human-readable summary of the structure.
+    ///
+    /// # Returns
+    /// A summary string
+    #[wasm_bindgen(getter)]
+    pub fn summary(&self) -> String {
+        self.inner.summary.clone()
+    }
+}
+
+// ============================================================================
 // 1. Either-like Return Shape (T006)
 // ============================================================================
 //
@@ -807,6 +943,7 @@ impl WasmSubject {
 ///
 /// Exported to JavaScript as `Pattern` (without the Wasm prefix).
 #[wasm_bindgen(js_name = Pattern)]
+#[derive(Clone)]
 pub struct WasmPattern {
     inner: Pattern<JsValue>,
 }
@@ -1045,5 +1182,833 @@ impl WasmPattern {
     #[wasm_bindgen(js_name = isAtomic)]
     pub fn is_atomic(&self) -> bool {
         self.inner.is_atomic()
+    }
+
+    // ========================================================================
+    // Inspection Methods (T012 - Phase 4)
+    // ========================================================================
+
+    /// Get the total number of nodes in the pattern structure (including all nested patterns).
+    ///
+    /// # Returns
+    /// The total number of nodes (root + all nested nodes)
+    ///
+    /// # Example (JavaScript)
+    /// ```javascript
+    /// const atomic = Pattern.point("atom");
+    /// console.log(atomic.size()); // 1
+    ///
+    /// const pattern = Pattern.pattern("root");
+    /// pattern.addElement(Pattern.of("child1"));
+    /// pattern.addElement(Pattern.of("child2"));
+    /// console.log(pattern.size()); // 3 (root + 2 children)
+    /// ```
+    #[wasm_bindgen(js_name = size)]
+    pub fn size(&self) -> usize {
+        self.inner.size()
+    }
+
+    /// Get the maximum nesting depth of the pattern structure.
+    ///
+    /// # Returns
+    /// The maximum nesting depth (atomic patterns have depth 0)
+    ///
+    /// # Example (JavaScript)
+    /// ```javascript
+    /// const atomic = Pattern.point("hello");
+    /// console.log(atomic.depth()); // 0
+    ///
+    /// const nested = Pattern.pattern("parent");
+    /// const child = Pattern.pattern("child");
+    /// child.addElement(Pattern.of("grandchild"));
+    /// nested.addElement(child);
+    /// console.log(nested.depth()); // 2
+    /// ```
+    #[wasm_bindgen(js_name = depth)]
+    pub fn depth(&self) -> usize {
+        self.inner.depth()
+    }
+
+    /// Extract all values from the pattern as a flat array (pre-order traversal).
+    ///
+    /// # Returns
+    /// A JavaScript array containing all values in pre-order (root first, then elements)
+    ///
+    /// # Example (JavaScript)
+    /// ```javascript
+    /// const pattern = Pattern.pattern("root");
+    /// pattern.addElement(Pattern.of("child1"));
+    /// pattern.addElement(Pattern.of("child2"));
+    /// const values = pattern.values();
+    /// // Returns ["root", "child1", "child2"]
+    /// ```
+    #[wasm_bindgen(js_name = values)]
+    pub fn values(&self) -> js_sys::Array {
+        let mut result = js_sys::Array::new();
+        self.values_recursive(&mut result);
+        result
+    }
+
+    /// Helper for values() - recursively collect values in pre-order.
+    fn values_recursive(&self, result: &mut js_sys::Array) {
+        result.push(&self.inner.value().clone());
+        for elem in self.inner.elements() {
+            let wasm_elem = WasmPattern {
+                inner: elem.clone(),
+            };
+            wasm_elem.values_recursive(result);
+        }
+    }
+
+    // ========================================================================
+    // Query Methods (T013 - Phase 4)
+    // ========================================================================
+
+    /// Check if at least one value in the pattern satisfies the given predicate.
+    ///
+    /// Traverses in pre-order and short-circuits on first match.
+    ///
+    /// # Arguments
+    /// * `predicate` - A JavaScript function that takes a value and returns boolean
+    ///
+    /// # Returns
+    /// true if at least one value satisfies the predicate, false otherwise
+    ///
+    /// # Example (JavaScript)
+    /// ```javascript
+    /// const pattern = Pattern.pattern("hello");
+    /// pattern.addElement(Pattern.of("world"));
+    /// const hasWorld = pattern.anyValue(v => v === "world"); // true
+    /// ```
+    #[wasm_bindgen(js_name = anyValue)]
+    pub fn any_value(&self, predicate: &js_sys::Function) -> Result<bool, JsValue> {
+        self.any_value_recursive(predicate)
+    }
+
+    /// Helper for anyValue() - recursive implementation with short-circuit.
+    fn any_value_recursive(&self, predicate: &js_sys::Function) -> Result<bool, JsValue> {
+        // Check current value
+        let this = JsValue::null();
+        let result = predicate
+            .call1(&this, &self.inner.value().clone())
+            .map_err(|e| JsValue::from_str(&format!("Predicate error: {:?}", e)))?;
+
+        if let Some(true) = result.as_bool() {
+            return Ok(true);
+        }
+
+        // Check elements recursively
+        for elem in self.inner.elements() {
+            let wasm_elem = WasmPattern {
+                inner: elem.clone(),
+            };
+            if wasm_elem.any_value_recursive(predicate)? {
+                return Ok(true);
+            }
+        }
+
+        Ok(false)
+    }
+
+    /// Check if all values in the pattern satisfy the given predicate.
+    ///
+    /// Traverses in pre-order and short-circuits on first failure.
+    ///
+    /// # Arguments
+    /// * `predicate` - A JavaScript function that takes a value and returns boolean
+    ///
+    /// # Returns
+    /// true if all values satisfy the predicate, false otherwise
+    ///
+    /// # Example (JavaScript)
+    /// ```javascript
+    /// const pattern = Pattern.pattern("hello");
+    /// pattern.addElement(Pattern.of("world"));
+    /// const allStrings = pattern.allValues(v => typeof v === "string"); // true
+    /// ```
+    #[wasm_bindgen(js_name = allValues)]
+    pub fn all_values(&self, predicate: &js_sys::Function) -> Result<bool, JsValue> {
+        self.all_values_recursive(predicate)
+    }
+
+    /// Helper for allValues() - recursive implementation with short-circuit.
+    fn all_values_recursive(&self, predicate: &js_sys::Function) -> Result<bool, JsValue> {
+        // Check current value
+        let this = JsValue::null();
+        let result = predicate
+            .call1(&this, &self.inner.value().clone())
+            .map_err(|e| JsValue::from_str(&format!("Predicate error: {:?}", e)))?;
+
+        if let Some(false) = result.as_bool() {
+            return Ok(false);
+        }
+
+        // Check elements recursively
+        for elem in self.inner.elements() {
+            let wasm_elem = WasmPattern {
+                inner: elem.clone(),
+            };
+            if !wasm_elem.all_values_recursive(predicate)? {
+                return Ok(false);
+            }
+        }
+
+        Ok(true)
+    }
+
+    /// Filter subpatterns that satisfy the given pattern predicate.
+    ///
+    /// Traverses in pre-order and collects all matching patterns.
+    ///
+    /// # Arguments
+    /// * `predicate` - A JavaScript function that takes a Pattern and returns boolean
+    ///
+    /// # Returns
+    /// A JavaScript array of Pattern instances that satisfy the predicate
+    ///
+    /// # Example (JavaScript)
+    /// ```javascript
+    /// const pattern = Pattern.pattern("root");
+    /// pattern.addElement(Pattern.of("leaf1"));
+    /// pattern.addElement(Pattern.of("leaf2"));
+    /// const leaves = pattern.filter(p => p.isAtomic()); // Returns [leaf1, leaf2]
+    /// ```
+    #[wasm_bindgen(js_name = filter)]
+    pub fn filter(&self, predicate: &js_sys::Function) -> Result<js_sys::Array, JsValue> {
+        let result = js_sys::Array::new();
+        self.filter_recursive(predicate, &result)?;
+        Ok(result)
+    }
+
+    /// Helper for filter() - recursive implementation.
+    fn filter_recursive(
+        &self,
+        predicate: &js_sys::Function,
+        result: &js_sys::Array,
+    ) -> Result<(), JsValue> {
+        // Check current pattern
+        let this = JsValue::null();
+        let wasm_pattern = WasmPattern {
+            inner: self.inner.clone(),
+        };
+        let matches = predicate
+            .call1(&this, &JsValue::from(wasm_pattern.clone()))
+            .map_err(|e| JsValue::from_str(&format!("Predicate error: {:?}", e)))?;
+
+        if let Some(true) = matches.as_bool() {
+            result.push(&JsValue::from(wasm_pattern));
+        }
+
+        // Recursively filter elements
+        for elem in self.inner.elements() {
+            let wasm_elem = WasmPattern {
+                inner: elem.clone(),
+            };
+            wasm_elem.filter_recursive(predicate, result)?;
+        }
+
+        Ok(())
+    }
+
+    /// Find the first subpattern that satisfies the given predicate.
+    ///
+    /// Performs depth-first pre-order traversal and short-circuits on first match.
+    ///
+    /// # Arguments
+    /// * `predicate` - A JavaScript function that takes a Pattern and returns boolean
+    ///
+    /// # Returns
+    /// The first matching Pattern, or null if no match found
+    ///
+    /// # Example (JavaScript)
+    /// ```javascript
+    /// const pattern = Pattern.pattern("root");
+    /// pattern.addElement(Pattern.of("target"));
+    /// const found = pattern.findFirst(p => p.value === "target");
+    /// ```
+    #[wasm_bindgen(js_name = findFirst)]
+    pub fn find_first(&self, predicate: &js_sys::Function) -> Result<JsValue, JsValue> {
+        self.find_first_recursive(predicate)
+    }
+
+    /// Helper for findFirst() - recursive implementation with short-circuit.
+    fn find_first_recursive(&self, predicate: &js_sys::Function) -> Result<JsValue, JsValue> {
+        // Check current pattern
+        let this = JsValue::null();
+        let wasm_pattern = WasmPattern {
+            inner: self.inner.clone(),
+        };
+        let matches = predicate
+            .call1(&this, &JsValue::from(wasm_pattern.clone()))
+            .map_err(|e| JsValue::from_str(&format!("Predicate error: {:?}", e)))?;
+
+        if let Some(true) = matches.as_bool() {
+            return Ok(JsValue::from(wasm_pattern));
+        }
+
+        // Check elements recursively
+        for elem in self.inner.elements() {
+            let wasm_elem = WasmPattern {
+                inner: elem.clone(),
+            };
+            let found = wasm_elem.find_first_recursive(predicate)?;
+            if !found.is_null() {
+                return Ok(found);
+            }
+        }
+
+        Ok(JsValue::null())
+    }
+
+    /// Check if two patterns have identical structure (same values and same tree structure).
+    ///
+    /// # Arguments
+    /// * `other` - Another Pattern to compare with
+    ///
+    /// # Returns
+    /// true if the patterns match, false otherwise
+    ///
+    /// # Example (JavaScript)
+    /// ```javascript
+    /// const p1 = Pattern.pattern("root");
+    /// p1.addElement(Pattern.of("child"));
+    /// const p2 = Pattern.pattern("root");
+    /// p2.addElement(Pattern.of("child"));
+    /// console.log(p1.matches(p2)); // true
+    /// ```
+    #[wasm_bindgen(js_name = matches)]
+    pub fn matches(&self, other: &WasmPattern) -> bool {
+        self.matches_recursive(&other.inner)
+    }
+
+    /// Helper for matches() - recursive implementation.
+    fn matches_recursive(&self, other: &Pattern<JsValue>) -> bool {
+        // Compare values - use JavaScript equality
+        let self_val = self.inner.value();
+        let other_val = other.value();
+
+        // Try to compare as strings if both are strings
+        if let (Some(s1), Some(s2)) = (self_val.as_string(), other_val.as_string()) {
+            if s1 != s2 {
+                return false;
+            }
+        } else if let (Some(n1), Some(n2)) = (self_val.as_f64(), other_val.as_f64()) {
+            // Compare as numbers
+            if n1 != n2 {
+                return false;
+            }
+        } else if let (Some(b1), Some(b2)) = (self_val.as_bool(), other_val.as_bool()) {
+            // Compare as booleans
+            if b1 != b2 {
+                return false;
+            }
+        } else {
+            // For complex types, use JavaScript equality
+            let eq = js_sys::Reflect::get(&js_sys::Object::new(), &JsValue::from_str("equals"))
+                .ok()
+                .and_then(|_| {
+                    // Fallback: convert to JSON strings and compare
+                    let s1 = js_sys::JSON::stringify(self_val).ok()?;
+                    let s2 = js_sys::JSON::stringify(other_val).ok()?;
+                    Some(s1.as_string()? == s2.as_string()?)
+                })
+                .unwrap_or(false);
+
+            if !eq {
+                return false;
+            }
+        }
+
+        // Compare element count
+        if self.inner.elements().len() != other.elements().len() {
+            return false;
+        }
+
+        // Compare elements recursively
+        for (self_elem, other_elem) in self.inner.elements().iter().zip(other.elements().iter()) {
+            let wasm_self = WasmPattern {
+                inner: self_elem.clone(),
+            };
+            if !wasm_self.matches_recursive(other_elem) {
+                return false;
+            }
+        }
+
+        true
+    }
+
+    /// Check if this pattern contains another pattern as a subpattern.
+    ///
+    /// # Arguments
+    /// * `subpattern` - The pattern to search for
+    ///
+    /// # Returns
+    /// true if this pattern contains the subpattern, false otherwise
+    ///
+    /// # Example (JavaScript)
+    /// ```javascript
+    /// const pattern = Pattern.pattern("root");
+    /// const child = Pattern.of("child");
+    /// pattern.addElement(child);
+    /// console.log(pattern.contains(Pattern.of("child"))); // true
+    /// ```
+    #[wasm_bindgen(js_name = contains)]
+    pub fn contains(&self, subpattern: &WasmPattern) -> bool {
+        self.contains_recursive(&subpattern.inner)
+    }
+
+    /// Helper for contains() - recursive implementation.
+    fn contains_recursive(&self, subpattern: &Pattern<JsValue>) -> bool {
+        // Check if current pattern matches
+        if self.matches_recursive(subpattern) {
+            return true;
+        }
+
+        // Check elements recursively
+        for elem in self.inner.elements() {
+            let wasm_elem = WasmPattern {
+                inner: elem.clone(),
+            };
+            if wasm_elem.contains_recursive(subpattern) {
+                return true;
+            }
+        }
+
+        false
+    }
+
+    // ========================================================================
+    // Transformation Methods (T014 - Phase 4)
+    // ========================================================================
+
+    /// Transform all values in the pattern using a mapping function.
+    ///
+    /// Creates a new pattern with the same structure but with values transformed by the function.
+    /// The function is applied to each value in the pattern.
+    ///
+    /// # Arguments
+    /// * `f` - A JavaScript function that takes a value and returns a new value
+    ///
+    /// # Returns
+    /// A new Pattern with transformed values
+    ///
+    /// # Example (JavaScript)
+    /// ```javascript
+    /// const pattern = Pattern.pattern("hello");
+    /// pattern.addElement(Pattern.of("world"));
+    /// const upper = pattern.map(v => typeof v === 'string' ? v.toUpperCase() : v);
+    /// // Returns Pattern with values ["HELLO", "WORLD"]
+    /// ```
+    #[wasm_bindgen(js_name = map)]
+    pub fn map(&self, f: &js_sys::Function) -> Result<WasmPattern, JsValue> {
+        self.map_recursive(f)
+    }
+
+    /// Helper for map() - recursive implementation.
+    fn map_recursive(&self, f: &js_sys::Function) -> Result<WasmPattern, JsValue> {
+        // Transform current value
+        let this = JsValue::null();
+        let new_value = f
+            .call1(&this, &self.inner.value().clone())
+            .map_err(|e| JsValue::from_str(&format!("Map function error: {:?}", e)))?;
+
+        // Recursively transform elements
+        let mut new_elements = Vec::new();
+        for elem in self.inner.elements() {
+            let wasm_elem = WasmPattern {
+                inner: elem.clone(),
+            };
+            let mapped_elem = wasm_elem.map_recursive(f)?;
+            new_elements.push(mapped_elem.inner);
+        }
+
+        Ok(WasmPattern {
+            inner: Pattern::pattern(new_value, new_elements),
+        })
+    }
+
+    /// Fold the pattern into a single value by applying a function with an accumulator.
+    ///
+    /// Processes values in depth-first, root-first order (pre-order traversal).
+    /// The accumulator is threaded through all processing steps.
+    ///
+    /// # Arguments
+    /// * `init` - Initial accumulator value
+    /// * `f` - A JavaScript function that takes (accumulator, value) and returns new accumulator
+    ///
+    /// # Returns
+    /// The final accumulated value
+    ///
+    /// # Example (JavaScript)
+    /// ```javascript
+    /// const pattern = Pattern.pattern(10);
+    /// pattern.addElement(Pattern.of(20));
+    /// pattern.addElement(Pattern.of(30));
+    /// const sum = pattern.fold(0, (acc, v) => acc + v); // 60
+    /// ```
+    #[wasm_bindgen(js_name = fold)]
+    pub fn fold(&self, init: JsValue, f: &js_sys::Function) -> Result<JsValue, JsValue> {
+        self.fold_recursive(init, f)
+    }
+
+    /// Helper for fold() - recursive implementation.
+    fn fold_recursive(&self, acc: JsValue, f: &js_sys::Function) -> Result<JsValue, JsValue> {
+        // Process current value
+        let this = JsValue::null();
+        let new_acc = f
+            .call2(&this, &acc, &self.inner.value().clone())
+            .map_err(|e| JsValue::from_str(&format!("Fold function error: {:?}", e)))?;
+
+        // Process elements recursively (left to right)
+        let mut acc = new_acc;
+        for elem in self.inner.elements() {
+            let wasm_elem = WasmPattern {
+                inner: elem.clone(),
+            };
+            acc = wasm_elem.fold_recursive(acc, f)?;
+        }
+
+        Ok(acc)
+    }
+
+    /// Paramorphism: bottom-up fold with access to both pattern and child results.
+    ///
+    /// This is a powerful recursion scheme that processes the pattern bottom-up,
+    /// giving each node access to both its value and the results of processing its children.
+    ///
+    /// # Arguments
+    /// * `f` - A JavaScript function that takes (pattern, childResults array) and returns a result
+    ///
+    /// # Returns
+    /// The result of the paramorphism
+    ///
+    /// # Example (JavaScript)
+    /// ```javascript
+    /// const pattern = Pattern.pattern("root");
+    /// pattern.addElement(Pattern.of("child1"));
+    /// pattern.addElement(Pattern.of("child2"));
+    ///
+    /// // Count nodes: each node returns 1 + sum of child counts
+    /// const count = pattern.para((p, childResults) => {
+    ///     return 1 + childResults.reduce((sum, r) => sum + r, 0);
+    /// });
+    /// // Returns 3 (root + 2 children)
+    /// ```
+    #[wasm_bindgen(js_name = para)]
+    pub fn para(&self, f: &js_sys::Function) -> Result<JsValue, JsValue> {
+        self.para_recursive(f)
+    }
+
+    /// Helper for para() - recursive implementation.
+    fn para_recursive(&self, f: &js_sys::Function) -> Result<JsValue, JsValue> {
+        // Recursively compute results for all child elements
+        let child_results = js_sys::Array::new();
+        for elem in self.inner.elements() {
+            let wasm_elem = WasmPattern {
+                inner: elem.clone(),
+            };
+            let result = wasm_elem.para_recursive(f)?;
+            child_results.push(&result);
+        }
+
+        // Apply function to current pattern and child results
+        let this = JsValue::null();
+        let wasm_pattern = WasmPattern {
+            inner: self.inner.clone(),
+        };
+        f.call2(&this, &JsValue::from(wasm_pattern), &child_results)
+            .map_err(|e| JsValue::from_str(&format!("Para function error: {:?}", e)))
+    }
+
+    // ========================================================================
+    // Combination Methods (T015 - Phase 4)
+    // ========================================================================
+
+    /// Combine two patterns associatively.
+    ///
+    /// For JavaScript values, this uses a custom combiner function to combine the values.
+    /// Elements are concatenated (left first, then right).
+    ///
+    /// # Arguments
+    /// * `other` - Another Pattern to combine with
+    /// * `combiner` - A JavaScript function that takes (value1, value2) and returns combined value
+    ///
+    /// # Returns
+    /// A new Pattern with combined value and concatenated elements
+    ///
+    /// # Example (JavaScript)
+    /// ```javascript
+    /// const p1 = Pattern.pattern("hello");
+    /// p1.addElement(Pattern.of("a"));
+    /// const p2 = Pattern.pattern(" world");
+    /// p2.addElement(Pattern.of("b"));
+    /// const combined = p1.combine(p2, (v1, v2) => v1 + v2);
+    /// // Result: Pattern("hello world") with elements [a, b]
+    /// ```
+    #[wasm_bindgen(js_name = combine)]
+    pub fn combine(
+        &self,
+        other: &WasmPattern,
+        combiner: &js_sys::Function,
+    ) -> Result<WasmPattern, JsValue> {
+        // Combine values using the provided function
+        let this = JsValue::null();
+        let combined_value = combiner
+            .call2(
+                &this,
+                &self.inner.value().clone(),
+                &other.inner.value().clone(),
+            )
+            .map_err(|e| JsValue::from_str(&format!("Combiner function error: {:?}", e)))?;
+
+        // Concatenate elements (left first, then right)
+        let mut combined_elements = self.inner.elements().to_vec();
+        combined_elements.extend(other.inner.elements().iter().cloned());
+
+        Ok(WasmPattern {
+            inner: Pattern::pattern(combined_value, combined_elements),
+        })
+    }
+
+    // ========================================================================
+    // Comonad Methods (T015 - Phase 4)
+    // ========================================================================
+
+    /// Extract the decorative value at the current position.
+    ///
+    /// In Pattern's "decorated sequence" semantics, the value provides information
+    /// ABOUT the elements. This operation accesses that decorative information.
+    ///
+    /// # Returns
+    /// The value at this position
+    ///
+    /// # Example (JavaScript)
+    /// ```javascript
+    /// const p = Pattern.point("hello");
+    /// console.log(p.extract()); // "hello"
+    /// ```
+    #[wasm_bindgen(js_name = extract)]
+    pub fn extract(&self) -> JsValue {
+        self.inner.value().clone()
+    }
+
+    /// Compute new decorative information at each position based on subpattern context.
+    ///
+    /// This is a powerful comonad operation that gives each position access to its full
+    /// subpattern context, enabling context-aware computation of new decorations.
+    ///
+    /// # Arguments
+    /// * `f` - A JavaScript function that takes a Pattern and returns a new value
+    ///
+    /// # Returns
+    /// A new Pattern with the same structure but with computed decorative values
+    ///
+    /// # Example (JavaScript)
+    /// ```javascript
+    /// const p = Pattern.pattern("root");
+    /// p.addElement(Pattern.of("child1"));
+    /// p.addElement(Pattern.of("child2"));
+    ///
+    /// // Decorate each position with its size
+    /// const sizes = p.extend(subpattern => subpattern.size());
+    /// console.log(sizes.extract()); // 3 (root has 3 nodes)
+    /// ```
+    #[wasm_bindgen(js_name = extend)]
+    pub fn extend(&self, f: &js_sys::Function) -> Result<WasmPattern, JsValue> {
+        self.extend_recursive(f)
+    }
+
+    /// Helper for extend() - recursive implementation.
+    fn extend_recursive(&self, f: &js_sys::Function) -> Result<WasmPattern, JsValue> {
+        // Compute new decoration for current position
+        let this = JsValue::null();
+        let wasm_pattern = WasmPattern {
+            inner: self.inner.clone(),
+        };
+        let new_value = f
+            .call1(&this, &JsValue::from(wasm_pattern))
+            .map_err(|e| JsValue::from_str(&format!("Extend function error: {:?}", e)))?;
+
+        // Recursively extend elements
+        let mut new_elements = Vec::new();
+        for elem in self.inner.elements() {
+            let wasm_elem = WasmPattern {
+                inner: elem.clone(),
+            };
+            let extended_elem = wasm_elem.extend_recursive(f)?;
+            new_elements.push(extended_elem.inner);
+        }
+
+        Ok(WasmPattern {
+            inner: Pattern::pattern(new_value, new_elements),
+        })
+    }
+
+    /// Decorate each position with its depth (maximum nesting level).
+    ///
+    /// Uses extend to compute the depth at every position.
+    ///
+    /// # Returns
+    /// A Pattern where each position's value is the depth of that subpattern (as a number)
+    ///
+    /// # Example (JavaScript)
+    /// ```javascript
+    /// const p = Pattern.pattern("root");
+    /// const child = Pattern.pattern("child");
+    /// child.addElement(Pattern.of("grandchild"));
+    /// p.addElement(child);
+    ///
+    /// const depths = p.depthAt();
+    /// console.log(depths.extract()); // 2 (root has depth 2)
+    /// console.log(depths.elements[0].extract()); // 1 (child has depth 1)
+    /// ```
+    #[wasm_bindgen(js_name = depthAt)]
+    pub fn depth_at(&self) -> WasmPattern {
+        // Use extend with a function that computes depth
+        let extended = self
+            .inner
+            .extend(&|subpattern: &Pattern<JsValue>| JsValue::from_f64(subpattern.depth() as f64));
+
+        WasmPattern { inner: extended }
+    }
+
+    /// Decorate each position with its subtree size (total node count).
+    ///
+    /// Uses extend to compute the size at every position.
+    ///
+    /// # Returns
+    /// A Pattern where each position's value is the size of that subpattern (as a number)
+    ///
+    /// # Example (JavaScript)
+    /// ```javascript
+    /// const p = Pattern.pattern("root");
+    /// p.addElement(Pattern.of("child1"));
+    /// p.addElement(Pattern.of("child2"));
+    ///
+    /// const sizes = p.sizeAt();
+    /// console.log(sizes.extract()); // 3 (root + 2 children)
+    /// console.log(sizes.elements[0].extract()); // 1
+    /// ```
+    #[wasm_bindgen(js_name = sizeAt)]
+    pub fn size_at(&self) -> WasmPattern {
+        // Use extend with a function that computes size
+        let extended = self
+            .inner
+            .extend(&|subpattern: &Pattern<JsValue>| JsValue::from_f64(subpattern.size() as f64));
+
+        WasmPattern { inner: extended }
+    }
+
+    /// Decorate each position with its path from root (sequence of element indices).
+    ///
+    /// # Returns
+    /// A Pattern where each position's value is an array representing the path from root
+    ///
+    /// # Example (JavaScript)
+    /// ```javascript
+    /// const p = Pattern.pattern("root");
+    /// const child = Pattern.pattern("child");
+    /// child.addElement(Pattern.of("grandchild"));
+    /// p.addElement(child);
+    ///
+    /// const paths = p.indicesAt();
+    /// console.log(paths.extract()); // [] (root path)
+    /// console.log(paths.elements[0].extract()); // [0] (first child path)
+    /// console.log(paths.elements[0].elements[0].extract()); // [0, 0] (grandchild path)
+    /// ```
+    #[wasm_bindgen(js_name = indicesAt)]
+    pub fn indices_at(&self) -> WasmPattern {
+        fn go(path: Vec<usize>, pattern: &Pattern<JsValue>) -> Pattern<JsValue> {
+            // Convert path to JsValue array
+            let path_arr = js_sys::Array::new();
+            for idx in &path {
+                path_arr.push(&JsValue::from_f64(*idx as f64));
+            }
+
+            Pattern {
+                value: path_arr.into(),
+                elements: pattern
+                    .elements()
+                    .iter()
+                    .enumerate()
+                    .map(|(i, elem)| {
+                        let mut new_path = path.clone();
+                        new_path.push(i);
+                        go(new_path, elem)
+                    })
+                    .collect(),
+            }
+        }
+
+        WasmPattern {
+            inner: go(vec![], &self.inner),
+        }
+    }
+
+    // ========================================================================
+    // Validation/Analysis Methods (T016 - Phase 4)
+    // ========================================================================
+
+    /// Validate pattern structure against configurable rules.
+    ///
+    /// Returns an Either-like value:
+    /// - Success: `{ _tag: 'Right', right: undefined }`
+    /// - Failure: `{ _tag: 'Left', left: ValidationError }`
+    ///
+    /// This return shape is compatible with effect-ts Either type.
+    ///
+    /// # Arguments
+    /// * `rules` - ValidationRules specifying constraints
+    ///
+    /// # Returns
+    /// An Either-like JsValue (does not throw)
+    ///
+    /// # Example (JavaScript)
+    /// ```javascript
+    /// const pattern = Pattern.pattern("root");
+    /// pattern.addElement(Pattern.of("child"));
+    ///
+    /// const rules = new ValidationRules(10, 100);
+    /// const result = pattern.validate(rules);
+    ///
+    /// if (result._tag === 'Left') {
+    ///     console.error('Validation failed:', result.left.message);
+    /// } else {
+    ///     console.log('Pattern is valid');
+    /// }
+    /// ```
+    #[wasm_bindgen(js_name = validate)]
+    pub fn validate(&self, rules: &WasmValidationRules) -> JsValue {
+        let internal_rules = rules.to_internal();
+
+        match self.inner.validate(&internal_rules) {
+            Ok(()) => either_right(JsValue::undefined()),
+            Err(error) => either_left(validation_error_to_js(&error)),
+        }
+    }
+
+    /// Analyze the structural characteristics of the pattern.
+    ///
+    /// Returns detailed information about depth distribution, element counts,
+    /// nesting patterns, and a human-readable summary.
+    ///
+    /// # Returns
+    /// A StructureAnalysis object
+    ///
+    /// # Example (JavaScript)
+    /// ```javascript
+    /// const pattern = Pattern.pattern("root");
+    /// pattern.addElement(Pattern.of("child1"));
+    /// pattern.addElement(Pattern.of("child2"));
+    ///
+    /// const analysis = pattern.analyzeStructure();
+    /// console.log('Summary:', analysis.summary);
+    /// console.log('Depth distribution:', analysis.depthDistribution);
+    /// ```
+    #[wasm_bindgen(js_name = analyzeStructure)]
+    pub fn analyze_structure(&self) -> WasmStructureAnalysis {
+        WasmStructureAnalysis {
+            inner: self.inner.analyze_structure(),
+        }
     }
 }
