@@ -161,6 +161,85 @@ def test_pattern_transformation_types() -> None:
     assert isinstance(combined, Pattern) or not PATTERN_CORE_AVAILABLE
 
 
+def test_pattern_paramorphism_types() -> None:
+    """Test that Pattern.para() has correct type signatures."""
+    pattern: Pattern = Pattern.pattern(10, [
+        Pattern.point(5),
+        Pattern.point(3)
+    ])
+
+    # Type checkers should verify para signatures with different return types
+
+    # Integer result: structure-aware sum
+    int_result: int = pattern.para(
+        lambda p, element_results: p.value if not element_results else p.value + sum(element_results)
+    )
+
+    # Tuple result: multi-statistics (sum, count, depth)
+    tuple_result: tuple = pattern.para(
+        lambda p, element_results: (p.value, 1, 0) if not element_results
+        else (p.value + sum(r[0] for r in element_results), 1 + sum(r[1] for r in element_results), 1 + max(r[2] for r in element_results))
+    )
+
+    # Pattern result: structure-preserving transformation
+    pattern_result: Pattern = pattern.para(
+        lambda p, element_results: Pattern.point(p.value) if not element_results
+        else Pattern.pattern(p.value, element_results)
+    )
+
+    # String result: structure-dependent string building
+    str_result: str = pattern.para(
+        lambda p, element_results: str(p.value) if not element_results
+        else f"{p.value}({','.join(element_results)})"
+    )
+
+    assert isinstance(int_result, int) or not PATTERN_CORE_AVAILABLE
+    assert isinstance(tuple_result, tuple) or not PATTERN_CORE_AVAILABLE
+    assert isinstance(pattern_result, Pattern) or not PATTERN_CORE_AVAILABLE
+    assert isinstance(str_result, str) or not PATTERN_CORE_AVAILABLE
+
+
+def test_pattern_paramorphism_with_subjects() -> None:
+    """Test that para works correctly with Pattern[Subject] types."""
+    alice: Subject = Subject(
+        identity="alice",
+        labels={"Person"},
+        properties={"salary": Value.int(50000)}
+    )
+    bob: Subject = Subject(
+        identity="bob",
+        labels={"Person"},
+        properties={"salary": Value.int(45000)}
+    )
+
+    dept: Subject = Subject(
+        identity="dept1",
+        labels={"Department"},
+        properties={"budget": Value.int(100000)}
+    )
+
+    # Type checkers should verify Pattern[Subject] with para
+    hierarchy: Pattern = Pattern.pattern(dept, [
+        Pattern.point(alice),
+        Pattern.point(bob)
+    ])
+
+    # Para with Subject values - should return dict with budget analysis
+    budget_analysis: dict = hierarchy.para(
+        lambda p, element_results: {
+            "budget": p.value.get_property("salary").as_int() if p.value.get_property("salary") else 0,
+            "headcount": 1
+        } if not element_results else {
+            "budget": sum(r["budget"] for r in element_results),
+            "headcount": sum(r["headcount"] for r in element_results)
+        }
+    )
+
+    assert isinstance(budget_analysis, dict) or not PATTERN_CORE_AVAILABLE
+    assert "budget" in budget_analysis or not PATTERN_CORE_AVAILABLE
+    assert "headcount" in budget_analysis or not PATTERN_CORE_AVAILABLE
+
+
 def test_pattern_comonad_types() -> None:
     """Test that Pattern comonad operations have correct type signatures."""
     pattern: Pattern = Pattern.point("hello")
@@ -282,6 +361,8 @@ if __name__ == "__main__":
     test_pattern_construction_types()
     test_pattern_operations_types()
     test_pattern_transformation_types()
+    test_pattern_paramorphism_types()
+    test_pattern_paramorphism_with_subjects()
     test_pattern_comonad_types()
     test_pattern_subject_types()
     test_validation_types()

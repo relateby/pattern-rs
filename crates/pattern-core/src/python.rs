@@ -546,7 +546,6 @@ fn collect_pattern_values(py: Python, pattern: &PyPattern, result: &mut Vec<PyOb
     }
 }
 
-
 /// Helper to recursively filter PyPattern instances
 fn filter_pattern_recursive(
     pattern: &PyPattern,
@@ -1149,7 +1148,6 @@ impl PyPattern {
 // ============================================================================
 // PatternSubject Python Class
 // ============================================================================
-
 
 // ============================================================================
 // ValidationRules Python Class

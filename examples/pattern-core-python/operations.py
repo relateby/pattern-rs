@@ -5,6 +5,7 @@ Pattern operations examples for pattern-core Python bindings.
 Demonstrates:
 - Query operations (any_value, all_values, filter, find_first)
 - Transformation operations (map, fold, combine)
+- Paramorphism (para) - structure-aware fold operations
 - Pattern matching (matches, contains)
 - Value extraction and aggregation
 """
@@ -369,10 +370,277 @@ def example_complex_transformation():
     print()
 
 
+def example_paramorphism_depth_weighted():
+    """Paramorphism: Child-weighted sum with structure awareness."""
+    print("=" * 60)
+    print("Example 12: Paramorphism - Child-Weighted Sum")
+    print("=" * 60)
+
+    # Create nested pattern
+    #        10
+    #       /  \
+    #      5    3
+    #     / \
+    #    2   1
+    pattern = pattern_core.Pattern.pattern(10, [
+        pattern_core.Pattern.pattern(5, [
+            pattern_core.Pattern.point(2),
+            pattern_core.Pattern.point(1)
+        ]),
+        pattern_core.Pattern.point(3)
+    ])
+
+    print(f"Pattern structure: {pattern.values()}")
+
+    # Para: Each node's contribution = value * (num_children + 1)
+    # At each node, we get the pattern and results from child elements
+    def depth_weighted(pattern, element_results):
+        # element_results contains values from children
+        # For atomic patterns, element_results is []
+        child_sum = sum(element_results)
+
+        # Weight by number of direct children
+        num_children = len(element_results)
+        current_contribution = pattern.value * (num_children + 1)
+        return child_sum + current_contribution
+
+    result = pattern.para(depth_weighted)
+    print(f"Child-weighted sum: {result}")
+    print(f"  Leaves (0 children): 2*1 + 1*1 + 3*1 = 6")
+    print(f"  Branch (2 children): 5*3 = 15")
+    print(f"  Root (2 children): 10*3 = 30")
+    print(f"  Total: 6 + 15 + 30 = 51")
+    print()
+
+
+def example_paramorphism_statistics():
+    """Paramorphism: Compute multiple statistics in one pass."""
+    print("=" * 60)
+    print("Example 13: Paramorphism - Multi-Statistics")
+    print("=" * 60)
+
+    # Create pattern
+    pattern = pattern_core.Pattern.pattern(10, [
+        pattern_core.Pattern.pattern(5, [
+            pattern_core.Pattern.point(2),
+            pattern_core.Pattern.point(1)
+        ]),
+        pattern_core.Pattern.point(3)
+    ])
+
+    print(f"Pattern structure: {pattern.values()}")
+
+    # Para: Compute (sum, count, max_depth) in one traversal
+    def compute_stats(pattern, element_results):
+        # Element results are tuples: (sum, count, max_depth)
+        if not element_results:
+            # Atomic: just this value, count 1, depth 0
+            return (pattern.value, 1, 0)
+
+        # Aggregate child results
+        child_sum = sum(r[0] for r in element_results)
+        child_count = sum(r[1] for r in element_results)
+        child_max_depth = max(r[2] for r in element_results)
+
+        # Add current node
+        total_sum = pattern.value + child_sum
+        total_count = 1 + child_count
+        total_depth = 1 + child_max_depth
+
+        return (total_sum, total_count, total_depth)
+
+    stats = pattern.para(compute_stats)
+    print(f"Statistics (sum, count, max_depth): {stats}")
+    print(f"  Sum: {stats[0]}")
+    print(f"  Count: {stats[1]} nodes")
+    print(f"  Max depth: {stats[2]}")
+    print()
+
+
+def example_paramorphism_transformation():
+    """Paramorphism: Structure-preserving transformation."""
+    print("=" * 60)
+    print("Example 14: Paramorphism - Structure-Preserving Transform")
+    print("=" * 60)
+
+    # Create pattern
+    pattern = pattern_core.Pattern.pattern(10, [
+        pattern_core.Pattern.pattern(5, [
+            pattern_core.Pattern.point(2),
+            pattern_core.Pattern.point(1)
+        ]),
+        pattern_core.Pattern.point(3)
+    ])
+
+    print(f"Original structure: {pattern.values()}")
+
+    # Para: Transform values but keep structure
+    # Each value becomes value * 2
+    def double_values(pattern, element_results):
+        # element_results are the transformed child patterns
+        new_value = pattern.value * 2
+
+        if not element_results:
+            # Atomic: just double the value
+            return pattern_core.Pattern.point(new_value)
+
+        # Pattern: double value and keep transformed children
+        return pattern_core.Pattern.pattern(new_value, element_results)
+
+    transformed = pattern.para(double_values)
+    print(f"Transformed structure: {transformed.values()}")
+    print(f"  Original values: {pattern.values()}")
+    print(f"  Doubled values:  {transformed.values()}")
+    print(f"  Structure preserved: {pattern.depth() == transformed.depth()}")
+    print()
+
+
+def example_paramorphism_subject_analysis():
+    """Paramorphism: Analyze Pattern[Subject] with structure awareness."""
+    print("=" * 60)
+    print("Example 15: Paramorphism - Subject Hierarchy Analysis")
+    print("=" * 60)
+
+    # Create organizational hierarchy
+    ceo = pattern_core.Subject(
+        identity="ceo",
+        labels={"Person", "Executive"},
+        properties={
+            "name": pattern_core.Value.string("Diana"),
+            "salary": pattern_core.Value.int(300000)
+        }
+    )
+
+    eng_manager = pattern_core.Subject(
+        identity="eng_mgr",
+        labels={"Person", "Manager"},
+        properties={
+            "name": pattern_core.Value.string("Alice"),
+            "salary": pattern_core.Value.int(150000)
+        }
+    )
+
+    dev1 = pattern_core.Subject(
+        identity="dev1",
+        labels={"Person", "Developer"},
+        properties={
+            "name": pattern_core.Value.string("Bob"),
+            "salary": pattern_core.Value.int(120000)
+        }
+    )
+
+    dev2 = pattern_core.Subject(
+        identity="dev2",
+        labels={"Person", "Developer"},
+        properties={
+            "name": pattern_core.Value.string("Charlie"),
+            "salary": pattern_core.Value.int(115000)
+        }
+    )
+
+    # Build hierarchy: CEO -> Eng Manager -> Devs
+    org = pattern_core.Pattern.pattern(ceo, [
+        pattern_core.Pattern.pattern(eng_manager, [
+            pattern_core.Pattern.point(dev1),
+            pattern_core.Pattern.point(dev2)
+        ])
+    ])
+
+    print("Organizational Hierarchy:")
+    print(f"  CEO: {ceo.get_property('name').as_string()}")
+    print(f"  └─ Manager: {eng_manager.get_property('name').as_string()}")
+    print(f"     └─ Devs: {dev1.get_property('name').as_string()}, {dev2.get_property('name').as_string()}")
+
+    # Para: Compute department budget with reporting structure
+    def analyze_department(pattern, element_results):
+        subject = pattern.value
+        salary_prop = subject.get_property("salary")
+
+        if not element_results:
+            # Leaf: just this person's info
+            salary = salary_prop.as_int() if salary_prop else 0
+            return {
+                "budget": salary,
+                "headcount": 1,
+                "levels": 1,
+                "roles": {label for label in subject.labels if label != "Person"}
+            }
+
+        # Aggregate from reports
+        total_budget = sum(r["budget"] for r in element_results)
+        total_headcount = sum(r["headcount"] for r in element_results)
+        max_levels = max(r["levels"] for r in element_results)
+        all_roles = set().union(*(r["roles"] for r in element_results))
+
+        # Add current person
+        salary = salary_prop.as_int() if salary_prop else 0
+        total_budget += salary
+        total_headcount += 1
+        total_levels = max_levels + 1
+        current_roles = {label for label in subject.labels if label != "Person"}
+        all_roles.update(current_roles)
+
+        return {
+            "budget": total_budget,
+            "headcount": total_headcount,
+            "levels": total_levels,
+            "roles": all_roles
+        }
+
+    analysis = org.para(analyze_department)
+    print(f"\nOrganization Analysis:")
+    print(f"  Total budget: ${analysis['budget']:,}")
+    print(f"  Total headcount: {analysis['headcount']} people")
+    print(f"  Hierarchy levels: {analysis['levels']}")
+    print(f"  Roles: {', '.join(sorted(analysis['roles']))}")
+    print()
+
+
+def example_paramorphism_vs_fold():
+    """Paramorphism vs Fold: When to use which."""
+    print("=" * 60)
+    print("Example 16: Paramorphism vs Fold - Comparison")
+    print("=" * 60)
+
+    # Create pattern
+    pattern = pattern_core.Pattern.pattern(10, [
+        pattern_core.Pattern.point(5),
+        pattern_core.Pattern.point(3)
+    ])
+
+    print(f"Pattern: {pattern.values()}")
+
+    # Fold: Simple aggregation (just values)
+    fold_sum = pattern.fold(0, lambda acc, val: acc + val)
+    print(f"\nFold (simple sum): {fold_sum}")
+    print(f"  Just adds all values: 10 + 5 + 3 = 18")
+
+    # Para: Can achieve same result
+    para_sum = pattern.para(lambda p, results: p.value + sum(results))
+    print(f"\nPara (same sum): {para_sum}")
+    print(f"  Has access to structure but computes same result")
+
+    # Para: Structure-aware computation (fold cannot do this)
+    def structure_aware(pattern, element_results):
+        # Weight by number of children
+        weight = len(element_results) + 1
+        child_sum = sum(element_results)
+        return pattern.value * weight + child_sum
+
+    para_weighted = pattern.para(structure_aware)
+    print(f"\nPara (structure-aware): {para_weighted}")
+    print(f"  Root (2 children): 10 * 3 = 30")
+    print(f"  Leaves (0 children): 5 * 1 + 3 * 1 = 8")
+    print(f"  Total: 30 + 8 = 38")
+    print(f"\nUse fold when: You only need values")
+    print(f"Use para when: You need structure information (depth, children, etc.)")
+    print()
+
+
 def example_pattern_subject_operations():
     """Operations on Pattern[Subject]."""
     print("=" * 60)
-    print("Example 12: Pattern[Subject] Operations")
+    print("Example 17: Pattern[Subject] Operations")
     print("=" * 60)
 
     # Create Subjects
@@ -437,6 +705,11 @@ def main():
     example_values_extraction()
     example_structural_properties()
     example_complex_transformation()
+    example_paramorphism_depth_weighted()
+    example_paramorphism_statistics()
+    example_paramorphism_transformation()
+    example_paramorphism_subject_analysis()
+    example_paramorphism_vs_fold()
     example_pattern_subject_operations()
 
     print("=" * 60)
