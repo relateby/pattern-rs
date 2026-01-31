@@ -66,8 +66,8 @@ subject = pattern_core.Subject(
 )
 
 # Create Pattern with Subject
-pattern = pattern_core.PatternSubject.point(subject)
-print(f"Identity: {pattern.get_value().identity}")  # "alice"
+pattern = pattern_core.Pattern.point(subject)
+print(f"Identity: {pattern.value.identity}")  # "alice"
 ```
 
 ### 4. Transform Patterns
@@ -156,11 +156,11 @@ relationships = pattern_core.Pattern.zip_with(
 alice = pattern_core.Subject(identity="alice", labels={"Person"})
 bob = pattern_core.Subject(identity="bob", labels={"Person"})
 
-alice_pattern = pattern_core.PatternSubject.point(alice)
-bob_pattern = pattern_core.PatternSubject.point(bob)
+alice_pattern = pattern_core.Pattern.point(alice)
+bob_pattern = pattern_core.Pattern.point(bob)
 
 # Alice knows Bob
-graph = pattern_core.PatternSubject.pattern(alice, [bob_pattern])
+graph = pattern_core.Pattern.pattern(alice, [bob_pattern])
 ```
 
 ### Validation

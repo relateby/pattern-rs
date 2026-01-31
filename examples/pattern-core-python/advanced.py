@@ -14,7 +14,7 @@ import sys
 
 try:
     import pattern_core
-    from pattern_core import Pattern, PatternSubject, Subject, Value, ValidationRules
+    from pattern_core import Pattern, Subject, Value, ValidationRules
 except ImportError:
     print("ERROR: pattern_core module not found.")
     print("Build it with: cd crates/pattern-core && maturin develop --uv --features python")
@@ -26,14 +26,14 @@ def example_comonad_extract():
     print("=" * 60)
     print("Example 1: Comonad Extract")
     print("=" * 60)
-    
+
     # Create pattern
     pattern = pattern_core.Pattern.point("hello")
-    
+
     # Extract value
     value = pattern.extract()
     print(f"Extracted value: {value}")
-    
+
     # Extract from nested pattern
     nested = pattern_core.Pattern.pattern("root", [
         pattern_core.Pattern.point("elem")
@@ -48,27 +48,27 @@ def example_comonad_extend():
     print("=" * 60)
     print("Example 2: Comonad Extend")
     print("=" * 60)
-    
+
     # Create pattern
     pattern = pattern_core.Pattern.pattern("root", [
         pattern_core.Pattern.point("a"),
         pattern_core.Pattern.point("b"),
         pattern_core.Pattern.point("c")
     ])
-    
+
     print(f"Original values: {pattern.values()}")
-    
+
     # Extend with size function
     def get_size(p: Pattern) -> str:
         return str(p.size())
-    
+
     sizes = pattern.extend(get_size)
     print(f"Sizes at each position: {sizes.values()}")
-    
+
     # Extend with depth function
     def get_depth(p: Pattern) -> str:
         return str(p.depth())
-    
+
     depths = pattern.extend(get_depth)
     print(f"Depths at each position: {depths.values()}")
     print()
@@ -79,15 +79,15 @@ def example_depth_at():
     print("=" * 60)
     print("Example 3: Depth At Each Position")
     print("=" * 60)
-    
+
     # Create deeply nested pattern
     leaf = pattern_core.Pattern.point("leaf")
     level2 = pattern_core.Pattern.pattern("level2", [leaf])
     level1 = pattern_core.Pattern.pattern("level1", [level2])
     root = pattern_core.Pattern.pattern("root", [level1])
-    
+
     print(f"Original structure: {root.values()}")
-    
+
     # Decorate with depths
     depths = root.depth_at()
     print(f"Depth at each position: {depths.values()}")
@@ -99,7 +99,7 @@ def example_size_at():
     print("=" * 60)
     print("Example 4: Subtree Size At Each Position")
     print("=" * 60)
-    
+
     # Create pattern
     pattern = pattern_core.Pattern.pattern("root", [
         pattern_core.Pattern.pattern("branch1", [
@@ -110,10 +110,10 @@ def example_size_at():
             pattern_core.Pattern.point("leaf3")
         ])
     ])
-    
+
     print(f"Original structure: {pattern.values()}")
     print(f"Total size: {pattern.size()}")
-    
+
     # Decorate with sizes
     sizes = pattern.size_at()
     print(f"Subtree size at each position: {sizes.values()}")
@@ -125,16 +125,16 @@ def example_indices_at():
     print("=" * 60)
     print("Example 5: Path Indices At Each Position")
     print("=" * 60)
-    
+
     # Create pattern
     pattern = pattern_core.Pattern.pattern("root", [
         pattern_core.Pattern.point("elem0"),
         pattern_core.Pattern.point("elem1"),
         pattern_core.Pattern.point("elem2")
     ])
-    
+
     print(f"Original structure: {pattern.values()}")
-    
+
     # Decorate with indices
     indices = pattern.indices_at()
     print(f"Path indices at each position: {indices.values()}")
@@ -146,7 +146,7 @@ def example_complex_subject():
     print("=" * 60)
     print("Example 6: Complex Subject Structure")
     print("=" * 60)
-    
+
     # Create Subject with nested properties
     person = pattern_core.Subject(
         identity="alice",
@@ -169,17 +169,17 @@ def example_complex_subject():
             "height": pattern_core.Value.measurement(175.0, "cm")
         }
     )
-    
+
     print(f"Identity: {person.identity}")
     print(f"Labels: {person.get_labels()}")
-    
+
     # Access nested properties
     skills = person.get_property("skills")
     if skills:
         skills_array = skills.as_array()
         # Note: as_array() returns Python list, not List[Value]
         print(f"Skills: {skills_array}")
-    
+
     metadata = person.get_property("metadata")
     if metadata:
         metadata_dict = metadata.as_map()
@@ -193,19 +193,19 @@ def example_validation():
     print("=" * 60)
     print("Example 7: Pattern Validation")
     print("=" * 60)
-    
+
     # Create pattern
     pattern = pattern_core.Pattern.pattern("root", [
         pattern_core.Pattern.point("elem1"),
         pattern_core.Pattern.point("elem2")
     ])
-    
+
     # Create validation rules
     rules = pattern_core.ValidationRules(
         max_depth=5,
         max_elements=10
     )
-    
+
     try:
         pattern.validate(rules)
         print("✓ Pattern is valid")
@@ -214,7 +214,7 @@ def example_validation():
     except pattern_core.ValidationError as e:
         print(f"✗ Validation failed: {e.message}")
         print(f"  Rule: {e.rule}")
-    
+
     # Test with invalid pattern (too deep)
     def create_deep_pattern(depth: int) -> Pattern:
         """Create pattern with specified depth."""
@@ -223,10 +223,10 @@ def example_validation():
         else:
             child = create_deep_pattern(depth - 1)
             return pattern_core.Pattern.pattern(f"level{depth}", [child])
-    
+
     deep_pattern = create_deep_pattern(10)
     strict_rules = pattern_core.ValidationRules(max_depth=5)
-    
+
     try:
         deep_pattern.validate(strict_rules)
         print("✓ Deep pattern is valid")
@@ -242,7 +242,7 @@ def example_structure_analysis():
     print("=" * 60)
     print("Example 8: Structure Analysis")
     print("=" * 60)
-    
+
     # Create complex pattern
     pattern = pattern_core.Pattern.pattern("root", [
         pattern_core.Pattern.pattern("branch1", [
@@ -258,10 +258,10 @@ def example_structure_analysis():
         ]),
         pattern_core.Pattern.point("leaf6")
     ])
-    
+
     # Analyze structure
     analysis = pattern.analyze_structure()
-    
+
     print(f"Summary: {analysis.summary}")
     print(f"Depth distribution: {analysis.depth_distribution}")
     print(f"Element counts: {analysis.element_counts}")
@@ -274,7 +274,7 @@ def example_file_tree():
     print("=" * 60)
     print("Example 9: File System Tree (Real-World Use Case)")
     print("=" * 60)
-    
+
     # Build file system structure
     src_dir = pattern_core.Pattern.pattern("src", [
         pattern_core.Pattern.point("main.py"),
@@ -284,28 +284,28 @@ def example_file_tree():
             pattern_core.Pattern.point("post.py")
         ])
     ])
-    
+
     tests_dir = pattern_core.Pattern.pattern("tests", [
         pattern_core.Pattern.point("test_main.py"),
         pattern_core.Pattern.point("test_utils.py")
     ])
-    
+
     project = pattern_core.Pattern.pattern("myproject", [
         src_dir,
         tests_dir,
         pattern_core.Pattern.point("README.md"),
         pattern_core.Pattern.point("setup.py")
     ])
-    
+
     print(f"Project structure:")
     print(f"  Total files/dirs: {project.size()}")
     print(f"  Max depth: {project.depth()}")
     print(f"  All paths: {project.values()}")
-    
+
     # Find all Python files
     python_files = project.filter(lambda p: p.value.endswith(".py"))
     print(f"  Python files: {[p.value for p in python_files]}")
-    
+
     # Analyze structure
     analysis = project.analyze_structure()
     print(f"  Structure summary: {analysis.summary}")
@@ -317,7 +317,7 @@ def example_social_graph():
     print("=" * 60)
     print("Example 10: Social Network Graph (Real-World Use Case)")
     print("=" * 60)
-    
+
     # Create people
     alice = pattern_core.Subject(
         identity="alice",
@@ -327,7 +327,7 @@ def example_social_graph():
             "age": pattern_core.Value.int(30)
         }
     )
-    
+
     bob = pattern_core.Subject(
         identity="bob",
         labels={"Person", "Designer"},
@@ -336,7 +336,7 @@ def example_social_graph():
             "age": pattern_core.Value.int(28)
         }
     )
-    
+
     charlie = pattern_core.Subject(
         identity="charlie",
         labels={"Person", "Manager"},
@@ -345,7 +345,7 @@ def example_social_graph():
             "age": pattern_core.Value.int(35)
         }
     )
-    
+
     dave = pattern_core.Subject(
         identity="dave",
         labels={"Person", "Developer"},
@@ -354,35 +354,35 @@ def example_social_graph():
             "age": pattern_core.Value.int(32)
         }
     )
-    
+
     # Build social graph (who knows whom)
-    bob_pattern = pattern_core.PatternSubject.point(bob)
-    charlie_pattern = pattern_core.PatternSubject.point(charlie)
-    dave_pattern = pattern_core.PatternSubject.point(dave)
-    
+    bob_pattern = pattern_core.Pattern.point(bob)
+    charlie_pattern = pattern_core.Pattern.point(charlie)
+    dave_pattern = pattern_core.Pattern.point(dave)
+
     # Alice knows Bob and Charlie
-    alice_graph = pattern_core.PatternSubject.pattern(alice, [bob_pattern, charlie_pattern])
-    
+    alice_graph = pattern_core.Pattern.pattern(alice, [bob_pattern, charlie_pattern])
+
     # Charlie knows Dave
-    charlie_with_friends = pattern_core.PatternSubject.pattern(charlie, [dave_pattern])
-    
+    charlie_with_friends = pattern_core.Pattern.pattern(charlie, [dave_pattern])
+
     print("Social Network:")
     print(f"  Alice knows {alice_graph.length()} people")
     print(f"  Charlie's network: {charlie_with_friends.size()} people")
     print(f"  Total people in Alice's network: {alice_graph.size()}")
-    
+
     # Query: Find all developers
-    developers = alice_graph.filter(lambda p: p.get_value().has_label("Developer"))
-    dev_names = [p.get_value().get_property("name").as_string() for p in developers if p.get_value().get_property("name")]
+    developers = alice_graph.filter(lambda p: p.value.has_label("Developer"))
+    dev_names = [p.value.get_property("name").as_string() for p in developers if p.value.get_property("name")]
     print(f"  Developers in network: {dev_names}")
-    
+
     # Query: Find average age
     def sum_ages(acc: int, subject: Subject) -> int:
         age_prop = subject.get_property("age")
         if age_prop:
             return acc + age_prop.as_int()
         return acc
-    
+
     total_age = alice_graph.fold(0, sum_ages)
     avg_age = total_age / alice_graph.size()
     print(f"  Average age: {avg_age:.1f}")
@@ -394,27 +394,27 @@ def example_data_pipeline():
     print("=" * 60)
     print("Example 11: Data Pipeline (Real-World Use Case)")
     print("=" * 60)
-    
+
     # Create data pattern
     data = pattern_core.Pattern.pattern("data", pattern_core.Pattern.from_values([
         "apple", "banana", "cherry", "date", "elderberry", "fig", "grape"
     ]))
-    
+
     print(f"Input data: {data.values()[1:]}")  # Skip root "data"
-    
+
     # Pipeline: Filter -> Transform -> Aggregate
     # Step 1: Filter (keep fruits with 'e')
     filtered = data.filter(lambda p: 'e' in p.value)
     print(f"Step 1 (contains 'e'): {[p.value for p in filtered]}")
-    
+
     # Step 2: Transform (uppercase)
     if filtered:
         filtered_pattern = pattern_core.Pattern.pattern("filtered", filtered)
         transformed = filtered_pattern.map(str.upper)
         print(f"Step 2 (uppercase): {transformed.values()[1:]}")  # Skip root
-        
+
         # Step 3: Aggregate (concatenate)
-        result = transformed.fold("", lambda acc, val: 
+        result = transformed.fold("", lambda acc, val:
             acc + ("," if acc and val != "FILTERED" else "") + (val if val != "FILTERED" else "")
         )
         print(f"Step 3 (concatenated): {result}")
@@ -426,26 +426,26 @@ def example_pattern_composition():
     print("=" * 60)
     print("Example 12: Pattern Composition")
     print("=" * 60)
-    
+
     # Create reusable subpatterns
     left_subtree = pattern_core.Pattern.pattern("left", [
         pattern_core.Pattern.point("L1"),
         pattern_core.Pattern.point("L2")
     ])
-    
+
     right_subtree = pattern_core.Pattern.pattern("right", [
         pattern_core.Pattern.point("R1"),
         pattern_core.Pattern.point("R2"),
         pattern_core.Pattern.point("R3")
     ])
-    
+
     # Compose into larger pattern
     tree = pattern_core.Pattern.pattern("root", [left_subtree, right_subtree])
-    
+
     print(f"Composed tree:")
     print(f"  Total nodes: {tree.size()}")
     print(f"  All values: {tree.values()}")
-    
+
     # Analyze composition
     analysis = tree.analyze_structure()
     print(f"  Structure: {analysis.summary}")
@@ -457,7 +457,7 @@ def main():
     print("\n" + "=" * 60)
     print("PATTERN-CORE PYTHON BINDINGS - ADVANCED EXAMPLES")
     print("=" * 60 + "\n")
-    
+
     example_comonad_extract()
     example_comonad_extend()
     example_depth_at()
@@ -470,7 +470,7 @@ def main():
     example_social_graph()
     example_data_pipeline()
     example_pattern_composition()
-    
+
     print("=" * 60)
     print("All advanced examples completed successfully!")
     print("=" * 60)

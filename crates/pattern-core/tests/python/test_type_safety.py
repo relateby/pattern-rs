@@ -17,7 +17,6 @@ import pytest
 try:
     from pattern_core import (
         Pattern,
-        PatternSubject,
         Subject,
         Value,
         ValidationRules,
@@ -41,10 +40,10 @@ except ImportError:
         def symbol(s: str) -> 'Value': ...
         @staticmethod
         def array(items: list) -> 'Value': ...
-    
+
     class Subject:  # type: ignore
         def __init__(self, identity: str, labels: Optional[set] = None, properties: Optional[dict] = None): ...
-    
+
     class Pattern:  # type: ignore
         @staticmethod
         def point(value) -> 'Pattern': ...
@@ -52,19 +51,15 @@ except ImportError:
         def pattern(value, elements: List['Pattern']) -> 'Pattern': ...
         @staticmethod
         def from_values(values: list) -> List['Pattern']: ...
-    
-    class PatternSubject:  # type: ignore
-        @staticmethod
-        def point(subject: Subject) -> 'PatternSubject': ...
-        @staticmethod
-        def pattern(subject: Subject, elements: list) -> 'PatternSubject': ...
-    
+
+
+
     class ValidationRules:  # type: ignore
         def __init__(self, max_depth: Optional[int] = None, max_elements: Optional[int] = None): ...
-    
+
     class ValidationError(ValueError):  # type: ignore
         pass
-    
+
     class StructureAnalysis:  # type: ignore
         pass
 
@@ -79,7 +74,7 @@ def test_value_type_annotations() -> None:
     decimal_val: Value = Value.decimal(3.14)
     bool_val: Value = Value.boolean(True)
     symbol_val: Value = Value.symbol("alice")
-    
+
     # These should type-check correctly
     assert isinstance(str_val, Value) or not PATTERN_CORE_AVAILABLE
     assert isinstance(int_val, Value) or not PATTERN_CORE_AVAILABLE
@@ -95,7 +90,7 @@ def test_value_array_and_map_types() -> None:
     map_val: Value = Value.map({"key": Value.string("value")})
     range_val: Value = Value.range(lower=0.0, upper=100.0)
     measurement_val: Value = Value.measurement(42.5, "meters")
-    
+
     assert isinstance(array_val, Value) or not PATTERN_CORE_AVAILABLE
     assert isinstance(map_val, Value) or not PATTERN_CORE_AVAILABLE
     assert isinstance(range_val, Value) or not PATTERN_CORE_AVAILABLE
@@ -110,7 +105,7 @@ def test_subject_type_annotations() -> None:
         labels={"Person", "Employee"},
         properties={"name": Value.string("Alice"), "age": Value.int(30)}
     )
-    
+
     assert isinstance(subject, Subject) or not PATTERN_CORE_AVAILABLE
 
 
@@ -120,7 +115,7 @@ def test_pattern_construction_types() -> None:
     atomic: Pattern = Pattern.point("hello")
     nested: Pattern = Pattern.pattern("parent", [Pattern.point("child")])
     from_list: Pattern = Pattern.pattern("root", Pattern.from_values(["a", "b", "c"]))
-    
+
     assert isinstance(atomic, Pattern) or not PATTERN_CORE_AVAILABLE
     assert isinstance(nested, Pattern) or not PATTERN_CORE_AVAILABLE
     assert isinstance(from_list, Pattern) or not PATTERN_CORE_AVAILABLE
@@ -129,7 +124,7 @@ def test_pattern_construction_types() -> None:
 def test_pattern_operations_types() -> None:
     """Test that Pattern operations have correct type signatures."""
     pattern: Pattern = Pattern.point("hello")
-    
+
     # Type checkers should verify return types
     length: int = pattern.length()
     size: int = pattern.size()
@@ -137,13 +132,13 @@ def test_pattern_operations_types() -> None:
     is_atomic: bool = pattern.is_atomic()
     values: List[str] = pattern.values()
     elements: List[Pattern] = pattern.elements
-    
+
     # Type checkers should verify callback signatures
     any_result: bool = pattern.any_value(lambda v: v == "hello")
     all_result: bool = pattern.all_values(lambda v: isinstance(v, str))
     filtered: List[Pattern] = pattern.filter(lambda p: p.is_atomic())
     found: Optional[Pattern] = pattern.find_first(lambda p: p.value == "hello")
-    
+
     assert isinstance(length, int) or not PATTERN_CORE_AVAILABLE
     assert isinstance(size, int) or not PATTERN_CORE_AVAILABLE
     assert isinstance(depth, int) or not PATTERN_CORE_AVAILABLE
@@ -155,12 +150,12 @@ def test_pattern_operations_types() -> None:
 def test_pattern_transformation_types() -> None:
     """Test that Pattern transformation methods have correct type signatures."""
     pattern: Pattern = Pattern.point("hello")
-    
+
     # Type checkers should verify transformation signatures
     mapped: Pattern = pattern.map(str.upper)
     folded: str = pattern.fold("", lambda acc, val: acc + str(val))
     combined: Pattern = pattern.combine(Pattern.point("world"))
-    
+
     assert isinstance(mapped, Pattern) or not PATTERN_CORE_AVAILABLE
     assert isinstance(folded, str) or not PATTERN_CORE_AVAILABLE
     assert isinstance(combined, Pattern) or not PATTERN_CORE_AVAILABLE
@@ -169,14 +164,14 @@ def test_pattern_transformation_types() -> None:
 def test_pattern_comonad_types() -> None:
     """Test that Pattern comonad operations have correct type signatures."""
     pattern: Pattern = Pattern.point("hello")
-    
+
     # Type checkers should verify comonad signatures
     extracted: str = pattern.extract()
     extended: Pattern = pattern.extend(lambda p: p.value)
     depth_at: Pattern = pattern.depth_at()
     size_at: Pattern = pattern.size_at()
     indices_at: Pattern = pattern.indices_at()
-    
+
     assert isinstance(extracted, str) or not PATTERN_CORE_AVAILABLE
     assert isinstance(extended, Pattern) or not PATTERN_CORE_AVAILABLE
     assert isinstance(depth_at, Pattern) or not PATTERN_CORE_AVAILABLE
@@ -185,20 +180,20 @@ def test_pattern_comonad_types() -> None:
 
 
 def test_pattern_subject_types() -> None:
-    """Test that PatternSubject has correct type signatures."""
+    """Test that Pattern[Subject] has correct type signatures."""
     subject: Subject = Subject(identity="alice", labels={"Person"})
-    
-    # Type checkers should verify PatternSubject types
-    atomic: PatternSubject = PatternSubject.point(subject)
-    nested: PatternSubject = PatternSubject.pattern(subject, [atomic])
-    
+
+    # Type checkers should verify Pattern[Subject] types
+    atomic: Pattern = Pattern.point(subject)
+    nested: Pattern = Pattern.pattern(subject, [atomic])
+
     # Type checkers should verify Subject-specific methods
-    value: Subject = atomic.get_value()
-    elements: List[PatternSubject] = nested.get_elements()
+    value: Subject = atomic.value
+    elements: List[Pattern] = nested.elements
     values: List[Subject] = nested.values()
-    
-    assert isinstance(atomic, PatternSubject) or not PATTERN_CORE_AVAILABLE
-    assert isinstance(nested, PatternSubject) or not PATTERN_CORE_AVAILABLE
+
+    assert isinstance(atomic, Pattern) or not PATTERN_CORE_AVAILABLE
+    assert isinstance(nested, Pattern) or not PATTERN_CORE_AVAILABLE
     assert isinstance(value, Subject) or not PATTERN_CORE_AVAILABLE
     assert isinstance(elements, list) or not PATTERN_CORE_AVAILABLE
     assert isinstance(values, list) or not PATTERN_CORE_AVAILABLE
@@ -208,9 +203,9 @@ def test_validation_types() -> None:
     """Test that validation classes have correct type signatures."""
     # Type checkers should verify ValidationRules construction
     rules: ValidationRules = ValidationRules(max_depth=10, max_elements=100)
-    
+
     pattern: Pattern = Pattern.point("hello")
-    
+
     # Type checkers should verify validate method signature
     try:
         pattern.validate(rules)
@@ -227,15 +222,15 @@ def test_validation_types() -> None:
 def test_structure_analysis_types() -> None:
     """Test that StructureAnalysis has correct type signatures."""
     pattern: Pattern = Pattern.point("hello")
-    
+
     # Type checkers should verify StructureAnalysis properties
     analysis: StructureAnalysis = pattern.analyze_structure()
-    
+
     summary: str = analysis.summary
     depth_dist: List[int] = analysis.depth_distribution
     elem_counts: List[int] = analysis.element_counts
     nesting: List[str] = analysis.nesting_patterns
-    
+
     assert isinstance(analysis, StructureAnalysis) or not PATTERN_CORE_AVAILABLE
     assert isinstance(summary, str) or not PATTERN_CORE_AVAILABLE
     assert isinstance(depth_dist, list) or not PATTERN_CORE_AVAILABLE
@@ -246,31 +241,31 @@ def test_structure_analysis_types() -> None:
 def test_type_checking_validation() -> None:
     """
     Test cases that should be caught by static type checkers.
-    
+
     These are intentionally commented out because they would fail type checking.
     Uncomment to verify type checker is working correctly.
     """
     # The following should produce type errors in mypy/pyright:
-    
+
     # Type error: string expected, got int
     # bad_value: Value = Value.string(42)  # type: ignore
-    
+
     # Type error: int expected, got string
     # bad_int: Value = Value.int("hello")  # type: ignore
-    
+
     # Type error: Pattern expected in list, got string
     # bad_pattern: Pattern = Pattern.pattern("root", ["not", "patterns"])  # type: ignore
-    
+
     # Type error: Subject expected, got string
-    # bad_subject: PatternSubject = PatternSubject.point("not_a_subject")  # type: ignore
-    
+    # bad_subject: Pattern = Pattern.point("not_a_subject")  # type: ignore
+
     # Type error: callback should return bool, not string
     # pattern = Pattern.point("hello")
     # bad_filter = pattern.any_value(lambda v: "string_not_bool")  # type: ignore
-    
+
     # Type error: wrong callback signature for map
     # bad_map = pattern.map(lambda p: p)  # type: ignore  # should take value, not pattern
-    
+
     pass
 
 
@@ -279,7 +274,7 @@ if __name__ == "__main__":
     if not PATTERN_CORE_AVAILABLE:
         print("WARNING: pattern_core module not available. Tests will only verify type annotations.")
         print("Build the module with 'maturin develop' to run runtime tests.")
-    
+
     print("Running type safety tests...")
     test_value_type_annotations()
     test_value_array_and_map_types()
@@ -292,7 +287,7 @@ if __name__ == "__main__":
     test_validation_types()
     test_structure_analysis_types()
     test_type_checking_validation()
-    
+
     print("✓ All type safety tests passed!")
     print("\nTo verify type checking, run:")
     print("  mypy tests/python/test_type_safety.py")

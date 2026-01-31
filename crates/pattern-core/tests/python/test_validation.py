@@ -10,7 +10,7 @@ def test_validation_rules_creation():
     rules = pattern_core.ValidationRules(max_depth=10, max_elements=100)
     assert rules.max_depth == 10
     assert rules.max_elements == 100
-    
+
     # Optional parameters
     rules2 = pattern_core.ValidationRules()
     assert rules2.max_depth is None
@@ -23,9 +23,9 @@ def test_pattern_validate_passes():
         pattern_core.Pattern.point("child1"),
         pattern_core.Pattern.point("child2")
     ])
-    
+
     rules = pattern_core.ValidationRules(max_depth=5, max_elements=10)
-    
+
     # Should not raise
     pattern.validate(rules)
 
@@ -40,9 +40,9 @@ def test_pattern_validate_fails_max_depth():
             ])
         ])
     ])
-    
+
     rules = pattern_core.ValidationRules(max_depth=2)
-    
+
     with pytest.raises(ValueError, match="Validation error"):
         pattern.validate(rules)
 
@@ -52,9 +52,9 @@ def test_pattern_validate_fails_max_elements():
     # Create pattern with many elements
     elements = [pattern_core.Pattern.point(f"child{i}") for i in range(10)]
     pattern = pattern_core.Pattern.pattern("root", elements)
-    
+
     rules = pattern_core.ValidationRules(max_elements=5)
-    
+
     with pytest.raises(ValueError, match="Validation error"):
         pattern.validate(rules)
 
@@ -67,57 +67,57 @@ def test_pattern_analyze_structure():
         ]),
         pattern_core.Pattern.point("b")
     ])
-    
+
     analysis = pattern.analyze_structure()
-    
+
     # Check analysis properties
     assert analysis.summary is not None
     assert isinstance(analysis.summary, str)
     assert len(analysis.summary) > 0
-    
+
     assert analysis.depth_distribution is not None
     assert isinstance(analysis.depth_distribution, list)
-    
+
     assert analysis.element_counts is not None
     assert isinstance(analysis.element_counts, list)
-    
+
     assert analysis.nesting_patterns is not None
     assert isinstance(analysis.nesting_patterns, list)
 
 
 def test_pattern_subject_validate():
-    """Test validation for PatternSubject"""
+    """Test validation for Pattern[Subject]"""
     subject = pattern_core.Subject(
         identity="alice",
         labels={"Person"},
         properties={}
     )
-    
-    pattern = pattern_core.PatternSubject.pattern(
+
+    pattern = pattern_core.Pattern.pattern(
         subject,
-        [pattern_core.PatternSubject.point(subject)]
+        [pattern_core.Pattern.point(subject)]
     )
-    
+
     rules = pattern_core.ValidationRules(max_depth=5)
-    
+
     # Should not raise
     pattern.validate(rules)
 
 
 def test_pattern_subject_analyze_structure():
-    """Test structure analysis for PatternSubject"""
+    """Test structure analysis for Pattern[Subject]"""
     subject = pattern_core.Subject(
         identity="alice",
         labels={"Person"},
         properties={}
     )
-    
-    pattern = pattern_core.PatternSubject.pattern(
+
+    pattern = pattern_core.Pattern.pattern(
         subject,
-        [pattern_core.PatternSubject.point(subject)]
+        [pattern_core.Pattern.point(subject)]
     )
-    
+
     analysis = pattern.analyze_structure()
-    
+
     assert analysis.summary is not None
     assert isinstance(analysis.summary, str)

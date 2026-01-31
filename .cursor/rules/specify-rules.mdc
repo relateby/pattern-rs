@@ -25,6 +25,9 @@ Auto-generated from all feature plans. Last updated: 2025-12-27
 - Python 3.8+ (type hints support), Rust 1.75+ (edition 2021) + PyO3 0.23+ (Rust-Python bindings), maturin (Python packaging), pattern-core crate (existing Rust library) (024-python-pattern-core)
 - Rust (existing workspace; use same toolchain as pattern-core) + None new (pattern-core crate existing) (025-pattern-paramorphism)
 - N/A (in-memory pattern structure only) (025-pattern-paramorphism)
+- Python 3.8+ (type hints), Rust 1.75+ (edition 2021) + PyO3 (existing, pattern-core `python` feature), maturin, pattern-core crate with existing `para` (spec 025) (026-paramorphism-python-bindings)
+- N/A (in-memory only) (026-paramorphism-python-bindings)
+- Python 3.8+ (type hints, Generic), Rust 1.75+ (edition 2021) + PyO3 (existing, pattern-core `python` feature), maturin, pattern-core crate with existing `para` (spec 025), `typing.TypeVar` and `typing.Generic` for Pattern[V] (026-paramorphism-python-bindings)
 
 - Rust (MSRV: 1.70.0, edition: 2021) (002-workspace-setup)
 
@@ -44,9 +47,9 @@ cargo test [ONLY COMMANDS FOR ACTIVE TECHNOLOGIES][ONLY COMMANDS FOR ACTIVE TECH
 Rust (MSRV: 1.70.0, edition: 2021): Follow standard conventions
 
 ## Recent Changes
+- 026-paramorphism-python-bindings: Added Python 3.8+ (type hints, Generic), Rust 1.75+ (edition 2021) + PyO3 (existing, pattern-core `python` feature), maturin, pattern-core crate with existing `para` (spec 025), `typing.TypeVar` and `typing.Generic` for Pattern[V]
+- 026-paramorphism-python-bindings: Added Python 3.8+ (type hints), Rust 1.75+ (edition 2021) + PyO3 (existing, pattern-core `python` feature), maturin, pattern-core crate with existing `para` (spec 025)
 - 025-pattern-paramorphism: Added Rust (existing workspace; use same toolchain as pattern-core) + None new (pattern-core crate existing)
-- 024-python-pattern-core: Added Python 3.8+ (type hints support), Rust 1.75+ (edition 2021) + PyO3 0.23+ (Rust-Python bindings), maturin (Python packaging), pattern-core crate (existing Rust library)
-- 023-remove-placeholder-crates: Added Rust 1.70.0+ (edition 2021) + Cargo workspace managemen
 
 
 <!-- MANUAL ADDITIONS START -->
