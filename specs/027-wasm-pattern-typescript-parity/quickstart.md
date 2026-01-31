@@ -5,9 +5,11 @@
 
 ## Build (from repo root)
 
+### Option 1: Using wasm-pack (recommended for JavaScript/TypeScript projects)
+
 ```bash
 # Install wasm-pack if needed
-# cargo install wasm-pack
+cargo install wasm-pack
 
 # Build pattern-core for WASM (with wasm feature)
 cd crates/pattern-core
@@ -15,7 +17,19 @@ wasm-pack build --target web --features wasm
 # Or for Node: wasm-pack build --target nodejs --features wasm
 ```
 
-Output appears in `pkg/` (or as configured): `.wasm`, `.js` glue, and optionally TypeScript definitions. If the project ships hand-written `.d.ts`, copy or link them into `pkg/` so consumers get types without extra steps.
+Output appears in `pkg/` (or as configured): `.wasm`, `.js` glue, and TypeScript definitions (`pattern_core.d.ts`). The hand-written TypeScript definitions from `typescript/pattern_core.d.ts` should be copied or linked into `pkg/` so consumers get complete types.
+
+### Option 2: Using cargo directly (for validation/testing)
+
+```bash
+# Compile to WASM target directly
+cargo build --package pattern-core --target wasm32-unknown-unknown --features wasm
+
+# For release builds
+cargo build --package pattern-core --target wasm32-unknown-unknown --features wasm --release
+```
+
+This validates that the WASM compilation succeeds but doesn't generate the JavaScript glue code or package structure. Use wasm-pack for full builds intended for JavaScript/TypeScript consumption.
 
 ## Load the module (browser)
 
