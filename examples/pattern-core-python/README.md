@@ -66,8 +66,8 @@ subject = pattern_core.Subject(
 )
 
 # Create Pattern with Subject
-pattern = pattern_core.PatternSubject.point(subject)
-print(f"Identity: {pattern.get_value().identity}")  # "alice"
+pattern = pattern_core.Pattern.point(subject)
+print(f"Identity: {pattern.value.identity}")  # "alice"
 ```
 
 ### 4. Transform Patterns
@@ -88,12 +88,40 @@ filtered = pattern.filter(lambda p: p.value in ["a", "c"])
 print(f"Filtered count: {len(filtered)}")  # 2
 ```
 
+### 6. Paramorphism - Structure-Aware Fold
+
+```python
+# Para: Structure-aware aggregation with access to pattern structure
+pattern = pattern_core.Pattern.pattern(10, [
+    pattern_core.Pattern.pattern(5, [
+        pattern_core.Pattern.point(2),
+        pattern_core.Pattern.point(1)
+    ]),
+    pattern_core.Pattern.point(3)
+])
+
+# Compute multiple statistics in one pass
+def compute_stats(pattern, element_results):
+    if not element_results:  # Atomic
+        return (pattern.value, 1, 0)  # (sum, count, depth)
+    
+    # Aggregate from children
+    child_sum = sum(r[0] for r in element_results)
+    child_count = sum(r[1] for r in element_results)
+    child_max_depth = max(r[2] for r in element_results)
+    
+    return (pattern.value + child_sum, 1 + child_count, 1 + child_max_depth)
+
+stats = pattern.para(compute_stats)
+print(f"Sum: {stats[0]}, Count: {stats[1]}, Depth: {stats[2]}")
+```
+
 ## Examples
 
 This directory contains comprehensive examples:
 
 1. **[basic_usage.py](./basic_usage.py)** - Pattern and Subject construction
-2. **[operations.py](./operations.py)** - Pattern operations (map, filter, fold, combine)
+2. **[operations.py](./operations.py)** - Pattern operations (map, filter, fold, para, combine)
 3. **[zip_relationships.py](./zip_relationships.py)** - Relationship creation (zip3, zip_with)
 4. **[type_safety.py](./type_safety.py)** - Type hints and static type checking
 5. **[advanced.py](./advanced.py)** - Advanced patterns (comonad, complex subjects)
@@ -156,11 +184,11 @@ relationships = pattern_core.Pattern.zip_with(
 alice = pattern_core.Subject(identity="alice", labels={"Person"})
 bob = pattern_core.Subject(identity="bob", labels={"Person"})
 
-alice_pattern = pattern_core.PatternSubject.point(alice)
-bob_pattern = pattern_core.PatternSubject.point(bob)
+alice_pattern = pattern_core.Pattern.point(alice)
+bob_pattern = pattern_core.Pattern.point(bob)
 
 # Alice knows Bob
-graph = pattern_core.PatternSubject.pattern(alice, [bob_pattern])
+graph = pattern_core.Pattern.pattern(alice, [bob_pattern])
 ```
 
 ### Validation
