@@ -546,19 +546,6 @@ fn collect_pattern_values(py: Python, pattern: &PyPattern, result: &mut Vec<PyOb
     }
 }
 
-/// Helper to recursively collect Subject values from PyPatternSubject
-fn collect_subject_values(pattern: &PyPatternSubject, result: &mut Vec<PySubject>) {
-    result.push(PySubject {
-        subject: pattern.pattern.value().clone(),
-    });
-    for elem in pattern.pattern.elements() {
-        let py_elem = PyPatternSubject {
-            pattern: elem.clone(),
-        };
-        collect_subject_values(&py_elem, result);
-    }
-}
-
 /// Helper to recursively filter PyPattern instances
 fn filter_pattern_recursive(
     pattern: &PyPattern,
@@ -912,15 +899,72 @@ impl PyPattern {
         Ok(acc)
     }
 
+    /// Paramorphism: structure-aware fold with access to pattern structure.
+    ///
+    /// At each node, applies func to (current_pattern, element_results) where
+    /// element_results is a list of results from recursively processing elements.
+    /// Evaluation is bottom-up (elements before parents) and left-to-right.
+    ///
+    /// Atomic patterns receive an empty list for element_results.
+    ///
+    /// Args:
+    ///     func: Callable taking (Pattern, List[R]) -> R
+    ///
+    /// Returns:
+    ///     Result of applying func across the entire pattern structure
+    ///
+    /// Example:
+    ///     >>> # Depth-weighted sum
+    ///     >>> pattern = Pattern.pattern(1, [
+    ///     ...     Pattern.point(2),
+    ///     ...     Pattern.pattern(3, [Pattern.point(4)])
+    ///     ... ])
+    ///     >>> result = pattern.para(lambda p, rs: p.value + sum(rs))
+    fn para(&self, py: Python, func: &Bound<'_, PyAny>) -> PyResult<PyObject> {
+        // Recursively process elements first (bottom-up)
+        let element_results = self
+            .elements
+            .iter()
+            .map(|elem| elem.para(py, func))
+            .collect::<PyResult<Vec<PyObject>>>()?;
+
+        // Convert element results to Python list
+        let py_element_results = PyList::new(py, &element_results)?;
+
+        // Create a PyPattern view of the current node for the callback
+        let pattern_view = PyPattern {
+            value: self.value.clone_ref(py),
+            elements: self.elements.clone(),
+        };
+
+        // Call the Python function with (pattern, element_results)
+        func.call1((pattern_view, py_element_results))
+            .map(|result| result.to_object(py))
+    }
+
     /// Combine two patterns associatively.
     fn combine(&self, py: Python, other: PyPattern) -> PyResult<PyPattern> {
-        // For values, try to combine them if they support addition/concatenation
-        // Otherwise, use the left value
+        use crate::Combinable;
+
+        // Try to combine values intelligently
         let combined_value = Python::with_gil(|py| {
             let left_val = self.value.bind(py);
             let right_val = other.value.bind(py);
 
-            // Try to add/concatenate the values
+            // First, check if both values are Subjects
+            if let (Ok(left_subj), Ok(right_subj)) = (
+                left_val.extract::<PySubject>(),
+                right_val.extract::<PySubject>(),
+            ) {
+                // Use Subject's Combinable implementation (merge strategy)
+                let combined_subject = left_subj.subject.combine(right_subj.subject);
+                return PySubject {
+                    subject: combined_subject,
+                }
+                .into_py(py);
+            }
+
+            // Otherwise, try to add/concatenate the values
             match left_val.call_method1("__add__", (right_val,)) {
                 Ok(result) => result.unbind(),
                 Err(_) => self.value.clone_ref(py),
@@ -1105,417 +1149,6 @@ impl PyPattern {
 // PatternSubject Python Class
 // ============================================================================
 
-/// Python wrapper for Pattern<Subject>.
-///
-/// Specialized Pattern class for Pattern<Subject> with Subject-specific operations.
-#[cfg(feature = "python")]
-#[pyclass(name = "PatternSubject")]
-#[derive(Clone)]
-pub struct PyPatternSubject {
-    pattern: Pattern<Subject>,
-}
-
-#[cfg(feature = "python")]
-#[pymethods]
-impl PyPatternSubject {
-    /// Create an atomic pattern with Subject value.
-    ///
-    /// Args:
-    ///     subject (Subject): Subject instance to use as pattern value
-    ///
-    /// Returns:
-    ///     PatternSubject: Atomic Pattern<Subject> instance
-    #[staticmethod]
-    fn point(subject: PySubject) -> Self {
-        Self {
-            pattern: Pattern {
-                value: subject.subject,
-                elements: vec![],
-            },
-        }
-    }
-
-    /// Create a pattern with Subject decoration and elements.
-    ///
-    /// The subject decorates or describes the pattern represented by the elements.
-    ///
-    /// Args:
-    ///     subject (Subject): Subject instance to use as pattern decoration
-    ///     elements: List of PatternSubject instances that form the pattern
-    ///
-    /// Returns:
-    ///     PatternSubject: Pattern<Subject> instance with subject decoration and elements
-    #[staticmethod]
-    fn pattern(subject: PySubject, elements: Vec<PyPatternSubject>) -> Self {
-        Self {
-            pattern: Pattern {
-                value: subject.subject,
-                elements: elements.into_iter().map(|p| p.pattern).collect(),
-            },
-        }
-    }
-
-    /// Get the Subject value
-    fn get_value(&self) -> PySubject {
-        PySubject {
-            subject: self.pattern.value.clone(),
-        }
-    }
-
-    /// Get the elements
-    fn get_elements(&self) -> Vec<PyPatternSubject> {
-        self.pattern
-            .elements
-            .iter()
-            .map(|p| PyPatternSubject { pattern: p.clone() })
-            .collect()
-    }
-
-    /// Check if pattern is atomic
-    fn is_atomic(&self) -> bool {
-        self.pattern.elements.is_empty()
-    }
-
-    /// Return the number of direct elements.
-    fn length(&self) -> usize {
-        self.pattern.length()
-    }
-
-    /// Return the total number of nodes in the pattern.
-    fn size(&self) -> usize {
-        self.pattern.size()
-    }
-
-    /// Return the maximum nesting depth.
-    fn depth(&self) -> usize {
-        self.pattern.depth()
-    }
-
-    /// Extract all Subject values as a flat list (pre-order traversal).
-    fn values(&self) -> Vec<PySubject> {
-        let mut result = Vec::new();
-        collect_subject_values(self, &mut result);
-        result
-    }
-
-    /// Check if any Subject value satisfies the predicate.
-    fn any_value(&self, py: Python, predicate: &Bound<'_, PyAny>) -> PyResult<bool> {
-        let result = self.pattern.any_value(|subject| {
-            let py_subject = PySubject {
-                subject: subject.clone(),
-            };
-            // Call Python predicate function
-            match predicate.call1((py_subject,)) {
-                Ok(result) => result.extract::<bool>().unwrap_or(false),
-                Err(_) => false,
-            }
-        });
-        Ok(result)
-    }
-
-    /// Check if all Subject values satisfy the predicate.
-    fn all_values(&self, py: Python, predicate: &Bound<'_, PyAny>) -> PyResult<bool> {
-        let result = self.pattern.all_values(|subject| {
-            let py_subject = PySubject {
-                subject: subject.clone(),
-            };
-            match predicate.call1((py_subject,)) {
-                Ok(result) => result.extract::<bool>().unwrap_or(false),
-                Err(_) => false,
-            }
-        });
-        Ok(result)
-    }
-
-    /// Filter subpatterns that satisfy the predicate.
-    fn filter(&self, py: Python, predicate: &Bound<'_, PyAny>) -> PyResult<Vec<PyPatternSubject>> {
-        let filtered = self.pattern.filter(|p| {
-            let py_pattern = PyPatternSubject { pattern: p.clone() };
-            match predicate.call1((py_pattern,)) {
-                Ok(result) => result.extract::<bool>().unwrap_or(false),
-                Err(_) => false,
-            }
-        });
-        Ok(filtered
-            .iter()
-            .map(|p| PyPatternSubject {
-                pattern: (*p).clone(),
-            })
-            .collect())
-    }
-
-    /// Find the first subpattern that satisfies the predicate.
-    fn find_first(
-        &self,
-        py: Python,
-        predicate: &Bound<'_, PyAny>,
-    ) -> PyResult<Option<PyPatternSubject>> {
-        let found = self.pattern.find_first(|p| {
-            let py_pattern = PyPatternSubject { pattern: p.clone() };
-            match predicate.call1((py_pattern,)) {
-                Ok(result) => result.extract::<bool>().unwrap_or(false),
-                Err(_) => false,
-            }
-        });
-        Ok(found.map(|p| PyPatternSubject { pattern: p.clone() }))
-    }
-
-    /// Check if patterns have identical structure.
-    fn matches(&self, other: &PyPatternSubject) -> bool {
-        self.pattern.matches(&other.pattern)
-    }
-
-    /// Check if pattern contains other as subpattern.
-    fn contains(&self, other: &PyPatternSubject) -> bool {
-        self.pattern.contains(&other.pattern)
-    }
-
-    /// Transform Subject values while preserving structure.
-    fn map(&self, py: Python, func: &Bound<'_, PyAny>) -> PyResult<PyPatternSubject> {
-        let pattern_clone = self.pattern.clone();
-        let mapped = pattern_clone.map(|subject| {
-            let py_subject = PySubject {
-                subject: subject.clone(),
-            };
-            // Call Python function
-            match func.call1((py_subject,)) {
-                Ok(result) => {
-                    // Try to extract as PySubject
-                    if let Ok(new_subject) = result.extract::<PySubject>() {
-                        new_subject.subject
-                    } else {
-                        // Fallback: return original
-                        subject.clone()
-                    }
-                }
-                Err(_) => subject.clone(),
-            }
-        });
-        Ok(PyPatternSubject { pattern: mapped })
-    }
-
-    /// Fold over all Subject values.
-    fn fold(
-        &self,
-        py: Python,
-        init: &Bound<'_, PyAny>,
-        func: &Bound<'_, PyAny>,
-    ) -> PyResult<PyObject> {
-        let mut acc = init.to_object(py);
-        for subject in self.pattern.values() {
-            let py_subject = PySubject {
-                subject: subject.clone(),
-            };
-            acc = func.call1((acc.bind(py), py_subject))?.to_object(py);
-        }
-        Ok(acc)
-    }
-
-    /// Combine two patterns associatively using the default merge strategy.
-    ///
-    /// The default strategy merges subjects by:
-    /// - Using the identity from the first subject
-    /// - Taking the union of labels from both subjects
-    /// - Merging properties (values from the second subject overwrite the first)
-    ///
-    /// Args:
-    ///     other: The pattern to combine with
-    ///     strategy: Optional combination strategy. Defaults to "merge".
-    ///               Options: "merge", "first", "last", "empty"
-    ///     combine_func: Optional custom function (Subject, Subject) -> Subject.
-    ///                   If provided, overrides the strategy parameter.
-    ///
-    /// Returns:
-    ///     PatternSubject: Combined pattern
-    ///
-    /// Examples:
-    ///     # Default merge strategy
-    ///     result = p1.combine(p2)
-    ///
-    ///     # Use "first wins" strategy
-    ///     result = p1.combine(p2, strategy="first")
-    ///
-    ///     # Use custom function
-    ///     def custom_merge(s1, s2):
-    ///         return s1  # Custom logic
-    ///     result = p1.combine(p2, combine_func=custom_merge)
-    #[pyo3(signature = (other, *, strategy = "merge", combine_func = None))]
-    fn combine(
-        &self,
-        other: PyPatternSubject,
-        strategy: &str,
-        combine_func: Option<&Bound<'_, PyAny>>,
-    ) -> PyResult<PyPatternSubject> {
-        use crate::{Combinable, EmptySubject, FirstSubject, LastSubject};
-
-        // If custom function provided, use it
-        if let Some(func) = combine_func {
-            let combined_value = Python::with_gil(|_py| {
-                let py_subject1 = PySubject {
-                    subject: self.pattern.value().clone(),
-                };
-                let py_subject2 = PySubject {
-                    subject: other.pattern.value().clone(),
-                };
-                match func.call1((py_subject1, py_subject2)) {
-                    Ok(result) => {
-                        if let Ok(py_subject) = result.extract::<PySubject>() {
-                            py_subject.subject
-                        } else {
-                            self.pattern.value().clone()
-                        }
-                    }
-                    Err(_) => self.pattern.value().clone(),
-                }
-            });
-
-            let mut combined_elements = self.pattern.elements().to_vec();
-            combined_elements.extend(other.pattern.elements().iter().cloned());
-
-            return Ok(PyPatternSubject {
-                pattern: Pattern {
-                    value: combined_value,
-                    elements: combined_elements,
-                },
-            });
-        }
-
-        // Otherwise use built-in strategy
-        let combined_pattern = match strategy {
-            "merge" => {
-                // Default: merge labels and properties
-                let pattern1 = self.pattern.clone();
-                let pattern2 = other.pattern.clone();
-                pattern1.combine(pattern2)
-            }
-            "first" => {
-                // First wins: keep first subject, concatenate elements
-                let combined_value = FirstSubject(self.pattern.value().clone())
-                    .combine(FirstSubject(other.pattern.value().clone()))
-                    .0;
-                let mut combined_elements = self.pattern.elements().to_vec();
-                combined_elements.extend(other.pattern.elements().iter().cloned());
-                Pattern {
-                    value: combined_value,
-                    elements: combined_elements,
-                }
-            }
-            "last" => {
-                // Last wins: keep last subject, concatenate elements
-                let combined_value = LastSubject(self.pattern.value().clone())
-                    .combine(LastSubject(other.pattern.value().clone()))
-                    .0;
-                let mut combined_elements = self.pattern.elements().to_vec();
-                combined_elements.extend(other.pattern.elements().iter().cloned());
-                Pattern {
-                    value: combined_value,
-                    elements: combined_elements,
-                }
-            }
-            "empty" => {
-                // Empty: always return anonymous subject
-                let combined_value = EmptySubject(self.pattern.value().clone())
-                    .combine(EmptySubject(other.pattern.value().clone()))
-                    .0;
-                let mut combined_elements = self.pattern.elements().to_vec();
-                combined_elements.extend(other.pattern.elements().iter().cloned());
-                Pattern {
-                    value: combined_value,
-                    elements: combined_elements,
-                }
-            }
-            _ => {
-                return Err(runtime_error_to_python(&format!(
-                    "Unknown combination strategy: '{}'. Valid options: merge, first, last, empty",
-                    strategy
-                )));
-            }
-        };
-
-        Ok(PyPatternSubject {
-            pattern: combined_pattern,
-        })
-    }
-
-    /// Extract Subject value at current position (comonad).
-    fn extract(&self) -> PySubject {
-        PySubject {
-            subject: self.pattern.extract().clone(),
-        }
-    }
-
-    /// Apply function to all contexts (comonad).
-    fn extend(&self, py: Python, func: &Bound<'_, PyAny>) -> PyResult<PyPatternSubject> {
-        let func_obj = func.to_object(py);
-        let pattern_clone = self.pattern.clone();
-        let extended = pattern_clone.extend(&|p: &Pattern<Subject>| {
-            let py_pattern = PyPatternSubject { pattern: p.clone() };
-            // Call Python function and extract result
-            Python::with_gil(|py| {
-                let bound_func = func_obj.bind(py);
-                match bound_func.call1((py_pattern,)) {
-                    Ok(result) => {
-                        // Try to extract as Subject
-                        if let Ok(py_subject) = result.extract::<PySubject>() {
-                            py_subject.subject.clone()
-                        } else {
-                            // Fallback: use original subject
-                            p.value().clone()
-                        }
-                    }
-                    Err(_) => p.value().clone(),
-                }
-            })
-        });
-        Ok(PyPatternSubject { pattern: extended })
-    }
-
-    /// Decorate each position with depth.
-    fn depth_at(&self) -> PyResult<PyPatternSubject> {
-        // depth_at returns Pattern<usize>, but we need Pattern<Subject>
-        // This is a limitation - we'd need to convert usize back to Subject
-        // For now, return error or implement differently
-        Err(runtime_error_to_python(
-            "depth_at not yet implemented for PatternSubject",
-        ))
-    }
-
-    /// Decorate each position with subtree size.
-    fn size_at(&self) -> PyResult<PyPatternSubject> {
-        Err(runtime_error_to_python(
-            "size_at not yet implemented for PatternSubject",
-        ))
-    }
-
-    /// Decorate each position with path from root.
-    fn indices_at(&self) -> PyResult<PyPatternSubject> {
-        Err(runtime_error_to_python(
-            "indices_at not yet implemented for PatternSubject",
-        ))
-    }
-
-    /// Validate pattern structure.
-    fn validate(&self, rules: &PyValidationRules) -> PyResult<()> {
-        self.pattern
-            .validate(&rules.rules)
-            .map_err(|e| validation_error_to_python(&e))?;
-        Ok(())
-    }
-
-    /// Analyze pattern structure.
-    fn analyze_structure(&self) -> PyStructureAnalysis {
-        let analysis = self.pattern.analyze_structure();
-        PyStructureAnalysis { analysis }
-    }
-
-    fn __repr__(&self) -> String {
-        format!(
-            "PatternSubject(identity={:?})",
-            self.pattern.value.identity.0
-        )
-    }
-}
-
 // ============================================================================
 // ValidationRules Python Class
 // ============================================================================
@@ -1642,7 +1275,6 @@ fn pattern_core(_py: Python, m: &Bound<'_, PyModule>) -> PyResult<()> {
     m.add_class::<PyValue>()?;
     m.add_class::<PySubject>()?;
     m.add_class::<PyPattern>()?;
-    m.add_class::<PyPatternSubject>()?;
     m.add_class::<PyValidationRules>()?;
     m.add_class::<PyStructureAnalysis>()?;
     m.add_class::<PyValidationError>()?;
