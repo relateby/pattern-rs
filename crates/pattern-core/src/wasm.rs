@@ -475,8 +475,10 @@ pub fn value_map_to_js(map: &HashMap<String, Value>) -> JsValue {
 //
 // These factory methods provide JavaScript-friendly constructors for all Value variants.
 // They accept JsValue arguments and convert them to the appropriate Rust Value types.
+//
+// Exported to JavaScript as `Value` (without the Factory suffix).
 
-#[wasm_bindgen]
+#[wasm_bindgen(js_name = Value)]
 pub struct ValueFactory;
 
 #[wasm_bindgen]
@@ -624,7 +626,9 @@ impl ValueFactory {
 /// WASM binding for Subject.
 ///
 /// Provides constructors and accessors for Subject instances from JavaScript/TypeScript.
-#[wasm_bindgen]
+///
+/// Exported to JavaScript as `Subject` (without the Wasm prefix).
+#[wasm_bindgen(js_name = Subject)]
 pub struct WasmSubject {
     inner: Subject,
 }
@@ -639,11 +643,11 @@ impl WasmSubject {
     /// * `properties` - A JavaScript object with string keys and Value values (can be empty object)
     ///
     /// # Returns
-    /// A new WasmSubject instance, or throws an error
+    /// A new Subject instance, or throws an error
     ///
     /// # Example (JavaScript)
     /// ```javascript
-    /// const subject = WasmSubject.new(
+    /// const subject = Subject.new(
     ///     "alice",
     ///     ["Person", "User"],
     ///     { name: Value.string("Alice"), age: Value.int(30) }
@@ -797,10 +801,12 @@ impl WasmSubject {
 ///
 /// Provides constructors and accessors for Pattern instances from JavaScript/TypeScript.
 /// This binding wraps Pattern<JsValue>, allowing patterns to hold any JavaScript value:
-/// primitives, objects, WasmSubject instances, or even other WasmPattern instances (nesting).
+/// primitives, objects, Subject instances, or even other Pattern instances (nesting).
 ///
 /// This design matches the Python binding which stores PyAny (any Python object).
-#[wasm_bindgen]
+///
+/// Exported to JavaScript as `Pattern` (without the Wasm prefix).
+#[wasm_bindgen(js_name = Pattern)]
 pub struct WasmPattern {
     inner: Pattern<JsValue>,
 }
@@ -827,16 +833,16 @@ impl WasmPattern {
     /// # Example (JavaScript)
     /// ```javascript
     /// // Primitives
-    /// const p1 = WasmPattern.point("hello");
-    /// const p2 = WasmPattern.point(42);
-    /// const p3 = WasmPattern.point(true);
+    /// const p1 = Pattern.point("hello");
+    /// const p2 = Pattern.point(42);
+    /// const p3 = Pattern.point(true);
     ///
     /// // Subject
-    /// const subject = new WasmSubject("alice", [], {});
-    /// const p4 = WasmPattern.point(subject);
+    /// const subject = new Subject("alice", [], {});
+    /// const p4 = Pattern.point(subject);
     ///
     /// // Nesting - Pattern<Pattern<V>>
-    /// const p5 = WasmPattern.point(p1);
+    /// const p5 = Pattern.point(p1);
     /// ```
     #[wasm_bindgen(js_name = point)]
     pub fn point(value: JsValue) -> WasmPattern {
@@ -858,8 +864,8 @@ impl WasmPattern {
     ///
     /// # Example (JavaScript)
     /// ```javascript
-    /// const p1 = WasmPattern.of("hello");  // Same as WasmPattern.point("hello")
-    /// const p2 = WasmPattern.of(42);       // Same as WasmPattern.point(42)
+    /// const p1 = Pattern.of("hello");  // Same as Pattern.point("hello")
+    /// const p2 = Pattern.of(42);       // Same as Pattern.point(42)
     /// ```
     #[wasm_bindgen(js_name = of)]
     pub fn of(value: JsValue) -> WasmPattern {
@@ -879,9 +885,9 @@ impl WasmPattern {
     ///
     /// # Example (JavaScript)
     /// ```javascript
-    /// const pattern = WasmPattern.pattern("parent");
-    /// pattern.addElement(WasmPattern.of("child1"));
-    /// pattern.addElement(WasmPattern.of("child2"));
+    /// const pattern = Pattern.pattern("parent");
+    /// pattern.addElement(Pattern.of("child1"));
+    /// pattern.addElement(Pattern.of("child2"));
     /// ```
     #[wasm_bindgen(js_name = pattern)]
     pub fn pattern(value: JsValue) -> WasmPattern {
@@ -899,9 +905,9 @@ impl WasmPattern {
     ///
     /// # Example (JavaScript)
     /// ```javascript
-    /// const parent = WasmPattern.pattern(WasmSubject.new("parent", [], {}));
-    /// parent.addElement(WasmPattern.of("child1"));
-    /// parent.addElement(WasmPattern.of("child2"));
+    /// const parent = Pattern.pattern(Subject.new("parent", [], {}));
+    /// parent.addElement(Pattern.of("child1"));
+    /// parent.addElement(Pattern.of("child2"));
     /// ```
     #[wasm_bindgen(js_name = addElement)]
     pub fn add_element(&mut self, element: WasmPattern) {
@@ -926,7 +932,7 @@ impl WasmPattern {
     ///
     /// # Example (JavaScript)
     /// ```javascript
-    /// const patterns = WasmPattern.fromValues([1, 2, 3]);
+    /// const patterns = Pattern.fromValues([1, 2, 3]);
     /// // Returns [Pattern.point(1), Pattern.point(2), Pattern.point(3)]
     /// console.log(patterns.length); // 3
     /// console.log(patterns[0].value); // 1
@@ -964,10 +970,10 @@ impl WasmPattern {
     ///
     /// # Example (JavaScript)
     /// ```javascript
-    /// const p1 = WasmPattern.point("hello");
+    /// const p1 = Pattern.point("hello");
     /// console.log(p1.value); // "hello"
     ///
-    /// const p2 = WasmPattern.point(42);
+    /// const p2 = Pattern.point(42);
     /// console.log(p2.value); // 42
     /// ```
     #[wasm_bindgen(getter)]
@@ -984,9 +990,9 @@ impl WasmPattern {
     ///
     /// # Example (JavaScript)
     /// ```javascript
-    /// const pattern = WasmPattern.pattern("parent");
-    /// pattern.addElement(WasmPattern.of("child1"));
-    /// pattern.addElement(WasmPattern.of("child2"));
+    /// const pattern = Pattern.pattern("parent");
+    /// pattern.addElement(Pattern.of("child1"));
+    /// pattern.addElement(Pattern.of("child2"));
     /// console.log(pattern.elements.length); // 2
     /// console.log(pattern.elements[0].value); // "child1"
     /// ```
@@ -1012,8 +1018,8 @@ impl WasmPattern {
     ///
     /// # Example (JavaScript)
     /// ```javascript
-    /// const pattern = WasmPattern.pattern("parent");
-    /// pattern.addElement(WasmPattern.of("child"));
+    /// const pattern = Pattern.pattern("parent");
+    /// pattern.addElement(Pattern.of("child"));
     /// const child = pattern.getElement(0);
     /// ```
     #[wasm_bindgen(js_name = getElement)]
