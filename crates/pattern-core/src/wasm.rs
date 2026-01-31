@@ -919,6 +919,42 @@ impl WasmSubject {
             },
         })
     }
+
+    /// Create a WasmSubject from a Rust Subject.
+    ///
+    /// This allows other crates (like pattern-wasm) to create WasmSubject instances
+    /// from native Rust Subject types, enabling proper type consistency when
+    /// converting between Rust Pattern<Subject> and JS Pattern<JsValue>.
+    ///
+    /// # Arguments
+    /// * `subject` - A Rust Subject instance
+    ///
+    /// # Returns
+    /// A new WasmSubject wrapping the given Subject
+    pub fn from_subject(subject: Subject) -> Self {
+        WasmSubject { inner: subject }
+    }
+
+    /// Consume this WasmSubject and return the inner Rust Subject.
+    ///
+    /// This allows other crates to extract the native Rust Subject from a WasmSubject,
+    /// enabling conversion from JS Pattern<JsValue> back to Rust Pattern<Subject>.
+    ///
+    /// # Returns
+    /// The inner Subject
+    pub fn into_subject(self) -> Subject {
+        self.inner
+    }
+
+    /// Get a reference to the inner Rust Subject.
+    ///
+    /// This allows inspection of the Subject without consuming the WasmSubject.
+    ///
+    /// # Returns
+    /// A reference to the inner Subject
+    pub fn as_subject(&self) -> &Subject {
+        &self.inner
+    }
 }
 
 // ============================================================================
@@ -2010,5 +2046,48 @@ impl WasmPattern {
         WasmStructureAnalysis {
             inner: self.inner.analyze_structure(),
         }
+    }
+}
+
+// ============================================================================
+// WasmPattern Rust-side helpers (not exposed to JS)
+// ============================================================================
+//
+// These methods allow other Rust crates (like pattern-wasm) to construct
+// WasmPattern instances from native Rust types and extract them back.
+
+impl WasmPattern {
+    /// Create a WasmPattern from a Rust Pattern<JsValue>.
+    ///
+    /// This allows other crates to create WasmPattern instances from
+    /// Pattern<JsValue> that they've constructed.
+    ///
+    /// # Arguments
+    /// * `pattern` - A Rust Pattern<JsValue>
+    ///
+    /// # Returns
+    /// A new WasmPattern wrapping the given pattern
+    pub fn from_pattern(pattern: Pattern<JsValue>) -> Self {
+        WasmPattern { inner: pattern }
+    }
+
+    /// Consume this WasmPattern and return the inner Pattern<JsValue>.
+    ///
+    /// This allows other crates to extract the native Rust Pattern from a WasmPattern.
+    ///
+    /// # Returns
+    /// The inner Pattern<JsValue>
+    pub fn into_pattern(self) -> Pattern<JsValue> {
+        self.inner
+    }
+
+    /// Get a reference to the inner Pattern<JsValue>.
+    ///
+    /// This allows inspection of the Pattern without consuming the WasmPattern.
+    ///
+    /// # Returns
+    /// A reference to the inner Pattern<JsValue>
+    pub fn as_pattern(&self) -> &Pattern<JsValue> {
+        &self.inner
     }
 }

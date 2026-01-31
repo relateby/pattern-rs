@@ -21,27 +21,45 @@
 
 ---
 
-## Phase 1: Setup (Shared Infrastructure)
+## Phase 1: Setup (Shared Infrastructure) ✅ COMPLETE
 
 **Purpose**: Create the pattern-wasm crate and minimal structure so it compiles and is part of the workspace.
 
-- [ ] T001 Create crates/pattern-wasm/Cargo.toml with package name `pattern-wasm`, `crate-type = ["cdylib"]`, and dependencies: pattern-core (path `../pattern-core`, features `["wasm"]`), gram-codec (path `../gram-codec`, features `["wasm"]`), wasm-bindgen 0.2, js-sys 0.3
-- [ ] T002 Create crates/pattern-wasm/src/lib.rs with `#![allow(clippy::all)]`, wasm_bindgen prelude, `mod convert; mod gram;`, and re-exports of Pattern, Subject, Value from pattern_core (with wasm feature)
-- [ ] T003 Create crates/pattern-wasm/src/gram.rs with a stub Gram namespace (empty or placeholder functions) so the crate compiles
-- [ ] T004 Create crates/pattern-wasm/src/convert.rs with stub module (e.g. placeholder fn) so the crate compiles
+- [x] T001 Create crates/pattern-wasm/Cargo.toml with package name `pattern-wasm`, `crate-type = ["cdylib"]`, and dependencies: pattern-core (path `../pattern-core`, features `["wasm"]`), gram-codec (path `../gram-codec`, features `["wasm"]`), wasm-bindgen 0.2, js-sys 0.3
+- [x] T002 Create crates/pattern-wasm/src/lib.rs with `#![allow(clippy::all)]`, wasm_bindgen prelude, `mod convert; mod gram;`, and re-exports of Pattern, Subject, Value from pattern_core (with wasm feature)
+- [x] T003 Create crates/pattern-wasm/src/gram.rs with a stub Gram namespace (empty or placeholder functions) so the crate compiles
+- [x] T004 Create crates/pattern-wasm/src/convert.rs with stub module (e.g. placeholder fn) so the crate compiles
+
+**Status**: All tasks complete. Crate builds successfully for both wasm32-unknown-unknown and native targets.
 
 ---
 
-## Phase 2: Foundational (Blocking Prerequisites)
+## Phase 2: Foundational (Blocking Prerequisites) ✅ COMPLETE
 
 **Purpose**: Conversion layer between Rust Pattern&lt;Subject&gt; and JS Pattern/Subject. Required before Gram.stringify and Gram.parse can be implemented.
 
 **CRITICAL**: No user story implementation can begin until this phase is complete.
 
-- [ ] T005 Implement Rust Pattern&lt;Subject&gt; to JS Pattern/Subject conversion in crates/pattern-wasm/src/convert.rs (function that takes Rust pattern from gram_codec::parse_gram_notation and builds equivalent JS Pattern/Subject using pattern_core types or equivalent JS shape)
-- [ ] T006 Implement JS Pattern/Subject to Rust Pattern&lt;Subject&gt; conversion in crates/pattern-wasm/src/convert.rs (function that takes JS pattern and returns Rust Pattern&lt;Subject&gt; for to_gram_pattern)
+- [x] T005 Implement Rust Pattern&lt;Subject&gt; to JS Pattern/Subject conversion in crates/pattern-wasm/src/convert.rs (function that takes Rust pattern from gram_codec::parse_gram_notation and builds equivalent JS Pattern/Subject using pattern_core types or equivalent JS shape)
+- [x] T006 Implement JS Pattern/Subject to Rust Pattern&lt;Subject&gt; conversion in crates/pattern-wasm/src/convert.rs (function that takes JS pattern and returns Rust Pattern&lt;Subject&gt; for to_gram_pattern)
 
-**Checkpoint**: Conversion layer ready; Gram.stringify and Gram.parse can be implemented.
+**Checkpoint**: ✅ Conversion layer ready; Gram.stringify and Gram.parse can be implemented.
+
+**Status**: Implemented using **Approach A** (proper WasmSubject instances):
+
+1. Added to `pattern-core/src/wasm.rs`:
+   - `WasmSubject::from_subject(Subject)` - create WasmSubject from Rust Subject
+   - `WasmSubject::into_subject()` - extract Rust Subject from WasmSubject
+   - `WasmSubject::as_subject()` - borrow inner Subject
+   - `WasmPattern::from_pattern(Pattern<JsValue>)` - create WasmPattern
+   - `WasmPattern::into_pattern()` - extract inner Pattern
+   - `WasmPattern::as_pattern()` - borrow inner Pattern
+
+2. Implemented in `pattern-wasm/src/convert.rs`:
+   - `rust_pattern_to_wasm()` - converts Pattern&lt;Subject&gt; to WasmPattern with real WasmSubject instances
+   - `wasm_pattern_to_rust()` - extracts Pattern&lt;Subject&gt; from WasmPattern
+
+This ensures `pattern.value instanceof Subject` is true for both parsed and manually constructed patterns.
 
 ---
 
