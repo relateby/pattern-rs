@@ -18,3 +18,8 @@ thiserror = "2.0"
 proptest = "1.0"
 insta = "1.0"
 criterion = { version = "0.5", default-features = false, features = ["html_reports"] }
+
+# Note: Previously had `[profile.release]` with opt-level="z" and lto=true,
+# but this affected ALL workspace crates (not just WASM). Removed to avoid
+# performance degradation in non-WASM binaries. For WASM size optimization,
+# use wasm-pack which applies appropriate settings: `wasm-pack build --release`

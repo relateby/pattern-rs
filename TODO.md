@@ -120,7 +120,44 @@ See `plan/gram-rs-work-plan.md` for detailed implementation plan (2.5-3.5 weeks 
 
 ---
 
-## Phase 5: Advanced Pattern Operations 🎯 HIGH PRIORITY
+## Phase 5: Data Transformation Layer (FUTURE)
+
+### 🆕 PATTERN-IO: External Data Format Conversion
+**Status**: **NOT STARTED** - New module for transformation to/from external formats
+
+**Priority**: P2 - Medium priority for interoperability
+**Effort**: 2-3 weeks
+**Impact**: HIGH - Essential for CSV, JSON, and other format conversions
+
+**Scope**: Separate `pattern-io` crate for converting between external data representations and `Pattern<Subject>`.
+
+**Rationale**: 
+- pattern-core focuses on pure data structures and operations
+- gram-codec focuses solely on gram notation serialization/deserialization
+- Transformation logic (JSON ↔ Pattern, CSV ↔ Pattern, etc.) deserves its own module
+- Multiple valid mapping strategies exist - should not be baked into core or codec
+
+**Tasks**:
+- [ ] Create `crates/pattern-io/` crate structure
+- [ ] Design conversion API (`from_json`, `to_json`, `from_csv`, `to_csv`)
+- [ ] Implement JSON conversion with configurable strategies:
+  - [ ] RDF-style (blank nodes for complex structures)
+  - [ ] Value-as-identity for primitives
+  - [ ] Custom identity mapping functions
+- [ ] Implement CSV conversion
+- [ ] Add comprehensive tests for each format
+- [ ] Document conversion strategies and trade-offs
+- [ ] Add examples for common use cases
+
+**Future Formats**:
+- [ ] XML conversion
+- [ ] YAML conversion  
+- [ ] Protocol Buffers conversion
+- [ ] Custom format adapters
+
+---
+
+## Phase 6: Advanced Pattern Operations 🎯 HIGH PRIORITY
 
 ### 🆕 PARAMORPHISM: Structure-Aware Folding (P0 - CRITICAL)
 **Primary Reference**: `../gram-hs/libs/pattern/src/Pattern/Core.hs` lines 32-34
@@ -222,7 +259,7 @@ impl<V> Pattern<V> {
 
 ---
 
-## Phase 6: Validation & Documentation (P2 - MEDIUM PRIORITY)
+## Phase 7: Validation & Documentation (P2 - MEDIUM PRIORITY)
 
 ### 🆕 VALIDATION: Enhanced Validation (P2 - MEDIUM PRIORITY)
 **Primary Reference**: `../gram-hs/libs/gram/src/Gram/Validate.hs`
@@ -257,7 +294,7 @@ impl<V> Pattern<V> {
 
 ---
 
-## Phase 7: Optimized Pattern Store (FUTURE)
+## Phase 8: Optimized Pattern Store (FUTURE)
 
 ### 029-pattern-store-design: Storage Architecture
 - [ ] Design columnar storage for patterns
@@ -283,7 +320,7 @@ impl<V> Pattern<V> {
 
 ---
 
-## Phase 8: WASM Integration (FUTURE)
+## Phase 9: WASM Integration (FUTURE)
 
 ### 032-wasm-bindings: WASM Bindings
 - [ ] Create wasm-bindgen interfaces
@@ -307,9 +344,9 @@ impl<V> Pattern<V> {
 - [ ] Add example documentation
 - [ ] Test examples in target environments
 
----
 
-## Phase 9: Production Features (FUTURE)
+
+## Phase 10: Production Features (FUTURE)
 
 ### 035-logging-telemetry: Observability
 - [ ] Add comprehensive logging
