@@ -112,9 +112,7 @@ fn extract_subject_from_wasm_instance(obj: &js_sys::Object) -> Result<Subject, S
     // Get identity via getter
     let identity_js = js_sys::Reflect::get(obj, &JsValue::from_str("identity"))
         .map_err(|_| "Failed to get identity from WasmSubject")?;
-    let identity = identity_js
-        .as_string()
-        .ok_or_else(|| "Identity is not a string")?;
+    let identity = identity_js.as_string().ok_or("Identity is not a string")?;
 
     // Get labels via getter (returns JS array)
     let labels_js = js_sys::Reflect::get(obj, &JsValue::from_str("labels"))
@@ -142,9 +140,7 @@ fn extract_subject_from_plain_object(obj: &js_sys::Object) -> Result<Subject, St
     // Extract identity
     let identity_js = js_sys::Reflect::get(obj, &JsValue::from_str("identity"))
         .map_err(|_| "Missing identity field")?;
-    let identity = identity_js
-        .as_string()
-        .ok_or_else(|| "Identity must be a string")?;
+    let identity = identity_js.as_string().ok_or("Identity must be a string")?;
 
     // Extract labels
     let labels_js = js_sys::Reflect::get(obj, &JsValue::from_str("labels"))
