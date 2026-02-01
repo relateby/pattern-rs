@@ -1,5 +1,3 @@
-#![allow(clippy::all)]
-
 mod convert;
 mod gram;
 
