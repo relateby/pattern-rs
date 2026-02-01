@@ -898,14 +898,47 @@ impl WasmSubject {
         if value.is_object() && !value.is_null() {
             let obj: &js_sys::Object = value.unchecked_ref();
 
-            // Check for __wbg_ptr (wasm-bindgen wrapper)
-            let is_wasm_subject =
+            // Check for __wbg_ptr (wasm-bindgen wrapper) and identity property
+            // This identifies WasmSubject instances more reliably than the _type marker
+            let is_wasm_bindgen =
                 js_sys::Reflect::has(obj, &JsValue::from_str("__wbg_ptr")).unwrap_or(false);
 
-            if is_wasm_subject {
-                // Try to extract as existing WasmSubject
-                if let Some(existing) = WasmSubject::from_js_value(&value) {
-                    return Ok(existing);
+            if is_wasm_bindgen {
+                // Check if it has identity property (characteristic of WasmSubject)
+                if let Ok(identity_js) = js_sys::Reflect::get(obj, &JsValue::from_str("identity")) {
+                    if let Some(identity_str) = identity_js.as_string() {
+                        // Extract labels
+                        let labels_js = js_sys::Reflect::get(obj, &JsValue::from_str("labels"))
+                            .ok()
+                            .unwrap_or(JsValue::undefined());
+                        let mut labels = std::collections::HashSet::new();
+                        if js_sys::Array::is_array(&labels_js) {
+                            let arr: &js_sys::Array = labels_js.unchecked_ref();
+                            for i in 0..arr.length() {
+                                if let Some(label) = arr.get(i).as_string() {
+                                    labels.insert(label);
+                                }
+                            }
+                        }
+
+                        // Extract properties using canonical implementation
+                        let props_js = js_sys::Reflect::get(obj, &JsValue::from_str("properties"))
+                            .ok()
+                            .unwrap_or(JsValue::undefined());
+                        let properties = if props_js.is_object() && !props_js.is_null() {
+                            js_object_to_value_map(&props_js).unwrap_or_default()
+                        } else {
+                            HashMap::new()
+                        };
+
+                        return Ok(WasmSubject {
+                            inner: Subject {
+                                identity: Symbol(identity_str),
+                                labels,
+                                properties,
+                            },
+                        });
+                    }
                 }
             }
         }

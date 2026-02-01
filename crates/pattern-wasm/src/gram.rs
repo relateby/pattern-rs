@@ -112,18 +112,27 @@ impl Gram {
         Ok(wasm_pattern.into())
     }
 
-    /// Convert a Pattern<V> to Pattern<Subject> using pattern-lisp compatible mapping.
+    /// Convert any JavaScript value to Pattern<Subject> using pattern-lisp compatible mapping.
     ///
-    /// This method recursively converts a pattern containing arbitrary JavaScript values
-    /// into Pattern<Subject> that can be serialized to gram notation and parsed by pattern-lisp.
+    /// This method converts arbitrary JavaScript values into Pattern<Subject> that can be
+    /// serialized to gram notation and parsed by pattern-lisp.
+    ///
+    /// **Input handling:**
+    /// - WasmPattern: recursively converts each value in the pattern (like pattern.map(Gram.from))
+    /// - WasmSubject: passthrough, wraps in atomic Pattern
+    /// - Primitives (string, number, boolean): atomic Pattern with typed Subject
+    /// - Arrays: Pattern with "List" label and converted elements as children
+    /// - Objects: Pattern with "Map" label and alternating key-value pairs as children
     ///
     /// **Compatibility with pattern-lisp:**
-    /// - Primitives (string, number, boolean) → atomic pattern with Subject
-    /// - Arrays → Pattern with "List" label and elements as children
-    /// - Objects → Pattern with "Map" label and key-value pairs as alternating children
+    /// - Numbers → Subject with "Number" label
+    /// - Strings → Subject with "String" label
+    /// - Booleans → Subject with "Bool" label
+    /// - Arrays → Pattern with "List" label
+    /// - Objects → Pattern with "Map" label
     ///
     /// # Arguments
-    /// * `pattern` - A Pattern containing any JavaScript values
+    /// * `value` - Any JavaScript value to convert
     /// * `options` - Optional conversion options (currently unused, reserved for future use)
     ///
     /// # Returns
@@ -132,47 +141,109 @@ impl Gram {
     ///
     /// # Example (JavaScript)
     /// ```javascript
-    /// // Convert pattern of primitives
-    /// const p1 = Pattern.point("hello");
-    /// const s1 = Gram.from(p1);
+    /// // Convert primitives directly
+    /// const s1 = Gram.from("hello");
     /// Gram.stringify(s1); // "(_0:String {value: \"hello\"})"
     ///
-    /// // Convert pattern with nested structure
-    /// const parent = Pattern.pattern("root");
-    /// parent.addElement(Pattern.of(42));
-    /// parent.addElement(Pattern.of(true));
-    /// const converted = Gram.from(parent);
+    /// // Convert arrays
+    /// const s2 = Gram.from([1, 2, 3]);
+    /// // Creates: Pattern with List subject and Number children
+    ///
+    /// // Convert objects
+    /// const s3 = Gram.from({name: "Alice", age: 30});
+    /// // Creates: Pattern with Map subject and alternating key-value children
+    ///
+    /// // Convert existing Pattern (maps over values)
+    /// const p = Pattern.pattern("root");
+    /// p.addElement(Pattern.of(42));
+    /// const converted = Gram.from(p);
+    ///
+    /// // WasmSubject passthrough
+    /// const subject = new Subject("alice", ["Person"], {});
+    /// const s4 = Gram.from(subject); // Wraps in atomic Pattern
     /// ```
     #[wasm_bindgen]
-    pub fn from(pattern: &WasmPattern, _options: JsValue) -> Result<WasmPattern, String> {
+    pub fn from(value: JsValue) -> Result<WasmPattern, String> {
         let mut index = 0usize;
-        let rust_pattern = convert_js_pattern_to_subject_pattern(pattern, &mut index)?;
+        let rust_pattern = js_value_to_pattern_subject(&value, &mut index)?;
         Ok(rust_pattern_to_wasm(&rust_pattern))
     }
 }
 
-/// Recursively convert a WasmPattern (Pattern<JsValue>) to Pattern<Subject>
-/// using pattern-lisp compatible conventions.
-fn convert_js_pattern_to_subject_pattern(
+/// Convert any JsValue to Pattern<Subject>.
+///
+/// This is the main entry point for converting arbitrary JS values to gram-serializable form.
+fn js_value_to_pattern_subject(
+    value: &JsValue,
+    index: &mut usize,
+) -> Result<Pattern<Subject>, String> {
+    // Handle null/undefined
+    if value.is_null() || value.is_undefined() {
+        return Err("Cannot convert null/undefined to Pattern<Subject>".to_string());
+    }
+
+    // Check if this is a wasm-bindgen object (has __wbg_ptr)
+    if value.is_object() {
+        let obj: &js_sys::Object = value.unchecked_ref();
+
+        if js_sys::Reflect::has(obj, &JsValue::from_str("__wbg_ptr")).unwrap_or(false) {
+            // Check if it's a WasmPattern by looking for Pattern-specific methods/properties
+            // WasmPattern has: value (getter), elements (getter), length(), addElement(), etc.
+            let has_add_element =
+                js_sys::Reflect::has(obj, &JsValue::from_str("addElement")).unwrap_or(false);
+
+            if has_add_element {
+                // This looks like a WasmPattern - reconstruct and convert
+                if let Some(wasm_pattern) = try_extract_wasm_pattern(value) {
+                    return convert_wasm_pattern_to_subject_pattern(&wasm_pattern, index);
+                }
+            }
+
+            // Check if it's a WasmSubject by looking for Subject-specific properties
+            // WasmSubject has: identity (getter), labels (getter), properties (getter)
+            if let Ok(identity_js) = js_sys::Reflect::get(obj, &JsValue::from_str("identity")) {
+                if identity_js.as_string().is_some() {
+                    // This looks like a WasmSubject - extract and passthrough
+                    if let Some(subject) = try_extract_subject_from_wasm(obj) {
+                        return Ok(Pattern::point(subject));
+                    }
+                }
+            }
+        }
+    }
+
+    // For non-Pattern values, convert to Subject (possibly with nested structure)
+    let (subject, elements) = js_value_to_subject_with_elements(value, index)?;
+
+    if elements.is_empty() {
+        Ok(Pattern::point(subject))
+    } else {
+        Ok(Pattern::pattern(subject, elements))
+    }
+}
+
+/// Convert a WasmPattern to Pattern<Subject> by mapping over its structure.
+/// This preserves the Pattern's tree structure while converting each value.
+fn convert_wasm_pattern_to_subject_pattern(
     pattern: &WasmPattern,
     index: &mut usize,
 ) -> Result<Pattern<Subject>, String> {
     let js_value = pattern.value();
 
-    // Convert the value to Subject (or create pattern structure for collections)
-    let (subject, collection_elements) = js_value_to_subject_or_pattern(&js_value, index)?;
+    // Convert the value at this node
+    let (subject, value_elements) = js_value_to_subject_with_elements(&js_value, index)?;
 
-    // Get the pattern's own elements (children in the tree structure)
-    let pattern_element_count = pattern.length();
+    // Recursively convert the pattern's structural children
     let mut converted_elements: Vec<Pattern<Subject>> = Vec::new();
 
-    // First add any collection elements (for List/Map values)
-    converted_elements.extend(collection_elements);
+    // First add any elements that came from the value itself (e.g., List/Map elements)
+    converted_elements.extend(value_elements);
 
     // Then recursively convert the pattern's structural children
+    let pattern_element_count = pattern.length();
     for i in 0..pattern_element_count {
         if let Some(child) = pattern.get_element(i) {
-            let converted_child = convert_js_pattern_to_subject_pattern(&child, index)?;
+            let converted_child = convert_wasm_pattern_to_subject_pattern(&child, index)?;
             converted_elements.push(converted_child);
         }
     }
@@ -184,16 +255,34 @@ fn convert_js_pattern_to_subject_pattern(
     }
 }
 
-/// Convert a JsValue to either:
-/// - A Subject (for primitives) with empty elements vec
-/// - A Subject (for collections) with elements vec containing the collection items
-fn js_value_to_subject_or_pattern(
+/// Convert a JsValue to a Subject and any associated elements.
+///
+/// Returns (Subject, Vec<Pattern<Subject>>) where:
+/// - For primitives: Subject with typed label, empty elements
+/// - For arrays: Subject with "List" label, elements are converted array items
+/// - For objects: Subject with "Map" label, elements are alternating key-value pairs
+/// - For WasmSubject: extracted Subject, empty elements
+fn js_value_to_subject_with_elements(
     value: &JsValue,
     index: &mut usize,
 ) -> Result<(Subject, Vec<Pattern<Subject>>), String> {
     // Handle null/undefined
     if value.is_null() || value.is_undefined() {
         return Err("Cannot convert null/undefined to Subject".to_string());
+    }
+
+    // Check for WasmSubject passthrough (wasm-bindgen object with identity property)
+    if value.is_object() {
+        let obj: &js_sys::Object = value.unchecked_ref();
+        if js_sys::Reflect::has(obj, &JsValue::from_str("__wbg_ptr")).unwrap_or(false) {
+            if let Ok(identity_js) = js_sys::Reflect::get(obj, &JsValue::from_str("identity")) {
+                if identity_js.as_string().is_some() {
+                    if let Some(subject) = try_extract_subject_from_wasm(obj) {
+                        return Ok((subject, vec![]));
+                    }
+                }
+            }
+        }
     }
 
     // Boolean - use "Bool" for pattern-lisp compatibility
@@ -277,12 +366,9 @@ fn js_value_to_subject_or_pattern(
 
         for i in 0..arr.length() {
             let item = arr.get(i);
-            let (item_subject, item_elements) = js_value_to_subject_or_pattern(&item, index)?;
-            if item_elements.is_empty() {
-                elements.push(Pattern::point(item_subject));
-            } else {
-                elements.push(Pattern::pattern(item_subject, item_elements));
-            }
+            // Recursively convert each array item to Pattern<Subject>
+            let item_pattern = js_value_to_pattern_subject(&item, index)?;
+            elements.push(item_pattern);
         }
 
         // List decoration has no properties, just the label
@@ -299,52 +385,9 @@ fn js_value_to_subject_or_pattern(
         ));
     }
 
-    // Check if this is a WasmSubject instance (passthrough)
+    // Plain object - convert to Map pattern with alternating key-value elements
     if value.is_object() {
         let obj: &js_sys::Object = value.unchecked_ref();
-
-        // Check for __wbg_ptr (wasm-bindgen wrapper indicates WasmSubject)
-        if js_sys::Reflect::has(obj, &JsValue::from_str("__wbg_ptr")).unwrap_or(false) {
-            // Try to extract Subject data from WasmSubject
-            if let Ok(identity_js) = js_sys::Reflect::get(obj, &JsValue::from_str("identity")) {
-                if let Some(identity) = identity_js.as_string() {
-                    // Extract labels
-                    let labels_js = js_sys::Reflect::get(obj, &JsValue::from_str("labels"))
-                        .ok()
-                        .unwrap_or(JsValue::undefined());
-                    let mut labels = HashSet::new();
-                    if js_sys::Array::is_array(&labels_js) {
-                        let arr: &js_sys::Array = labels_js.unchecked_ref();
-                        for i in 0..arr.length() {
-                            if let Some(label) = arr.get(i).as_string() {
-                                labels.insert(label);
-                            }
-                        }
-                    }
-
-                    // Extract properties
-                    let props_js = js_sys::Reflect::get(obj, &JsValue::from_str("properties"))
-                        .ok()
-                        .unwrap_or(JsValue::undefined());
-                    let properties = if props_js.is_object() && !props_js.is_null() {
-                        js_object_to_subject_properties(&props_js)?
-                    } else {
-                        HashMap::new()
-                    };
-
-                    return Ok((
-                        Subject {
-                            identity: Symbol(identity),
-                            labels,
-                            properties,
-                        },
-                        vec![],
-                    ));
-                }
-            }
-        }
-
-        // Plain object - convert to Map pattern with alternating key-value elements
         let keys = js_sys::Object::keys(obj);
         let mut elements = Vec::new();
 
@@ -369,14 +412,10 @@ fn js_value_to_subject_or_pattern(
                     properties: key_properties,
                 }));
 
-                // Add value
+                // Add value - recursively convert
                 if let Ok(val) = js_sys::Reflect::get(obj, &key) {
-                    let (val_subject, val_elements) = js_value_to_subject_or_pattern(&val, index)?;
-                    if val_elements.is_empty() {
-                        elements.push(Pattern::point(val_subject));
-                    } else {
-                        elements.push(Pattern::pattern(val_subject, val_elements));
-                    }
+                    let val_pattern = js_value_to_pattern_subject(&val, index)?;
+                    elements.push(val_pattern);
                 }
             }
         }
@@ -398,39 +437,79 @@ fn js_value_to_subject_or_pattern(
     Err(format!("Cannot convert value to Subject: {:?}", value))
 }
 
-/// Convert a JS object to Subject properties map
-fn js_object_to_subject_properties(
-    obj: &JsValue,
-) -> Result<HashMap<String, pattern_core::subject::Value>, String> {
-    use pattern_core::subject::Value;
+/// Try to extract a WasmPattern from a JsValue.
+/// Returns None if the value is not a valid WasmPattern.
+fn try_extract_wasm_pattern(value: &JsValue) -> Option<WasmPattern> {
+    // WasmPattern stores Pattern<JsValue> internally
+    // We need to reconstruct it from the JS representation
 
-    let mut map = HashMap::new();
-
-    if !obj.is_object() || obj.is_null() {
-        return Ok(map);
+    if !value.is_object() {
+        return None;
     }
 
-    let keys = js_sys::Object::keys(obj.unchecked_ref());
+    let obj: &js_sys::Object = value.unchecked_ref();
 
-    for i in 0..keys.length() {
-        let key = keys.get(i);
-        if let Some(key_str) = key.as_string() {
-            if let Ok(val) = js_sys::Reflect::get(obj, &key) {
-                if let Some(s) = val.as_string() {
-                    map.insert(key_str, Value::VString(s));
-                } else if let Some(n) = val.as_f64() {
-                    if n.fract() == 0.0 && n >= i64::MIN as f64 && n <= i64::MAX as f64 {
-                        map.insert(key_str, Value::VInteger(n as i64));
-                    } else {
-                        map.insert(key_str, Value::VDecimal(n));
-                    }
-                } else if let Some(b) = val.as_bool() {
-                    map.insert(key_str, Value::VBoolean(b));
-                }
-                // Skip complex types in properties for now
+    // Get the value at this node
+    let node_value = js_sys::Reflect::get(obj, &JsValue::from_str("value")).ok()?;
+
+    // Create the pattern with this value
+    let mut pattern = WasmPattern::point(node_value);
+
+    // Get the elements array
+    let elements_js = js_sys::Reflect::get(obj, &JsValue::from_str("elements")).ok()?;
+    if js_sys::Array::is_array(&elements_js) {
+        let arr: &js_sys::Array = elements_js.unchecked_ref();
+        for i in 0..arr.length() {
+            let elem = arr.get(i);
+            if let Some(child_pattern) = try_extract_wasm_pattern(&elem) {
+                pattern.add_element(child_pattern);
             }
         }
     }
 
-    Ok(map)
+    Some(pattern)
+}
+
+/// Try to extract a Subject from a wasm-bindgen object that looks like a WasmSubject.
+fn try_extract_subject_from_wasm(obj: &js_sys::Object) -> Option<Subject> {
+    // Get identity
+    let identity_js = js_sys::Reflect::get(obj, &JsValue::from_str("identity")).ok()?;
+    let identity = identity_js.as_string()?;
+
+    // Get labels
+    let labels_js = js_sys::Reflect::get(obj, &JsValue::from_str("labels")).ok()?;
+    let mut labels = HashSet::new();
+    if js_sys::Array::is_array(&labels_js) {
+        let arr: &js_sys::Array = labels_js.unchecked_ref();
+        for i in 0..arr.length() {
+            if let Some(label) = arr.get(i).as_string() {
+                labels.insert(label);
+            }
+        }
+    }
+
+    // Get properties
+    let props_js = js_sys::Reflect::get(obj, &JsValue::from_str("properties"))
+        .ok()
+        .unwrap_or(JsValue::undefined());
+    let properties = if props_js.is_object() && !props_js.is_null() {
+        extract_subject_properties(&props_js).unwrap_or_default()
+    } else {
+        HashMap::new()
+    };
+
+    Some(Subject {
+        identity: Symbol(identity),
+        labels,
+        properties,
+    })
+}
+
+/// Extract Subject properties from a JS object.
+/// Uses the canonical implementation from pattern_core where possible.
+fn extract_subject_properties(
+    obj: &JsValue,
+) -> Result<HashMap<String, pattern_core::subject::Value>, String> {
+    use crate::convert::js_object_to_value_map;
+    js_object_to_value_map(obj)
 }

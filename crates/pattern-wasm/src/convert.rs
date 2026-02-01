@@ -184,7 +184,7 @@ fn js_array_to_string_set(arr: &JsValue) -> Result<std::collections::HashSet<Str
 }
 
 /// Convert a JS object to HashMap<String, Value>.
-fn js_object_to_value_map(
+pub fn js_object_to_value_map(
     obj: &JsValue,
 ) -> Result<std::collections::HashMap<String, pattern_core::subject::Value>, String> {
     use std::collections::HashMap;

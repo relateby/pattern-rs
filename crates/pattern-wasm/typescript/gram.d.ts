@@ -325,70 +325,62 @@ export namespace Gram {
   function parseOne(gram: string): Pattern<Subject> | null;
 
   /**
-   * Convert Pattern<V> to Pattern<Subject> using conventional value mapping.
+   * Convert any JavaScript value to Pattern<Subject> using conventional mapping.
    *
-   * Recursively transforms a pattern with arbitrary value types into a pattern
-   * with Subject values, making it serializable via Gram.stringify().
+   * This is the main entry point for converting arbitrary JavaScript data into
+   * gram-serializable form. Handles primitives, arrays, objects, Patterns, and Subjects.
    *
-   * This is implemented as `pattern.map(v => Subject.fromValue(v, options))`
-   * with special handling for collections to create proper pattern structures.
+   * **Input handling**:
+   * - Pattern<V>: Maps over the pattern structure, converting each value
+   * - Subject: Passthrough, wraps in atomic Pattern
+   * - Primitives (number, string, boolean): Atomic Pattern with typed Subject
+   * - Arrays: Pattern with "List" label and converted elements as children
+   * - Objects: Pattern with "Map" label and alternating key-value children
    *
    * **Mapping Rules (pattern-lisp compatible)**:
-   * - Primitives (number, string, boolean) → Subject with type-appropriate label
-   * - Arrays → Pattern with "List" label and elements as pattern children
-   * - Objects → Pattern with "Map" label and alternating key-value elements
-   * - Subject instances → passthrough (no conversion)
+   * - Numbers → Subject with "Number" label
+   * - Strings → Subject with "String" label
+   * - Booleans → Subject with "Bool" label
+   * - Arrays → Pattern with "List" label
+   * - Objects → Pattern with "Map" label
    *
    * **Pattern Structure for Collections**:
    * - Arrays serialize as: `[:List | elem1, elem2, ...]`
    * - Objects serialize as: `[:Map | key1, val1, key2, val2, ...]`
    *
-   * @param pattern - Pattern with any value type
-   * @param options - Optional conversion options (passed to Subject.fromValue)
+   * @param value - Any JavaScript value (primitive, array, object, Pattern, or Subject)
    * @returns Pattern with Subject values (gram-serializable)
    *
    * @example
    * ```typescript
-   * // Convert pattern of primitives
-   * const numbers = Pattern.pattern(42);
-   * numbers.addElement(Pattern.of(100));
-   * numbers.addElement(Pattern.of(200));
+   * // Convert primitives directly
+   * const s1 = Gram.from("hello");
+   * Gram.stringify(s1); // "(_0:String {value: \"hello\"})"
    *
-   * const subjectPattern = Gram.from(numbers);
-   * const gram = Gram.stringify(subjectPattern);
-   * // Can now parse back:
-   * const parsed = Gram.parseOne(gram);
+   * // Convert arrays
+   * const s2 = Gram.from([1, 2, 3]);
+   * // Creates: Pattern with List subject and Number children
    *
-   * // Convert pattern with arrays (creates List structure)
-   * const arrayPattern = Pattern.of([1, 2, 3]);
-   * const listPattern = Gram.from(arrayPattern);
-   * // Creates: Pattern with List subject and 3 Number elements
+   * // Convert objects
+   * const s3 = Gram.from({ name: "Alice", age: 30 });
+   * // Creates: Pattern with Map subject and alternating key-value children
    *
-   * // Convert pattern with objects (creates Map structure)
-   * const objPattern = Pattern.of({ name: "Alice", age: 30 });
-   * const mapPattern = Gram.from(objPattern);
-   * // Creates: Pattern with Map subject and alternating key-value elements
+   * // Convert existing Pattern (maps over values)
+   * const p = Pattern.pattern("root");
+   * p.addElement(Pattern.of(42));
+   * const converted = Gram.from(p);
+   * // Preserves pattern structure, converts each value
    *
-   * // With custom options
-   * const custom = Gram.from(numbers, {
-   *   label: "Integer",
-   *   valueProperty: "data",
-   *   identity: (v, i) => `num_${i}`
-   * });
+   * // Subject passthrough
+   * const subject = new Subject("alice", ["Person"], {});
+   * const s4 = Gram.from(subject);
+   * // Wraps in atomic Pattern, preserves Subject as-is
    *
-   * // Mixed types
-   * const mixed = Pattern.pattern("hello");
-   * mixed.addElement(Pattern.of(42));
-   * mixed.addElement(Pattern.of(true));
-   * mixed.addElement(Pattern.of([1, 2]));
-   *
-   * const converted = Gram.from(mixed);
-   * // Each value converted appropriately:
-   * // - "hello" → String subject
-   * // - 42 → Number subject
-   * // - true → Bool subject
-   * // - [1, 2] → List subject with Number elements
+   * // Nested structures
+   * const nested = { users: [{ name: "Alice" }, { name: "Bob" }] };
+   * const s5 = Gram.from(nested);
+   * // Creates nested Map/List/Map structure
    * ```
    */
-  function from<V>(pattern: Pattern<V>, options?: FromOptions): Pattern<Subject>;
+  function from(value: unknown): Pattern<Subject>;
 }
