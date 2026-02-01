@@ -19,7 +19,7 @@ proptest = "1.0"
 insta = "1.0"
 criterion = { version = "0.5", default-features = false, features = ["html_reports"] }
 
-# Note: For WASM-specific optimizations, consider using wasm-pack which
-# provides better control over WASM output size and features.
-# The default release profile is kept minimal to avoid impacting non-WASM crates.
-# For production WASM builds, use: wasm-pack build --release
+# Note: Previously had `[profile.release]` with opt-level="z" and lto=true,
+# but this affected ALL workspace crates (not just WASM). Removed to avoid
+# performance degradation in non-WASM binaries. For WASM size optimization,
+# use wasm-pack which applies appropriate settings: `wasm-pack build --release`

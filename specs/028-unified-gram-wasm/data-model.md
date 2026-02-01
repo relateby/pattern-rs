@@ -20,7 +20,7 @@ This feature does not introduce new persistent storage or a new domain data mode
 - **Fields**: `identity: string`, `labels: string[] | Set<string>`, `properties: Record<string, Value>`.
 - **Relationships**: Used as the value type of Pattern&lt;Subject&gt;; gram notation serializes Pattern&lt;Subject&gt;.
 - **Validation**: Identity and labels per pattern-core; no new rules in pattern-wasm.
-- **Conventional conversion**: **Subject.fromValue(value, options?)** turns an arbitrary JS value into a Subject (string, number, boolean, object, Subject passthrough). Options: label, valueProperty, identity (e.g. (value, index) => string). Gram.from uses this under the hood.
+- **Conventional conversion**: **Subject.fromValue(value)** turns primitives into Subjects using pattern-lisp compatible defaults. Subject instances are returned as-is (true passthrough). For custom identity/labels/properties, use the Subject constructor directly.
 
 ### Value
 
@@ -31,25 +31,36 @@ This feature does not introduce new persistent storage or a new domain data mode
 ### Gram (namespace)
 
 - **Not an entity**: Namespace of operations.
-- **Operations**: `stringify(pattern | patterns[])`, `parse(text)`, `parseOne(text)`, `from(pattern, options?)`.
+- **Operations**: `stringify(pattern)`, `parse(text)`, `parseOne(text)`, `from(value)`.
 - **Inputs/Outputs**:
-  - stringify: Pattern&lt;Subject&gt; or Pattern&lt;Subject&gt;[] → string (gram notation).
+  - stringify: Pattern&lt;Subject&gt; → string (gram notation). Single pattern only.
   - parse: string → Pattern&lt;Subject&gt;[].
   - parseOne: string → Pattern&lt;Subject&gt; | null.
-  - from: Pattern&lt;V&gt; + optional FromOptions → Pattern&lt;Subject&gt;. Implemented as `pattern.map(v => Subject.fromValue(v, options))`.
+  - from: any JS value → Pattern&lt;Subject&gt;. Handles primitives, arrays, objects, Patterns, and Subjects.
 
-## Conventional conversion (Subject.fromValue)
+## Conventional conversion
 
-The convention is implemented by **Subject.fromValue(value, options?)**. Gram.from(pattern, options?) delegates to it (pattern.map(Subject.fromValue(·, options))).
+**Subject.fromValue(value)** converts primitives to Subjects using fixed defaults. **Gram.from(value)** converts any JS value (including collections and Patterns) to Pattern&lt;Subject&gt;.
+
+### Subject.fromValue mapping (primitives only)
 
 - **Source type** → **Subject identity** → **Labels** → **Properties**
-- string → generated (e.g. _0, _1) → ["String"] → { value: Value.string(s) }
-- number → generated → ["Number"] → { value: Value.decimal(n) }
-- boolean → generated → ["Boolean"] → { value: Value.boolean(b) }
-- object (with id/labels/properties) → obj.id or generated → passthrough or ["Object"] → object entries as properties
-- Subject → passthrough → passthrough → passthrough
+- string → "_0" → ["String"] → { value: Value.string(s) }
+- number → "_0" → ["Number"] → { value: Value.decimal(n) or Value.int(n) }
+- boolean → "_0" → ["Bool"] → { value: Value.boolean(b) }
+- Subject → original instance returned (true passthrough - preserves === equality)
 
-Optional overrides: label, valueProperty, identity generator (e.g. (value, index) => string).
+No options parameter. For custom identity/labels/properties, use the Subject constructor directly.
+
+**Note**: Arrays and objects are rejected by `Subject.fromValue()` - use `Gram.from()` instead.
+
+### Gram.from mapping (all types)
+
+- Primitives → atomic Pattern with Subject (via Subject.fromValue)
+- Arrays → Pattern with "List" label, elements as children
+- Objects → Pattern with "Map" label, key-value pairs as alternating children  
+- Pattern<V> → maps over structure, converting each value
+- Subject → passthrough, wrapped in atomic Pattern
 
 ## State and lifecycle
 

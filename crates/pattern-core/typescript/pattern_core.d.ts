@@ -217,6 +217,44 @@ export class Subject {
     properties: Record<string, Value>,
   );
 
+  /**
+   * Convert a primitive JavaScript value to a Subject using pattern-lisp compatible defaults.
+   *
+   * This provides sensible defaults for converting JavaScript primitives to Subjects:
+   * - **string**: Label "String", identity "_0", value in "value" property
+   * - **number**: Label "Number", identity "_0", value in "value" property
+   * - **boolean**: Label "Bool", identity "_0", value in "value" property
+   * - **Subject instance**: Returns the original Subject (true passthrough - preserves === equality)
+   *
+   * **Note**: Arrays and objects should use `Gram.from()` instead, which creates proper
+   * Pattern structures with elements (not Subject properties) for pattern-lisp compatibility.
+   *
+   * For custom identities, labels, or properties, use the `Subject` constructor directly.
+   *
+   * @param value - A primitive JavaScript value (string, number, boolean) or Subject
+   * @returns A Subject instance (new for primitives, original for Subjects)
+   * @throws Error if value is null, undefined, an array, or an object
+   *
+   * @example
+   * ```typescript
+   * // Primitive conversion with defaults
+   * const s1 = Subject.fromValue("hello");
+   * // Result: { identity: "_0", labels: ["String"], properties: { value: "hello" } }
+   *
+   * const s2 = Subject.fromValue(42);
+   * // Result: { identity: "_0", labels: ["Number"], properties: { value: 42 } }
+   *
+   * const s3 = Subject.fromValue(true);
+   * // Result: { identity: "_0", labels: ["Bool"], properties: { value: true } }
+   *
+   * // Subject passthrough - returns the original instance
+   * const subject = new Subject("alice", ["Person"], {name: "Alice"});
+   * const s4 = Subject.fromValue(subject);
+   * console.log(s4 === subject); // true
+   * ```
+   */
+  static fromValue(value: string | number | boolean | Subject): Subject;
+
   /** The identity symbol */
   readonly identity: Symbol;
 

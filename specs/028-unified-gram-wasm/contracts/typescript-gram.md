@@ -28,17 +28,14 @@ export namespace Gram {
   /** Serialize a Pattern<Subject> to gram notation */
   function stringify(pattern: Pattern<Subject>): string;
 
-  /** Serialize multiple patterns to gram notation */
-  function stringify(patterns: Pattern<Subject>[]): string;
-
   /** Parse gram notation into Pattern<Subject>[]; empty/whitespace returns [] */
   function parse(gram: string): Pattern<Subject>[];
 
   /** Parse gram notation; returns first pattern or null */
   function parseOne(gram: string): Pattern<Subject> | null;
 
-  /** Convert Pattern<V> to Pattern<Subject>; implemented as pattern.map(v => Subject.fromValue(v, options)) */
-  function from<V>(pattern: Pattern<V>, options?: FromOptions): Pattern<Subject>;
+  /** Convert any JS value to Pattern<Subject> for gram serialization */
+  function from(value: unknown): Pattern<Subject>;
 }
 ```
 
@@ -49,20 +46,20 @@ export namespace Gram {
 function fromValue(value: unknown, options?: FromValueOptions): Subject;
 ```
 
-FromValueOptions: same fields as FromOptions (label, valueProperty, identity). Used by Subject.fromValue; Gram.from passes its options through to Subject.fromValue.
-
-## FromOptions
+## FromValueOptions
 
 ```ts
-export interface FromOptions {
-  /** Label to apply to converted subjects (default: type-appropriate, e.g. "String", "Number") */
+export interface FromValueOptions {
+  /** Label to apply to converted subjects (default: type-appropriate, e.g. "String", "Number", "Bool") */
   label?: string;
   /** Property name for the original value (default: "value") */
   valueProperty?: string;
-  /** Custom identity generator (default: auto-generated, e.g. _0, _1) */
-  identity?: (value: unknown, index: number) => string;
+  /** Index for auto-generated identity (default: 0, generates "_0", "_1", etc.) */
+  index?: number;
 }
 ```
+
+**Note**: Custom identity generator functions are not yet supported. Identities are auto-generated as `_${index}`.
 
 ## Pattern&lt;Subject&gt; for stringify/parse
 
