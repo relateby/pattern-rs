@@ -14,8 +14,8 @@ JavaScript/TypeScript consumers load the WASM module (e.g. wasm-pack output or i
 ### Pattern, Subject, Value
 
 - Same API as 027 contract: Pattern (point, of, pattern, fromValues; value, elements; map, fold, para, validate, etc.), Subject (new, identity, labels, properties), Value (string, int, decimal, boolean, etc.).
-- **Subject.fromValue(value)**: Convert primitives to Subjects using pattern-lisp compatible defaults. String → {identity: "_0", labels: ["String"], properties: {value}}; Number → {identity: "_0", labels: ["Number"], properties: {value}}; Boolean → {identity: "_0", labels: ["Bool"], properties: {value}}. Subject instances return the original instance (true passthrough). Arrays/objects rejected - use Gram.from instead. For custom settings, use Subject constructor directly.
-- pattern-wasm re-exports or wraps pattern-core WASM bindings so that one package provides these types.
+- pattern-wasm re-exports pattern-core WASM bindings so that one package provides these types.
+- **Data transformation is out of scope**: Converting arbitrary JavaScript data to Pattern<Subject> should be done using constructors directly, or via a future `pattern-io` module. pattern-core and gram-codec focus on data structures and serialization respectively.
 
 ### Gram (namespace)
 
@@ -28,14 +28,11 @@ JavaScript/TypeScript consumers load the WASM module (e.g. wasm-pack output or i
 **parseOne**:
 - `Gram.parseOne(gram: string): Pattern<Subject> | null` — Parse gram notation and return the first pattern, or null if none (e.g. empty/whitespace or no top-level pattern). Invalid input: same error behavior as parse.
 
-**from** (conventional conversion):
-- `Gram.from(value: unknown): Pattern<Subject>` — Convert any JS value to Pattern&lt;Subject&gt;. Handles primitives, arrays, objects, Patterns, and Subjects. Pattern-lisp compatible: List/Map labels for collections.
-
 ### Error and empty-input behavior
 
 - **Empty or whitespace-only parse input**: `parse` returns `[]`; `parseOne` returns `null`. No throw.
 - **Invalid gram notation**: Clear error (e.g. thrown Error with message, or Result/Either); MUST NOT expose internal AST or parser types.
-- **stringify with non-Subject pattern**: MUST reject (e.g. type check or runtime error) or document that only Pattern&lt;Subject&gt; is accepted; require use of Gram.from for other patterns.
+- **stringify with non-Subject pattern**: MUST reject (e.g. type check or runtime error) or document that only Pattern&lt;Subject&gt; is accepted.
 
 ## Round-trip
 

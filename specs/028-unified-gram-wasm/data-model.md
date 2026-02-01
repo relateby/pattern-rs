@@ -16,11 +16,11 @@ This feature does not introduce new persistent storage or a new domain data mode
 
 ### Subject
 
-- **Source**: pattern-core (re-exported or wrapped by pattern-wasm).
+- **Source**: pattern-core (re-exported by pattern-wasm).
 - **Fields**: `identity: string`, `labels: string[] | Set<string>`, `properties: Record<string, Value>`.
 - **Relationships**: Used as the value type of Pattern&lt;Subject&gt;; gram notation serializes Pattern&lt;Subject&gt;.
 - **Validation**: Identity and labels per pattern-core; no new rules in pattern-wasm.
-- **Conventional conversion**: **Subject.fromValue(value)** turns primitives into Subjects using pattern-lisp compatible defaults. Subject instances are returned as-is (true passthrough). For custom identity/labels/properties, use the Subject constructor directly.
+- **Construction**: Use the Subject constructor: `new Subject(identity, labels, properties)`. Data transformation from other formats is out of scope for pattern-core/gram-codec.
 
 ### Value
 
@@ -31,36 +31,25 @@ This feature does not introduce new persistent storage or a new domain data mode
 ### Gram (namespace)
 
 - **Not an entity**: Namespace of operations.
-- **Operations**: `stringify(pattern)`, `parse(text)`, `parseOne(text)`, `from(value)`.
+- **Operations**: `stringify(pattern)`, `parse(text)`, `parseOne(text)`.
 - **Inputs/Outputs**:
   - stringify: Pattern&lt;Subject&gt; → string (gram notation). Single pattern only.
   - parse: string → Pattern&lt;Subject&gt;[].
   - parseOne: string → Pattern&lt;Subject&gt; | null.
-  - from: any JS value → Pattern&lt;Subject&gt;. Handles primitives, arrays, objects, Patterns, and Subjects.
 
-## Conventional conversion
+## Data transformation
 
-**Subject.fromValue(value)** converts primitives to Subjects using fixed defaults. **Gram.from(value)** converts any JS value (including collections and Patterns) to Pattern&lt;Subject&gt;.
+Data transformation (converting JavaScript primitives, arrays, objects, JSON, CSV, etc. to Pattern<Subject>) is **out of scope** for pattern-core and gram-codec.
 
-### Subject.fromValue mapping (primitives only)
+Users should:
+- **Use constructors directly**: `new Subject(...)`, `Pattern.point(...)`, `Pattern.pattern(...)`
+- **Implement custom conversion logic** for their specific use cases
+- **Wait for pattern-io module**: A future `pattern-io` crate will provide standardized conversion utilities with configurable strategies for common formats
 
-- **Source type** → **Subject identity** → **Labels** → **Properties**
-- string → "_0" → ["String"] → { value: Value.string(s) }
-- number → "_0" → ["Number"] → { value: Value.decimal(n) or Value.int(n) }
-- boolean → "_0" → ["Bool"] → { value: Value.boolean(b) }
-- Subject → original instance returned (true passthrough - preserves === equality)
-
-No options parameter. For custom identity/labels/properties, use the Subject constructor directly.
-
-**Note**: Arrays and objects are rejected by `Subject.fromValue()` - use `Gram.from()` instead.
-
-### Gram.from mapping (all types)
-
-- Primitives → atomic Pattern with Subject (via Subject.fromValue)
-- Arrays → Pattern with "List" label, elements as children
-- Objects → Pattern with "Map" label, key-value pairs as alternating children  
-- Pattern<V> → maps over structure, converting each value
-- Subject → passthrough, wrapped in atomic Pattern
+**Rationale**: 
+- pattern-core focuses on pure data structures and operations
+- gram-codec focuses solely on gram notation serialization/deserialization  
+- Transformation logic deserves its own module with multiple strategies
 
 ## State and lifecycle
 

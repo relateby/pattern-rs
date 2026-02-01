@@ -120,7 +120,44 @@ See `plan/gram-rs-work-plan.md` for detailed implementation plan (2.5-3.5 weeks 
 
 ---
 
-## Phase 5: Advanced Pattern Operations 🎯 HIGH PRIORITY
+## Phase 5: Data Transformation Layer (FUTURE)
+
+### 🆕 PATTERN-IO: External Data Format Conversion
+**Status**: **NOT STARTED** - New module for transformation to/from external formats
+
+**Priority**: P2 - Medium priority for interoperability
+**Effort**: 2-3 weeks
+**Impact**: HIGH - Essential for CSV, JSON, and other format conversions
+
+**Scope**: Separate `pattern-io` crate for converting between external data representations and `Pattern<Subject>`.
+
+**Rationale**: 
+- pattern-core focuses on pure data structures and operations
+- gram-codec focuses solely on gram notation serialization/deserialization
+- Transformation logic (JSON ↔ Pattern, CSV ↔ Pattern, etc.) deserves its own module
+- Multiple valid mapping strategies exist - should not be baked into core or codec
+
+**Tasks**:
+- [ ] Create `crates/pattern-io/` crate structure
+- [ ] Design conversion API (`from_json`, `to_json`, `from_csv`, `to_csv`)
+- [ ] Implement JSON conversion with configurable strategies:
+  - [ ] RDF-style (blank nodes for complex structures)
+  - [ ] Value-as-identity for primitives
+  - [ ] Custom identity mapping functions
+- [ ] Implement CSV conversion
+- [ ] Add comprehensive tests for each format
+- [ ] Document conversion strategies and trade-offs
+- [ ] Add examples for common use cases
+
+**Future Formats**:
+- [ ] XML conversion
+- [ ] YAML conversion  
+- [ ] Protocol Buffers conversion
+- [ ] Custom format adapters
+
+---
+
+## Phase 6: Advanced Pattern Operations 🎯 HIGH PRIORITY
 
 ### 🆕 PARAMORPHISM: Structure-Aware Folding (P0 - CRITICAL)
 **Primary Reference**: `../gram-hs/libs/pattern/src/Pattern/Core.hs` lines 32-34
@@ -222,7 +259,7 @@ impl<V> Pattern<V> {
 
 ---
 
-## Phase 6: Validation & Documentation (P2 - MEDIUM PRIORITY)
+## Phase 7: Validation & Documentation (P2 - MEDIUM PRIORITY)
 
 ### 🆕 VALIDATION: Enhanced Validation (P2 - MEDIUM PRIORITY)
 **Primary Reference**: `../gram-hs/libs/gram/src/Gram/Validate.hs`
@@ -257,7 +294,7 @@ impl<V> Pattern<V> {
 
 ---
 
-## Phase 7: Optimized Pattern Store (FUTURE)
+## Phase 8: Optimized Pattern Store (FUTURE)
 
 ### 029-pattern-store-design: Storage Architecture
 - [ ] Design columnar storage for patterns
@@ -283,7 +320,7 @@ impl<V> Pattern<V> {
 
 ---
 
-## Phase 8: WASM Integration (FUTURE)
+## Phase 9: WASM Integration (FUTURE)
 
 ### 032-wasm-bindings: WASM Bindings
 - [ ] Create wasm-bindgen interfaces
@@ -307,41 +344,9 @@ impl<V> Pattern<V> {
 - [ ] Add example documentation
 - [ ] Test examples in target environments
 
-### 🆕 Cross-Platform Conventional Conversion Parity (P2 - MEDIUM PRIORITY)
-**Reference**: `specs/028-unified-gram-wasm/` and `../pattern-lisp/src/PatternLisp/Codec.hs`
-**Status**: **PARTIAL** - JavaScript/WASM complete, Rust/Python missing
 
-The unified gram-wasm package (028) introduced pattern-lisp compatible conventional conversion
-for JavaScript via `Subject.fromValue()` and `Gram.from()`. These APIs convert arbitrary values
-to `Pattern<Subject>` with labels compatible with pattern-lisp's Codec.hs:
 
-| Value Type | Label | Properties | Pattern Elements |
-|------------|-------|------------|------------------|
-| string | `String` | `{value: s}` | none |
-| number | `Number` | `{value: n}` | none |
-| boolean | `Bool` | `{value: b}` | none |
-| array | `List` | none | `[elem1, elem2, ...]` |
-| object/map | `Map` | none | `[key1, val1, key2, val2, ...]` |
-
-**Current Status by Platform**:
-- ✅ **JavaScript/WASM**: `Subject.fromValue()` and `Gram.from()` implemented in `crates/pattern-wasm/`
-- ❌ **Python**: No equivalent conversion APIs
-- ❌ **Rust**: No equivalent conversion APIs (can construct Subject manually)
-
-**Tasks**:
-- [ ] Add `Subject.from_value()` to Python bindings (`crates/pattern-core/src/python.rs`)
-- [ ] Add `Gram.from_pattern()` equivalent to Python bindings
-- [ ] Consider adding `Subject::from_primitive()` trait implementations or builder for Rust
-- [ ] Ensure all platforms produce identical gram notation for same input values
-- [ ] Add cross-platform round-trip tests
-
-**Priority**: P2 - Medium priority (JavaScript is primary consumer, but parity enables consistent behavior)
-**Effort**: 2-3 days
-**Impact**: MEDIUM - Enables pattern-lisp compatible serialization from all platforms
-
----
-
-## Phase 9: Production Features (FUTURE)
+## Phase 10: Production Features (FUTURE)
 
 ### 035-logging-telemetry: Observability
 - [ ] Add comprehensive logging
