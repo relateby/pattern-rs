@@ -13,10 +13,10 @@ Demonstrates:
 import sys
 
 try:
-    import pattern_core
-    from pattern_core import Pattern, Subject, Value, ValidationRules
+    import relateby.pattern
+    from relateby.pattern import Pattern, Subject, Value, ValidationRules
 except ImportError:
-    print("ERROR: pattern_core module not found.")
+    print("ERROR: relateby.pattern not found. Install with: pip install relateby")
     print("Build it with: cd crates/pattern-core && maturin develop --uv --features python")
     sys.exit(1)
 
@@ -28,15 +28,15 @@ def example_comonad_extract():
     print("=" * 60)
 
     # Create pattern
-    pattern = pattern_core.Pattern.point("hello")
+    pattern = relateby.pattern.Pattern.point("hello")
 
     # Extract value
     value = pattern.extract()
     print(f"Extracted value: {value}")
 
     # Extract from nested pattern
-    nested = pattern_core.Pattern.pattern("root", [
-        pattern_core.Pattern.point("elem")
+    nested = relateby.pattern.Pattern.pattern("root", [
+        relateby.pattern.Pattern.point("elem")
     ])
     root_value = nested.extract()
     print(f"Extracted root value: {root_value}")
@@ -50,10 +50,10 @@ def example_comonad_extend():
     print("=" * 60)
 
     # Create pattern
-    pattern = pattern_core.Pattern.pattern("root", [
-        pattern_core.Pattern.point("a"),
-        pattern_core.Pattern.point("b"),
-        pattern_core.Pattern.point("c")
+    pattern = relateby.pattern.Pattern.pattern("root", [
+        relateby.pattern.Pattern.point("a"),
+        relateby.pattern.Pattern.point("b"),
+        relateby.pattern.Pattern.point("c")
     ])
 
     print(f"Original values: {pattern.values()}")
@@ -81,10 +81,10 @@ def example_depth_at():
     print("=" * 60)
 
     # Create deeply nested pattern
-    leaf = pattern_core.Pattern.point("leaf")
-    level2 = pattern_core.Pattern.pattern("level2", [leaf])
-    level1 = pattern_core.Pattern.pattern("level1", [level2])
-    root = pattern_core.Pattern.pattern("root", [level1])
+    leaf = relateby.pattern.Pattern.point("leaf")
+    level2 = relateby.pattern.Pattern.pattern("level2", [leaf])
+    level1 = relateby.pattern.Pattern.pattern("level1", [level2])
+    root = relateby.pattern.Pattern.pattern("root", [level1])
 
     print(f"Original structure: {root.values()}")
 
@@ -101,13 +101,13 @@ def example_size_at():
     print("=" * 60)
 
     # Create pattern
-    pattern = pattern_core.Pattern.pattern("root", [
-        pattern_core.Pattern.pattern("branch1", [
-            pattern_core.Pattern.point("leaf1"),
-            pattern_core.Pattern.point("leaf2")
+    pattern = relateby.pattern.Pattern.pattern("root", [
+        relateby.pattern.Pattern.pattern("branch1", [
+            relateby.pattern.Pattern.point("leaf1"),
+            relateby.pattern.Pattern.point("leaf2")
         ]),
-        pattern_core.Pattern.pattern("branch2", [
-            pattern_core.Pattern.point("leaf3")
+        relateby.pattern.Pattern.pattern("branch2", [
+            relateby.pattern.Pattern.point("leaf3")
         ])
     ])
 
@@ -127,10 +127,10 @@ def example_indices_at():
     print("=" * 60)
 
     # Create pattern
-    pattern = pattern_core.Pattern.pattern("root", [
-        pattern_core.Pattern.point("elem0"),
-        pattern_core.Pattern.point("elem1"),
-        pattern_core.Pattern.point("elem2")
+    pattern = relateby.pattern.Pattern.pattern("root", [
+        relateby.pattern.Pattern.point("elem0"),
+        relateby.pattern.Pattern.point("elem1"),
+        relateby.pattern.Pattern.point("elem2")
     ])
 
     print(f"Original structure: {pattern.values()}")
@@ -148,25 +148,25 @@ def example_complex_subject():
     print("=" * 60)
 
     # Create Subject with nested properties
-    person = pattern_core.Subject(
+    person = relateby.pattern.Subject(
         identity="alice",
         labels={"Person", "Employee", "Developer", "TeamLead"},
         properties={
-            "name": pattern_core.Value.string("Alice Johnson"),
-            "age": pattern_core.Value.int(35),
-            "email": pattern_core.Value.string("alice@example.com"),
-            "skills": pattern_core.Value.array([
-                pattern_core.Value.string("Python"),
-                pattern_core.Value.string("Rust"),
-                pattern_core.Value.string("TypeScript")
+            "name": relateby.pattern.Value.string("Alice Johnson"),
+            "age": relateby.pattern.Value.int(35),
+            "email": relateby.pattern.Value.string("alice@example.com"),
+            "skills": relateby.pattern.Value.array([
+                relateby.pattern.Value.string("Python"),
+                relateby.pattern.Value.string("Rust"),
+                relateby.pattern.Value.string("TypeScript")
             ]),
-            "metadata": pattern_core.Value.map({
-                "department": pattern_core.Value.string("Engineering"),
-                "level": pattern_core.Value.string("Senior"),
-                "years": pattern_core.Value.int(8)
+            "metadata": relateby.pattern.Value.map({
+                "department": relateby.pattern.Value.string("Engineering"),
+                "level": relateby.pattern.Value.string("Senior"),
+                "years": relateby.pattern.Value.int(8)
             }),
-            "salary_range": pattern_core.Value.range(lower=100000.0, upper=150000.0),
-            "height": pattern_core.Value.measurement(175.0, "cm")
+            "salary_range": relateby.pattern.Value.range(lower=100000.0, upper=150000.0),
+            "height": relateby.pattern.Value.measurement(175.0, "cm")
         }
     )
 
@@ -195,13 +195,13 @@ def example_validation():
     print("=" * 60)
 
     # Create pattern
-    pattern = pattern_core.Pattern.pattern("root", [
-        pattern_core.Pattern.point("elem1"),
-        pattern_core.Pattern.point("elem2")
+    pattern = relateby.pattern.Pattern.pattern("root", [
+        relateby.pattern.Pattern.point("elem1"),
+        relateby.pattern.Pattern.point("elem2")
     ])
 
     # Create validation rules
-    rules = pattern_core.ValidationRules(
+    rules = relateby.pattern.ValidationRules(
         max_depth=5,
         max_elements=10
     )
@@ -211,7 +211,7 @@ def example_validation():
         print("✓ Pattern is valid")
         print(f"  Depth: {pattern.depth()} (max: 5)")
         print(f"  Length: {pattern.length()} (max: 10)")
-    except pattern_core.ValidationError as e:
+    except relateby.pattern.ValidationError as e:
         print(f"✗ Validation failed: {e.message}")
         print(f"  Rule: {e.rule}")
 
@@ -219,13 +219,13 @@ def example_validation():
     def create_deep_pattern(depth: int) -> Pattern:
         """Create pattern with specified depth."""
         if depth == 0:
-            return pattern_core.Pattern.point("leaf")
+            return relateby.pattern.Pattern.point("leaf")
         else:
             child = create_deep_pattern(depth - 1)
-            return pattern_core.Pattern.pattern(f"level{depth}", [child])
+            return relateby.pattern.Pattern.pattern(f"level{depth}", [child])
 
     deep_pattern = create_deep_pattern(10)
-    strict_rules = pattern_core.ValidationRules(max_depth=5)
+    strict_rules = relateby.pattern.ValidationRules(max_depth=5)
 
     try:
         deep_pattern.validate(strict_rules)
@@ -244,19 +244,19 @@ def example_structure_analysis():
     print("=" * 60)
 
     # Create complex pattern
-    pattern = pattern_core.Pattern.pattern("root", [
-        pattern_core.Pattern.pattern("branch1", [
-            pattern_core.Pattern.point("leaf1"),
-            pattern_core.Pattern.point("leaf2"),
-            pattern_core.Pattern.point("leaf3")
+    pattern = relateby.pattern.Pattern.pattern("root", [
+        relateby.pattern.Pattern.pattern("branch1", [
+            relateby.pattern.Pattern.point("leaf1"),
+            relateby.pattern.Pattern.point("leaf2"),
+            relateby.pattern.Pattern.point("leaf3")
         ]),
-        pattern_core.Pattern.pattern("branch2", [
-            pattern_core.Pattern.pattern("subbranch", [
-                pattern_core.Pattern.point("leaf4")
+        relateby.pattern.Pattern.pattern("branch2", [
+            relateby.pattern.Pattern.pattern("subbranch", [
+                relateby.pattern.Pattern.point("leaf4")
             ]),
-            pattern_core.Pattern.point("leaf5")
+            relateby.pattern.Pattern.point("leaf5")
         ]),
-        pattern_core.Pattern.point("leaf6")
+        relateby.pattern.Pattern.point("leaf6")
     ])
 
     # Analyze structure
@@ -276,25 +276,25 @@ def example_file_tree():
     print("=" * 60)
 
     # Build file system structure
-    src_dir = pattern_core.Pattern.pattern("src", [
-        pattern_core.Pattern.point("main.py"),
-        pattern_core.Pattern.point("utils.py"),
-        pattern_core.Pattern.pattern("models", [
-            pattern_core.Pattern.point("user.py"),
-            pattern_core.Pattern.point("post.py")
+    src_dir = relateby.pattern.Pattern.pattern("src", [
+        relateby.pattern.Pattern.point("main.py"),
+        relateby.pattern.Pattern.point("utils.py"),
+        relateby.pattern.Pattern.pattern("models", [
+            relateby.pattern.Pattern.point("user.py"),
+            relateby.pattern.Pattern.point("post.py")
         ])
     ])
 
-    tests_dir = pattern_core.Pattern.pattern("tests", [
-        pattern_core.Pattern.point("test_main.py"),
-        pattern_core.Pattern.point("test_utils.py")
+    tests_dir = relateby.pattern.Pattern.pattern("tests", [
+        relateby.pattern.Pattern.point("test_main.py"),
+        relateby.pattern.Pattern.point("test_utils.py")
     ])
 
-    project = pattern_core.Pattern.pattern("myproject", [
+    project = relateby.pattern.Pattern.pattern("myproject", [
         src_dir,
         tests_dir,
-        pattern_core.Pattern.point("README.md"),
-        pattern_core.Pattern.point("setup.py")
+        relateby.pattern.Pattern.point("README.md"),
+        relateby.pattern.Pattern.point("setup.py")
     ])
 
     print(f"Project structure:")
@@ -319,52 +319,52 @@ def example_social_graph():
     print("=" * 60)
 
     # Create people
-    alice = pattern_core.Subject(
+    alice = relateby.pattern.Subject(
         identity="alice",
         labels={"Person", "Developer"},
         properties={
-            "name": pattern_core.Value.string("Alice"),
-            "age": pattern_core.Value.int(30)
+            "name": relateby.pattern.Value.string("Alice"),
+            "age": relateby.pattern.Value.int(30)
         }
     )
 
-    bob = pattern_core.Subject(
+    bob = relateby.pattern.Subject(
         identity="bob",
         labels={"Person", "Designer"},
         properties={
-            "name": pattern_core.Value.string("Bob"),
-            "age": pattern_core.Value.int(28)
+            "name": relateby.pattern.Value.string("Bob"),
+            "age": relateby.pattern.Value.int(28)
         }
     )
 
-    charlie = pattern_core.Subject(
+    charlie = relateby.pattern.Subject(
         identity="charlie",
         labels={"Person", "Manager"},
         properties={
-            "name": pattern_core.Value.string("Charlie"),
-            "age": pattern_core.Value.int(35)
+            "name": relateby.pattern.Value.string("Charlie"),
+            "age": relateby.pattern.Value.int(35)
         }
     )
 
-    dave = pattern_core.Subject(
+    dave = relateby.pattern.Subject(
         identity="dave",
         labels={"Person", "Developer"},
         properties={
-            "name": pattern_core.Value.string("Dave"),
-            "age": pattern_core.Value.int(32)
+            "name": relateby.pattern.Value.string("Dave"),
+            "age": relateby.pattern.Value.int(32)
         }
     )
 
     # Build social graph (who knows whom)
-    bob_pattern = pattern_core.Pattern.point(bob)
-    charlie_pattern = pattern_core.Pattern.point(charlie)
-    dave_pattern = pattern_core.Pattern.point(dave)
+    bob_pattern = relateby.pattern.Pattern.point(bob)
+    charlie_pattern = relateby.pattern.Pattern.point(charlie)
+    dave_pattern = relateby.pattern.Pattern.point(dave)
 
     # Alice knows Bob and Charlie
-    alice_graph = pattern_core.Pattern.pattern(alice, [bob_pattern, charlie_pattern])
+    alice_graph = relateby.pattern.Pattern.pattern(alice, [bob_pattern, charlie_pattern])
 
     # Charlie knows Dave
-    charlie_with_friends = pattern_core.Pattern.pattern(charlie, [dave_pattern])
+    charlie_with_friends = relateby.pattern.Pattern.pattern(charlie, [dave_pattern])
 
     print("Social Network:")
     print(f"  Alice knows {alice_graph.length()} people")
@@ -396,7 +396,7 @@ def example_data_pipeline():
     print("=" * 60)
 
     # Create data pattern
-    data = pattern_core.Pattern.pattern("data", pattern_core.Pattern.from_values([
+    data = relateby.pattern.Pattern.pattern("data", relateby.pattern.Pattern.from_values([
         "apple", "banana", "cherry", "date", "elderberry", "fig", "grape"
     ]))
 
@@ -409,7 +409,7 @@ def example_data_pipeline():
 
     # Step 2: Transform (uppercase)
     if filtered:
-        filtered_pattern = pattern_core.Pattern.pattern("filtered", filtered)
+        filtered_pattern = relateby.pattern.Pattern.pattern("filtered", filtered)
         transformed = filtered_pattern.map(str.upper)
         print(f"Step 2 (uppercase): {transformed.values()[1:]}")  # Skip root
 
@@ -428,19 +428,19 @@ def example_pattern_composition():
     print("=" * 60)
 
     # Create reusable subpatterns
-    left_subtree = pattern_core.Pattern.pattern("left", [
-        pattern_core.Pattern.point("L1"),
-        pattern_core.Pattern.point("L2")
+    left_subtree = relateby.pattern.Pattern.pattern("left", [
+        relateby.pattern.Pattern.point("L1"),
+        relateby.pattern.Pattern.point("L2")
     ])
 
-    right_subtree = pattern_core.Pattern.pattern("right", [
-        pattern_core.Pattern.point("R1"),
-        pattern_core.Pattern.point("R2"),
-        pattern_core.Pattern.point("R3")
+    right_subtree = relateby.pattern.Pattern.pattern("right", [
+        relateby.pattern.Pattern.point("R1"),
+        relateby.pattern.Pattern.point("R2"),
+        relateby.pattern.Pattern.point("R3")
     ])
 
     # Compose into larger pattern
-    tree = pattern_core.Pattern.pattern("root", [left_subtree, right_subtree])
+    tree = relateby.pattern.Pattern.pattern("root", [left_subtree, right_subtree])
 
     print(f"Composed tree:")
     print(f"  Total nodes: {tree.size()}")

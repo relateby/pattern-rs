@@ -2,13 +2,11 @@
 """
 Quick start example for gram-codec Python bindings
 
-Build and install:
-    pip install maturin
-    cd crates/gram-codec
-    maturin develop --features python
+Install: pip install relateby
+Or from TestPyPI: pip install --index-url https://test.pypi.org/simple/ relateby
 """
 
-from gram_codec import parse_gram, validate_gram, round_trip, version
+from relateby.gram import parse_gram, validate_gram, round_trip, version
 
 # Print version
 print(f"Gram Codec version: {version()}\n")

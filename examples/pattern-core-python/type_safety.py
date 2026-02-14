@@ -18,16 +18,16 @@ import sys
 from typing import List, Optional, Callable, Any
 
 try:
-    from pattern_core import (
-    Pattern,
-    Subject,
-    Value,
-    ValidationError,
-    ValidationRules,
-)
+    from relateby.pattern import (
+        Pattern,
+        Subject,
+        Value,
+        ValidationError,
+        ValidationRules,
+    )
 except ImportError:
-    print("ERROR: pattern_core module not found.")
-    print("Build it with: cd crates/pattern-core && maturin develop --uv --features python")
+    print("ERROR: relateby.pattern not found. Install with: pip install relateby")
+    print("Or from TestPyPI: pip install --index-url https://test.pypi.org/simple/ relateby")
     sys.exit(1)
 
 

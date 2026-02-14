@@ -12,10 +12,10 @@ Demonstrates:
 import sys
 
 try:
-    import pattern_core
+    import relateby.pattern
 except ImportError:
-    print("ERROR: pattern_core module not found.")
-    print("Build it with: cd crates/pattern-core && maturin develop --uv --features python")
+    print("ERROR: relateby.pattern not found. Install with: pip install relateby")
+    print("Or from TestPyPI: pip install --index-url https://test.pypi.org/simple/ relateby")
     sys.exit(1)
 
 
@@ -26,8 +26,8 @@ def example_pattern_of_alias():
     print("=" * 60)
 
     # Both create atomic patterns
-    p1 = pattern_core.Pattern.point(42)
-    p2 = pattern_core.Pattern.of(42)
+    p1 = relateby.pattern.Pattern.point(42)
+    p2 = relateby.pattern.Pattern.of(42)
 
     print(f"Pattern.point(42): {p1}")
     print(f"Pattern.of(42): {p2}")
@@ -43,14 +43,14 @@ def example_from_values():
 
     # Convert list of values to list of patterns
     values = [1, 2, 3, 4, 5]
-    patterns = pattern_core.Pattern.from_values(values)
+    patterns = relateby.pattern.Pattern.from_values(values)
 
     print(f"Input values: {values}")
     print(f"Number of patterns created: {len(patterns)}")
     print(f"Pattern values: {[p.value for p in patterns]}")
 
     # Use with Pattern.pattern() to create nested structure
-    root = pattern_core.Pattern.pattern("numbers", patterns)
+    root = relateby.pattern.Pattern.pattern("numbers", patterns)
     print(f"\nNested pattern: value='{root.value}', elements={root.length()}")
     print()
 
@@ -62,7 +62,7 @@ def example_atomic_pattern():
     print("=" * 60)
 
     # Create atomic pattern
-    atomic = pattern_core.Pattern.point("hello")
+    atomic = relateby.pattern.Pattern.point("hello")
 
     print(f"Value: {atomic.value}")
     print(f"Elements: {atomic.elements}")
@@ -80,12 +80,12 @@ def example_nested_pattern():
     print("=" * 60)
 
     # Create atomic patterns (elements)
-    elem1 = pattern_core.Pattern.point("elem1")
-    elem2 = pattern_core.Pattern.point("elem2")
-    elem3 = pattern_core.Pattern.point("elem3")
+    elem1 = relateby.pattern.Pattern.point("elem1")
+    elem2 = relateby.pattern.Pattern.point("elem2")
+    elem3 = relateby.pattern.Pattern.point("elem3")
 
     # Create decorated pattern (value decorates the elements)
-    decorated = pattern_core.Pattern.pattern("decoration", [elem1, elem2, elem3])
+    decorated = relateby.pattern.Pattern.pattern("decoration", [elem1, elem2, elem3])
 
     print(f"Decoration value: {decorated.value}")
     print(f"Number of elements (length): {decorated.length()}")
@@ -107,8 +107,8 @@ def example_pattern_from_list():
     print("=" * 60)
 
     # Convert values to patterns (elements), then create decorated pattern
-    elements = pattern_core.Pattern.from_values(["a", "b", "c", "d"])
-    pattern = pattern_core.Pattern.pattern("root", elements)
+    elements = relateby.pattern.Pattern.from_values(["a", "b", "c", "d"])
+    pattern = relateby.pattern.Pattern.pattern("root", elements)
 
     print(f"Root value: {pattern.value}")
     print(f"Length: {pattern.length()}")
@@ -123,10 +123,10 @@ def example_deeply_nested_pattern():
     print("=" * 60)
 
     # Build tree structure
-    leaf = pattern_core.Pattern.point("leaf")
-    level2 = pattern_core.Pattern.pattern("level2", [leaf])
-    level1 = pattern_core.Pattern.pattern("level1", [level2])
-    root = pattern_core.Pattern.pattern("root", [level1])
+    leaf = relateby.pattern.Pattern.point("leaf")
+    level2 = relateby.pattern.Pattern.pattern("level2", [leaf])
+    level1 = relateby.pattern.Pattern.pattern("level1", [level2])
+    root = relateby.pattern.Pattern.pattern("root", [level1])
 
     print(f"Root value: {root.value}")
     print(f"Maximum depth: {root.depth()}")
@@ -142,11 +142,11 @@ def example_value_types():
     print("=" * 60)
 
     # Create different value types
-    str_val = pattern_core.Value.string("hello")
-    int_val = pattern_core.Value.int(42)
-    decimal_val = pattern_core.Value.decimal(3.14)
-    bool_val = pattern_core.Value.boolean(True)
-    symbol_val = pattern_core.Value.symbol("alice")
+    str_val = relateby.pattern.Value.string("hello")
+    int_val = relateby.pattern.Value.int(42)
+    decimal_val = relateby.pattern.Value.decimal(3.14)
+    bool_val = relateby.pattern.Value.boolean(True)
+    symbol_val = relateby.pattern.Value.symbol("alice")
 
     print(f"String value: {str_val.as_string()}")
     print(f"Integer value: {int_val.as_int()}")
@@ -155,23 +155,23 @@ def example_value_types():
     print(f"Symbol value: {symbol_val.as_string()}")  # Symbols are strings
 
     # Array and map
-    array_val = pattern_core.Value.array([
-        pattern_core.Value.int(1),
-        pattern_core.Value.int(2),
-        pattern_core.Value.int(3)
+    array_val = relateby.pattern.Value.array([
+        relateby.pattern.Value.int(1),
+        relateby.pattern.Value.int(2),
+        relateby.pattern.Value.int(3)
     ])
 
-    map_val = pattern_core.Value.map({
-        "key1": pattern_core.Value.string("value1"),
-        "key2": pattern_core.Value.int(42)
+    map_val = relateby.pattern.Value.map({
+        "key1": relateby.pattern.Value.string("value1"),
+        "key2": relateby.pattern.Value.int(42)
     })
 
     print(f"\nArray: {array_val.as_array()}")
     print(f"Map: {map_val.as_map()}")
 
     # Range and measurement
-    range_val = pattern_core.Value.range(lower=0.0, upper=100.0)
-    measurement_val = pattern_core.Value.measurement(42.5, "meters")
+    range_val = relateby.pattern.Value.range(lower=0.0, upper=100.0)
+    measurement_val = relateby.pattern.Value.measurement(42.5, "meters")
 
     print(f"Range: {range_val}")
     print(f"Measurement: {measurement_val}")
@@ -185,7 +185,7 @@ def example_subject_basic():
     print("=" * 60)
 
     # Create Subject with identity only
-    subject = pattern_core.Subject(identity="alice")
+    subject = relateby.pattern.Subject(identity="alice")
 
     print(f"Identity: {subject.identity}")
     print(f"Labels: {subject.get_labels()}")
@@ -200,7 +200,7 @@ def example_subject_with_labels():
     print("=" * 60)
 
     # Create Subject with labels
-    subject = pattern_core.Subject(
+    subject = relateby.pattern.Subject(
         identity="alice",
         labels={"Person", "Employee", "Developer"}
     )
@@ -228,12 +228,12 @@ def example_subject_with_properties():
     print("=" * 60)
 
     # Create Subject with properties
-    subject = pattern_core.Subject(
+    subject = relateby.pattern.Subject(
         identity="alice",
         properties={
-            "name": pattern_core.Value.string("Alice"),
-            "age": pattern_core.Value.int(30),
-            "email": pattern_core.Value.string("alice@example.com")
+            "name": relateby.pattern.Value.string("Alice"),
+            "age": relateby.pattern.Value.int(30),
+            "email": relateby.pattern.Value.string("alice@example.com")
         }
     )
 
@@ -246,7 +246,7 @@ def example_subject_with_properties():
         print(f"Name: {name_value.as_string()}")
 
     # Set and remove properties
-    subject.set_property("department", pattern_core.Value.string("Engineering"))
+    subject.set_property("department", relateby.pattern.Value.string("Engineering"))
     print(f"After adding department: {subject.get_properties()}")
 
     subject.remove_property("email")
@@ -261,17 +261,17 @@ def example_pattern_subject():
     print("=" * 60)
 
     # Create Subject
-    subject = pattern_core.Subject(
+    subject = relateby.pattern.Subject(
         identity="alice",
         labels={"Person", "Employee"},
         properties={
-            "name": pattern_core.Value.string("Alice"),
-            "age": pattern_core.Value.int(30)
+            "name": relateby.pattern.Value.string("Alice"),
+            "age": relateby.pattern.Value.int(30)
         }
     )
 
     # Create Pattern[Subject]
-    pattern = pattern_core.Pattern.point(subject)
+    pattern = relateby.pattern.Pattern.point(subject)
 
     print(f"Pattern value (identity): {pattern.value.identity}")
     print(f"Pattern is atomic: {pattern.is_atomic()}")
@@ -290,30 +290,30 @@ def example_pattern_subject_nested():
     print("=" * 60)
 
     # Create multiple Subjects
-    alice = pattern_core.Subject(
+    alice = relateby.pattern.Subject(
         identity="alice",
         labels={"Person"},
-        properties={"name": pattern_core.Value.string("Alice")}
+        properties={"name": relateby.pattern.Value.string("Alice")}
     )
 
-    bob = pattern_core.Subject(
+    bob = relateby.pattern.Subject(
         identity="bob",
         labels={"Person"},
-        properties={"name": pattern_core.Value.string("Bob")}
+        properties={"name": relateby.pattern.Value.string("Bob")}
     )
 
-    charlie = pattern_core.Subject(
+    charlie = relateby.pattern.Subject(
         identity="charlie",
         labels={"Person"},
-        properties={"name": pattern_core.Value.string("Charlie")}
+        properties={"name": relateby.pattern.Value.string("Charlie")}
     )
 
     # Create Pattern[Subject] instances
-    bob_pattern = pattern_core.Pattern.point(bob)
-    charlie_pattern = pattern_core.Pattern.point(charlie)
+    bob_pattern = relateby.pattern.Pattern.point(bob)
+    charlie_pattern = relateby.pattern.Pattern.point(charlie)
 
     # Alice knows Bob and Charlie
-    alice_pattern = pattern_core.Pattern.pattern(
+    alice_pattern = relateby.pattern.Pattern.pattern(
         alice,
         [bob_pattern, charlie_pattern]
     )

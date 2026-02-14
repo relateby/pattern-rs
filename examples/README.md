@@ -59,19 +59,21 @@ cargo run --package gram-codec --example basic_usage
 cargo run --package gram-codec --example advanced_usage
 ```
 
-### Gram Codec (Python)
+### Python (relateby)
+
+One package provides both `relateby.pattern` and `relateby.gram`:
 
 ```bash
-# Prerequisites
-pip install maturin
-cd crates/gram-codec
-maturin develop --features python
+# Install from PyPI
+pip install relateby
 
-# Run interactive demo
+# Or from TestPyPI (pre-release)
+pip install --index-url https://test.pypi.org/simple/ relateby
+
+# Run examples
 python examples/gram-codec-python/demo.py
-
-# Or quick start
 python examples/gram-codec-python/quickstart.py
+python examples/pattern-core-python/operations.py
 ```
 
 ### Gram Codec (WASM - Browser)
@@ -168,9 +170,9 @@ To add a new example:
 - Source is in `examples/<crate>/`
 
 ### Python
-- Requires `maturin` for building bindings
-- Install in development mode: `maturin develop --features python`
-- Examples assume module is installed
+- Install the unified package: `pip install relateby` (or from TestPyPI for pre-release)
+- Examples use `relateby.pattern` and `relateby.gram`; see `docs/python-usage.md`
+- To build from source: see `docs/release.md`
 
 ### WASM
 - Requires `wasm-pack` for building

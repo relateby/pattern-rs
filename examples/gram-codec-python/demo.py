@@ -3,22 +3,18 @@
 Interactive demo for gram-codec Python bindings
 
 Prerequisites:
-    1. Install maturin: pip install maturin
-    2. Build and install: cd crates/gram-codec && maturin develop --features python
-    3. Run: python examples/python/demo.py
+    pip install relateby
+    Or from TestPyPI: pip install --index-url https://test.pypi.org/simple/ relateby
 """
 
 import sys
 
 try:
-    from gram_codec import parse_gram, validate_gram, round_trip, version
+    from relateby.gram import parse_gram, validate_gram, round_trip, version
 except ImportError:
-    print("❌ gram_codec module not found!")
-    print("\nTo install:")
-    print("  1. pip install maturin")
-    print("  2. cd crates/gram-codec")
-    print("  3. maturin develop --features python")
-    print("  4. python examples/python/demo.py")
+    print("❌ relateby.gram not found!")
+    print("\nTo install: pip install relateby")
+    print("Or from TestPyPI: pip install --index-url https://test.pypi.org/simple/ relateby")
     sys.exit(1)
 
 def print_header(title):

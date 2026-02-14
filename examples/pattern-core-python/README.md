@@ -4,25 +4,22 @@ Quickstart guide and working examples for pattern-core Python bindings.
 
 ## Installation
 
-### From Source (Development)
+### From source (development)
+
+See [Release process](../../docs/release.md). Build from `python/relateby/` with `pip wheel . -w dist`, then install the wheel.
+
+### From PyPI or TestPyPI
 
 ```bash
-cd crates/pattern-core
-
-# Install uv if not already installed
-curl -LsSf https://astral.sh/uv/install.sh | sh  # Or: brew install uv
-
-# Create virtual environment and install
-uv venv
-source .venv/bin/activate  # On Windows: .venv\Scripts\activate
-uv pip install -e ".[dev]"
-maturin develop --uv --features python
+pip install relateby
+# Or from TestPyPI: pip install --index-url https://test.pypi.org/simple/ relateby
 ```
 
-### From Wheel
+### From wheel (local build)
 
 ```bash
-uv pip install pattern_core-*.whl
+# From repo: cd python/relateby && pip wheel . -w dist
+pip install python/relateby/dist/relateby-*.whl
 ```
 
 ## Quick Start
@@ -30,10 +27,10 @@ uv pip install pattern_core-*.whl
 ### 1. Create an Atomic Pattern
 
 ```python
-import pattern_core
+import relateby.pattern
 
 # Create atomic pattern (no elements)
-atomic = pattern_core.Pattern.point("hello")
+atomic = relateby.pattern.Pattern.point("hello")
 print(f"Value: {atomic.value}")  # "hello"
 print(f"Is atomic: {atomic.is_atomic()}")  # True
 ```
@@ -43,9 +40,9 @@ print(f"Is atomic: {atomic.is_atomic()}")  # True
 ```python
 # Create nested pattern with elements
 # The value decorates/describes the pattern represented by the elements
-elem1 = pattern_core.Pattern.point("elem1")
-elem2 = pattern_core.Pattern.point("elem2")
-decorated = pattern_core.Pattern.pattern("decoration", [elem1, elem2])
+elem1 = relateby.pattern.Pattern.point("elem1")
+elem2 = relateby.pattern.Pattern.point("elem2")
+decorated = relateby.pattern.Pattern.pattern("decoration", [elem1, elem2])
 
 print(f"Length: {decorated.length()}")  # 2
 print(f"Depth: {decorated.depth()}")    # 1
@@ -56,17 +53,17 @@ print(f"Size: {decorated.size()}")      # 3 (root + 2 elements)
 
 ```python
 # Create Subject with properties
-subject = pattern_core.Subject(
+subject = relateby.pattern.Subject(
     identity="alice",
     labels={"Person", "Employee"},
     properties={
-        "name": pattern_core.Value.string("Alice"),
-        "age": pattern_core.Value.int(30)
+        "name": relateby.pattern.Value.string("Alice"),
+        "age": relateby.pattern.Value.int(30)
     }
 )
 
 # Create Pattern with Subject
-pattern = pattern_core.Pattern.point(subject)
+pattern = relateby.pattern.Pattern.point(subject)
 print(f"Identity: {pattern.value.identity}")  # "alice"
 ```
 
@@ -74,7 +71,7 @@ print(f"Identity: {pattern.value.identity}")  # "alice"
 
 ```python
 # Map: Transform all values to uppercase
-pattern = pattern_core.Pattern.pattern("hello", pattern_core.Pattern.from_values(["world", "python"]))
+pattern = relateby.pattern.Pattern.pattern("hello", relateby.pattern.Pattern.from_values(["world", "python"]))
 upper = pattern.map(str.upper)
 print(upper.values())  # ["HELLO", "WORLD", "PYTHON"]
 ```
@@ -83,7 +80,7 @@ print(upper.values())  # ["HELLO", "WORLD", "PYTHON"]
 
 ```python
 # Filter: Find patterns matching predicate
-pattern = pattern_core.Pattern.pattern("root", pattern_core.Pattern.from_values(["a", "b", "c"]))
+pattern = relateby.pattern.Pattern.pattern("root", relateby.pattern.Pattern.from_values(["a", "b", "c"]))
 filtered = pattern.filter(lambda p: p.value in ["a", "c"])
 print(f"Filtered count: {len(filtered)}")  # 2
 ```
@@ -92,12 +89,12 @@ print(f"Filtered count: {len(filtered)}")  # 2
 
 ```python
 # Para: Structure-aware aggregation with access to pattern structure
-pattern = pattern_core.Pattern.pattern(10, [
-    pattern_core.Pattern.pattern(5, [
-        pattern_core.Pattern.point(2),
-        pattern_core.Pattern.point(1)
+pattern = relateby.pattern.Pattern.pattern(10, [
+    relateby.pattern.Pattern.pattern(5, [
+        relateby.pattern.Pattern.point(2),
+        relateby.pattern.Pattern.point(1)
     ]),
-    pattern_core.Pattern.point(3)
+    relateby.pattern.Pattern.point(3)
 ])
 
 # Compute multiple statistics in one pass
@@ -147,12 +144,12 @@ pyright type_safety.py
 
 ```python
 # Build a directory tree
-tree = pattern_core.Pattern.pattern(".", [
-    pattern_core.Pattern.pattern("src", [
-        pattern_core.Pattern.point("main.py"),
-        pattern_core.Pattern.point("utils.py")
+tree = relateby.pattern.Pattern.pattern(".", [
+    relateby.pattern.Pattern.pattern("src", [
+        relateby.pattern.Pattern.point("main.py"),
+        relateby.pattern.Pattern.point("utils.py")
     ]),
-    pattern_core.Pattern.point("README.md")
+    relateby.pattern.Pattern.point("README.md")
 ])
 
 print(f"Total files: {tree.size()}")
@@ -162,15 +159,15 @@ print(f"Total files: {tree.size()}")
 
 ```python
 # Create relationships from lists (bulk import)
-people = [pattern_core.Pattern.point("Alice"), pattern_core.Pattern.point("Bob")]
-companies = [pattern_core.Pattern.point("TechCorp"), pattern_core.Pattern.point("Startup")]
+people = [relateby.pattern.Pattern.point("Alice"), relateby.pattern.Pattern.point("Bob")]
+companies = [relateby.pattern.Pattern.point("TechCorp"), relateby.pattern.Pattern.point("Startup")]
 rel_types = ["WORKS_FOR", "FOUNDED"]
 
-relationships = pattern_core.Pattern.zip3(people, companies, rel_types)
+relationships = relateby.pattern.Pattern.zip3(people, companies, rel_types)
 # Creates: (Alice)-[:WORKS_FOR]->(TechCorp), (Bob)-[:FOUNDED]->(Startup)
 
 # Create relationships with logic (computed values)
-relationships = pattern_core.Pattern.zip_with(
+relationships = relateby.pattern.Pattern.zip_with(
     people,
     companies,
     lambda p, c: "FOUNDED" if "Startup" in c.value else "WORKS_AT"
@@ -181,25 +178,25 @@ relationships = pattern_core.Pattern.zip_with(
 
 ```python
 # Build a social graph
-alice = pattern_core.Subject(identity="alice", labels={"Person"})
-bob = pattern_core.Subject(identity="bob", labels={"Person"})
+alice = relateby.pattern.Subject(identity="alice", labels={"Person"})
+bob = relateby.pattern.Subject(identity="bob", labels={"Person"})
 
-alice_pattern = pattern_core.Pattern.point(alice)
-bob_pattern = pattern_core.Pattern.point(bob)
+alice_pattern = relateby.pattern.Pattern.point(alice)
+bob_pattern = relateby.pattern.Pattern.point(bob)
 
 # Alice knows Bob
-graph = pattern_core.Pattern.pattern(alice, [bob_pattern])
+graph = relateby.pattern.Pattern.pattern(alice, [bob_pattern])
 ```
 
 ### Validation
 
 ```python
 # Validate pattern structure
-rules = pattern_core.ValidationRules(max_depth=10, max_elements=100)
+rules = relateby.pattern.ValidationRules(max_depth=10, max_elements=100)
 try:
     pattern.validate(rules)
     print("Pattern is valid")
-except pattern_core.ValidationError as e:
+except relateby.pattern.ValidationError as e:
     print(f"Validation failed: {e.message}")
 ```
 
@@ -209,7 +206,7 @@ See [docs/python-usage.md](../../docs/python-usage.md) for complete API document
 
 ## Type Safety
 
-All classes and methods have type hints in `pattern_core/__init__.pyi`. Use with:
+Type hints: use `relateby.pattern` with mypy/pyright. See `docs/python-usage.md`.
 
 - **mypy**: `mypy your_script.py`
 - **pyright**: `pyright your_script.py`

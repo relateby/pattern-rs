@@ -25,9 +25,9 @@
 
 **Purpose**: Create the unified package directory and minimal configuration so the single PyPI project `relateby` has one version and metadata source.
 
-- [ ] T001 Create unified package directory `python/relateby/` and minimal structure: `python/relateby/pyproject.toml` placeholder and `python/relateby/relateby/` package directory for layout (relateby/pattern, relateby/gram)
-- [ ] T002 Create single `python/relateby/pyproject.toml` with project name `relateby`, version (e.g. 0.1.0), description, readme, license (Apache-2.0), requires-python (>=3.8), classifiers and keywords per research.md and data-model.md
-- [ ] T003 [P] Add `python/relateby/README.md` describing the unified package, that one install provides `relateby.pattern` and `relateby.gram`, and install command `pip install relateby`
+- [X] T001 Create unified package directory `python/relateby/` and minimal structure: `python/relateby/pyproject.toml` placeholder and `python/relateby/relateby/` package directory for layout (relateby/pattern, relateby/gram)
+- [X] T002 Create single `python/relateby/pyproject.toml` with project name `relateby`, version (e.g. 0.1.0), description, readme, license (Apache-2.0), requires-python (>=3.8), classifiers and keywords per research.md and data-model.md
+- [X] T003 [P] Add `python/relateby/README.md` describing the unified package, that one install provides `relateby.pattern` and `relateby.gram`, and install command `pip install relateby`
 
 ---
 
@@ -37,10 +37,10 @@
 
 **⚠️ CRITICAL**: No user story work can begin until this phase is complete
 
-- [ ] T004 Implement build that produces pattern-core and gram-codec Python extensions (invoke maturin or cargo for `crates/pattern-core` and `crates/gram-codec` with python feature) from or triggered by `python/relateby/`
-- [ ] T005 Assemble built extensions into package layout so installed package exposes only `relateby.pattern` and `relateby.gram` (no top-level `pattern_core` or `gram_codec`) under `python/relateby/relateby/pattern/` and `python/relateby/relateby/gram/` (or equivalent re-exports)
-- [ ] T006 Configure unified package build backend in `python/relateby/pyproject.toml` (maturin or setuptools with build script) so one build command from `python/relateby/` produces wheel(s) and sdist for project name `relateby`
-- [ ] T007 Verify one build command from `python/relateby/` produces wheel(s) and sdist; run local `pip install` from built wheel and confirm only `import relateby.pattern` and `import relateby.gram` succeed (no `pattern_core` at top level)
+- [X] T004 Implement build that produces pattern-core and gram-codec Python extensions (invoke maturin or cargo for `crates/pattern-core` and `crates/gram-codec` with python feature) from or triggered by `python/relateby/`
+- [X] T005 Assemble built extensions into package layout so installed package exposes only `relateby.pattern` and `relateby.gram` (no top-level `pattern_core` or `gram_codec`) under `python/relateby/relateby/pattern/` and `python/relateby/relateby/gram/` (or equivalent re-exports)
+- [X] T006 Configure unified package build backend in `python/relateby/pyproject.toml` (maturin or setuptools with build script) so one build command from `python/relateby/` produces wheel(s) and sdist for project name `relateby`
+- [X] T007 Verify one build command from `python/relateby/` produces wheel(s) and sdist; run local `pip install` from built wheel and confirm only `import relateby.pattern` and `import relateby.gram` succeed (no `pattern_core` at top level)
 
 **Checkpoint**: Foundation ready — unified package builds and installs with correct public API; user story implementation can begin
 
@@ -54,10 +54,10 @@
 
 ### Implementation for User Story 1
 
-- [ ] T008 [US1] Document release prerequisites (maturin, Python, PyPI account with 2FA, API token or Trusted Publishing) in `docs/release.md` without embedding secrets
-- [ ] T009 [US1] Document build and publish commands in `docs/release.md`: from `python/relateby/` run `maturin build --release` then `maturin publish` (or equivalent); include exact directory and command
-- [ ] T010 [US1] Document TestPyPI dry-run in `docs/release.md`: `maturin publish --repository testpypi` and optional verification `pip install --index-url https://test.pypi.org/simple/ relateby` then `import relateby.pattern`, `import relateby.gram`
-- [ ] T011 [US1] Document in `docs/release.md` that PyPI rejects re-upload of same version (bump version for new release) and document credentials handling (~/.pypirc, MATURIN_PYPI_TOKEN; CI: Trusted Publishing or repository secret) without embedding secrets
+- [X] T008 [US1] Document release prerequisites (maturin, Python, PyPI account with 2FA, API token or Trusted Publishing) in `docs/release.md` without embedding secrets
+- [X] T009 [US1] Document build and publish commands in `docs/release.md`: from `python/relateby/` run `maturin build --release` then `maturin publish` (or equivalent); include exact directory and command
+- [X] T010 [US1] Document TestPyPI dry-run in `docs/release.md`: `maturin publish --repository testpypi` and optional verification `pip install --index-url https://test.pypi.org/simple/ relateby` then `import relateby.pattern`, `import relateby.gram`
+- [X] T011 [US1] Document in `docs/release.md` that PyPI rejects re-upload of same version (bump version for new release) and document credentials handling (~/.pypirc, MATURIN_PYPI_TOKEN; CI: Trusted Publishing or repository secret) without embedding secrets
 
 **Checkpoint**: User Story 1 complete — maintainers have documented steps to publish the single package to PyPI
 
@@ -71,9 +71,9 @@
 
 ### Implementation for User Story 2
 
-- [ ] T012 [US2] Ensure `python/relateby/pyproject.toml` has all PyPI-required metadata (name, version, description, readme, license, requires-python, classifiers) so upload and `pip install relateby` succeed
-- [ ] T013 [US2] Document end-user install and usage in `docs/python-usage.md` (or project README): `pip install relateby` and `import relateby.pattern`, `import relateby.gram` with a minimal example
-- [ ] T014 [P] [US2] Update existing Python examples and docs to use `relateby.pattern` and `relateby.gram` only (remove or replace `pattern_core` and `gram_codec` references) in `examples/pattern-core-python/`, `examples/gram-codec-python/`, `examples/README.md`, and `docs/python-usage.md`
+- [X] T012 [US2] Ensure `python/relateby/pyproject.toml` has all PyPI-required metadata (name, version, description, readme, license, requires-python, classifiers) so upload and `pip install relateby` succeed
+- [X] T013 [US2] Document end-user install and usage in `docs/python-usage.md` (or project README): `pip install relateby` and `import relateby.pattern`, `import relateby.gram` with a minimal example
+- [X] T014 [P] [US2] Update existing Python examples and docs to use `relateby.pattern` and `relateby.gram` only (remove or replace `pattern_core` and `gram_codec` references) in `examples/pattern-core-python/`, `examples/gram-codec-python/`, `examples/README.md`, and `docs/python-usage.md`
 
 **Checkpoint**: User Story 2 complete — end users can install and use the package; docs and examples use only the new imports
 
@@ -87,9 +87,9 @@
 
 ### Implementation for User Story 3
 
-- [ ] T015 [US3] Add or update release process document in `docs/release.md` with ordered steps per `specs/029-relateby-pypi-release/contracts/release-process.md`: set version in `python/relateby/pyproject.toml`, build, optional TestPyPI validate, publish, verify
-- [ ] T016 [US3] Link or reference maintainer quickstart (e.g. `specs/029-relateby-pypi-release/quickstart.md`) from `docs/release.md` or docs README so new maintainers can find it
-- [ ] T017 [US3] Document in `docs/release.md` that version is defined in one place (`python/relateby/pyproject.toml`), that same source and version produce consistent artifacts, and error handling (build failure, duplicate version, credential error, retry) per release-process contract
+- [X] T015 [US3] Add or update release process document in `docs/release.md` with ordered steps per `specs/029-relateby-pypi-release/contracts/release-process.md`: set version in `python/relateby/pyproject.toml`, build, optional TestPyPI validate, publish, verify
+- [X] T016 [US3] Link or reference maintainer quickstart (e.g. `specs/029-relateby-pypi-release/quickstart.md`) from `docs/release.md` or docs README so new maintainers can find it
+- [X] T017 [US3] Document in `docs/release.md` that version is defined in one place (`python/relateby/pyproject.toml`), that same source and version produce consistent artifacts, and error handling (build failure, duplicate version, credential error, retry) per release-process contract
 
 **Checkpoint**: User Story 3 complete — release process is documented and repeatable
 
@@ -101,18 +101,18 @@
 
 ### Documentation & Consistency
 
-- [ ] T018 [P] Update `CLAUDE.md` with `pip install relateby` and `relateby.pattern` / `relateby.gram` in Python bindings section if not already covered by US2 docs
+- [X] T018 [P] Update `CLAUDE.md` with `pip install relateby` and `relateby.pattern` / `relateby.gram` in Python bindings section if not already covered by US2 docs
 
 ### Code Quality Checks (REQUIRED)
 
-- [ ] T019 Run `cargo fmt --all` and fix any formatting
-- [ ] T020 Run `cargo clippy --workspace -- -D warnings` and fix any issues
-- [ ] T021 Run `scripts/ci-local.sh` (or equivalent) and fix any failures
-- [ ] T022 Run `cargo test --workspace` and any Python tests (e.g. in `crates/pattern-core/tests/python/`) and fix failures; verify unified package build and local install still work
+- [X] T019 Run `cargo fmt --all` and fix any formatting
+- [X] T020 Run `cargo clippy --workspace -- -D warnings` and fix any issues
+- [X] T021 Run `scripts/ci-local.sh` (or equivalent) and fix any failures
+- [X] T022 Run `cargo test --workspace` and any Python tests (e.g. in `crates/pattern-core/tests/python/`) and fix failures; verify unified package build and local install still work
 
 ### Final Verification
 
-- [ ] T023 Confirm all acceptance criteria from `specs/029-relateby-pypi-release/spec.md` are met (publish steps documented, install works, release repeatable, only relateby.pattern and relateby.gram public)
+- [X] T023 Confirm all acceptance criteria from `specs/029-relateby-pypi-release/spec.md` are met (publish steps documented, install works, release repeatable, only relateby.pattern and relateby.gram public)
 
 ---
 
