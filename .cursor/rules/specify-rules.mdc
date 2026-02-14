@@ -34,6 +34,10 @@ Auto-generated from all feature plans. Last updated: 2025-12-27
 - Python 3.8+ (type hints, Generic), Rust 1.75+ (edition 2021) + PyO3 (existing, pattern-core `python` feature), maturin, pattern-core crate with existing `para` (spec 025), `typing.TypeVar` and `typing.Generic` for Pattern[V] (026-paramorphism-python-bindings)
 - Rust 1.70+ (workspace MSRV), edition 2021 + pattern-core (path), gram-codec (path), wasm-bindgen 0.2, js-sys 0.3 (028-unified-gram-wasm)
 - N/A (in-memory patterns; no persistence in scope) (028-unified-gram-wasm)
+- Rust 1.70+ (workspace MSRV), Python 3.8+ (package requires-python) + maturin (existing, crates/pattern-core), PyO3 (pattern-core `python` feature); for publish: twine or maturin publish, PyPI API token (029-relateby-pypi-release)
+- N/A (release artifacts are built then uploaded; no persistent project storage) (029-relateby-pypi-release)
+- Rust 1.70+ (workspace MSRV), Python 3.8+ (requires-python) + maturin (build/publish), PyO3 (pattern-core and gram-codec `python` features); unified package build may use a wrapper with build script that invokes cargo/maturin for both crates (029-relateby-pypi-release)
+- N/A (release artifacts built then uploaded) (029-relateby-pypi-release)
 
 - Rust (MSRV: 1.70.0, edition: 2021) (002-workspace-setup)
 
@@ -53,9 +57,9 @@ cargo test [ONLY COMMANDS FOR ACTIVE TECHNOLOGIES][ONLY COMMANDS FOR ACTIVE TECH
 Rust (MSRV: 1.70.0, edition: 2021): Follow standard conventions
 
 ## Recent Changes
+- 029-relateby-pypi-release: Added Rust 1.70+ (workspace MSRV), Python 3.8+ (requires-python) + maturin (build/publish), PyO3 (pattern-core and gram-codec `python` features); unified package build may use a wrapper with build script that invokes cargo/maturin for both crates
+- 029-relateby-pypi-release: Added Rust 1.70+ (workspace MSRV), Python 3.8+ (package requires-python) + maturin (existing, crates/pattern-core), PyO3 (pattern-core `python` feature); for publish: twine or maturin publish, PyPI API token
 - 028-unified-gram-wasm: Added Rust 1.70+ (workspace MSRV), edition 2021 + pattern-core (path), gram-codec (path), wasm-bindgen 0.2, js-sys 0.3
-- 027-wasm-pattern-typescript-parity: Added Rust (existing workspace; same toolchain as pattern-core) + wasm-bindgen (optional / target cfg for wasm32); js-sys, web-sys as needed for callbacks and bindings
-- 027-wasm-pattern-typescript-parity: Added Rust 1.75+ (edition 2021), TypeScript 4.x+ (for .d.ts), JavaScript ES2020+ (consumers) + wasm-bindgen (optional, feature `wasm`), pattern-core (existing), 024 Python bindings as parity reference
 
 
 <!-- MANUAL ADDITIONS START -->
