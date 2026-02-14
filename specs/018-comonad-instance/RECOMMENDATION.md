@@ -222,7 +222,7 @@ In gram-hs:
 - `sizeAt` ❌ Direct recursive implementation
 - `indicesAt` ❌ Direct recursive implementation
 
-**For gram-rs, we'll use `extend` where conceptually appropriate:**
+**For pattern-rs, we'll use `extend` where conceptually appropriate:**
 - `depth_at()` - Use `extend` (like gram-hs)
 - `size_at()` - Use `extend` (for conceptual consistency)
 - `indices_at()` - Direct implementation (needs path tracking)

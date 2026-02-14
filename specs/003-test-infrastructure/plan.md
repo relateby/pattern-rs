@@ -7,7 +7,7 @@
 
 ## Summary
 
-Establish comprehensive testing infrastructure for gram-rs including property-based testing (proptest), equivalence checking with gram-hs, snapshot testing (insta), test data extraction from gram-hs, benchmark suite (criterion), and test helper utilities. The infrastructure must integrate with the existing Cargo workspace structure, support both unit and integration tests, work across all workspace crates, and enable developers to verify behavioral equivalence with the gram-hs reference implementation. Testing infrastructure is foundational for ensuring correctness as features are ported from gram-hs.
+Establish comprehensive testing infrastructure for pattern-rs including property-based testing (proptest), equivalence checking with gram-hs, snapshot testing (insta), test data extraction from gram-hs, benchmark suite (criterion), and test helper utilities. The infrastructure must integrate with the existing Cargo workspace structure, support both unit and integration tests, work across all workspace crates, and enable developers to verify behavioral equivalence with the gram-hs reference implementation. Testing infrastructure is foundational for ensuring correctness as features are ported from gram-hs.
 
 ## Technical Context
 

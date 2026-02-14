@@ -133,7 +133,7 @@ All implementations follow Rust best practices:
 
 Maintains complete functional equivalence with gram-hs reference implementation:
 
-| gram-hs | gram-rs | Equivalence |
+| gram-hs | pattern-rs | Equivalence |
 |---------|---------|-------------|
 | `findPattern` | `find_first` | ✅ Same behavior, different return type syntax |
 | `matches` | `matches` | ✅ Identical behavior |
@@ -211,4 +211,3 @@ The predicate-based pattern matching feature is **production-ready** with:
 **Files changed**: 6 (1 source, 5 tests/benchmarks)  
 **Lines of code added**: ~1,500 (including tests and documentation)  
 **Test coverage**: 303 tests, 100% of success criteria met
-

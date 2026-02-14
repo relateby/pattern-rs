@@ -1,7 +1,7 @@
 //! Test utilities for pattern testing infrastructure
 //!
 //! This module provides utilities for:
-//! - Equivalence checking between gram-rs and gram-hs
+//! - Equivalence checking between pattern-rs and gram-hs
 //! - Test helpers for pattern comparison
 //! - Property-based test generators
 

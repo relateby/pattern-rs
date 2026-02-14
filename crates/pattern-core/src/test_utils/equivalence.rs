@@ -1,4 +1,4 @@
-//! Equivalence checking utilities for comparing gram-rs and gram-hs implementations
+//! Equivalence checking utilities for comparing pattern-rs and gram-hs implementations
 //!
 //! # Using gramref CLI for Reference Outputs
 //!
@@ -15,7 +15,7 @@
 use serde::{Deserialize, Serialize};
 use std::fmt::Debug;
 
-/// Result of an equivalence check between gram-rs and gram-hs implementations
+/// Result of an equivalence check between pattern-rs and gram-hs implementations
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct EquivalenceResult {
     /// Whether the outputs are equivalent
@@ -33,7 +33,7 @@ pub struct Difference {
     pub path: Vec<String>,
     /// Expected value (from gram-hs)
     pub expected: String,
-    /// Actual value (from gram-rs)
+    /// Actual value (from pattern-rs)
     pub actual: String,
     /// Description of the difference
     pub description: String,
@@ -74,11 +74,11 @@ impl Default for EquivalenceOptions {
     }
 }
 
-/// Check equivalence between gram-rs and gram-hs outputs
+/// Check equivalence between pattern-rs and gram-hs outputs
 ///
 /// # Arguments
 ///
-/// * `gram_rs_output` - Output from gram-rs implementation
+/// * `gram_rs_output` - Output from pattern-rs implementation
 /// * `gram_hs_output` - Output from gram-hs implementation (or test data)
 /// * `options` - Comparison options
 ///
@@ -154,7 +154,7 @@ where
 /// # Arguments
 ///
 /// * `test_case` - Test case from extracted gram-hs data
-/// * `gram_rs_impl` - Function that executes gram-rs implementation
+/// * `gram_rs_impl` - Function that executes pattern-rs implementation
 /// * `options` - Comparison options
 ///
 /// # Returns

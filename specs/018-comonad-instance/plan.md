@@ -60,7 +60,7 @@ Implement Comonad operations (`extract` and `extend`) for Pattern to enable posi
 **Intentional Enhancement**:
 - gram-hs implements `depthAt = extend depth` (uses Comonad)
 - gram-hs implements `sizeAt` directly (does NOT use Comonad)
-- **gram-rs will use `extend` for both** for conceptual consistency
+- **pattern-rs will use `extend` for both** for conceptual consistency
 - Rationale: Makes "decorative computation" pattern explicit without changing behavior
 
 **Reference Paths**:

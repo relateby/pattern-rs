@@ -2,9 +2,9 @@
 
 ## Research Task 1: Reference vs Implementation Gaps
 
-**Decision**: The documentation will focus on the core `Pattern` data structure and `gram-codec` parser/serializer, as these are the most mature parts of `gram-rs`.
+**Decision**: The documentation will focus on the core `Pattern` data structure and `gram-codec` parser/serializer, as these are the most mature parts of `pattern-rs`.
 
-**Rationale**: `gram-rs` is a faithful port of `gram-hs`. The conceptual model is identical. Some advanced morphisms (e.g., paramorphisms) are still being ported, so the documentation will stick to basic operations and typeclass instances (Functor, Foldable, Traversable) that are already implemented.
+**Rationale**: `pattern-rs` is a faithful port of `gram-hs`. The conceptual model is identical. Some advanced morphisms (e.g., paramorphisms) are still being ported, so the documentation will stick to basic operations and typeclass instances (Functor, Foldable, Traversable) that are already implemented.
 
 **Alternatives Considered**: Including advanced category theory sections. Rejected because they are not yet fully implemented or may overwhelm new users.
 

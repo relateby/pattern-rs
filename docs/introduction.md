@@ -2,7 +2,7 @@
 
 ## Overview
 
-Pattern concepts are everywhere—from design patterns in software architecture to musical patterns in composition. The `gram-rs` library provides the **Pattern** data structure, designed to support thinking about pattern concepts as first-class entities.
+Pattern concepts are everywhere—from design patterns in software architecture to musical patterns in composition. The `pattern-rs` library provides the **Pattern** data structure, designed to support thinking about pattern concepts as first-class entities.
 
 This guide introduces the core concepts and terminology used throughout the library. Once you understand the concepts, you can explore the **[Gram Notation Reference](gram-notation.md)** or dive into the **[Rust Usage Guide](rust-usage.md)**.
 
@@ -49,7 +49,7 @@ The Pattern data structure makes pattern concepts **explicit**. Route 66 as a Pa
 - The sequence of road segments (as elements).
 - The decoration about the route (as the value).
 
-By making pattern concepts explicit, `gram-rs` allows you to:
+By making pattern concepts explicit, `pattern-rs` allows you to:
 - **Compare** equivalent pattern concepts (different paths that achieve the same outcome).
 - **Compose** small pattern structures into more complex ones.
 - **Factor** complex patterns to extract common elements.

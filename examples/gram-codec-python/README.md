@@ -403,14 +403,14 @@ json_str = json.dumps(ast)
 ### Architecture
 
 ```
-gram-rs (this project)
+pattern-rs (this project)
   └─> parse_to_ast() → AST (dict)
        └─> gram-py (separate project)
             └─> Pattern.from_ast(ast) → Full Pattern API
                  └─> map(), fold(), filter(), etc.
 ```
 
-**gram-rs** responsibilities:
+**pattern-rs** responsibilities:
 - ✅ Parse gram notation to AST
 - ✅ Validate syntax
 - ✅ Serialize patterns back to gram
@@ -472,4 +472,4 @@ Apache-2.0
 
 ## Contributing
 
-Issues and pull requests welcome at https://github.com/gram-data/gram-rs
+Issues and pull requests welcome at https://github.com/relateby/pattern-rs

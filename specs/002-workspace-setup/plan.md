@@ -7,7 +7,7 @@
 
 ## Summary
 
-Convert the gram-rs project from a single crate structure to a Cargo workspace with multiple crates organized by functional domain (pattern-core, pattern-ops, gram-codec, pattern-store placeholder, pattern-wasm placeholder). Establish CI/CD pipeline for automated validation and test synchronization infrastructure for maintaining parity with gram-hs reference implementation. The workspace structure enables modular development, independent crate testing, and clear separation of concerns while maintaining compatibility with existing development workflows.
+Convert the pattern-rs project from a single crate structure to a Cargo workspace with multiple crates organized by functional domain (pattern-core, pattern-ops, gram-codec, pattern-store placeholder, pattern-wasm placeholder). Establish CI/CD pipeline for automated validation and test synchronization infrastructure for maintaining parity with gram-hs reference implementation. The workspace structure enables modular development, independent crate testing, and clear separation of concerns while maintaining compatibility with existing development workflows.
 
 ## Technical Context
 

@@ -9,13 +9,13 @@
 
 ## Overview
 
-This document defines the API contracts for test utilities including equivalence checking, test helpers, and property-based test generators. These utilities support testing across the gram-rs workspace.
+This document defines the API contracts for test utilities including equivalence checking, test helpers, and property-based test generators. These utilities support testing across the pattern-rs workspace.
 
 ## Equivalence Checking API
 
 ### `check_equivalence`
 
-Compare outputs from gram-rs and gram-hs implementations for behavioral equivalence.
+Compare outputs from pattern-rs and gram-hs implementations for behavioral equivalence.
 
 **Signature**:
 ```rust
@@ -29,7 +29,7 @@ where
 ```
 
 **Parameters**:
-- `gram_rs_output`: Output from gram-rs implementation
+- `gram_rs_output`: Output from pattern-rs implementation
 - `gram_hs_output`: Output from gram-hs implementation (or test data)
 - `options`: Comparison options (approximate equality, field ignore list, etc.)
 
@@ -66,13 +66,13 @@ where
 
 **Parameters**:
 - `test_case`: Test case from extracted gram-hs data
-- `gram_rs_impl`: Function that executes gram-rs implementation
+- `gram_rs_impl`: Function that executes pattern-rs implementation
 - `options`: Comparison options
 
 **Returns**: `EquivalenceResult` (same as `check_equivalence`)
 
 **Behavior**:
-- Executes gram-rs implementation with test case input
+- Executes pattern-rs implementation with test case input
 - Compares output with expected output from test case
 - Uses test data format from feature 002
 
@@ -334,4 +334,3 @@ proptest! {
 - Generators will be implemented once pattern types are available
 - Test helpers depend on pattern type definitions
 - API design follows Rust conventions (snake_case, Result types, etc.)
-

@@ -13,7 +13,7 @@ This feature establishes the project structure and configuration. No runtime typ
 
 ```toml
 [package]
-name = "gram"  # or "gram-rs"
+name = "gram"  # or "pattern-rs"
 version = "0.1.0"
 edition = "2021"
 rust-version = "1.70.0"
@@ -21,7 +21,7 @@ authors = ["..."]
 
 license = "BSD-3-Clause"
 description = "Rust port of gram-hs pattern data structure and graph views"
-repository = "https://github.com/gram-data/gram-rs"
+repository = "https://github.com/relateby/pattern-rs"
 
 [lib]
 name = "gram"
@@ -88,7 +88,7 @@ use wasm_bindgen::prelude::*;
 
 #[wasm_bindgen]
 pub fn greet(name: &str) -> String {
-    format!("Hello, {}! (from gram-rs)", name)
+    format!("Hello, {}! (from pattern-rs)", name)
 }
 ```
 
@@ -172,4 +172,3 @@ All contracts must be validated by:
 2. Successful WASM compilation (`cargo build --target wasm32-unknown-unknown`)
 3. Passing development tooling (`cargo fmt --check`, `cargo clippy`)
 4. Successful test execution (`cargo test`)
-

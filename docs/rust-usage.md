@@ -1,10 +1,10 @@
 # Rust Usage Guide
 
-This guide provides practical examples for using the `gram-rs` crates in your Rust projects.
+This guide provides practical examples for using the `pattern-rs` crates in your Rust projects.
 
 ## Adding Dependencies
 
-To use `gram-rs`, add the following crates to your `Cargo.toml`. Since the library is organized as a workspace, you can reference them by path if you're working within the repo, or by version once published.
+To use `pattern-rs`, add the following crates to your `Cargo.toml`. Since the library is organized as a workspace, you can reference them by path if you're working within the repo, or by version once published.
 
 ```toml
 [dependencies]
@@ -14,7 +14,7 @@ gram-codec = { path = "crates/gram-codec" }
 
 ## Programmatic Construction
 
-The `pattern-core` crate provides the `Pattern` type and its core constructors. Most patterns in `gram-rs` use `Subject` as their value type, which includes an identity, labels, and properties.
+The `pattern-core` crate provides the `Pattern` type and its core constructors. Most patterns in `pattern-rs` use `Subject` as their value type, which includes an identity, labels, and properties.
 
 ### Creating an Atomic Pattern (Node)
 Use `Pattern::point` to create a pattern with no elements.

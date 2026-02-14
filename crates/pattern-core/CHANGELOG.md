@@ -98,6 +98,5 @@ semantics, where elements ARE the pattern and the value DECORATES those elements
 - Equality, ordering, and hashing traits
 - Comprehensive property-based testing suite
 
-[Unreleased]: https://github.com/gram-data/gram-rs/compare/v0.1.0...HEAD
-[0.1.0]: https://github.com/gram-data/gram-rs/releases/tag/v0.1.0
-
+[Unreleased]: https://github.com/relateby/pattern-rs/compare/v0.1.0...HEAD
+[0.1.0]: https://github.com/relateby/pattern-rs/releases/tag/v0.1.0

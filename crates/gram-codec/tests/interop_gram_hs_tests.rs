@@ -1,12 +1,12 @@
 //! Interoperability tests with gram-hs canonical JSON format
 //!
-//! These tests verify that gram-rs AST output can be consumed by gram-hs
+//! These tests verify that pattern-rs AST output can be consumed by gram-hs
 //! and vice versa, proving end-to-end interoperability.
 
 use gram_codec::parse_to_ast;
 use serde_json::Value as JsonValue;
 
-/// Test that gram-rs AST matches gram-hs canonical format structure
+/// Test that pattern-rs AST matches gram-hs canonical format structure
 ///
 /// This verifies:
 /// 1. Field names match (subject, identity, labels, properties)

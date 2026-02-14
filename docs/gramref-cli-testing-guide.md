@@ -1,8 +1,8 @@
-# gramref CLI Testing Guide for gram-rs
+# gramref CLI Testing Guide for pattern-rs
 
 **CLI Tool**: `gramref` (formerly known as `gram-hs`)  
 **Location**: `/Users/akollegger/.cabal/bin/gramref` (or in PATH)  
-**Purpose**: Generate test patterns and validate outputs for gram-rs testing  
+**Purpose**: Generate test patterns and validate outputs for pattern-rs testing  
 **Last Updated**: 2025-01-04
 
 > **Important Distinction**: This document describes the `gramref` CLI tool, which is separate from 
@@ -11,7 +11,7 @@
 
 ## Overview
 
-The `gramref` CLI tool (formerly `gram-hs`) has been updated with several improvements that make it highly suitable for automated testing and equivalence checking with gram-rs. This guide demonstrates how to use these features effectively.
+The `gramref` CLI tool (formerly `gram-hs`) has been updated with several improvements that make it highly suitable for automated testing and equivalence checking with pattern-rs. This guide demonstrates how to use these features effectively.
 
 ## Key Improvements Implemented
 
@@ -30,7 +30,7 @@ The `gramref` CLI tool (formerly `gram-hs`) has been updated with several improv
 
 ---
 
-## Usage Examples for Testing gram-rs
+## Usage Examples for Testing pattern-rs
 
 ### 1. Equivalence Checking with `--value-only`
 
@@ -43,7 +43,7 @@ The `gramref` CLI tool (formerly `gram-hs`) has been updated with several improv
 echo '(node1)' | gramref parse --format json --value-only
 # Output: {"elements":[],"value":{"labels":[],"properties":{},"symbol":"node1"}}
 
-# Compare with gram-rs output (after implementing gram-rs CLI)
+# Compare with pattern-rs output (after implementing pattern-rs CLI)
 # Both outputs can now be directly compared as JSON
 ```
 
@@ -107,7 +107,7 @@ echo '(node1)-[edge]->(node2)' | gramref parse --format json --canonical --value
 
 ### 4. Test Suite Generation with `--type suite`
 
-**Problem**: Need to extract test cases from gram-hs for gram-rs testing.
+**Problem**: Need to extract test cases from gram-hs for pattern-rs testing.
 
 **Solution**: Use `--type suite` to generate test cases in the correct format:
 
@@ -189,7 +189,7 @@ echo '(node1)-[edge]->(node2)' | gramref parse --format json --value-only --cano
 
 ---
 
-## Integration with gram-rs Testing Infrastructure
+## Integration with pattern-rs Testing Infrastructure
 
 ### Equivalence Checking
 
@@ -277,8 +277,8 @@ cargo run --bin test-validator tests/common/test_cases.json
 # Get gramref reference
 echo '(node1)-[edge]->(node2)' | gramref parse --format json --value-only --canonical > ref_output.json
 
-# Get gram-rs output (when implemented)
-echo '(node1)-[edge]->(node2)' | cargo run --bin gram-rs parse --format json --value-only > rs_output.json
+# Get pattern-rs output (when implemented)
+echo '(node1)-[edge]->(node2)' | cargo run --bin pattern-rs parse --format json --value-only > rs_output.json
 
 # Compare
 diff ref_output.json rs_output.json
@@ -296,7 +296,7 @@ echo '(node1)' | gramref parse --format json --deterministic --canonical > snaps
 
 ---
 
-## Benefits for gram-rs Testing
+## Benefits for pattern-rs Testing
 
 1. **Simplified Equivalence Checking**: `--value-only` eliminates metadata comparison issues
 2. **Deterministic Testing**: `--deterministic` ensures reproducible test outputs
@@ -325,4 +325,3 @@ echo '(node1)' | gramref parse --format json --deterministic --canonical > snaps
 ---
 
 **Last Updated**: 2025-01-04
-

@@ -158,7 +158,7 @@ examples/
 ├── wasm-js/               # Existing or new: minimal WASM + JS/TS example (load, construct, map, para, validate)
 ```
 
-**Structure Decision**: Single-crate extension within the existing gram-rs workspace. WASM bindings live in `crates/pattern-core/src/wasm.rs` behind a feature (e.g. `wasm`). TypeScript declarations live in `crates/pattern-core/typescript/` (or equivalent) and are shipped with the WASM package. Examples in `examples/wasm-js` or under `examples/pattern-core` demonstrate browser/Node and TypeScript usage, including effect-ts for Either-like returns.
+**Structure Decision**: Single-crate extension within the existing pattern-rs workspace. WASM bindings live in `crates/pattern-core/src/wasm.rs` behind a feature (e.g. `wasm`). TypeScript declarations live in `crates/pattern-core/typescript/` (or equivalent) and are shipped with the WASM package. Examples in `examples/wasm-js` or under `examples/pattern-core` demonstrate browser/Node and TypeScript usage, including effect-ts for Either-like returns.
 
 ## Complexity Tracking
 

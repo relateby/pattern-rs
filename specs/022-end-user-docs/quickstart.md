@@ -1,4 +1,4 @@
-# Quickstart: gram-rs in 5 Minutes
+# Quickstart: pattern-rs in 5 Minutes
 
 Learn how to use the Pattern data structure in your Rust projects.
 

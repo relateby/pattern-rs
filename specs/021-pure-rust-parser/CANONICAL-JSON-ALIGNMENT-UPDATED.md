@@ -1,4 +1,4 @@
-# Canonical JSON Alignment: gram-rs vs gram-hs (Updated)
+# Canonical JSON Alignment: pattern-rs vs gram-hs (Updated)
 
 **Date**: January 10, 2026  
 **Status**: ✅ **MOSTLY ALIGNED** (after gram-hs updates)  
@@ -8,11 +8,11 @@
 
 ## 🎉 Great News!
 
-gram-hs has been updated (commit `3b3bc9b`) to align with gram-rs naming:
+gram-hs has been updated (commit `3b3bc9b`) to align with pattern-rs naming:
 - ✅ **Pattern field**: `value` → `subject` (now matches!)
 - ✅ **Subject field**: `symbol` → `identity` (now matches!)
 
-This means gram-rs and gram-hs are now **much more aligned**!
+This means pattern-rs and gram-hs are now **much more aligned**!
 
 ---
 
@@ -20,14 +20,14 @@ This means gram-rs and gram-hs are now **much more aligned**!
 
 ### Pattern Structure ✅
 
-| Field | gram-hs (Current) | gram-rs (Current) | Status |
+| Field | gram-hs (Current) | pattern-rs (Current) | Status |
 |-------|-------------------|-------------------|--------|
 | Pattern value | `subject` | `subject` | ✅ **MATCH** |
 | Elements | `elements` | `elements` | ✅ Match |
 
 ### Subject Structure ✅
 
-| Field | gram-hs (Current) | gram-rs (Current) | Status |
+| Field | gram-hs (Current) | pattern-rs (Current) | Status |
 |-------|-------------------|-------------------|--------|
 | Identity | `identity` | `identity` | ✅ **MATCH** |
 | Labels | `labels` | `labels` | ✅ Match |
@@ -35,7 +35,7 @@ This means gram-rs and gram-hs are now **much more aligned**!
 
 ### Value Type Discriminators ⚠️
 
-| Type | gram-hs (Current) | gram-rs (Current) | Status |
+| Type | gram-hs (Current) | pattern-rs (Current) | Status |
 |------|-------------------|-------------------|--------|
 | Symbol | `{"type": "symbol", "value": "..."}` | `{"type": "Symbol", "value": "..."}` | ❌ **MISMATCH** (case) |
 | Tagged String | `{"type": "tagged", "tag": "...", "content": "..."}` | `{"type": "Tagged", "tag": "...", "content": "..."}` | ❌ **MISMATCH** (case) |
@@ -44,7 +44,7 @@ This means gram-rs and gram-hs are now **much more aligned**!
 
 ### Simple Types ⚠️
 
-| Type | gram-hs | gram-rs | Status |
+| Type | gram-hs | pattern-rs | Status |
 |------|---------|---------|--------|
 | Integer | Native JSON `number` | Tagged `{"type": "Integer", "value": n}` | ⚠️ **DIFFERENT APPROACH** |
 | Decimal | Native JSON `number` | Tagged `{"type": "Decimal", "value": n}` | ⚠️ **DIFFERENT APPROACH** |
@@ -67,7 +67,7 @@ valueToJSON (SubjectValue.VRange rv) = rangeValueToJSON rv  -- uses "range"
 valueToJSON (SubjectValue.VMeasurement unit val) = object ["type" .= ("measurement" :: T.Text), ...]
 ```
 
-**gram-rs (current)**:
+**pattern-rs (current)**:
 ```rust
 Value::VSymbol(sym) => serde_json::json!({
     "type": "Symbol",  // Should be "symbol"
@@ -93,7 +93,7 @@ valueToJSON (SubjectValue.VInteger i) = toJSON i  -- Native JSON number
 valueToJSON (SubjectValue.VDecimal d) = toJSON d   -- Native JSON number
 ```
 
-**gram-rs (current)**:
+**pattern-rs (current)**:
 ```rust
 Value::VInteger(i) => serde_json::json!({
     "type": "Integer",  // Should be native JSON
@@ -105,7 +105,7 @@ Value::VDecimal(d) => serde_json::json!({
 }),
 ```
 
-**Impact**: High - This is a fundamental difference. gram-hs uses native JSON numbers, gram-rs tags them.
+**Impact**: High - This is a fundamental difference. gram-hs uses native JSON numbers, pattern-rs tags them.
 
 **Fix Required**: Remove tagging for integers and decimals, use native JSON numbers.
 
@@ -154,8 +154,8 @@ Value::VDecimal(d) => serde_json::json!({
 
 After changes:
 
-1. **Round-trip test**: gram-rs JSON → gram-hs parser → gram-rs parser
-2. **Schema validation**: Validate gram-rs JSON against gram-hs schema
+1. **Round-trip test**: pattern-rs JSON → gram-hs parser → pattern-rs parser
+2. **Schema validation**: Validate pattern-rs JSON against gram-hs schema
 3. **Example comparison**: Compare outputs for same gram input
 
 ---

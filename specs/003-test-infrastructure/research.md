@@ -74,14 +74,14 @@
 
 ### 3. Equivalence Checking Architecture
 
-**Question**: How should equivalence checking between gram-rs and gram-hs be implemented?
+**Question**: How should equivalence checking between pattern-rs and gram-hs be implemented?
 
 **Research Findings**:
 
 - **Approach Options**:
   1. **Direct comparison**: Run gram-hs executable and compare outputs (requires gram-hs to be built)
   2. **JSON serialization**: Serialize both outputs to JSON and compare (works if gram-hs can export JSON)
-  3. **Test data comparison**: Use extracted test cases from gram-hs and validate gram-rs produces same outputs
+  3. **Test data comparison**: Use extracted test cases from gram-hs and validate pattern-rs produces same outputs
   4. **Hybrid**: Use test data for most cases, direct comparison for complex scenarios
 
 - **Implementation Strategy**:
@@ -229,7 +229,7 @@
   1. Validate JSON test case format
   2. Parse gram-hs test output if available (future enhancement)
   3. Support manual test case addition
-  4. Compare extracted test cases with gram-rs test results
+  4. Compare extracted test cases with pattern-rs test results
 
 **Rationale**: Start simple with manual extraction and format validation. Automation can be added incrementally as we understand gram-hs test structure better.
 
@@ -264,4 +264,3 @@
 5. Set up snapshot testing infrastructure
 6. Create benchmark suite structure
 7. Enhance test extraction utilities
-

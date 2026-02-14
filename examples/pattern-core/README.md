@@ -4,7 +4,7 @@ Examples demonstrating the pattern-core library functionality.
 
 ## Prerequisites
 
-The pattern-core crate is the foundation for pattern data structures in gram-rs.
+The pattern-core crate is the foundation for pattern data structures in pattern-rs.
 
 ## Examples
 
@@ -180,4 +180,3 @@ Expected output shows:
 - **Comonad Laws**: See `specs/018-comonad-instance/spec.md`
 - **Pattern Structure**: See `crates/pattern-core/src/pattern.rs`
 - **API Documentation**: Run `cargo doc --package pattern-core --open`
-

@@ -3,7 +3,7 @@
 **Feature Branch**: `001-rust-init`  
 **Created**: 2025-12-27  
 **Status**: Draft  
-**Input**: User description: "initialize this project as a rust project using the best practices for a rust project which will be a faithful port of the gram-hs project found at https://github.com/gram-data/gram-hs"
+**Input**: User description: "initialize this project as a rust project using the best practices for a rust project which will be a faithful port of the gram-hs project found at https://github.com/relateby/pattern-hs"
 
 ## User Scenarios & Testing *(mandatory)*
 
@@ -105,5 +105,4 @@ A developer from another language ecosystem (JavaScript, Python, C) wants to und
 - The project will start as a library crate (can expand to workspace if needed)
 - Initial examples will be placeholders demonstrating structure, with full implementation in future features
 - License matches gram-hs (BSD-3-Clause) unless otherwise specified
-- Project name is "gram" or "gram-rs" (to be confirmed, but using standard Rust naming)
-
+- Project name is "gram" or "pattern-rs" (to be confirmed, but using standard Rust naming)

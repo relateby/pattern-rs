@@ -5,7 +5,7 @@
 
 ## Overview
 
-This contract defines the JSON schema and structure for test case synchronization between gram-hs and gram-rs.
+This contract defines the JSON schema and structure for test case synchronization between gram-hs and pattern-rs.
 
 ## Test Case Schema
 
@@ -74,7 +74,7 @@ This contract defines the JSON schema and structure for test case synchronizatio
 **Requirements** (FR-019):
 - Comparison tools MUST accept test cases in this format
 - Comparison MUST identify:
-  - Missing test cases in gram-rs
+  - Missing test cases in pattern-rs
   - Test cases with different expected outputs
   - Test cases with behavioral differences
 - Comparison reports MUST be human-readable
@@ -147,4 +147,3 @@ This contract defines the JSON schema and structure for test case synchronizatio
 - Full automation can be added in future features
 - Schema can be extended as needed for additional test types
 - Validation tools SHOULD verify schema compliance
-

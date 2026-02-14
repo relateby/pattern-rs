@@ -51,13 +51,13 @@ Configuration for property-based tests specifying generation parameters.
 
 ### Equivalence Check Result
 
-Result of comparing outputs from gram-rs and gram-hs implementations.
+Result of comparing outputs from pattern-rs and gram-hs implementations.
 
 **Attributes**:
 - `test_case_name`: Name of the test case that was checked
 - `equivalent`: Boolean indicating if outputs match
 - `differences`: List of differences found (if not equivalent)
-- `gram_rs_output`: Output from gram-rs implementation
+- `gram_rs_output`: Output from pattern-rs implementation
 - `gram_hs_output`: Output from gram-hs implementation (if available)
 - `comparison_method`: Method used for comparison (test_data, direct, json)
 
@@ -163,7 +163,7 @@ Test result (pass/fail with counterexample)
 ```
 Test case input
     ↓
-    ├─→ gram-rs implementation → Output A
+    ├─→ pattern-rs implementation → Output A
     └─→ gram-hs implementation → Output B
     ↓
 Comparison utility
@@ -223,4 +223,3 @@ Match or diff report
 - Test utilities will be designed to work with pattern types once they are available
 - Snapshot serialization depends on pattern types implementing serde traits
 - Property test generators require pattern type definitions to generate valid test inputs
-

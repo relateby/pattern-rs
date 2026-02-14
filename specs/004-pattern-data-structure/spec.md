@@ -68,17 +68,17 @@ A developer needs to inspect and debug pattern structures during development. Th
 
 ### User Story 4 - Developer Verifies Behavioral Equivalence with gram-hs (Priority: P2)
 
-A developer needs to verify that pattern instances created in gram-rs behave identically to patterns created in the gram-hs reference implementation. They need confidence that the port maintains correctness and that patterns can be used interchangeably between implementations.
+A developer needs to verify that pattern instances created in pattern-rs behave identically to patterns created in the gram-hs reference implementation. They need confidence that the port maintains correctness and that patterns can be used interchangeably between implementations.
 
 **Why this priority**: Behavioral equivalence is critical for maintaining correctness during the port. While not required for basic functionality, verification ensures the port is faithful and prevents divergence from the reference implementation.
 
-**Independent Test**: Can be fully tested by creating equivalent patterns in both gram-rs and gram-hs, comparing their structure and behavior, and verifying they match. Test cases from gram-hs can be ported and executed in gram-rs with identical results.
+**Independent Test**: Can be fully tested by creating equivalent patterns in both pattern-rs and gram-hs, comparing their structure and behavior, and verifying they match. Test cases from gram-hs can be ported and executed in pattern-rs with identical results.
 
 **Acceptance Scenarios**:
 
-1. **Given** test cases from gram-hs are available, **When** a developer runs equivalence tests, **Then** patterns created in gram-rs match the structure and behavior of patterns in gram-hs
-2. **Given** equivalence checking utilities exist, **When** a developer creates a pattern in gram-rs, **Then** they can verify it matches the expected gram-hs pattern structure
-3. **Given** test data is extracted from gram-hs, **When** a developer runs tests, **Then** gram-rs patterns produce the same results as gram-hs for identical inputs
+1. **Given** test cases from gram-hs are available, **When** a developer runs equivalence tests, **Then** patterns created in pattern-rs match the structure and behavior of patterns in gram-hs
+2. **Given** equivalence checking utilities exist, **When** a developer creates a pattern in pattern-rs, **Then** they can verify it matches the expected gram-hs pattern structure
+3. **Given** test data is extracted from gram-hs, **When** a developer runs tests, **Then** pattern-rs patterns produce the same results as gram-hs for identical inputs
 4. **Given** behavioral equivalence is verified, **When** a developer uses patterns, **Then** they can trust that behavior matches the reference implementation
 
 ---
@@ -146,7 +146,7 @@ A developer needs to use patterns in web applications via WebAssembly. They need
 - **SC-002**: Developers can create patterns using the Subject type and use it as a pattern value (verified by successful pattern creation with Subject values)
 - **SC-003**: Developers can print patterns using Debug (`{:?}`) and Display (`{}`) format specifiers and see readable output (verified by format output tests)
 - **SC-004**: Pattern types compile successfully for `wasm32-unknown-unknown` target without errors (verified by WASM compilation test)
-- **SC-005**: Patterns created in gram-rs match the structure and behavior of equivalent patterns in gram-hs for at least 95% of test cases from gram-hs (verified by equivalence test suite)
+- **SC-005**: Patterns created in pattern-rs match the structure and behavior of equivalent patterns in gram-hs for at least 95% of test cases from gram-hs (verified by equivalence test suite)
 - **SC-006**: Developers can clone patterns and compare them for equality, with equality working correctly for patterns with identical structure and values (verified by Clone and Eq trait tests)
 - **SC-007**: Pattern types are available in the `pattern-core` crate and can be imported and used by other crates in the workspace (verified by cross-crate usage tests)
 
@@ -184,7 +184,7 @@ A developer needs to use patterns in web applications via WebAssembly. They need
   - Feature Specification: `../gram-hs/specs/001-pattern-data-structure/spec.md` (for context, may be outdated)
   - Type Signatures: `../gram-hs/specs/001-pattern-data-structure/contracts/type-signatures.md` (for context, may be outdated)
 - **Porting Guide**: `docs/porting-guide.md` - Systematic approach for porting from gram-hs
-- **Project Plan**: `docs/gram-rs-project-plan.md` - Overall architecture and design decisions
+- **Project Plan**: `docs/pattern-rs-project-plan.md` - Overall architecture and design decisions
 - **TODO**: `TODO.md` - Feature tracking and porting checklist
 
 **Important**: The Haskell implementation in `../gram-hs/libs/` is the authoritative source of truth. Design documents in `../gram-hs/specs/` are useful for context but may contain outdated information or design mistakes that were corrected in the actual implementation.

@@ -1,12 +1,12 @@
-# gram-rs TODO
+# pattern-rs TODO
 
-This TODO tracks the incremental porting of features from the gram-hs reference implementation (`../gram-hs`) to gram-rs. Features are organized by development phase and follow the gram-hs feature numbering where applicable.
+This TODO tracks the incremental porting of features from the gram-hs reference implementation (`../gram-hs`) to pattern-rs. Features are organized by development phase and follow the gram-hs feature numbering where applicable.
 
-**Reference**: See `docs/porting-guide.md` for porting workflow and `plan/gram-rs-work-plan.md` for prioritized work plan to achieve feature parity with gram-hs.
+**Reference**: See `docs/porting-guide.md` for porting workflow and `plan/pattern-rs-work-plan.md` for prioritized work plan to achieve feature parity with gram-hs.
 
-**Gap Analysis**: See `plan/gram-rs-implementation-gaps.md` for detailed analysis of missing features (~70% library feature parity currently).
+**Gap Analysis**: See `plan/pattern-rs-implementation-gaps.md` for detailed analysis of missing features (~70% library feature parity currently).
 
-**Scope**: Library modules only (pattern-core, gram-codec). CLI tooling is out of scope for gram-rs.
+**Scope**: Library modules only (pattern-core, gram-codec). CLI tooling is out of scope for pattern-rs.
 
 ---
 
@@ -20,7 +20,7 @@ This TODO tracks the incremental porting of features from the gram-hs reference 
 
 ### 🎯 Priority Work (Next Steps)
 
-Based on the gap analysis in `plan/gram-rs-implementation-gaps.md`, the following library features are critical for achieving feature parity:
+Based on the gap analysis in `plan/pattern-rs-implementation-gaps.md`, the following library features are critical for achieving feature parity:
 
 #### P0 - Critical (Blocking)
 1. **Paramorphism** (NEW) - Structure-aware folding operation (1-2 days)
@@ -33,7 +33,7 @@ Based on the gap analysis in `plan/gram-rs-implementation-gaps.md`, the followin
 1. **Validation Enhancement** - Duplicate/undefined checking (2-3 days)
 2. **Documentation** - Feature guides for new features (2-3 days)
 
-See `plan/gram-rs-work-plan.md` for detailed implementation plan (2.5-3.5 weeks to full library parity).
+See `plan/pattern-rs-work-plan.md` for detailed implementation plan (2.5-3.5 weeks to full library parity).
 
 ---
 
@@ -408,11 +408,11 @@ impl<V> Pattern<V> {
 
 ## Notes
 
-- **Scope**: Library modules only (pattern-core, gram-codec). CLI tooling is out of scope for gram-rs.
+- **Scope**: Library modules only (pattern-core, gram-codec). CLI tooling is out of scope for pattern-rs.
 
-- **Feature Parity Status**: Currently at ~70% library feature parity with gram-hs. See `plan/gram-rs-implementation-gaps.md` for detailed analysis.
+- **Feature Parity Status**: Currently at ~70% library feature parity with gram-hs. See `plan/pattern-rs-implementation-gaps.md` for detailed analysis.
 
-- **Priority Work**: Focus on P0 (Paramorphism) and P1 (Graph Lens, Comonad Verification) features to achieve library feature parity. See `plan/gram-rs-work-plan.md` for detailed implementation plan (2.5-3.5 weeks estimated).
+- **Priority Work**: Focus on P0 (Paramorphism) and P1 (Graph Lens, Comonad Verification) features to achieve library feature parity. See `plan/pattern-rs-work-plan.md` for detailed implementation plan (2.5-3.5 weeks estimated).
 
 - **Reference Implementation**: Always verify against the actual Haskell source code in `../gram-hs/libs/` before marking features complete. The Haskell implementation is the authoritative source of truth. Documentation in `../gram-hs/docs/` provides up-to-date information about the implementation. Historical notes in `../gram-hs/specs/` guided incremental development but may be outdated. See `docs/porting-guide.md` for detailed workflow.
 

@@ -5,7 +5,7 @@
 
 ## Overview
 
-This document defines the types, function signatures, and data structures used in the predicate-based pattern matching feature for gram-rs. The feature extends the existing `Pattern<V>` type with three new query methods that enable finding patterns by predicate, checking structural equality, and testing subpattern containment.
+This document defines the types, function signatures, and data structures used in the predicate-based pattern matching feature for pattern-rs. The feature extends the existing `Pattern<V>` type with three new query methods that enable finding patterns by predicate, checking structural equality, and testing subpattern containment.
 
 ## Existing Types (No Changes)
 
@@ -394,4 +394,3 @@ Behavioral equivalence with gram-hs verified through:
 3. Edge case coverage matching gram-hs test suite
 
 Reference implementation: `../gram-hs/libs/pattern/src/Pattern/Core.hs`
-

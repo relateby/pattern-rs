@@ -1,3 +1,3 @@
-//! Benchmark package for gram-rs
+//! Benchmark package for pattern-rs
 //!
-//! This package contains performance benchmarks for the gram-rs workspace.
+//! This package contains performance benchmarks for the pattern-rs workspace.

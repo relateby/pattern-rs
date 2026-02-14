@@ -14,7 +14,7 @@ This feature involves project structure and configuration, not runtime data stru
 **Entity**: `Cargo.toml` (Cargo Project Manifest)
 
 **Fields**:
-- `package.name`: String - Project name (e.g., "gram" or "gram-rs")
+- `package.name`: String - Project name (e.g., "gram" or "pattern-rs")
 - `package.version`: String - Semantic version (e.g., "0.1.0")
 - `package.edition`: String - Rust edition ("2021")
 - `package.authors`: Array of Strings - Project authors
@@ -142,4 +142,3 @@ This feature involves project structure and configuration, not runtime data stru
 - This is a structural/configuration model, not a runtime data model
 - Actual data structures (Pattern, GraphView, etc.) will be defined in future features when porting gram-hs functionality
 - The configuration entities here establish the foundation for those future data structures
-

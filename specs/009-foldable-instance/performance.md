@@ -193,7 +193,7 @@ This means the implementation can handle:
 
 ## Comparison with Haskell gram-hs
 
-| Metric | gram-rs (Rust) | gram-hs (Haskell) | Winner |
+| Metric | pattern-rs (Rust) | gram-hs (Haskell) | Winner |
 |--------|----------------|-------------------|--------|
 | 1000 nodes | 1.66 µs | ~5-10 µs (est) | Rust ✅ |
 | Type safety | Compile-time | Compile-time | Tie |
@@ -291,4 +291,3 @@ cargo test --package pattern-core --test foldable_scale -- --nocapture
 # Run all fold tests
 cargo test --package pattern-core foldable
 ```
-

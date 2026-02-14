@@ -1,6 +1,6 @@
 # Phase 7: AST Output Implementation
 
-**Goal**: Add `parse_to_ast()` function to gram-rs for language-agnostic consumption by gram-js and gram-py
+**Goal**: Add `parse_to_ast()` function to pattern-rs for language-agnostic consumption by gram-js and gram-py
 
 **Status**: Planning  
 **Priority**: High  
@@ -10,7 +10,7 @@
 
 ## Overview
 
-Currently gram-rs returns `Vec<Pattern<Subject>>` which is:
+Currently pattern-rs returns `Vec<Pattern<Subject>>` which is:
 - ✅ Correct and complete
 - ✅ Works great in Rust
 - ❌ Not easily consumable across FFI boundaries

@@ -60,17 +60,17 @@ A developer needs utilities to inspect and analyze pattern structures. They need
 
 ### User Story 4 - Developer Verifies Behavioral Equivalence with gram-hs (Priority: P2)
 
-A developer needs to verify that pattern construction, access, and inspection functions in gram-rs behave identically to the corresponding functions in the gram-hs reference implementation. They need confidence that the port maintains correctness and that patterns can be constructed and accessed consistently between implementations.
+A developer needs to verify that pattern construction, access, and inspection functions in pattern-rs behave identically to the corresponding functions in the gram-hs reference implementation. They need confidence that the port maintains correctness and that patterns can be constructed and accessed consistently between implementations.
 
 **Why this priority**: Behavioral equivalence is critical for maintaining correctness during the port. While not required for basic functionality, verification ensures the port is faithful and prevents divergence from the reference implementation.
 
-**Independent Test**: Can be fully tested by creating equivalent patterns using construction functions in both gram-rs and gram-hs, accessing their components, and verifying they match. Test cases from gram-hs can be ported and executed in gram-rs with identical results.
+**Independent Test**: Can be fully tested by creating equivalent patterns using construction functions in both pattern-rs and gram-hs, accessing their components, and verifying they match. Test cases from gram-hs can be ported and executed in pattern-rs with identical results.
 
 **Acceptance Scenarios**:
 
-1. **Given** test cases from gram-hs are available, **When** a developer runs equivalence tests for construction functions, **Then** patterns constructed in gram-rs match the structure of patterns constructed in gram-hs for identical inputs
-2. **Given** equivalence checking utilities exist, **When** a developer constructs a pattern using gram-rs functions, **Then** they can verify it matches the expected gram-hs pattern structure
-3. **Given** test data is extracted from gram-hs, **When** a developer runs tests for accessors and inspection utilities, **Then** gram-rs functions produce the same results as gram-hs for identical inputs
+1. **Given** test cases from gram-hs are available, **When** a developer runs equivalence tests for construction functions, **Then** patterns constructed in pattern-rs match the structure of patterns constructed in gram-hs for identical inputs
+2. **Given** equivalence checking utilities exist, **When** a developer constructs a pattern using pattern-rs functions, **Then** they can verify it matches the expected gram-hs pattern structure
+3. **Given** test data is extracted from gram-hs, **When** a developer runs tests for accessors and inspection utilities, **Then** pattern-rs functions produce the same results as gram-hs for identical inputs
 4. **Given** behavioral equivalence is verified, **When** a developer uses construction and access functions, **Then** they can trust that behavior matches the reference implementation
 
 ---
@@ -121,8 +121,8 @@ A developer needs to verify that pattern construction, access, and inspection fu
 - **SC-001**: Developers can construct pattern instances using construction functions with values and element collections, and successfully compile code using these functions (verified by compilation success and basic construction tests)
 - **SC-002**: Developers can access pattern value and elements using accessor functions, and retrieve the correct components that were used during construction (verified by accessor tests)
 - **SC-003**: Developers can use inspection utilities to analyze pattern structure (atomic check, depth, element count), and receive accurate information about pattern characteristics (verified by inspection utility tests)
-- **SC-004**: Patterns constructed using gram-rs construction functions match the structure and behavior of equivalent patterns constructed in gram-hs for at least 95% of test cases from gram-hs (verified by equivalence test suite)
-- **SC-005**: Accessor and inspection functions in gram-rs produce the same results as gram-hs for identical pattern inputs in at least 95% of test cases (verified by equivalence test suite)
+- **SC-004**: Patterns constructed using pattern-rs construction functions match the structure and behavior of equivalent patterns constructed in gram-hs for at least 95% of test cases from gram-hs (verified by equivalence test suite)
+- **SC-005**: Accessor and inspection functions in pattern-rs produce the same results as gram-hs for identical pattern inputs in at least 95% of test cases (verified by equivalence test suite)
 - **SC-006**: Construction, access, and inspection functions are available in the `pattern-core` crate and can be imported and used by other crates in the workspace (verified by cross-crate usage tests)
 - **SC-007**: Inspection utilities can safely analyze patterns with nesting depths up to 100 levels without stack overflow (verified by depth limit tests)
 - **SC-008**: Inspection utilities can efficiently analyze patterns with element counts up to 10,000 elements without significant performance degradation (verified by performance tests)
@@ -161,8 +161,7 @@ A developer needs to verify that pattern construction, access, and inspection fu
   - Feature Specification: `../gram-hs/specs/002-basic-pattern-type/spec.md` (for context, may be outdated)
   - Type Signatures: `../gram-hs/specs/002-basic-pattern-type/contracts/type-signatures.md` (for context, verify against actual code)
 - **Porting Guide**: `docs/porting-guide.md` - Systematic approach for porting from gram-hs
-- **Project Plan**: `docs/gram-rs-project-plan.md` - Overall architecture and design decisions
+- **Project Plan**: `docs/pattern-rs-project-plan.md` - Overall architecture and design decisions
 - **TODO**: `TODO.md` - Feature tracking and porting checklist
 
 **Important**: The Haskell implementation in `../gram-hs/libs/` is the authoritative source of truth. Design documents in `../gram-hs/specs/` are useful for context but may contain outdated information or design mistakes that were corrected in the actual implementation.
-

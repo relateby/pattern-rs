@@ -1,10 +1,10 @@
 //! Behavioral equivalence tests for pattern construction and access functions
 //!
 //! This module contains tests that verify behavioral equivalence between
-//! gram-rs and gram-hs implementations for construction, access, and inspection functions.
+//! pattern-rs and gram-hs implementations for construction, access, and inspection functions.
 
 use pattern_core::Pattern;
-use std::collections::{HashSet, HashMap};
+use std::collections::{HashMap, HashSet};
 
 #[cfg(test)]
 mod construction_equivalence_tests {
@@ -26,10 +26,13 @@ mod construction_equivalence_tests {
     fn test_pattern_construction_equivalence() {
         // T045 [US4] Port test cases from gram-hs for pattern() construction
         // In gram-hs: pattern "parent" [point "child1", point "child2"]
-        let pattern_rs = Pattern::pattern("parent".to_string(), vec![
-            Pattern::point("child1".to_string()),
-            Pattern::point("child2".to_string()),
-        ]);
+        let pattern_rs = Pattern::pattern(
+            "parent".to_string(),
+            vec![
+                Pattern::point("child1".to_string()),
+                Pattern::point("child2".to_string()),
+            ],
+        );
         let pattern_expected = Pattern {
             value: "parent".to_string(),
             elements: vec![
@@ -50,11 +53,10 @@ mod construction_equivalence_tests {
     fn test_from_list_construction_equivalence() {
         // T046 [US4] Port test cases from gram-hs for fromList() construction
         // In gram-hs: fromList "root" ["a", "b", "c"]
-        let pattern_rs = Pattern::from_list("root".to_string(), vec![
-            "a".to_string(),
-            "b".to_string(),
-            "c".to_string(),
-        ]);
+        let pattern_rs = Pattern::from_list(
+            "root".to_string(),
+            vec!["a".to_string(), "b".to_string(), "c".to_string()],
+        );
         let pattern_expected = Pattern {
             value: "root".to_string(),
             elements: vec![
@@ -92,9 +94,10 @@ mod accessor_equivalence_tests {
     fn test_elements_accessor_equivalence() {
         // T048 [US4] Port test cases from gram-hs for elements accessor
         // In gram-hs: elements (pattern "parent" [point "child"]) == [point "child"]
-        let pattern = Pattern::pattern("parent".to_string(), vec![
-            Pattern::point("child".to_string()),
-        ]);
+        let pattern = Pattern::pattern(
+            "parent".to_string(),
+            vec![Pattern::point("child".to_string())],
+        );
         let elements = pattern.elements();
         assert_eq!(elements.len(), 1);
         assert_eq!(elements[0].value(), "child");
@@ -109,10 +112,13 @@ mod inspection_equivalence_tests {
     fn test_length_inspection_equivalence() {
         // T049 [US4] Port test cases from gram-hs for length() inspection
         // In gram-hs: length (pattern "parent" [point "c1", point "c2"]) == 2
-        let pattern = Pattern::pattern("parent".to_string(), vec![
-            Pattern::point("c1".to_string()),
-            Pattern::point("c2".to_string()),
-        ]);
+        let pattern = Pattern::pattern(
+            "parent".to_string(),
+            vec![
+                Pattern::point("c1".to_string()),
+                Pattern::point("c2".to_string()),
+            ],
+        );
         assert_eq!(pattern.length(), 2);
     }
 
@@ -123,11 +129,14 @@ mod inspection_equivalence_tests {
         // In gram-hs: size (pattern "root" [point "c1", point "c2"]) == 3
         let atomic = Pattern::point("atom".to_string());
         assert_eq!(atomic.size(), 1);
-        
-        let pattern = Pattern::pattern("root".to_string(), vec![
-            Pattern::point("c1".to_string()),
-            Pattern::point("c2".to_string()),
-        ]);
+
+        let pattern = Pattern::pattern(
+            "root".to_string(),
+            vec![
+                Pattern::point("c1".to_string()),
+                Pattern::point("c2".to_string()),
+            ],
+        );
         assert_eq!(pattern.size(), 3);
     }
 
@@ -138,12 +147,14 @@ mod inspection_equivalence_tests {
         // In gram-hs: depth (pattern "p" [pattern "c" [point "gc"]]) == 2
         let atomic = Pattern::point("atom".to_string());
         assert_eq!(atomic.depth(), 0);
-        
-        let nested = Pattern::pattern("p".to_string(), vec![
-            Pattern::pattern("c".to_string(), vec![
-                Pattern::point("gc".to_string()),
-            ]),
-        ]);
+
+        let nested = Pattern::pattern(
+            "p".to_string(),
+            vec![Pattern::pattern(
+                "c".to_string(),
+                vec![Pattern::point("gc".to_string())],
+            )],
+        );
         assert_eq!(nested.depth(), 2);
     }
 }
@@ -154,20 +165,21 @@ mod equivalence_utilities_tests {
 
     #[test]
     fn test_equivalence_checking_utilities() {
-        // T052 [US4] Create equivalence checking utilities for comparing gram-rs and gram-hs patterns
+        // T052 [US4] Create equivalence checking utilities for comparing pattern-rs and gram-hs patterns
         // Basic equivalence: same structure should be equivalent
         let p1 = Pattern::point("test".to_string());
         let p2 = Pattern::point("test".to_string());
         assert_eq!(p1, p2);
-        
+
         // Nested equivalence
-        let p3 = Pattern::pattern("parent".to_string(), vec![
-            Pattern::point("child".to_string()),
-        ]);
-        let p4 = Pattern::pattern("parent".to_string(), vec![
-            Pattern::point("child".to_string()),
-        ]);
+        let p3 = Pattern::pattern(
+            "parent".to_string(),
+            vec![Pattern::point("child".to_string())],
+        );
+        let p4 = Pattern::pattern(
+            "parent".to_string(),
+            vec![Pattern::point("child".to_string())],
+        );
         assert_eq!(p3, p4);
     }
 }
-

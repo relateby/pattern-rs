@@ -1,6 +1,6 @@
-# gram-rs
+# pattern-rs
 
-Rust port of [gram-hs](https://github.com/gram-data/gram-hs) pattern data structure and graph views.
+Rust port of [gram-hs](https://github.com/relateby/pattern-hs) pattern data structure and graph views.
 
 This library provides a faithful port of the gram-hs reference implementation, emphasizing correctness and compatibility while adopting Rust-native idioms. The library is designed as a shared library that compiles for native Rust, WebAssembly, and other target environments.
 
@@ -16,14 +16,14 @@ For information on the project's testing infrastructure, see **[Testing Infrastr
 
 ## Reference Implementation
 
-This project is a port of the [gram-hs](https://github.com/gram-data/gram-hs) reference implementation. The reference implementation is available locally at `../gram-hs` (relative to this repository root).
+This project is a port of the [gram-hs](https://github.com/relateby/pattern-hs) reference implementation. The reference implementation is available locally at `../gram-hs` (relative to this repository root).
 
 **Key Reference Locations**:
 - **Source Code (Authoritative)**: `../gram-hs/libs/` - Haskell library implementations - **This is the source of truth**
 - **Documentation (Up-to-date)**: `../gram-hs/docs/` - Up-to-date documentation about the implementation
 - **Tests (Authoritative)**: `../gram-hs/libs/*/tests/` - Test suites for behavioral equivalence verification - **Shows expected behavior**
 - **Historical Notes (Context Only)**: `../gram-hs/specs/` - Historical notes that guided incremental development (may be outdated, use for context only)
-- **Online Repository**: https://github.com/gram-data/gram-hs
+- **Online Repository**: https://github.com/relateby/pattern-hs
 
 All functionality is designed to faithfully replicate the behavior of the Haskell implementation. We are porting the Haskell implementation to idiomatic Rust. When porting features, developers should study the actual Haskell source code in `../gram-hs/libs/` as the authoritative source and refer to up-to-date documentation in `../gram-hs/docs/`. The historical notes in `../gram-hs/specs/` guided incremental development and may be useful for understanding the feature's purpose and approach, but they are NOT authoritative and may be outdated.
 
@@ -40,7 +40,7 @@ All functionality is designed to faithfully replicate the behavior of the Haskel
 1. **Clone the repository**:
    ```bash
    git clone <repository-url>
-   cd gram-rs
+   cd pattern-rs
    ```
 
 2. **Build the library**:
@@ -63,7 +63,7 @@ All functionality is designed to faithfully replicate the behavior of the Haskel
 This project is organized as a Cargo workspace with multiple crates:
 
 ```
-gram-rs/
+pattern-rs/
 ├── Cargo.toml              # Workspace root configuration
 ├── crates/
 │   ├── pattern-core/        # Core pattern data structures
@@ -121,7 +121,7 @@ The library is designed to be WASM-compatible. All public APIs avoid blocking I/
 The project includes comprehensive testing infrastructure:
 
 - **Property-Based Testing**: Using `proptest` for automated test case generation
-- **Equivalence Checking**: Utilities for comparing gram-rs and gram-hs implementations
+- **Equivalence Checking**: Utilities for comparing pattern-rs and gram-hs implementations
 - **Snapshot Testing**: Using `insta` for regression detection
 - **Benchmarks**: Using `criterion` for performance tracking
 - **Test Helpers**: Utilities for pattern comparison and validation
@@ -203,4 +203,3 @@ When porting features from gram-hs, see [porting guide](docs/porting-guide.md) f
 ## License
 
 BSD-3-Clause (see [LICENSE](LICENSE) file)
-

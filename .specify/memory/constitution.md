@@ -16,7 +16,7 @@ Previous changes (1.0.0 → 1.0.1):
   - Reference Implementation Location section with local path details
 -->
 
-# gram-rs Constitution
+# pattern-rs Constitution
 
 ## Core Principles
 
@@ -121,10 +121,10 @@ All PRs and code reviews MUST verify compliance with these principles. Complexit
 ## Reference Implementation Location
 
 The gram-hs reference implementation is available locally at:
-- **Path**: `../gram-hs` (relative to gram-rs repository root)
+- **Path**: `../gram-hs` (relative to pattern-rs repository root)
 - **Feature Specifications**: `../gram-hs/specs/` contains incremental feature development
 - **Source Code**: `../gram-hs/libs/` contains the Haskell library implementations
-- **Online Repository**: https://github.com/gram-data/gram-hs
+- **Online Repository**: https://github.com/relateby/pattern-hs
 
 When porting features, developers MUST:
 1. Reference the corresponding feature specification in `../gram-hs/specs/`

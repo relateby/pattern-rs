@@ -74,17 +74,17 @@ echo '(node1)' | gramref parse --format json --value-only --canonical
 - `--seed N` - Random seed for reproducible generation
 - `--complexity LEVEL` - Complexity level: minimal, basic, standard, complex, adversarial
 
-## Use Cases in gram-rs Testing
+## Use Cases in pattern-rs Testing
 
 ### 1. Equivalence Testing
 
-Generate reference outputs to compare with gram-rs:
+Generate reference outputs to compare with pattern-rs:
 
 ```bash
 # Get reference output
 echo '(node1)-[edge]->(node2)' | gramref parse --format json --value-only --canonical > ref_output.json
 
-# Compare with gram-rs output
+# Compare with pattern-rs output
 diff ref_output.json rs_output.json
 ```
 
@@ -166,8 +166,8 @@ cargo test --test equivalence
 # 1. Get gramref reference
 echo '(n1)-[e]->(n2)' | gramref parse --format json --value-only --canonical > ref.json
 
-# 2. Get gram-rs output (when CLI is implemented)
-echo '(n1)-[e]->(n2)' | cargo run --bin gram-rs parse --format json --value-only > rs.json
+# 2. Get pattern-rs output (when CLI is implemented)
+echo '(n1)-[e]->(n2)' | cargo run --bin pattern-rs parse --format json --value-only > rs.json
 
 # 3. Compare
 diff ref.json rs.json
@@ -228,4 +228,3 @@ gramref generate --seed 42 --deterministic --format json
 **Remember**: 
 - Read from `../gram-hs/libs/` when implementing
 - Execute `gramref` when testing
-

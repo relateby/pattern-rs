@@ -15,7 +15,7 @@
 
 ## Path Conventions
 
-This is a library crate within the gram-rs workspace:
+This is a library crate within the pattern-rs workspace:
 - **Library source**: `crates/gram-codec/src/`
 - **Tests**: `crates/gram-codec/tests/`
 - **Examples**: `examples/gram-codec*/`

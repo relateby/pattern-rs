@@ -1,6 +1,6 @@
 # Testing Infrastructure
 
-This document describes the testing infrastructure for gram-rs, including property-based testing, equivalence checking, snapshot testing, benchmarks, and test helpers.
+This document describes the testing infrastructure for pattern-rs, including property-based testing, equivalence checking, snapshot testing, benchmarks, and test helpers.
 
 ## Overview
 
@@ -16,7 +16,7 @@ Property-based testing generates random test inputs automatically and validates 
 
 ### Equivalence Checking
 
-Utilities for comparing outputs from gram-rs and gram-hs implementations to ensure behavioral equivalence.
+Utilities for comparing outputs from pattern-rs and gram-hs implementations to ensure behavioral equivalence.
 
 **Usage**: 
 - See `crates/pattern-core/src/test_utils/equivalence.rs` for API documentation
@@ -54,4 +54,3 @@ See `specs/003-test-infrastructure/quickstart.md` for detailed examples.
 ## Integration
 
 All testing infrastructure integrates with the Cargo workspace structure and works across all crates.
-

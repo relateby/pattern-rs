@@ -129,7 +129,7 @@ As a library user, I want to define custom folding functions that have access to
   - Relationship to Foldable: `para(|p, rs| p.value + rs.sum())` equals `fold(+, 0)`
   - Order preservation: values are processed in depth-first, left-to-right order
 
-- **SC-005**: All examples from the gram-hs reference documentation produce equivalent results when ported to gram-rs.
+- **SC-005**: All examples from the gram-hs reference documentation produce equivalent results when ported to pattern-rs.
 
 - **SC-006**: Documentation clearly explains the relationship between paramorphism, Foldable, and Comonad operations.
 

@@ -1,10 +1,10 @@
 [package]
-name = "gram-rs-benches"
+name = "pattern-rs-benches"
 version.workspace = true
 edition.workspace = true
 rust-version.workspace = true
 license.workspace = true
-description = "Benchmarks for gram-rs"
+description = "Benchmarks for pattern-rs"
 
 [[bench]]
 name = "pattern_operations"
@@ -14,4 +14,3 @@ harness = false
 criterion = { workspace = true }
 pattern-core = { path = "../crates/pattern-core" }
 gram-codec = { path = "../crates/gram-codec" }
-

@@ -24,7 +24,7 @@ The compiled WASM module can be imported and used in JavaScript/TypeScript:
 import init, { greet, add } from './gram_wasm_example.js';
 
 await init();
-console.log(greet("World")); // "Hello, World! (from gram-rs)"
+console.log(greet("World")); // "Hello, World! (from pattern-rs)"
 console.log(add(2, 3)); // 5
 ```
 
@@ -33,4 +33,3 @@ console.log(add(2, 3)); // 5
 - This is a minimal example demonstrating the structure
 - Full functionality will be available as the gram library is ported from gram-hs
 - See the main project README for more information
-

@@ -53,7 +53,7 @@ pip install maturin pytest pytest-cov
 Build and install the pattern-core Python extension in development mode:
 
 ```bash
-cd /Users/akollegger/Developer/gram-data/gram-rs/crates/pattern-core
+cd /Users/akollegger/Developer/relateby/pattern-rs/crates/pattern-core
 maturin develop --uv --features python
 ```
 

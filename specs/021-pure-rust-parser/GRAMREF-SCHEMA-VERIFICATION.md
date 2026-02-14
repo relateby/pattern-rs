@@ -39,7 +39,7 @@ The `generatePatternSchema` function in `Gram.Schema.JSONSchema.hs` correctly us
 
 This matches:
 - ✅ gram-hs JSON implementation (`Gram.JSON.hs`)
-- ✅ gram-rs AST implementation (`ast.rs`)
+- ✅ pattern-rs AST implementation (`ast.rs`)
 
 ---
 
@@ -104,28 +104,28 @@ object ["type" .= ("string" :: T.Text)]
 
 ## 🎯 Summary
 
-| Component | Schema Generator | Static File | gram-rs | Status |
+| Component | Schema Generator | Static File | pattern-rs | Status |
 |-----------|------------------|-------------|---------|--------|
 | Pattern field | ✅ `subject` | ❌ `value` | ✅ `subject` | Generator correct |
 | Subject identity | ✅ `identity` | ❌ `symbol` | ✅ `identity` | Generator correct |
-| Type discriminators | ✅ lowercase | ✅ lowercase | ❌ Capitalized | gram-rs needs fix |
-| Integer/Decimal | ✅ native JSON | ✅ native JSON | ❌ Tagged | gram-rs needs fix |
+| Type discriminators | ✅ lowercase | ✅ lowercase | ❌ Capitalized | pattern-rs needs fix |
+| Integer/Decimal | ✅ native JSON | ✅ native JSON | ❌ Tagged | pattern-rs needs fix |
 
 ---
 
 ## ✅ Conclusion
 
 **gramref schema generator is correct!** It produces:
-- ✅ `subject` and `identity` (matches gram-rs)
-- ✅ Lowercase type discriminators (gram-rs needs to match)
-- ✅ Native JSON for integers/decimals (gram-rs needs to match)
+- ✅ `subject` and `identity` (matches pattern-rs)
+- ✅ Lowercase type discriminators (pattern-rs needs to match)
+- ✅ Native JSON for integers/decimals (pattern-rs needs to match)
 
 **Action Required**:
 1. Update static schema file (regenerate from gramref)
-2. Fix gram-rs to use lowercase type discriminators
-3. Fix gram-rs to use native JSON for integers/decimals
+2. Fix pattern-rs to use lowercase type discriminators
+3. Fix pattern-rs to use native JSON for integers/decimals
 
 ---
 
 **Status**: ✅ **SCHEMA GENERATOR VERIFIED CORRECT**  
-**Next**: Fix gram-rs to match schema generator output
+**Next**: Fix pattern-rs to match schema generator output

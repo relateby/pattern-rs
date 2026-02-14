@@ -1,10 +1,10 @@
 # Test Synchronization Utilities
 
-This directory contains utilities for maintaining test parity between gram-rs and gram-hs reference implementation.
+This directory contains utilities for maintaining test parity between pattern-rs and gram-hs reference implementation.
 
 ## Overview
 
-Test synchronization ensures that gram-rs tests remain aligned with the gram-hs reference implementation, maintaining behavioral equivalence as features are ported.
+Test synchronization ensures that pattern-rs tests remain aligned with the gram-hs reference implementation, maintaining behavioral equivalence as features are ported.
 
 ## Test Case Format
 
@@ -63,7 +63,7 @@ See [gramref CLI Testing Guide](../../docs/gramref-cli-testing-guide.md) for com
 
 ### compare.sh / compare.rs
 
-Compares test cases between gram-hs and gram-rs implementations, identifying differences in coverage and behavior.
+Compares test cases between gram-hs and pattern-rs implementations, identifying differences in coverage and behavior.
 
 **Usage** (placeholder - to be implemented):
 ```bash
@@ -86,4 +86,3 @@ Test cases are stored in `tests/common/test_cases.json` at the workspace root.
 - `extract.rs` - Test case extraction and validation utilities (implemented)
 - `compare.rs` - Test case comparison utilities (implemented)
 - JSON format validation - Validates test case format against schema
-

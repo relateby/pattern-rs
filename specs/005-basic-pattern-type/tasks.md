@@ -126,9 +126,9 @@
 
 ## Phase 5: User Story 4 - Developer Verifies Behavioral Equivalence with gram-hs (Priority: P2)
 
-**Goal**: Enable developers to verify that pattern construction, access, and inspection functions in gram-rs behave identically to the corresponding functions in the gram-hs reference implementation.
+**Goal**: Enable developers to verify that pattern construction, access, and inspection functions in pattern-rs behave identically to the corresponding functions in the gram-hs reference implementation.
 
-**Independent Test**: Create equivalent patterns using construction functions in both gram-rs and gram-hs, access their components, and verify they match. Test cases from gram-hs can be ported and executed in gram-rs with identical results.
+**Independent Test**: Create equivalent patterns using construction functions in both pattern-rs and gram-hs, access their components, and verify they match. Test cases from gram-hs can be ported and executed in pattern-rs with identical results.
 
 ### Tests for User Story 4
 
@@ -142,7 +142,7 @@
 - [x] T049 [P] [US4] Port test cases from gram-hs for length() inspection in tests/equivalence/pattern_construction_access.rs
 - [x] T050 [P] [US4] Port test cases from gram-hs for size() inspection in tests/equivalence/pattern_construction_access.rs
 - [x] T051 [P] [US4] Port test cases from gram-hs for depth() inspection in tests/equivalence/pattern_construction_access.rs
-- [x] T052 [P] [US4] Create equivalence checking utilities for comparing gram-rs and gram-hs patterns in crates/pattern-core/src/test_utils/equivalence.rs
+- [x] T052 [P] [US4] Create equivalence checking utilities for comparing pattern-rs and gram-hs patterns in crates/pattern-core/src/test_utils/equivalence.rs
 
 ### Implementation for User Story 4
 
@@ -151,7 +151,7 @@
 - [x] T055 [US4] Verify at least 95% of test cases from gram-hs pass (SC-004, SC-005) in tests/equivalence/pattern_construction_access.rs
 - [x] T056 [US4] Document equivalence test results and any differences in tests/equivalence/pattern_construction_access.rs
 
-**Checkpoint**: At this point, behavioral equivalence with gram-hs should be verified. Patterns constructed in gram-rs match the structure and behavior of equivalent patterns in gram-hs.
+**Checkpoint**: At this point, behavioral equivalence with gram-hs should be verified. Patterns constructed in pattern-rs match the structure and behavior of equivalent patterns in gram-hs.
 
 ---
 
@@ -293,4 +293,3 @@ With a single developer:
 - All functions must match gram-hs signatures: `point`, `pattern`, `fromList`, `length`, `size`, `depth`
 - Accessors `value` and `elements` are field accessors in Haskell, methods in Rust
 - Depth returns 0 for atomic patterns (corrected from previous inconsistency)
-

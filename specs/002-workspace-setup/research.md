@@ -47,7 +47,7 @@
 
 ### 3. Test Synchronization Infrastructure
 
-**Question**: How should test synchronization between gram-hs and gram-rs be structured?
+**Question**: How should test synchronization between gram-hs and pattern-rs be structured?
 
 **Findings**:
 - **JSON Test Format**: Use a structured JSON format to represent test cases that both implementations can produce and consume.
@@ -126,4 +126,3 @@
 5. **Placeholder Crates**: Minimal valid structure that compiles
 
 All research questions resolved. No NEEDS CLARIFICATION markers remain.
-

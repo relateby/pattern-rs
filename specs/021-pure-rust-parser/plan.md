@@ -69,7 +69,7 @@ Replace the current tree-sitter-gram dependency (C code) with a pure Rust parser
 
 **Justification**: 
 - **Grammar Authority**: tree-sitter-gram defines the authoritative gram notation grammar via Tree-sitter's grammar DSL and comprehensive test corpus
-- **Parser Independence**: gram-hs and gram-rs may use different parsing libraries (Parsec vs nom), but both must conform to the same grammar specification
+- **Parser Independence**: gram-hs and pattern-rs may use different parsing libraries (Parsec vs nom), but both must conform to the same grammar specification
 - **Test-Driven Conformance**: Correctness is verified through 100% conformance with tree-sitter-gram test corpus (`../tree-sitter-gram/test/corpus/`), ensuring behavioral equivalence at the grammar level
 - **Architectural Goal**: Eliminating the tree-sitter C dependency is the primary objective; the nom parser becomes the implementation, not a port of gram-hs parsing logic
 
@@ -83,7 +83,7 @@ Replace the current tree-sitter-gram dependency (C code) with a pure Rust parser
 
 **Additional Context**:
 - Per porting guide, Gram serialization (Phase 3) depends on Pattern (Phase 1) and Subject (Phase 2) being complete
-- Pattern and Subject are already implemented in gram-rs; this feature focuses on the parser implementation
+- Pattern and Subject are already implemented in pattern-rs; this feature focuses on the parser implementation
 - gram-hs CLI tool can be used for conformance testing (generate test data, get canonical outputs)
 
 **GATE DECISION**: ✅ **APPROVED** - Exception is justified and well-documented. Tree-sitter-gram serves as the grammar specification authority, with gram-hs providing implementation guidance.

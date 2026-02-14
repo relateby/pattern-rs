@@ -1,6 +1,6 @@
 # Examples
 
-This directory contains examples demonstrating how to use the gram-rs libraries across different platforms and languages.
+This directory contains examples demonstrating how to use the pattern-rs libraries across different platforms and languages.
 
 > 📚 **For detailed gram-codec examples**, see [`gram-codec-README.md`](gram-codec-README.md)
 
@@ -182,8 +182,8 @@ To add a new example:
 - **Pattern Core**: See `specs/018-comonad-instance/`
 - **Gram Codec**: See `specs/019-gram-codec/`
 - **API Docs**: Run `cargo doc --open`
-- **Issues**: https://github.com/gram-data/gram-rs/issues
+- **Issues**: https://github.com/relateby/pattern-rs/issues
 
 ## License
 
-All examples are licensed under Apache-2.0, same as the gram-rs libraries.
+All examples are licensed under Apache-2.0, same as the pattern-rs libraries.

@@ -69,7 +69,7 @@ crates/pattern-core/
 └── tests/               # Integration tests if any (para covered in unit/property tests in pattern.rs or dedicated module)
 ```
 
-**Structure Decision**: Single crate change within the existing gram-rs workspace. All implementation lives in `crates/pattern-core/src/pattern.rs` (new `para` method and any private helpers). Tests can live in the same file (`#[cfg(test)] mod tests`) or in `tests/` for integration-style tests; property tests will use existing test_utils generators.
+**Structure Decision**: Single crate change within the existing pattern-rs workspace. All implementation lives in `crates/pattern-core/src/pattern.rs` (new `para` method and any private helpers). Tests can live in the same file (`#[cfg(test)] mod tests`) or in `tests/` for integration-style tests; property tests will use existing test_utils generators.
 
 ## Complexity Tracking
 

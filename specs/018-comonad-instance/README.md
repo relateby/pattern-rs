@@ -47,9 +47,9 @@ indicesAt = go []
 - ❌ **NOT used** in Pattern/Graph.hs or any other production code
 - ❌ **NOT used** in any application code
 
-### 4. gram-rs Already Has Inspection Operations ✅
+### 4. pattern-rs Already Has Inspection Operations ✅
 
-| Operation | gram-rs Status |
+| Operation | pattern-rs Status |
 |-----------|---------------|
 | Get root value | ✅ `p.value()` or `p.value` |
 | Max depth | ✅ `p.depth()` |
@@ -80,7 +80,7 @@ For complete analysis, see:
 1. **`ANALYSIS.md`** - Comprehensive technical analysis
    - Haskell implementation details
    - Usage patterns in gram-hs
-   - Comparison with existing gram-rs features
+   - Comparison with existing pattern-rs features
    - Rust port options and challenges
 
 2. **`RECOMMENDATION.md`** - Executive summary and decision guide
@@ -133,7 +133,7 @@ impl<V> Pattern<V> {
 
 1. **No proven need**: Zero production usage in gram-hs
 2. **Direct implementations clearer**: 2 of 3 helpers don't use Comonad
-3. **All inspection operations exist**: gram-rs has depth(), size(), value()
+3. **All inspection operations exist**: pattern-rs has depth(), size(), value()
 4. **Can add helpers later**: Direct methods easy to add if requested
 5. **Testing burden**: 3 comonad laws + helper tests for unclear benefit
 
@@ -185,4 +185,3 @@ If answers are unclear or "no", keep feature deferred.
 - Feature Spec: `../gram-hs/specs/014-comonad-instance/spec.md`
 - Porting Guide: `../../docs/porting-guide.md`
 - TODO: `../../TODO.md` (updated with DEFER status)
-

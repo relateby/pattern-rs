@@ -5,7 +5,7 @@
 
 ## Overview
 
-This quickstart guide demonstrates how to set up and verify the gram-rs Rust project after initialization. It covers building, testing, and running examples.
+This quickstart guide demonstrates how to set up and verify the pattern-rs Rust project after initialization. It covers building, testing, and running examples.
 
 ## Prerequisites
 
@@ -33,7 +33,7 @@ rustup target add wasm32-unknown-unknown
 ```bash
 # Clone the repository (when available)
 git clone <repository-url>
-cd gram-rs
+cd pattern-rs
 
 # Build the library
 cargo build
@@ -185,7 +185,7 @@ After project initialization is complete:
 
 ## Resources
 
-- **gram-hs Reference**: https://github.com/gram-data/gram-hs
+- **gram-hs Reference**: https://github.com/relateby/pattern-hs
 - **Rust Book**: https://doc.rust-lang.org/book/
 - **WASM Book**: https://rustwasm.github.io/docs/book/
 - **Cargo Book**: https://doc.rust-lang.org/cargo/
@@ -193,7 +193,7 @@ After project initialization is complete:
 ## Project Structure Reference
 
 ```
-gram-rs/
+pattern-rs/
 ├── Cargo.toml          # Project manifest
 ├── Cargo.lock         # Dependency lock file
 ├── src/
@@ -208,4 +208,3 @@ gram-rs/
 ├── README.md         # Project documentation
 └── LICENSE           # BSD-3-Clause license
 ```
-

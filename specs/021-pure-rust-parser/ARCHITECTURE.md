@@ -12,7 +12,7 @@ The gram-data ecosystem consists of **multiple independent projects** with clear
 
 ```
 ┌─────────────┐
-│   gram-rs   │  Parser only (this project)
+│   pattern-rs   │  Parser only (this project)
 │  (Rust)     │  Text → AST
 └──────┬──────┘
        │
@@ -43,7 +43,7 @@ The gram-data ecosystem consists of **multiple independent projects** with clear
 
 ---
 
-## Project 1: gram-rs (This Repository)
+## Project 1: pattern-rs (This Repository)
 
 ### Responsibility
 
@@ -51,7 +51,7 @@ The gram-data ecosystem consists of **multiple independent projects** with clear
 
 ### Scope
 
-✅ **What gram-rs does**:
+✅ **What pattern-rs does**:
 - Parse gram notation text to AST (Abstract Syntax Tree)
 - Validate gram syntax
 - Serialize Pattern<Subject> back to gram notation
@@ -59,7 +59,7 @@ The gram-data ecosystem consists of **multiple independent projects** with clear
 - Provide Python bindings via PyO3
 - Provide native Rust API
 
-❌ **What gram-rs does NOT do**:
+❌ **What pattern-rs does NOT do**:
 - Pattern operations (map, fold, filter, etc.)
 - Graph operations (queries, traversals)
 - Type system or schema validation
@@ -139,7 +139,7 @@ version() -> str
 - TypeScript types and IntelliSense support
 
 ❌ **What gram-js does NOT do**:
-- Parse gram notation (uses gram-rs via WASM)
+- Parse gram notation (uses pattern-rs via WASM)
 - Persistence (uses pattern-store)
 - DataFrame operations (uses pattern-frame)
 
@@ -184,13 +184,13 @@ class Subject {
 
 ### Dependencies
 
-- ✅ `@gram-data/codec` (gram-rs WASM) - For parsing only
+- ✅ `@gram-data/codec` (pattern-rs WASM) - For parsing only
 - ❌ No runtime dependencies for Pattern operations
 
 ### Architecture
 
 ```typescript
-// gram-js only depends on gram-rs at parse time
+// gram-js only depends on pattern-rs at parse time
 import { parse_to_ast } from '@gram-data/codec';
 
 // Convert AST to native Pattern
@@ -249,7 +249,7 @@ gram-js/
 - Type hints for IDE support
 
 ❌ **What gram-py does NOT do**:
-- Parse gram notation (uses gram-rs via PyO3)
+- Parse gram notation (uses pattern-rs via PyO3)
 - Persistence (uses pattern-store)
 - DataFrame operations (uses pattern-frame)
 
@@ -298,13 +298,13 @@ class Subject:
 
 ### Dependencies
 
-- ✅ `gram-codec` (gram-rs wheel) - For parsing only
+- ✅ `gram-codec` (pattern-rs wheel) - For parsing only
 - ❌ No runtime dependencies for Pattern operations
 
 ### Architecture
 
 ```python
-# gram-py only depends on gram-rs at parse time
+# gram-py only depends on pattern-rs at parse time
 from gram_codec import parse_to_ast
 from gram import Pattern, Subject
 
@@ -366,7 +366,7 @@ Think: Pandas/Polars for graph patterns
 - Efficient representation for large datasets
 
 ❌ **What pattern-frame does NOT do**:
-- Parse gram notation (uses gram-rs)
+- Parse gram notation (uses pattern-rs)
 - Implement Pattern API (uses gram-js/gram-py)
 - Persistence (uses pattern-store)
 
@@ -433,7 +433,7 @@ df = frame.to_pandas()  # or .to_polars()
 - Backup/restore
 
 ❌ **What pattern-store does NOT do**:
-- Parse gram notation (uses gram-rs)
+- Parse gram notation (uses pattern-rs)
 - Implement Pattern API (uses gram-js/gram-py)
 - DataFrame operations (uses pattern-frame)
 
@@ -473,7 +473,7 @@ All projects communicate via the **AST (Abstract Syntax Tree)**:
 
 ```
 ┌─────────┐
-│ gram-rs │──┐
+│ pattern-rs │──┐
 └─────────┘  │
              │  AST (JSON)
              v
@@ -511,14 +511,14 @@ All projects communicate via the **AST (Abstract Syntax Tree)**:
 ### 1. Clear Responsibilities
 
 Each project has a single, well-defined purpose:
-- gram-rs: **Parse**
+- pattern-rs: **Parse**
 - gram-js/py: **Operate**
 - pattern-frame: **Analyze**
 - pattern-store: **Persist**
 
 ### 2. Independent Evolution
 
-- gram-rs can optimize parsing without affecting consumers
+- pattern-rs can optimize parsing without affecting consumers
 - gram-js/py can add features without changing parser
 - Projects can version independently
 
@@ -539,14 +539,14 @@ pattern.map(f).fold(init, g).filter(pred)
 
 ### 5. Small Binaries
 
-- gram-rs WASM: 88KB (just parser)
+- pattern-rs WASM: 88KB (just parser)
 - gram-js: Pure JS (no native code)
 - gram-py: Pure Python (no native code)
 
 ### 6. Easy to Port
 
 To add gram support to a new language:
-1. Use gram-rs parser (WASM or native bindings)
+1. Use pattern-rs parser (WASM or native bindings)
 2. Implement Pattern<V> in target language
 3. Write `Pattern.fromAst(ast)` converter
 
@@ -555,7 +555,7 @@ To add gram support to a new language:
 ## Development Roadmap
 
 ### Phase 7: AST Output (Current)
-- Add `parse_to_ast()` to gram-rs
+- Add `parse_to_ast()` to pattern-rs
 - Update WASM/Python bindings
 - Document architecture
 
@@ -585,7 +585,7 @@ To add gram support to a new language:
 
 ## References
 
-- [gram-hs](https://github.com/gram-data/gram-hs) - Haskell reference implementation
+- [gram-hs](https://github.com/relateby/pattern-hs) - Haskell reference implementation
 - [Apache Arrow](https://arrow.apache.org/) - Inspiration for columnar format
 - [Polars](https://www.pola.rs/) - Inspiration for DataFrame API
 - [DuckDB](https://duckdb.org/) - Potential database backend

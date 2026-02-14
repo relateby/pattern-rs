@@ -32,7 +32,7 @@ rust-version = "1.70.0"
 authors = ["gram-data"]
 license = "BSD-3-Clause"
 description = "Rust port of gram-hs pattern data structure and graph views"
-repository = "https://github.com/gram-data/gram-rs"
+repository = "https://github.com/relateby/pattern-rs"
 ```
 
 **Requirements**:
@@ -137,7 +137,7 @@ rust-version = "1.70.0"
 authors = ["gram-data"]
 license = "BSD-3-Clause"
 description = "Rust port of gram-hs pattern data structure and graph views"
-repository = "https://github.com/gram-data/gram-rs"
+repository = "https://github.com/relateby/pattern-rs"
 
 [workspace.dependencies]
 serde = { version = "1.0", features = ["derive"] }
@@ -164,4 +164,3 @@ serde = { workspace = true }
 name = "pattern_core"
 path = "src/lib.rs"
 ```
-

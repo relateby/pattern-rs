@@ -154,7 +154,7 @@ As a Python developer, I need to use gram-codec in my Python application, so tha
 
 - nom parser combinator library is capable of expressing the complete gram grammar with acceptable performance and error reporting quality
 - tree-sitter-gram test corpus accurately represents all valid gram syntax and provides sufficient coverage for conformance testing
-- The test corpus is accessible at `../tree-sitter-gram/test/corpus/` relative to the gram-rs repository root
+- The test corpus is accessible at `../tree-sitter-gram/test/corpus/` relative to the pattern-rs repository root
 - Pattern data structures and public API of gram-codec remain unchanged (only the parser implementation changes, not the data model)
 - Downstream projects (Node.js and Python) prefer ease of installation over absolute peak performance (within 20-50% of native performance is acceptable)
 - Standard Rust WASM toolchain (rustc, wasm-pack) provides sufficient optimization for WASM binary size under 500KB gzipped

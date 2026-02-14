@@ -24,9 +24,9 @@ A developer needs to verify that pattern operations behave correctly across a wi
 
 ---
 
-### User Story 2 - Equivalence Checking Between gram-rs and gram-hs (Priority: P1)
+### User Story 2 - Equivalence Checking Between pattern-rs and gram-hs (Priority: P1)
 
-A developer needs to verify that gram-rs implementations produce the same results as the gram-hs reference implementation for identical inputs. They need utilities that can run the same operations in both implementations and compare outputs to ensure behavioral equivalence.
+A developer needs to verify that pattern-rs implementations produce the same results as the gram-hs reference implementation for identical inputs. They need utilities that can run the same operations in both implementations and compare outputs to ensure behavioral equivalence.
 
 **Why this priority**: Maintaining behavioral equivalence with gram-hs is critical for correctness. Without equivalence checking, developers cannot confidently verify that ported features work correctly. This is essential for the porting workflow and prevents regressions.
 
@@ -37,7 +37,7 @@ A developer needs to verify that gram-rs implementations produce the same result
 1. **Given** equivalence checking utilities are available, **When** a developer runs an equivalence test, **Then** the same input is processed by both implementations and outputs are compared
 2. **Given** equivalence checking is configured, **When** outputs differ between implementations, **Then** the developer receives a clear report showing what differs and where
 3. **Given** equivalence checking utilities exist, **When** a developer wants to verify a ported feature, **Then** they can use the utilities to validate behavioral equivalence
-4. **Given** test data from gram-hs is available, **When** a developer runs equivalence checks, **Then** the utilities can use that data to validate gram-rs behavior
+4. **Given** test data from gram-hs is available, **When** a developer runs equivalence checks, **Then** the utilities can use that data to validate pattern-rs behavior
 
 ---
 
@@ -60,7 +60,7 @@ A developer needs to detect when changes to pattern operations cause unexpected 
 
 ### User Story 4 - Test Data Extraction from gram-hs (Priority: P2)
 
-A developer needs to extract test cases from the gram-hs reference implementation to use in gram-rs tests. They need utilities that can parse gram-hs test files and convert them into a format usable by gram-rs test suites.
+A developer needs to extract test cases from the gram-hs reference implementation to use in pattern-rs tests. They need utilities that can parse gram-hs test files and convert them into a format usable by pattern-rs test suites.
 
 **Why this priority**: Test data extraction enables reuse of existing gram-hs test cases, ensuring comprehensive test coverage without duplicating effort. This builds on the test synchronization infrastructure from feature 002 and makes it actionable.
 
@@ -68,9 +68,9 @@ A developer needs to extract test cases from the gram-hs reference implementatio
 
 **Acceptance Scenarios**:
 
-1. **Given** test extraction utilities are available, **When** a developer runs extraction from gram-hs, **Then** test cases are extracted and converted to a format usable by gram-rs
-2. **Given** test extraction is configured, **When** gram-hs test files are updated, **Then** the utilities can extract updated test cases for use in gram-rs
-3. **Given** extracted test data exists, **When** a developer runs gram-rs tests, **Then** they can use the extracted test cases to validate behavior
+1. **Given** test extraction utilities are available, **When** a developer runs extraction from gram-hs, **Then** test cases are extracted and converted to a format usable by pattern-rs
+2. **Given** test extraction is configured, **When** gram-hs test files are updated, **Then** the utilities can extract updated test cases for use in pattern-rs
+3. **Given** extracted test data exists, **When** a developer runs pattern-rs tests, **Then** they can use the extracted test cases to validate behavior
 4. **Given** test extraction utilities exist, **When** a developer wants to add new test cases, **Then** they can extract relevant cases from gram-hs
 
 ---
@@ -114,7 +114,7 @@ A developer needs convenient utilities for comparing patterns, checking equality
 - What happens when property-based tests generate invalid patterns? (Test framework should handle invalid inputs gracefully or filter them)
 - How does equivalence checking handle floating-point comparisons or other approximate values? (Equivalence checking should handle approximate equality appropriately)
 - What happens when snapshot tests fail due to formatting differences rather than behavioral differences? (Snapshot testing should handle formatting variations appropriately)
-- How does test extraction handle gram-hs test files that use features not yet ported to gram-rs? (Extraction should handle missing features gracefully)
+- How does test extraction handle gram-hs test files that use features not yet ported to pattern-rs? (Extraction should handle missing features gracefully)
 - What happens when benchmarks run on different hardware or under different load? (Benchmarks should account for variability or provide guidance on consistent conditions)
 - How do test helpers handle edge cases like empty patterns or deeply nested patterns? (Test helpers should work correctly for all valid pattern structures)
 
@@ -125,13 +125,13 @@ A developer needs convenient utilities for comparing patterns, checking equality
 - **FR-001**: Testing infrastructure MUST support property-based testing that generates random test inputs automatically
 - **FR-002**: Property-based testing MUST generate valid pattern structures that conform to pattern data model constraints
 - **FR-003**: Property-based testing MUST report failures with minimal counterexamples showing inputs that violate properties
-- **FR-004**: Testing infrastructure MUST provide utilities for checking behavioral equivalence between gram-rs and gram-hs implementations
+- **FR-004**: Testing infrastructure MUST provide utilities for checking behavioral equivalence between pattern-rs and gram-hs implementations
 - **FR-005**: Equivalence checking MUST compare outputs from both implementations for identical inputs
 - **FR-006**: Equivalence checking MUST report differences clearly, showing what differs and where
 - **FR-007**: Testing infrastructure MUST support snapshot testing that captures and compares outputs over time
 - **FR-008**: Snapshot testing MUST detect when outputs change and allow developers to review and accept intentional changes
 - **FR-009**: Testing infrastructure MUST provide utilities for extracting test cases from gram-hs reference implementation
-- **FR-010**: Test extraction MUST convert gram-hs test cases into a format usable by gram-rs test suites
+- **FR-010**: Test extraction MUST convert gram-hs test cases into a format usable by pattern-rs test suites
 - **FR-011**: Testing infrastructure MUST include a benchmark suite for measuring pattern operation performance
 - **FR-012**: Benchmark suite MUST provide consistent, reproducible performance measurements
 - **FR-013**: Benchmark suite MUST support measuring performance of individual pattern operations
@@ -150,7 +150,7 @@ A developer needs convenient utilities for comparing patterns, checking equality
 ### Key Entities *(include if feature involves data)*
 
 - **Property Test**: A test that validates a property holds true across many randomly generated inputs, helping catch edge cases and validate invariants
-- **Equivalence Test**: A test that compares outputs from gram-rs and gram-hs implementations to ensure behavioral equivalence
+- **Equivalence Test**: A test that compares outputs from pattern-rs and gram-hs implementations to ensure behavioral equivalence
 - **Snapshot**: A captured output value stored for regression testing, compared against future test runs to detect unexpected changes
 - **Test Case**: A structured test input and expected output, extracted from gram-hs or generated for property-based testing
 - **Benchmark**: A performance measurement of a specific operation, used to track performance over time and detect regressions
@@ -162,7 +162,7 @@ A developer needs convenient utilities for comparing patterns, checking equality
 
 - **SC-001**: Developers can write and run property-based tests that generate at least 100 test cases automatically per property
 - **SC-002**: Property-based tests report failures with counterexamples within 5 seconds for typical properties
-- **SC-003**: Equivalence checking utilities can compare outputs from gram-rs and gram-hs for identical inputs and report results within 1 second per comparison
+- **SC-003**: Equivalence checking utilities can compare outputs from pattern-rs and gram-hs for identical inputs and report results within 1 second per comparison
 - **SC-004**: Snapshot tests can capture outputs and detect changes, with change detection completing within 2 seconds per snapshot
 - **SC-005**: Test extraction utilities can process gram-hs test files and produce usable test data (verified by successfully extracting at least 10 test cases from gram-hs)
 - **SC-006**: Benchmark suite can measure performance of pattern operations and produce consistent results (verified by running same benchmark multiple times with variance under 10%)

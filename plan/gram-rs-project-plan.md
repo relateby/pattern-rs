@@ -1,17 +1,17 @@
-# gram-rs Project Plan
+# pattern-rs Project Plan
 
 ## Project Overview
 
 Port of gram-hs to Rust, maintaining both a faithful reference implementation and an optimized engine for UI applications. The library will compile to both native Rust and WASM targets. 
 
-**Core Concept**: Patterns are the primary data structure (like objects in JavaScript), while gram notation is the serialization format (like JSON). The project name "gram-rs" honors the original inspiration, but internally everything is pattern-centric.
+**Core Concept**: Patterns are the primary data structure (like objects in JavaScript), while gram notation is the serialization format (like JSON). The project name "pattern-rs" honors the original inspiration, but internally everything is pattern-centric.
 
 ## Project Setup
 
 ### Repository Structure
 
 ```
-gram-rs/
+pattern-rs/
 ├── Cargo.toml                 # Workspace manifest
 ├── crates/
 │   ├── pattern-core/          # Core Pattern data structures
@@ -66,7 +66,7 @@ resolver = "2"
 version = "0.1.0"
 edition = "2021"
 license = "MIT OR Apache-2.0"
-repository = "https://github.com/gram-data/gram-rs"
+repository = "https://github.com/relateby/pattern-rs"
 
 [workspace.dependencies]
 serde = { version = "1.0", features = ["derive"] }
@@ -78,12 +78,12 @@ thiserror = "2.0"
 
 ```bash
 # Clone both repositories
-git clone https://github.com/gram-data/gram-rs.git
-git clone https://github.com/gram-data/gram-hs.git ../gram-hs
+git clone https://github.com/relateby/pattern-rs.git
+git clone https://github.com/relateby/pattern-hs.git ../gram-hs
 
 # Add gram-hs as a submodule for reference
-cd gram-rs
-git submodule add https://github.com/gram-data/gram-hs.git reference/gram-hs
+cd pattern-rs
+git submodule add https://github.com/relateby/pattern-hs.git reference/gram-hs
 
 # Setup Rust toolchain
 rustup target add wasm32-unknown-unknown
@@ -100,7 +100,7 @@ cargo test --all
 
 ### Test Synchronization Strategy
 
-1. **Shared Test Format**: Define a JSON schema for test cases that both gram-hs and gram-rs can use:
+1. **Shared Test Format**: Define a JSON schema for test cases that both gram-hs and pattern-rs can use:
 
 ```json
 {
@@ -367,7 +367,7 @@ wee_alloc = "0.4"         # Small allocator
 ### For the Lead Engineer
 
 1. **Setup Phase** (Day 1)
-   - [ ] Fork gram-hs and create gram-rs repo
+   - [ ] Fork gram-hs and create pattern-rs repo
    - [ ] Setup workspace structure with pattern-centric naming
    - [ ] Configure CI/CD (GitHub Actions recommended)
    - [ ] Create initial Pattern type definitions
@@ -402,12 +402,12 @@ wee_alloc = "0.4"         # Small allocator
 
 1. Review and refine this plan with stakeholders
 2. Create GitHub issues for each phase
-3. Set up weekly sync between gram-hs and gram-rs teams
+3. Set up weekly sync between gram-hs and pattern-rs teams
 4. Begin Phase 1 implementation
 
 ## Resources
 
-- [gram-hs repository](https://github.com/gram-data/gram-hs)
+- [gram-hs repository](https://github.com/relateby/pattern-hs)
 - [Rust WASM Book](https://rustwasm.github.io/docs/book/)
 - [Winnow Documentation](https://docs.rs/winnow/latest/winnow/)
 - [Property Testing in Rust](https://proptest-rs.github.io/proptest/)

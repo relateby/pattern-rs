@@ -77,7 +77,7 @@ git commit -m "Add tree-sitter-gram as submodule for corpus tests"
 
 ```bash
 # Clone with submodules (recommended)
-git clone --recurse-submodules https://github.com/gram-data/gram-rs.git
+git clone --recurse-submodules https://github.com/relateby/pattern-rs.git
 
 # Or initialize after clone
 git submodule update --init --recursive
@@ -231,4 +231,3 @@ The git submodule approach provides a robust, maintainable solution for corpus t
 ✅ Maintains authoritative reference to tree-sitter-gram  
 
 This implementation resolves the CI/CD dependency issue while maintaining the authoritative nature of the tree-sitter-gram test corpus.
-

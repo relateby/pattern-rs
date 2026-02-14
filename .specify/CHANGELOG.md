@@ -72,7 +72,6 @@ Made the local gram-hs reference implementation path explicit to facilitate easi
 - Development workflow defined
 - Constitution ratified
 
-[1.0.2]: https://github.com/gram-data/gram-rs/compare/v1.0.1...v1.0.2
-[1.0.1]: https://github.com/gram-data/gram-rs/compare/v1.0.0...v1.0.1
-[1.0.0]: https://github.com/gram-data/gram-rs/releases/tag/v1.0.0
-
+[1.0.2]: https://github.com/relateby/pattern-rs/compare/v1.0.1...v1.0.2
+[1.0.1]: https://github.com/relateby/pattern-rs/compare/v1.0.0...v1.0.1
+[1.0.0]: https://github.com/relateby/pattern-rs/releases/tag/v1.0.0

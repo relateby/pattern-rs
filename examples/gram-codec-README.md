@@ -175,8 +175,8 @@ Each example directory includes:
 
 ### 1-Minute Rust Examples
 ```bash
-git clone https://github.com/gram-data/gram-rs
-cd gram-rs
+git clone https://github.com/relateby/pattern-rs
+cd pattern-rs
 
 # Pattern core - comonad operations
 cargo run --package pattern-core --example comonad_usage
@@ -187,7 +187,7 @@ cargo run --package gram-codec --example basic_usage
 
 ### 2-Minute Python Example
 ```bash
-cd gram-rs/crates/gram-codec
+cd pattern-rs/crates/gram-codec
 pip install maturin
 maturin develop --features python
 python ../../examples/gram-codec-python/quickstart.py
@@ -195,7 +195,7 @@ python ../../examples/gram-codec-python/quickstart.py
 
 ### 3-Minute Browser Example
 ```bash
-cd gram-rs/crates/gram-codec
+cd pattern-rs/crates/gram-codec
 wasm-pack build --target web . -- --features wasm
 cd ../..
 python3 -m http.server 8000
@@ -235,4 +235,3 @@ To add a new example:
 ## 📝 License
 
 All examples are licensed under Apache-2.0, same as the main gram-codec library.
-

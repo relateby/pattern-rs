@@ -150,7 +150,7 @@ pub enum Value {
 
 ### Real-World Usage Patterns
 
-Based on the project context (gram-rs as a graph pattern library):
+Based on the project context (pattern-rs as a graph pattern library):
 
 1. **Pattern Storage**: Store unique patterns efficiently
 2. **Graph Serialization**: Deduplicate patterns during codec operations
@@ -305,4 +305,3 @@ Implementing Hash for Pattern<V> is a **high-value, low-complexity feature** tha
 The implementation is straightforward, follows the Haskell reference closely, and integrates naturally with existing Eq/Ord implementations. The only limitation (Pattern<Subject> not hashable) is correct and expected due to Subject containing floats.
 
 **Recommended Action**: Proceed with implementation as feature 015, following the implementation plan above.
-

@@ -7,7 +7,7 @@
 
 ## Context
 
-This feature ports the pattern combination functionality from the gram-hs Haskell reference implementation to gram-rs. Pattern combination is a binary associative operation that enables two patterns to be combined into a single pattern while preserving the associativity law: `(a ⊕ b) ⊕ c = a ⊕ (b ⊕ c)`.
+This feature ports the pattern combination functionality from the gram-hs Haskell reference implementation to pattern-rs. Pattern combination is a binary associative operation that enables two patterns to be combined into a single pattern while preserving the associativity law: `(a ⊕ b) ⊕ c = a ⊕ (b ⊕ c)`.
 
 In Haskell, this is expressed as a Semigroup instance. In Rust, the implementation should follow idiomatic patterns—this may be a concrete method (like `combine()` or `append()`), use of `std::ops::Add` if semantics align, or another approach that fits Rust conventions. The key requirement is the mathematical property of associativity, not a specific trait implementation.
 

@@ -1,4 +1,4 @@
-# gram-rs Work Plan: Catching Up to gram-hs
+# pattern-rs Work Plan: Catching Up to gram-hs
 
 **Date**: 2026-01-29  
 **Goal**: Achieve library feature parity with gram-hs reference implementation  
@@ -7,12 +7,12 @@
 
 ## Overview
 
-This work plan outlines the prioritized tasks to bring gram-rs library modules to full feature parity with gram-hs. The plan is organized into 3 phases based on priority and dependencies, with estimated effort and success criteria for each phase.
+This work plan outlines the prioritized tasks to bring pattern-rs library modules to full feature parity with gram-hs. The plan is organized into 3 phases based on priority and dependencies, with estimated effort and success criteria for each phase.
 
 **Scope**: Library modules only (pattern-core, gram-codec). CLI tooling is out of scope.
 
 **Related Documents**:
-- [Implementation Gap Analysis](gram-rs-implementation-gaps.md) - Detailed gap analysis
+- [Implementation Gap Analysis](pattern-rs-implementation-gaps.md) - Detailed gap analysis
 - [gram-hs Porting Guide](../gram-hs/docs/reference/PORTING-GUIDE.md) - Reference implementation guide
 
 ---
@@ -332,7 +332,7 @@ impl<V> Pattern<V> {
 
 ## Conclusion
 
-This work plan provides a clear path to achieving full library feature parity with gram-hs. By following the phased approach and prioritizing core features first, gram-rs will become a complete and reliable port of the reference implementation.
+This work plan provides a clear path to achieving full library feature parity with gram-hs. By following the phased approach and prioritizing core features first, pattern-rs will become a complete and reliable port of the reference implementation.
 
 The plan is designed to be flexible and can be adjusted based on:
 - Actual implementation complexity

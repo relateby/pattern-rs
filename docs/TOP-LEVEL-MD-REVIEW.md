@@ -19,7 +19,7 @@ Review of repo-root `*.md` files: which are temporary/WIP vs long-lived docs.
 
 | File | Content | Recommendation |
 |------|---------|----------------|
-| **PORTING_GUIDE.md** | Systematic guide for porting gram-hs → gram-rs (~550 lines). Referenced by README, TODO, `docs/gramref-*.md`, and many specs. | Move to **docs/porting-guide.md** and update all references (README, TODO, docs, specs, plan templates). |
+| **PORTING_GUIDE.md** | Systematic guide for porting gram-hs → pattern-rs (~550 lines). Referenced by README, TODO, `docs/gramref-*.md`, and many specs. | Move to **docs/porting-guide.md** and update all references (README, TODO, docs, specs, plan templates). |
 | **SUBJECT-COMBINATION-STRATEGIES.md** | Technical reference: Subject combination strategies (Merge, FirstSubject, etc.) and semigroup laws. | Move to **docs/subject-combination-strategies.md**. Add to README “Documentation” if you want it discoverable. |
 | **WASM_BUILD_NOTES.md** | Known issue: gram-codec WASM build fails due to tree-sitter C deps; problem summary, repro, workarounds. | Move to **docs/wasm-build-notes.md** (or `docs/known-issues.md` if you prefer one “issues” doc). |
 

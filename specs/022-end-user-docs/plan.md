@@ -16,7 +16,7 @@
 ### Target Documentation Structure
 - `docs/introduction.md`: High-level concepts, "decorated sequence" model.
 - `docs/gram-notation.md`: Detailed reference for Gram syntax and its mapping to `Pattern`.
-- `docs/rust-usage.md`: Practical guide for using `gram-rs` crates in Rust projects.
+- `docs/rust-usage.md`: Practical guide for using `pattern-rs` crates in Rust projects.
 - `README.md`: Update to link to these new guides.
 
 ### Unknowns & Research
@@ -43,8 +43,8 @@
 
 ## Phase 0: Outline & Research
 
-1. **Research Task 1**: Compare `gram-hs` guide structure with current `gram-rs` implementation to identify gaps.
-2. **Research Task 2**: Verify which `gram-rs` features (like specific relationships) are fully supported in `gram-codec` to avoid documenting unsupported features.
+1. **Research Task 1**: Compare `gram-hs` guide structure with current `pattern-rs` implementation to identify gaps.
+2. **Research Task 2**: Verify which `pattern-rs` features (like specific relationships) are fully supported in `gram-codec` to avoid documenting unsupported features.
 3. **Research Task 3**: Determine the best way to present WASM/Python examples in the documentation.
 
 **Output**: `research.md`

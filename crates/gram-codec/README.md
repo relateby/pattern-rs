@@ -2,7 +2,7 @@
 
 Bidirectional codec between [Gram notation](https://github.com/gram-data/tree-sitter-gram) (human-readable text format) and Pattern data structures.
 
-[![CI Status](https://github.com/gram-data/gram-rs/workflows/CI/badge.svg)](https://github.com/gram-data/gram-rs/actions)
+[![CI Status](https://github.com/relateby/pattern-rs/workflows/CI/badge.svg)](https://github.com/relateby/pattern-rs/actions)
 [![License: Apache 2.0](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
 
 ## Features
@@ -385,4 +385,3 @@ Contributions are welcome! Please ensure:
 - [Gram Notation Specification](https://github.com/gram-data/tree-sitter-gram)
 - [Pattern Core Library](../pattern-core/)
 - [Project Documentation](../../specs/019-gram-codec/)
-

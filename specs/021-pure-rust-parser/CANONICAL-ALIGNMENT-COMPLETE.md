@@ -8,7 +8,7 @@
 
 ## 🎉 Alignment Complete!
 
-gram-rs AST output is now **fully aligned** with gram-hs canonical JSON format!
+pattern-rs AST output is now **fully aligned** with gram-hs canonical JSON format!
 
 ---
 
@@ -36,7 +36,7 @@ gram-rs AST output is now **fully aligned** with gram-hs canonical JSON format!
 
 ## 📊 Final Comparison
 
-| Component | gram-hs | gram-rs | Status |
+| Component | gram-hs | pattern-rs | Status |
 |-----------|---------|---------|--------|
 | Pattern field | `subject` | `subject` | ✅ Match |
 | Subject identity | `identity` | `identity` | ✅ Match |
@@ -137,7 +137,7 @@ test result: ok. 6 passed; 0 failed
 
 ## ✅ Conclusion
 
-**gram-rs is now fully aligned with gram-hs canonical JSON format!**
+**pattern-rs is now fully aligned with gram-hs canonical JSON format!**
 
 All interoperability requirements are met:
 - ✅ Field names match

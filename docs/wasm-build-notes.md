@@ -16,7 +16,7 @@ This blocks any browser-based or WASM-first applications that want to use gram-c
 
 ## Steps to Reproduce
 
-1. Clone gram-rs repository
+1. Clone pattern-rs repository
 2. Attempt to build gram-codec for WASM:
    ```bash
    cd crates/gram-codec
@@ -91,7 +91,7 @@ Developers should be able to use gram-codec in WASM without manual emscripten se
 
 ### Option 1: Document emscripten Requirement (Quick Fix)
 
-Add to gram-rs README and gram-codec README:
+Add to pattern-rs README and gram-codec README:
 
 ```markdown
 ## Building for WebAssembly

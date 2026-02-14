@@ -1,12 +1,12 @@
-# gram-rs Implementation Gap Analysis
+# pattern-rs Implementation Gap Analysis
 
 **Date**: 2026-01-29  
-**Purpose**: Identify library features from gram-hs that need to be ported to gram-rs  
+**Purpose**: Identify library features from gram-hs that need to be ported to pattern-rs  
 **Reference**: gram-hs at ../gram-hs (Haskell reference implementation)
 
 ## Executive Summary
 
-gram-rs is a Rust port of gram-hs with solid foundations in place. The Pattern library core is well-implemented with most essential features. However, several advanced library features are missing or incomplete.
+pattern-rs is a Rust port of gram-hs with solid foundations in place. The Pattern library core is well-implemented with most essential features. However, several advanced library features are missing or incomplete.
 
 **Overall Status**: ~70% feature parity with gram-hs (library modules only)
 
@@ -30,7 +30,7 @@ gram-rs is a Rust port of gram-hs with solid foundations in place. The Pattern l
 
 **Reference**: 
 - gram-hs: `libs/pattern/src/Pattern/Core.hs` lines 267-271
-- gram-rs: `crates/pattern-core/src/pattern.rs` lines 122-134
+- pattern-rs: `crates/pattern-core/src/pattern.rs` lines 122-134
 
 ---
 
@@ -50,7 +50,7 @@ gram-rs is a Rust port of gram-hs with solid foundations in place. The Pattern l
 
 **Reference**:
 - gram-hs: `libs/pattern/src/Pattern/Core.hs` lines 218-231
-- gram-rs: `crates/pattern-core/src/pattern.rs` lines 332-2189
+- pattern-rs: `crates/pattern-core/src/pattern.rs` lines 332-2189
 
 ---
 
@@ -62,7 +62,7 @@ gram-rs is a Rust port of gram-hs with solid foundations in place. The Pattern l
 
 **Reference**:
 - gram-hs: `libs/pattern/src/Pattern/Core.hs` (Functor instance)
-- gram-rs: `crates/pattern-core/src/pattern.rs` lines 1473-1494
+- pattern-rs: `crates/pattern-core/src/pattern.rs` lines 1473-1494
 
 ---
 
@@ -75,7 +75,7 @@ gram-rs is a Rust port of gram-hs with solid foundations in place. The Pattern l
 
 **Reference**:
 - gram-hs: `libs/pattern/src/Pattern/Core.hs` (Foldable instance)
-- gram-rs: `crates/pattern-core/src/pattern.rs` lines 1620-1738
+- pattern-rs: `crates/pattern-core/src/pattern.rs` lines 1620-1738
 
 ---
 
@@ -90,7 +90,7 @@ gram-rs is a Rust port of gram-hs with solid foundations in place. The Pattern l
 
 **Reference**:
 - gram-hs: `libs/pattern/src/Pattern/Core.hs` (Traversable instance)
-- gram-rs: `crates/pattern-core/src/pattern.rs` lines 2055-2459
+- pattern-rs: `crates/pattern-core/src/pattern.rs` lines 2055-2459
 
 ---
 
@@ -103,7 +103,7 @@ gram-rs is a Rust port of gram-hs with solid foundations in place. The Pattern l
 
 **Reference**:
 - gram-hs: `libs/pattern/src/Pattern/Core.hs` lines 274-300
-- gram-rs: `crates/pattern-core/src/pattern.rs` lines 2512-2635
+- pattern-rs: `crates/pattern-core/src/pattern.rs` lines 2512-2635
 
 ---
 
@@ -117,7 +117,7 @@ gram-rs is a Rust port of gram-hs with solid foundations in place. The Pattern l
 
 **Reference**:
 - gram-hs: `libs/pattern/src/Pattern/Core.hs` (Semigroup/Monoid instances)
-- gram-rs: `crates/pattern-core/src/pattern.rs` lines 2641-2860
+- pattern-rs: `crates/pattern-core/src/pattern.rs` lines 2641-2860
 
 ---
 
@@ -129,7 +129,7 @@ gram-rs is a Rust port of gram-hs with solid foundations in place. The Pattern l
 
 **Reference**:
 - gram-hs: `libs/pattern/src/Pattern/Core.hs` (Hashable instance)
-- gram-rs: `crates/pattern-core/src/pattern.rs` lines 3154-3185
+- pattern-rs: `crates/pattern-core/src/pattern.rs` lines 3154-3185
 
 ---
 
@@ -148,7 +148,7 @@ gram-rs is a Rust port of gram-hs with solid foundations in place. The Pattern l
 **Reference**:
 - gram-hs: `libs/pattern/src/Pattern/Core.hs` (Applicative instance)
 - gram-hs docs: `docs/reference/features/typeclass-instances.md` lines 109-119
-- gram-rs analysis: `specs/017-applicative-instance/ANALYSIS.md`
+- pattern-rs analysis: `specs/017-applicative-instance/ANALYSIS.md`
 
 ---
 
@@ -172,7 +172,7 @@ gram-rs is a Rust port of gram-hs with solid foundations in place. The Pattern l
 **Reference**:
 - gram-hs: `libs/pattern/src/Pattern/Core.hs` (Comonad instance)
 - gram-hs docs: `docs/reference/features/typeclass-instances.md` lines 121-131
-- gram-rs: `specs/018-comonad-instance/`
+- pattern-rs: `specs/018-comonad-instance/`
 
 ---
 
@@ -274,7 +274,7 @@ impl<V> GraphLens<V> {
 
 **Reference**:
 - gram-hs: `libs/subject/src/Subject/Core.hs`
-- gram-rs: `crates/pattern-core/src/subject.rs`
+- pattern-rs: `crates/pattern-core/src/subject.rs`
 
 ---
 
@@ -287,7 +287,7 @@ impl<V> GraphLens<V> {
 
 **Reference**:
 - gram-hs: `libs/subject/src/Subject/Value.hs`
-- gram-rs: `crates/pattern-core/src/subject.rs` lines 126-157
+- pattern-rs: `crates/pattern-core/src/subject.rs` lines 126-157
 
 ---
 
@@ -301,7 +301,7 @@ impl<V> GraphLens<V> {
 
 **Reference**:
 - gram-hs: `libs/subject/src/Subject/Core.hs`
-- gram-rs: `crates/pattern-core/src/lib.rs` lines 347-365
+- pattern-rs: `crates/pattern-core/src/lib.rs` lines 347-365
 
 ---
 
@@ -318,7 +318,7 @@ impl<V> GraphLens<V> {
 
 **Reference**:
 - gram-hs: `libs/gram/src/Gram/Parse.hs`
-- gram-rs: `crates/gram-codec/src/parser/`
+- pattern-rs: `crates/gram-codec/src/parser/`
 
 ---
 
@@ -331,7 +331,7 @@ impl<V> GraphLens<V> {
 
 **Reference**:
 - gram-hs: `libs/gram/src/Gram/Serialize.hs`
-- gram-rs: `crates/gram-codec/src/serializer.rs`
+- pattern-rs: `crates/gram-codec/src/serializer.rs`
 
 ---
 
@@ -350,7 +350,7 @@ impl<V> GraphLens<V> {
 
 **Reference**:
 - gram-hs: `libs/gram/src/Gram/Validate.hs`
-- gram-rs: Needs implementation
+- pattern-rs: Needs implementation
 
 ---
 
@@ -409,7 +409,7 @@ impl<V> GraphLens<V> {
 - ✅ JavaScript bindings
 
 **Reference**:
-- gram-rs: `crates/gram-codec/src/wasm.rs`
+- pattern-rs: `crates/gram-codec/src/wasm.rs`
 
 ---
 
@@ -420,7 +420,7 @@ impl<V> GraphLens<V> {
 - ✅ Python package structure
 
 **Reference**:
-- gram-rs: `crates/pattern-core/src/python.rs`
+- pattern-rs: `crates/pattern-core/src/python.rs`
 
 ---
 
@@ -500,7 +500,7 @@ impl<V> GraphLens<V> {
 
 ## Notes
 
-- gram-rs has a solid foundation with ~70% library feature parity
+- pattern-rs has a solid foundation with ~70% library feature parity
 - Core Pattern operations are well-implemented
 - Main gaps are in advanced features (Paramorphism, Graph Lens)
 - Python and WASM bindings are already in place, which is excellent

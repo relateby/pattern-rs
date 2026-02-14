@@ -128,14 +128,14 @@ const json = JSON.stringify(ast);
 ### Architecture
 
 ```
-gram-rs (this project)
+pattern-rs (this project)
   └─> parse_to_ast() → AST (JSON)
        └─> gram-js (separate project)
             └─> Pattern.fromAst(ast) → Full Pattern API
                  └─> map(), fold(), filter(), etc.
 ```
 
-**gram-rs** responsibilities:
+**pattern-rs** responsibilities:
 - ✅ Parse gram notation to AST
 - ✅ Validate syntax
 - ✅ Serialize patterns back to gram

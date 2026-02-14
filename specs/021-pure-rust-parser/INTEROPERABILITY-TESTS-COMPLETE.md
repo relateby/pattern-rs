@@ -124,7 +124,7 @@ The static schema file (`../gram-hs/specs/029-canonical-json-pattern/contracts/j
 
 - ✅ **Schema generator** uses correct names (`subject`/`identity`)
 - ✅ **gram-hs implementation** uses correct names
-- ✅ **gram-rs implementation** uses correct names
+- ✅ **pattern-rs implementation** uses correct names
 - ✅ **Our tests** validate against correct format
 
 **Action**: Static schema file should be regenerated from gramref, but this doesn't affect interoperability.
@@ -141,8 +141,8 @@ The static schema file (`../gram-hs/specs/029-canonical-json-pattern/contracts/j
    - Full validation against JSON Schema Draft 2020-12
 
 2. **Round-Trip with gram-hs**
-   - Test gram-rs JSON → gram-hs parser
-   - Test gram-hs JSON → gram-rs parser
+   - Test pattern-rs JSON → gram-hs parser
+   - Test gram-hs JSON → pattern-rs parser
    - Requires gram-hs to be built and available
 
 3. **Performance Benchmarks**
@@ -156,7 +156,7 @@ The static schema file (`../gram-hs/specs/029-canonical-json-pattern/contracts/j
 **Interoperability tests are complete!**
 
 All tests verify that:
-- ✅ gram-rs AST matches gram-hs canonical format
+- ✅ pattern-rs AST matches gram-hs canonical format
 - ✅ JSON serialization is lossless
 - ✅ Format is ready for cross-language consumption
 

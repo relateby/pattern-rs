@@ -9,12 +9,12 @@
 1. Analyze gram-hs implementation of missing predicate functions (findPattern, matches, contains)
 2. Design Rust idiomatic equivalents using Option, borrowed references, and Fn traits
 3. Determine optimal implementation strategies for structural matching operations
-4. Review existing gram-rs implementation (any_value, all_values, filter) for consistency
+4. Review existing pattern-rs implementation (any_value, all_values, filter) for consistency
 5. Identify performance considerations and edge case handling
 
 ## Implementation Status Analysis
 
-### Already Implemented in gram-rs
+### Already Implemented in pattern-rs
 
 **✅ any_value** (`crates/pattern-core/src/pattern.rs` lines 636-661)
 - **Signature**: `pub fn any_value<F>(&self, predicate: F) -> bool where F: Fn(&V) -> bool`
@@ -425,7 +425,7 @@ Extract test cases from gram-hs test suite:
 
 **Rationale**:
 1. Clear implementation strategies for all three missing functions
-2. Consistency with existing gram-rs operations (traversal, traits, return types)
+2. Consistency with existing pattern-rs operations (traversal, traits, return types)
 3. Behavioral equivalence with gram-hs reference implementation
 4. Idiomatic Rust patterns (Option, borrowed references, Fn traits)
 5. Performance targets easily achievable
@@ -433,4 +433,3 @@ Extract test cases from gram-hs test suite:
 7. Testing strategy comprehensive
 
 **Next Steps**: Proceed to Phase 1 design (data-model.md, contracts, quickstart.md)
-

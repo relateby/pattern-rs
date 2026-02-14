@@ -39,7 +39,7 @@ use std::collections::HashMap;
 
 /// Abstract Syntax Tree representation of a Pattern
 ///
-/// This is the minimal, language-agnostic output format from gram-rs.
+/// This is the minimal, language-agnostic output format from pattern-rs.
 /// It mirrors the Pattern<Subject> structure exactly.
 ///
 /// # Structure

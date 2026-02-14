@@ -164,9 +164,9 @@
 
 ## Phase 6: User Story 4 - Developer Verifies Behavioral Equivalence with gram-hs (Priority: P2)
 
-**Goal**: Enable developers to verify that pattern instances created in gram-rs behave identically to patterns created in the gram-hs reference implementation.
+**Goal**: Enable developers to verify that pattern instances created in pattern-rs behave identically to patterns created in the gram-hs reference implementation.
 
-**Independent Test**: Create equivalent patterns in both gram-rs and gram-hs, compare their structure and behavior, and verify they match. Test cases from gram-hs can be ported and executed in gram-rs with identical results.
+**Independent Test**: Create equivalent patterns in both pattern-rs and gram-hs, compare their structure and behavior, and verify they match. Test cases from gram-hs can be ported and executed in pattern-rs with identical results.
 
 ### Tests for User Story 4
 
@@ -177,7 +177,7 @@
 - [x] T073 [P] [US4] Port test cases from gram-hs for Subject structure in tests/equivalence/pattern_structure.rs
 - [x] T074 [P] [US4] Port test cases from gram-hs for Subject equality in tests/equivalence/pattern_structure.rs
 - [x] T075 [P] [US4] Port test cases from gram-hs for Pattern<Subject> in tests/equivalence/pattern_structure.rs
-- [x] T076 [P] [US4] Create equivalence checking utilities for comparing gram-rs and gram-hs patterns in crates/pattern-core/src/test_utils/equivalence.rs
+- [x] T076 [P] [US4] Create equivalence checking utilities for comparing pattern-rs and gram-hs patterns in crates/pattern-core/src/test_utils/equivalence.rs
 
 ### Implementation for User Story 4
 
@@ -186,7 +186,7 @@
 - [x] T079 [US4] Verify at least 95% of test cases from gram-hs pass (SC-005) in tests/equivalence/pattern_structure.rs
 - [x] T080 [US4] Document equivalence test results and any differences in tests/equivalence/pattern_structure.rs
 
-**Checkpoint**: At this point, behavioral equivalence with gram-hs should be verified. Patterns created in gram-rs match the structure and behavior of equivalent patterns in gram-hs.
+**Checkpoint**: At this point, behavioral equivalence with gram-hs should be verified. Patterns created in pattern-rs match the structure and behavior of equivalent patterns in gram-hs.
 
 ---
 
@@ -369,4 +369,3 @@ With multiple developers:
 - All trait implementations should use derive macros where possible (Clone, PartialEq, Eq)
 - Custom implementations needed for Debug and Display traits
 - Reference gram-hs implementation at `../gram-hs/libs/` for behavioral equivalence
-

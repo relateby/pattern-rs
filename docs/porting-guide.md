@@ -1,11 +1,11 @@
-# Porting Guide: gram-hs to gram-rs
+# Porting Guide: gram-hs to pattern-rs
 
-This guide provides a systematic approach for porting features from the gram-hs reference implementation to gram-rs.
+This guide provides a systematic approach for porting features from the gram-hs reference implementation to pattern-rs.
 
 ## Reference Implementation Location
 
 The gram-hs reference implementation is available locally at:
-- **Path**: `../gram-hs` (relative to gram-rs repository root)
+- **Path**: `../gram-hs` (relative to pattern-rs repository root)
 - **Source Code (Authoritative)**: `../gram-hs/libs/` - Haskell library implementations - **This is the source of truth**
 - **Documentation (Up-to-date)**: `../gram-hs/docs/` - Up-to-date documentation about the implementation
 - **Tests (Authoritative)**: `../gram-hs/libs/*/tests/` - Test suites for verification - **Shows expected behavior**
@@ -17,7 +17,7 @@ The gram-hs reference implementation is available locally at:
 
 ### The `../gram-hs/` Library (Reference Implementation)
 
-- **Location**: `../gram-hs/libs/` (relative to gram-rs root)
+- **Location**: `../gram-hs/libs/` (relative to pattern-rs root)
 - **Purpose**: Haskell source code to port to Rust
 - **Use for**: Reading implementations, understanding algorithms, studying type signatures
 - **Example**: Study `../gram-hs/libs/pattern/src/Pattern.hs` to understand Pattern type
@@ -410,7 +410,7 @@ pub fn get_value<V>(p: &Pattern<V>) -> &V {
 
 ### Balancing Rust Conventions with Cross-Language Equivalence
 
-When porting from gram-hs to gram-rs, there's a natural tension between:
+When porting from gram-hs to pattern-rs, there's a natural tension between:
 - **Rust conventions**: Idiomatic Rust patterns that Rust developers expect
 - **Cross-language equivalence**: Maintaining consistency with gram-hs for verification
 
@@ -533,11 +533,11 @@ Each feature directory in `specs/` contains (historical notes for context only, 
 - `quickstart.md` - Usage examples (may be outdated)
 - Other design artifacts
 
-**Note**: Features are numbered sequentially. When creating a new feature in gram-rs, use the same feature number and name from gram-hs to maintain consistency (e.g., `002-basic-pattern-type`). However, always verify the actual implementation in `../gram-hs/libs/` and refer to up-to-date documentation in `../gram-hs/docs/` rather than relying on the historical notes. The historical notes guided incremental development but are not authoritative sources.
+**Note**: Features are numbered sequentially. When creating a new feature in pattern-rs, use the same feature number and name from gram-hs to maintain consistency (e.g., `002-basic-pattern-type`). However, always verify the actual implementation in `../gram-hs/libs/` and refer to up-to-date documentation in `../gram-hs/docs/` rather than relying on the historical notes. The historical notes guided incremental development but are not authoritative sources.
 
 ## Resources
 
-- **gram-hs Repository**: https://github.com/gram-data/gram-hs
+- **gram-hs Repository**: https://github.com/relateby/pattern-hs
 - **Local Reference**: `../gram-hs`
 - **gram-hs CLI Tool**: `/Users/akollegger/.cabal/bin/gram-hs` (or `gram-hs` if in PATH)
   - **Testing Guide**: [gramref CLI Testing Guide](gramref-cli-testing-guide.md) - Comprehensive guide for using gramref CLI for testing and equivalence checking

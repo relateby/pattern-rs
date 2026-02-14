@@ -107,7 +107,7 @@ This feature establishes the workspace structure and infrastructure. The data mo
 
 ### Test Synchronization Infrastructure
 
-**Description**: Utilities and processes for maintaining test parity between gram-rs and gram-hs.
+**Description**: Utilities and processes for maintaining test parity between pattern-rs and gram-hs.
 
 **Attributes**:
 - **Test Case Format**: JSON schema for test case representation
@@ -117,7 +117,7 @@ This feature establishes the workspace structure and infrastructure. The data mo
 
 **Relationships**:
 - Extracts test data from gram-hs reference implementation
-- Compares test cases between gram-rs and gram-hs
+- Compares test cases between pattern-rs and gram-hs
 - Supports **Workspace** test coverage
 
 **Validation Rules**:
@@ -147,4 +147,3 @@ This feature establishes the workspace structure and infrastructure. The data mo
 - This data model represents organizational structure, not runtime data
 - Entities are validated through build system and CI/CD rather than runtime checks
 - Placeholder crates follow the same structure as regular crates but with minimal implementation
-

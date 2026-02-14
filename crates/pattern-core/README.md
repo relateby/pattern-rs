@@ -1,6 +1,6 @@
 # pattern-core
 
-Core pattern data structures for the gram-rs library.
+Core pattern data structures for the pattern-rs library.
 
 This crate provides the foundational `Pattern<V>` type and `Subject` type, ported from the gram-hs reference implementation.
 
@@ -222,4 +222,3 @@ Tests include:
 This crate is a faithful port of the gram-hs reference implementation:
 - Reference: `../gram-hs/libs/pattern/` and `../gram-hs/libs/subject/`
 - Feature Spec: `../gram-hs/specs/001-pattern-data-structure/`
-

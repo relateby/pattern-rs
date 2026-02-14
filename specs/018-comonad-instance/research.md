@@ -47,7 +47,7 @@ This document captures research findings and technical decisions made during pla
 
 **References**:
 - Rust API Guidelines: Prefer methods over free functions for discoverability
-- gram-rs precedent: Functor (map), Foldable (fold), etc. implemented as direct methods
+- pattern-rs precedent: Functor (map), Foldable (fold), etc. implemented as direct methods
 
 ### 2. Function Passing Strategy: By Reference vs. By Value
 
@@ -253,7 +253,7 @@ proptest! {
 **Benchmarking** (optional): 
 - criterion.rs if performance verification needed
 **CI/CD**: 
-- Existing gram-rs CI pipeline
+- Existing pattern-rs CI pipeline
 - Add Comonad tests to test suite
 
 ## Best Practices Applied
@@ -330,4 +330,3 @@ proptest! {
 - **Constitution**: `../../.specify/memory/constitution.md`
 - **Rust API Guidelines**: https://rust-lang.github.io/api-guidelines/
 - **proptest docs**: https://docs.rs/proptest/latest/proptest/
-

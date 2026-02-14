@@ -1,6 +1,6 @@
 //! JSON Schema validation tests for AST output
 //!
-//! Validates that gram-rs AST output conforms to the canonical JSON format
+//! Validates that pattern-rs AST output conforms to the canonical JSON format
 //! defined by gram-hs (spec 029-canonical-json-pattern).
 
 use gram_codec::parse_to_ast;

@@ -85,7 +85,7 @@ The gram codec follows the **tree-sitter-gram** grammar specification:
 ### Submodule Setup
 
 ```bash
-# Initialize submodule after cloning gram-rs
+# Initialize submodule after cloning pattern-rs
 git submodule update --init --recursive
 ```
 
@@ -227,4 +227,3 @@ After this specification is approved:
 - **Validator**: `gram-lint` CLI tool
 - **Spec**: `spec.md` (this feature)
 - **Data Model**: `data-model.md`
-

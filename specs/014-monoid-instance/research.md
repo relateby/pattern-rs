@@ -211,7 +211,7 @@ proptest! {
 **Task**: Ensure implementation matches gram-hs monoid semantics
 
 **Verification Strategy**:
-1. Create equivalent patterns in gram-hs and gram-rs
+1. Create equivalent patterns in gram-hs and pattern-rs
 2. Verify identity laws hold in both implementations
 3. Cross-check test cases from gram-hs test suite
 4. Document any intentional deviations (e.g., using Default instead of custom trait)
@@ -232,4 +232,3 @@ proptest! {
 5. **Maintain behavioral equivalence** - Match gram-hs semantics while using Rust idioms
 
 The implementation will provide the same functionality as Haskell's Monoid instance but expressed through Rust's standard library conventions rather than custom algebraic traits.
-

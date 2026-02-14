@@ -194,7 +194,7 @@ The `contracts/` directory will contain technical contracts created during the p
 
 - **Pattern Core**: `crates/pattern-core/` (Pattern and Subject types)
 - **TODO**: TODO.md entry for 019-gram-serialization
-- **Project Plan**: `docs/gram-rs-project-plan.md`
+- **Project Plan**: `docs/pattern-rs-project-plan.md`
 
 ## Validation
 
@@ -229,4 +229,3 @@ $ gram-lint -e "(a:Person {name: \"Alice\"})" --tree
 ---
 
 **Specification Complete**: Ready for planning phase (`/speckit.plan`)
-

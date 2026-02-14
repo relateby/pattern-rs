@@ -1,7 +1,7 @@
 //! Test case extraction from gram-hs
 //!
 //! This module provides utilities for extracting test cases from the gram-hs
-//! reference implementation and converting them to a format usable by gram-rs.
+//! reference implementation and converting them to a format usable by pattern-rs.
 //!
 //! # Using gram-hs CLI for Test Suite Generation
 //!
@@ -32,14 +32,14 @@ pub fn validate_test_case_format(json: &Value) -> Result<(), String> {
 
 /// Extract test cases from JSON file
 pub fn extract_test_cases_from_json<P: AsRef<Path>>(path: P) -> Result<Vec<Value>, String> {
-    let content = fs::read_to_string(path.as_ref())
-        .map_err(|e| format!("Failed to read file: {}", e))?;
-    
-    let json: Value = serde_json::from_str(&content)
-        .map_err(|e| format!("Failed to parse JSON: {}", e))?;
-    
+    let content =
+        fs::read_to_string(path.as_ref()).map_err(|e| format!("Failed to read file: {}", e))?;
+
+    let json: Value =
+        serde_json::from_str(&content).map_err(|e| format!("Failed to parse JSON: {}", e))?;
+
     validate_test_case_format(&json)?;
-    
+
     if let Some(test_cases) = json.get("test_cases").and_then(|v| v.as_array()) {
         Ok(test_cases.clone())
     } else {
@@ -60,4 +60,3 @@ mod tests {
         assert!(validate_test_case_format(&valid_json).is_ok());
     }
 }
-

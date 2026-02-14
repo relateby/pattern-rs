@@ -73,9 +73,9 @@
 
 ---
 
-## Phase 4: User Story 2 - Equivalence Checking Between gram-rs and gram-hs (Priority: P1)
+## Phase 4: User Story 2 - Equivalence Checking Between pattern-rs and gram-hs (Priority: P1)
 
-**Goal**: Provide utilities for checking behavioral equivalence between gram-rs and gram-hs implementations using test data comparison
+**Goal**: Provide utilities for checking behavioral equivalence between pattern-rs and gram-hs implementations using test data comparison
 
 **Independent Test**: Verify that equivalence checking utilities exist, can execute operations, and report differences clearly. Run an equivalence check and see whether outputs match.
 
@@ -120,7 +120,7 @@
 
 ## Phase 6: User Story 4 - Test Data Extraction from gram-hs (Priority: P2)
 
-**Goal**: Enhance test extraction utilities to extract test cases from gram-hs and convert them to usable format for gram-rs tests
+**Goal**: Enhance test extraction utilities to extract test cases from gram-hs and convert them to usable format for pattern-rs tests
 
 **Independent Test**: Verify that test extraction utilities exist, can parse gram-hs test files (or demonstrate structure), and produce test data in expected format. Run extraction and see test cases converted to usable format.
 
@@ -310,4 +310,3 @@ With multiple developers:
 - Stop at any checkpoint to validate story independently
 - Avoid: vague tasks, same file conflicts, cross-story dependencies that break independence
 - WASM compatibility: proptest works as-is, insta works as-is, criterion needs conditional compilation
-

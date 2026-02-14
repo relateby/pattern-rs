@@ -5,7 +5,7 @@
 
 ## Overview
 
-This guide provides quick start instructions for using the testing infrastructure in gram-rs. The infrastructure includes property-based testing, equivalence checking, snapshot testing, benchmarks, and test helpers.
+This guide provides quick start instructions for using the testing infrastructure in pattern-rs. The infrastructure includes property-based testing, equivalence checking, snapshot testing, benchmarks, and test helpers.
 
 ## Prerequisites
 
@@ -113,7 +113,7 @@ fn test_equivalence_with_gram_hs() {
     let result = check_equivalence_from_test_data(
         &test_case,
         |input| {
-            // Execute gram-rs implementation
+            // Execute pattern-rs implementation
             gram_rs_operation(input)
         },
         &options,
@@ -458,4 +458,3 @@ fn test_wasm_compatible() {
 - [insta documentation](https://docs.rs/insta/)
 - [criterion documentation](https://docs.rs/criterion/)
 - [Rust testing guide](https://doc.rust-lang.org/book/ch11-00-testing.html)
-

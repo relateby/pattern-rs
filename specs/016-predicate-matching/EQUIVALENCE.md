@@ -6,7 +6,7 @@
 
 ## Purpose
 
-This document verifies that the Rust implementation (`gram-rs`) maintains behavioral equivalence
+This document verifies that the Rust implementation (`pattern-rs`) maintains behavioral equivalence
 with the Haskell reference implementation (`gram-hs`) for all predicate matching operations.
 
 ## Reference Implementation Location
@@ -17,7 +17,7 @@ with the Haskell reference implementation (`gram-hs`) for all predicate matching
 
 ## Function Mapping
 
-| gram-hs (Haskell) | gram-rs (Rust) | Status |
+| gram-hs (Haskell) | pattern-rs (Rust) | Status |
 |-------------------|----------------|--------|
 | `anyValue` | `any_value` | ✅ Equivalent (66 tests) |
 | `allValues` | `all_values` | ✅ Equivalent (66 tests) |
@@ -170,7 +170,7 @@ All mathematical properties documented in gram-hs are verified via proptest:
 
 All edge cases from gram-hs CoreSpec.hs are covered:
 
-| Edge Case | gram-hs Tests | gram-rs Tests | Status |
+| Edge Case | gram-hs Tests | pattern-rs Tests | Status |
 |-----------|---------------|---------------|--------|
 | Atomic patterns | ✅ | ✅ | Verified |
 | Empty elements | ✅ | ✅ | Verified |
@@ -213,4 +213,3 @@ All functional requirements, edge cases, mathematical properties, and performanc
 characteristics match the reference implementation.
 
 **Test Coverage**: 284 tests + 19 property tests = 303 total verification tests
-

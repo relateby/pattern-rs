@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-gram-rs is a Rust port of the gram-hs reference implementation, providing a Pattern data structure and Gram notation codec. The library compiles for native Rust, WebAssembly, and Python (via PyO3 bindings). This is a faithful port emphasizing correctness and compatibility while adopting Rust-native idioms.
+pattern-rs is a Rust port of the gram-hs reference implementation, providing a Pattern data structure and Gram notation codec. The library compiles for native Rust, WebAssembly, and Python (via PyO3 bindings). This is a faithful port emphasizing correctness and compatibility while adopting Rust-native idioms.
 
 ## Key Reference: gram-hs
 
@@ -106,7 +106,7 @@ gram-lint -t -e "your expression"
 ### Workspace Structure
 
 ```
-gram-rs/
+pattern-rs/
 ├── Cargo.toml              # Workspace root
 ├── crates/
 │   ├── pattern-core/       # Core Pattern<V> and Subject types
@@ -200,7 +200,7 @@ The project uses comprehensive testing:
 - **Property-based testing**: `proptest` for automated test case generation
 - **Snapshot testing**: `insta` for regression detection
 - **Benchmarks**: `criterion` for performance tracking
-- **Equivalence checking**: Utilities for comparing gram-rs and gram-hs implementations
+- **Equivalence checking**: Utilities for comparing pattern-rs and gram-hs implementations
 
 See `docs/testing-infrastructure.md` for detailed documentation.
 

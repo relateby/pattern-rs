@@ -64,9 +64,9 @@
 
 ---
 
-## Phase 5: User Story 3 - Use gram-rs in Rust (Priority: P2)
+## Phase 5: User Story 3 - Use pattern-rs in Rust (Priority: P2)
 
-**Goal**: Practical guide for using `gram-rs` crates in Rust projects.
+**Goal**: Practical guide for using `pattern-rs` crates in Rust projects.
 
 **Independent Test**: Copy code snippets from `docs/rust-usage.md` and verify they compile and run correctly in a sample Rust environment.
 

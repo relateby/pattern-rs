@@ -5,7 +5,7 @@
 
 ## Overview
 
-This document defines the data structure for the core Pattern type. This is the foundational data structure for the gram-rs library, ported from the gram-hs reference implementation. The Pattern type is generic over value type `V`, allowing any type to be used as the pattern value.
+This document defines the data structure for the core Pattern type. This is the foundational data structure for the pattern-rs library, ported from the gram-hs reference implementation. The Pattern type is generic over value type `V`, allowing any type to be used as the pattern value.
 
 ## Core Entity
 

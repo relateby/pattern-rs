@@ -1,6 +1,6 @@
 //! pattern-core - Core pattern data structures
 //!
-//! This crate provides the core pattern data structures for the gram-rs library.
+//! This crate provides the core pattern data structures for the pattern-rs library.
 //! It is a faithful port of the gram-hs reference implementation.
 //!
 //! # Overview

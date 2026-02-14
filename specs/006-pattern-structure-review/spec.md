@@ -43,17 +43,17 @@ A developer needs utilities to analyze and understand pattern structures beyond 
 
 ### User Story 3 - Developer Verifies Behavioral Equivalence with gram-hs (Priority: P2)
 
-A developer needs to verify that pattern validation and structure analysis functions in gram-rs behave identically to the corresponding functions in the gram-hs reference implementation. They need confidence that validation rules and analysis results match between implementations, ensuring consistency and correctness.
+A developer needs to verify that pattern validation and structure analysis functions in pattern-rs behave identically to the corresponding functions in the gram-hs reference implementation. They need confidence that validation rules and analysis results match between implementations, ensuring consistency and correctness.
 
 **Why this priority**: Behavioral equivalence is critical for maintaining correctness during the port. Validation and analysis functions must produce identical results to the reference implementation to ensure patterns are validated and analyzed consistently across implementations.
 
-**Independent Test**: Can be fully tested by running equivalent validation and analysis operations on identical patterns in both gram-rs and gram-hs, and verifying that validation results and analysis outputs match. Test cases from gram-hs can be ported and executed in gram-rs with identical results.
+**Independent Test**: Can be fully tested by running equivalent validation and analysis operations on identical patterns in both pattern-rs and gram-hs, and verifying that validation results and analysis outputs match. Test cases from gram-hs can be ported and executed in pattern-rs with identical results.
 
 **Acceptance Scenarios**:
 
-1. **Given** test cases from gram-hs are available, **When** a developer runs equivalence tests for validation functions, **Then** patterns validated in gram-rs produce the same validation results as gram-hs for identical inputs and rules
-2. **Given** equivalence checking utilities exist, **When** a developer validates a pattern using gram-rs functions, **Then** they can verify validation results match the expected gram-hs validation behavior
-3. **Given** test data is extracted from gram-hs, **When** a developer runs tests for structure analysis utilities, **Then** gram-rs analysis functions produce the same results as gram-hs for identical pattern inputs
+1. **Given** test cases from gram-hs are available, **When** a developer runs equivalence tests for validation functions, **Then** patterns validated in pattern-rs produce the same validation results as gram-hs for identical inputs and rules
+2. **Given** equivalence checking utilities exist, **When** a developer validates a pattern using pattern-rs functions, **Then** they can verify validation results match the expected gram-hs validation behavior
+3. **Given** test data is extracted from gram-hs, **When** a developer runs tests for structure analysis utilities, **Then** pattern-rs analysis functions produce the same results as gram-hs for identical pattern inputs
 4. **Given** behavioral equivalence is verified, **When** a developer uses validation and analysis functions, **Then** they can trust that behavior matches the reference implementation
 
 ---
@@ -103,8 +103,8 @@ A developer needs to verify that pattern validation and structure analysis funct
 - **SC-002**: Developers can analyze pattern structure using analysis utilities, and receive detailed information about structural characteristics (verified by analysis utility tests)
 - **SC-003**: Validation functions correctly enforce structural constraints (max depth, max elements, etc.) and provide detailed error information when validation fails (verified by constraint enforcement tests)
 - **SC-004**: Structure analysis utilities provide accurate and useful information about pattern characteristics (depth distribution, element counts, nesting patterns, etc.) (verified by analysis accuracy tests)
-- **SC-005**: Patterns validated using gram-rs validation functions produce the same validation results as gram-hs for at least 95% of test cases from gram-hs (verified by equivalence test suite)
-- **SC-006**: Structure analysis functions in gram-rs produce the same results as gram-hs for identical pattern inputs in at least 95% of test cases (verified by equivalence test suite)
+- **SC-005**: Patterns validated using pattern-rs validation functions produce the same validation results as gram-hs for at least 95% of test cases from gram-hs (verified by equivalence test suite)
+- **SC-006**: Structure analysis functions in pattern-rs produce the same results as gram-hs for identical pattern inputs in at least 95% of test cases (verified by equivalence test suite)
 - **SC-007**: Validation and analysis functions are available in the `pattern-core` crate and can be imported and used by other crates in the workspace (verified by cross-crate usage tests)
 - **SC-008**: Validation functions can safely validate patterns with nesting depths up to 100 levels without stack overflow (verified by depth limit tests)
 - **SC-009**: Validation and analysis functions can efficiently process patterns with element counts up to 10,000 elements without significant performance degradation (verified by performance tests)
@@ -156,7 +156,7 @@ A developer needs to verify that pattern validation and structure analysis funct
 - **gram-hs Design Documents** (Context Only): `../gram-hs/specs/003-pattern-structure-review/`
   - Feature Specification: `../gram-hs/specs/003-pattern-structure-review/spec.md` (for context, may be outdated)
 - **Porting Guide**: `docs/porting-guide.md` - Systematic approach for porting from gram-hs (includes Library vs CLI distinction)
-- **Project Plan**: `docs/gram-rs-project-plan.md` - Overall architecture and design decisions
+- **Project Plan**: `docs/pattern-rs-project-plan.md` - Overall architecture and design decisions
 - **TODO**: `TODO.md` - Feature tracking and porting checklist
 
 ### Important Distinction

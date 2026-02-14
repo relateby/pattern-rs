@@ -143,7 +143,7 @@ wasm-pack build --target nodejs --release -- --features wasm
 
 #### Install in Your Project
 ```bash
-npm install /path/to/gram-rs/crates/gram-codec/pkg
+npm install /path/to/pattern-rs/crates/gram-codec/pkg
 ```
 
 #### Use Immediately

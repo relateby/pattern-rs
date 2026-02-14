@@ -1,4 +1,4 @@
-# Design Decisions for gram-rs AST Output
+# Design Decisions for pattern-rs AST Output
 
 **Date**: January 9, 2026  
 **Status**: Approved  
@@ -205,7 +205,7 @@ pub fn parse_to_ast_stream(input: &str) -> impl Iterator<Item = Result<AstEvent,
 ## Decision 6: No Structural Validation
 
 ### Decision
-gram-rs validates **syntax only**, not pattern structure.
+pattern-rs validates **syntax only**, not pattern structure.
 
 ### Rationale
 - Parsing and validation are separate concerns
@@ -213,11 +213,11 @@ gram-rs validates **syntax only**, not pattern structure.
 - Graph schemas vary by domain
 - Better handled by separate tools or gram-js/gram-py
 
-### What gram-rs Validates
+### What pattern-rs Validates
 - ✅ Syntax: parentheses balanced, quotes closed, valid identifiers
 - ✅ Grammar: follows gram notation rules
 
-### What gram-rs Does NOT Validate
+### What pattern-rs Does NOT Validate
 - ❌ Required properties
 - ❌ Property types (beyond Value type)
 - ❌ Graph structure (cycles, connectivity)
@@ -233,7 +233,7 @@ gram-rs validates **syntax only**, not pattern structure.
 ## Decision 7: Project Scope - Parser Only
 
 ### Decision
-gram-rs is responsible for **parsing only**, not Pattern operations.
+pattern-rs is responsible for **parsing only**, not Pattern operations.
 
 ### Scope
 
@@ -251,7 +251,7 @@ gram-rs is responsible for **parsing only**, not Pattern operations.
 - Analytics or aggregations
 
 ### Why This Matters
-- Keeps gram-rs focused and maintainable
+- Keeps pattern-rs focused and maintainable
 - Enables language-specific Pattern implementations (gram-js, gram-py)
 - Avoids FFI overhead for Pattern operations
 - Allows independent evolution of parsing vs. operations

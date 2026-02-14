@@ -27,21 +27,21 @@ git commit -m "Add tree-sitter-gram as submodule for corpus tests"
 
 ### Developer Setup
 
-When you clone `gram-rs`, initialize the submodule:
+When you clone `pattern-rs`, initialize the submodule:
 
 #### Option 1: Clone with Submodules (Recommended)
 
 ```bash
-git clone --recurse-submodules https://github.com/gram-data/gram-rs.git
-cd gram-rs
+git clone --recurse-submodules https://github.com/relateby/pattern-rs.git
+cd pattern-rs
 cargo test --package gram-codec
 ```
 
 #### Option 2: Initialize After Clone
 
 ```bash
-git clone https://github.com/gram-data/gram-rs.git
-cd gram-rs
+git clone https://github.com/relateby/pattern-rs.git
+cd pattern-rs
 
 # Initialize and fetch submodules
 git submodule update --init --recursive
@@ -303,4 +303,3 @@ The git submodule approach provides:
 6. **Authoritative source**: Always references official tree-sitter-gram
 
 This ensures all contributors and CI systems test against the same authoritative grammar specification.
-

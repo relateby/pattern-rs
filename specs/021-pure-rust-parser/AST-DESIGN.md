@@ -1,16 +1,16 @@
-# AST Design for gram-rs Parser Output
+# AST Design for pattern-rs Parser Output
 
 **Date**: January 9, 2026  
 **Status**: Design Document  
-**Purpose**: Define the minimal AST output from gram-rs for consumption by gram-js and gram-py
+**Purpose**: Define the minimal AST output from pattern-rs for consumption by gram-js and gram-py
 
 ---
 
 ## Overview
 
-The gram-rs parser should output a **minimal Abstract Syntax Tree (AST)** that represents the parsed Pattern<Subject> structure in a language-agnostic, JSON-serializable format. This AST serves as the interchange format between:
+The pattern-rs parser should output a **minimal Abstract Syntax Tree (AST)** that represents the parsed Pattern<Subject> structure in a language-agnostic, JSON-serializable format. This AST serves as the interchange format between:
 
-- **gram-rs** (Rust parser)
+- **pattern-rs** (Rust parser)
 - **gram-js** (JavaScript/TypeScript native Pattern implementation)
 - **gram-py** (Python native Pattern implementation)
 
@@ -277,7 +277,7 @@ identities = pattern.fold([], lambda acc, subject: acc + [subject.identity.value
 
 ## Project Boundaries
 
-### gram-rs Responsibility
+### pattern-rs Responsibility
 
 ✅ **Parse gram notation** - Text → AST
 ✅ **Validate syntax** - Ensure well-formed gram
@@ -298,7 +298,7 @@ identities = pattern.fold([], lambda acc, subject: acc + [subject.identity.value
 ✅ **Idiomatic APIs** - TypeScript/Python best practices
 
 ❌ **NOT responsible for**:
-- Parsing gram notation (use gram-rs via WASM/bindings)
+- Parsing gram notation (use pattern-rs via WASM/bindings)
 
 ### pattern-frame Responsibility
 
@@ -321,7 +321,7 @@ identities = pattern.fold([], lambda acc, subject: acc + [subject.identity.value
 ### 1. Clear Separation of Concerns
 
 ```
-gram-rs:     Text → AST       (parsing only)
+pattern-rs:     Text → AST       (parsing only)
 gram-js:     AST → Pattern    (FP operations in JS)
 gram-py:     AST → Pattern    (FP operations in Python)
 frame:       Pattern → Frame  (bulk operations)
@@ -349,21 +349,21 @@ Each language implements Pattern following its own best practices:
 
 ### 4. Small Parser Binary
 
-gram-rs stays focused:
+pattern-rs stays focused:
 - ✅ Parser + AST serialization: ~50-100KB WASM
 - ✅ No FP runtime or graph engine
 - ✅ Fast compilation
 
 ### 5. Independent Evolution
 
-- gram-rs can optimize parsing without affecting consumers
+- pattern-rs can optimize parsing without affecting consumers
 - gram-js/gram-py can add features without changing parser
 - AST format can version independently
 
 ### 6. Easy to Port to New Languages
 
 To add gram support to a new language:
-1. Use gram-rs parser (via WASM or native bindings)
+1. Use pattern-rs parser (via WASM or native bindings)
 2. Implement Pattern<V> in target language
 3. Write `Pattern.fromAst(ast)` converter
 4. Done!
@@ -374,7 +374,7 @@ To add gram support to a new language:
 
 ### Current State (Phase 6)
 
-gram-rs exposes:
+pattern-rs exposes:
 ```rust
 pub fn parse_gram(input: &str) -> Result<Vec<Pattern<Subject>>, ParseError>
 pub fn validate_gram(input: &str) -> Result<(), ParseError>
@@ -420,7 +420,7 @@ gram-py/
   tests/
 ```
 
-Both depend on gram-rs only for parsing:
+Both depend on pattern-rs only for parsing:
 ```json
 // package.json (gram-js)
 {
@@ -604,7 +604,7 @@ Err(ParseError) => JsValue::from_str(&format!("Parse error: {}", e))
 
 ### Schema/Validation
 
-**Decision**: Not in gram-rs scope
+**Decision**: Not in pattern-rs scope
 
 **Current**: No structural validation beyond syntax
 **Future**: JSON Schema validation could be separate tool
@@ -628,4 +628,4 @@ Err(ParseError) => JsValue::from_str(&format!("Parse error: {}", e))
 
 **Status**: ✅ **DESIGN APPROVED**  
 **Decisions**: ✅ **ALL APPROVED** (see DECISIONS.md)  
-**Next Step**: Implement `parse_to_ast()` in gram-rs (Phase 7)
+**Next Step**: Implement `parse_to_ast()` in pattern-rs (Phase 7)

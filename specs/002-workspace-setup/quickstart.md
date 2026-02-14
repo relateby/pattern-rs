@@ -5,14 +5,14 @@
 
 ## Overview
 
-This guide provides a quick introduction to working with the gram-rs multi-crate workspace structure.
+This guide provides a quick introduction to working with the pattern-rs multi-crate workspace structure.
 
 ## Workspace Structure
 
 The project is organized as a Cargo workspace with multiple crates:
 
 ```
-gram-rs/
+pattern-rs/
 ├── Cargo.toml              # Workspace root configuration
 ├── crates/
 │   ├── pattern-core/        # Core pattern data structures
@@ -184,4 +184,3 @@ serde = { workspace = true }
 - See `contracts/` for configuration contracts
 - See `data-model.md` for workspace entity definitions
 - Reference `../gram-hs` for gram-hs implementation details
-

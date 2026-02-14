@@ -9,7 +9,7 @@
 
 ### User Story 1 - Developer Works with Modular Crates (Priority: P1)
 
-A Rust developer wants to work on a specific part of the gram-rs library (e.g., pattern operations) without needing to build or understand the entire codebase. They need the project organized into separate, independently buildable crates that can be developed and tested in isolation.
+A Rust developer wants to work on a specific part of the pattern-rs library (e.g., pattern operations) without needing to build or understand the entire codebase. They need the project organized into separate, independently buildable crates that can be developed and tested in isolation.
 
 **Why this priority**: Modular organization is foundational for maintainability, parallel development, and clear separation of concerns. Without this structure, all code lives in one crate, making it harder to understand dependencies, test components independently, and scale the project as it grows.
 
@@ -43,7 +43,7 @@ A maintainer needs automated validation that all crates in the workspace build, 
 
 ### User Story 3 - Test Synchronization Infrastructure (Priority: P3)
 
-A developer needs to ensure that gram-rs tests remain synchronized with the gram-hs reference implementation. They need infrastructure to extract, compare, and validate test cases from both implementations to maintain behavioral equivalence.
+A developer needs to ensure that pattern-rs tests remain synchronized with the gram-hs reference implementation. They need infrastructure to extract, compare, and validate test cases from both implementations to maintain behavioral equivalence.
 
 **Why this priority**: While not blocking for initial workspace setup, test synchronization is essential for maintaining correctness as the port progresses. Establishing this infrastructure early ensures it's available when needed.
 
@@ -87,7 +87,7 @@ A developer needs to ensure that gram-rs tests remain synchronized with the gram
 - **FR-016**: CI/CD pipeline MUST report build and test failures clearly with crate identification
 - **FR-017**: Test synchronization infrastructure MUST be established (structure and utilities, even if initially minimal)
 - **FR-018**: Test synchronization MUST support extracting test data from gram-hs reference implementation
-- **FR-019**: Test synchronization MUST provide mechanisms for comparing test cases between gram-hs and gram-rs
+- **FR-019**: Test synchronization MUST provide mechanisms for comparing test cases between gram-hs and pattern-rs
 - **FR-020**: Placeholder crates (pattern-store, pattern-wasm) MUST have minimal valid structure that compiles without errors
 - **FR-021**: Workspace MUST maintain compatibility with existing development workflows (rustfmt, clippy, etc.)
 - **FR-022**: Workspace MUST support conditional compilation features that work across crate boundaries
@@ -99,7 +99,7 @@ A developer needs to ensure that gram-rs tests remain synchronized with the gram
 - **Crate**: An individual Rust library or binary package within the workspace, each with its own `Cargo.toml` and source code
 - **Workspace Dependencies**: Shared dependencies defined at workspace level and reused across member crates to ensure version consistency
 - **CI/CD Pipeline**: Automated build, test, and validation system that runs on code changes to ensure workspace integrity
-- **Test Synchronization Infrastructure**: Utilities and processes for maintaining test parity between gram-rs and gram-hs reference implementation
+- **Test Synchronization Infrastructure**: Utilities and processes for maintaining test parity between pattern-rs and gram-hs reference implementation
 
 ## Success Criteria *(mandatory)*
 

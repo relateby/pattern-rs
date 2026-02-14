@@ -37,7 +37,7 @@ As a data engineer or architect, I want to learn how to represent my data using 
 
 ---
 
-### User Story 3 - Use gram-rs in Rust (Priority: P2)
+### User Story 3 - Use pattern-rs in Rust (Priority: P2)
 
 As a Rust developer, I want to know how to include the library in my project and perform basic operations, so that I can start building applications.
 
@@ -64,7 +64,7 @@ As a Rust developer, I want to know how to include the library in my project and
 - **FR-001**: Documentation MUST be provided in Markdown format in the `docs/` directory.
 - **FR-002**: `docs/introduction.md` MUST cover the "decorated sequence" concept and the "explicit vs implicit" distinction, inspired by the `gram-hs` guide.
 - **FR-003**: `docs/gram-notation.md` MUST provide a reference for nodes, annotations, relationships, and paths, mapping them to the underlying Pattern structure.
-- **FR-004**: `docs/rust-usage.md` MUST demonstrate basic usage of the `gram-rs` crates (specifically `pattern-core` and `gram-codec`).
+- **FR-004**: `docs/rust-usage.md` MUST demonstrate basic usage of the `pattern-rs` crates (specifically `pattern-core` and `gram-codec`).
 - **FR-005**: The root `README.md` SHOULD be updated to link to the new documentation sections.
 - **FR-006**: Documentation MUST use consistent terminology (e.g., "Pattern", "Value", "Elements", "Atomic Pattern").
 

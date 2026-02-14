@@ -5,7 +5,7 @@
 
 ## Overview
 
-This quickstart guide demonstrates how to use the core Pattern data structure in gram-rs. Patterns are recursive, nested structures (s-expression-like) that are generic over value type `V`. Any Rust type can be used as a pattern value.
+This quickstart guide demonstrates how to use the core Pattern data structure in pattern-rs. Patterns are recursive, nested structures (s-expression-like) that are generic over value type `V`. Any Rust type can be used as a pattern value.
 
 ## Basic Usage
 

@@ -108,7 +108,7 @@
 
 ## Phase 5: User Story 3 - Test Synchronization Infrastructure (Priority: P3)
 
-**Goal**: Establish infrastructure for maintaining test parity between gram-rs and gram-hs reference implementation.
+**Goal**: Establish infrastructure for maintaining test parity between pattern-rs and gram-hs reference implementation.
 
 **Independent Test**: Verify test synchronization utilities exist, can extract test data from gram-hs (or demonstrate structure), and provide comparison mechanisms (even if initially minimal/placeholder).
 
@@ -118,7 +118,7 @@
 - [x] T044 [US3] Create `tests/common/test_cases.json` with JSON schema structure (version, test_cases array) as placeholder in `tests/common/test_cases.json`
 - [x] T045 [US3] Create `scripts/sync-tests/README.md` documenting test synchronization process and usage in `scripts/sync-tests/README.md`
 - [x] T046 [US3] Create `scripts/sync-tests/extract.sh` script (or extract.rs) as placeholder for extracting test cases from gram-hs in `scripts/sync-tests/extract.sh`
-- [x] T047 [US3] Create `scripts/sync-tests/compare.sh` script (or compare.rs) as placeholder for comparing test cases between gram-hs and gram-rs in `scripts/sync-tests/compare.sh`
+- [x] T047 [US3] Create `scripts/sync-tests/compare.sh` script (or compare.rs) as placeholder for comparing test cases between gram-hs and pattern-rs in `scripts/sync-tests/compare.sh`
 - [x] T048 [US3] Add documentation to `scripts/sync-tests/README.md` explaining JSON test case format (reference contracts/test-sync-format.md) in `scripts/sync-tests/README.md`
 - [x] T049 [US3] Verify test synchronization infrastructure structure exists and is documented (run scripts/sync-tests/README.md validation)
 - [x] T050 [US3] Create example test case in `tests/common/test_cases.json` demonstrating the JSON schema format in `tests/common/test_cases.json`
@@ -241,4 +241,3 @@ With multiple developers:
 - Placeholder crates (pattern-store, pattern-wasm) must have minimal valid structure that compiles
 - Existing code from feature 001 should be migrated to appropriate crates (pattern-core)
 - Workspace dependencies are defined at root level and referenced by crates using `{ workspace = true }`
-

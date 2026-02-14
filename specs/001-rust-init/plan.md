@@ -7,7 +7,7 @@
 
 ## Summary
 
-Initialize gram-rs as a Rust library project following Rust best practices, configured for multi-target compilation (native Rust and WASM) with development tooling, documentation structure, and example scaffolding for external language bindings. The project structure will support faithful porting of gram-hs functionality while adopting Rust-native idioms.
+Initialize pattern-rs as a Rust library project following Rust best practices, configured for multi-target compilation (native Rust and WASM) with development tooling, documentation structure, and example scaffolding for external language bindings. The project structure will support faithful porting of gram-hs functionality while adopting Rust-native idioms.
 
 ## Technical Context
 
@@ -85,4 +85,3 @@ contracts/             # API contracts and type signatures (Phase 1 output)
 ```
 
 **Structure Decision**: Single library crate structure following Rust conventions. The `src/lib.rs` will be the main entry point. Examples are organized in `examples/` directory with subdirectories for different language bindings. The `wasm-js` example will be created as a minimal working example, with placeholders for other language bindings (Python, C) in documentation.
-

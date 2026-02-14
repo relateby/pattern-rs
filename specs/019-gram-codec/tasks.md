@@ -41,11 +41,11 @@ When cloning the repository:
 
 ```bash
 # Option 1: Clone with submodules
-git clone --recurse-submodules https://github.com/gram-data/gram-rs.git
+git clone --recurse-submodules https://github.com/relateby/pattern-rs.git
 
 # Option 2: Initialize submodules after clone
-git clone https://github.com/gram-data/gram-rs.git
-cd gram-rs
+git clone https://github.com/relateby/pattern-rs.git
+cd pattern-rs
 git submodule update --init --recursive
 ```
 
@@ -530,4 +530,3 @@ After MVP, deliver remaining user stories incrementally:
 5. **Ship**: Mark feature as complete in TODO.md, update documentation
 
 **Ready to begin implementation** with `/speckit.implement` command or manual task execution.
-

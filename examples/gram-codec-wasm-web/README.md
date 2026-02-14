@@ -15,7 +15,7 @@ cargo install wasm-pack
 ## Building the WASM Module
 
 ```bash
-# From the gram-rs root directory
+# From the pattern-rs root directory
 cd crates/gram-codec
 
 # Build for web (ES modules)
@@ -29,7 +29,7 @@ wasm-pack build --target web . -- --features wasm
 ### Option 1: Simple HTTP Server
 
 ```bash
-# From gram-rs root
+# From pattern-rs root
 cd crates/gram-codec
 
 # Using Python
@@ -225,4 +225,3 @@ cp -r crates/gram-codec/pkg /var/www/html/gram-codec/
   // Use gram_codec functions
 </script>
 ```
-

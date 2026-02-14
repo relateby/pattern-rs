@@ -23,10 +23,10 @@
 
 #### 1. Round-Trip Testing with gram-hs ✅ **RECOMMENDED**
 
-**Goal**: Verify gram-rs JSON can be parsed by gram-hs and vice versa
+**Goal**: Verify pattern-rs JSON can be parsed by gram-hs and vice versa
 
 **Implementation**:
-- Create test that generates gram-rs JSON
+- Create test that generates pattern-rs JSON
 - Parse with gram-hs JSON parser
 - Verify semantic equivalence
 - Test in both directions
@@ -39,7 +39,7 @@
 
 #### 2. JSON Schema Validation ✅ **RECOMMENDED**
 
-**Goal**: Validate gram-rs AST output against gram-hs JSON schema
+**Goal**: Validate pattern-rs AST output against gram-hs JSON schema
 
 **Implementation**:
 - Add `jsonschema` dependency (or similar)
@@ -158,8 +158,8 @@
 ### Priority 1: Interoperability Verification (2-3 hours)
 
 1. **Round-trip with gram-hs** (1-2 hours)
-   - Test gram-rs JSON → gram-hs parser
-   - Test gram-hs JSON → gram-rs parser
+   - Test pattern-rs JSON → gram-hs parser
+   - Test gram-hs JSON → pattern-rs parser
    - Verify semantic equivalence
 
 2. **Schema validation** (1 hour)

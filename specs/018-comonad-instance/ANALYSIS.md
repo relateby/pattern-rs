@@ -9,7 +9,7 @@
 After reviewing the Haskell implementation and usage patterns, **I recommend DEFERRING the Comonad instance port** for the following reasons:
 
 1. **Limited practical usage** - Only `depthAt` uses `extend`, other helpers use direct implementations
-2. **All functionality already available** - gram-rs already has `depth()`, `size()`, and `analyze_structure()`
+2. **All functionality already available** - pattern-rs already has `depth()`, `size()`, and `analyze_structure()`
 3. **Helper functions don't require Comonad** - Can be implemented directly (as `sizeAt` and `indicesAt` demonstrate)
 4. **Complex abstraction with unclear benefit** - Pattern as Comonad is theoretically interesting but practically unnecessary
 
@@ -145,11 +145,11 @@ This suggests that:
 - `extend` directly - Used only in law tests
 - `duplicate` directly - Used only in law tests
 
-### Comparison with Existing gram-rs Features
+### Comparison with Existing pattern-rs Features
 
-gram-rs already has equivalent or better functionality:
+pattern-rs already has equivalent or better functionality:
 
-| Haskell Comonad Operation | gram-rs Equivalent | Status |
+| Haskell Comonad Operation | pattern-rs Equivalent | Status |
 |---------------------------|-------------------|--------|
 | `extract p` (get root value) | `p.value()` or `p.value` field | ✅ Already exists |
 | `depth p` (max depth) | `p.depth()` | ✅ Already exists |
@@ -160,7 +160,7 @@ gram-rs already has equivalent or better functionality:
 | `extend f p` (context-aware map) | ❌ Not implemented | Theoretical use case |
 | `duplicate p` (pattern of subpatterns) | ❌ Not implemented | Theoretical use case |
 
-**Key Insight**: gram-rs has all the **inspection** operations (depth, size, value access) but lacks **position-aware transformation** operations (depthAt, sizeAt, indicesAt).
+**Key Insight**: pattern-rs has all the **inspection** operations (depth, size, value access) but lacks **position-aware transformation** operations (depthAt, sizeAt, indicesAt).
 
 ## Use Case Analysis
 
