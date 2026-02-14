@@ -1,6 +1,6 @@
-# Python Usage Guide for pattern-core
+# Python Usage Guide (relateby)
 
-Comprehensive API reference and usage guide for pattern-core Python bindings.
+Comprehensive API reference and usage guide for the **relateby** Python package. One install provides `relateby.pattern` (Pattern data structures) and `relateby.gram` (Gram notation). This guide focuses on the pattern API; use `relateby.gram` for parsing and serializing gram notation.
 
 ## Table of Contents
 
@@ -20,40 +20,51 @@ Comprehensive API reference and usage guide for pattern-core Python bindings.
 
 ## Installation
 
-### From Wheel (Recommended for Users)
+### From PyPI (recommended)
 
 ```bash
-uv pip install pattern-core
+pip install relateby
 ```
 
-### From Source (For Development)
+One install provides both subpackages. Use them as:
+
+```python
+import relateby.pattern
+import relateby.gram
+
+# Minimal example
+p = relateby.pattern.Pattern.point(42)
+print(p.value)  # 42
+
+# Gram notation
+result = relateby.gram.parse_gram("(alice)-[:KNOWS]->(bob)")
+```
+
+### From TestPyPI (pre-release testing)
+
+To try a version published to TestPyPI before it is on production PyPI:
 
 ```bash
-cd crates/pattern-core
-
-# Install uv if not already installed
-curl -LsSf https://astral.sh/uv/install.sh | sh  # Or: brew install uv
-
-# Create virtual environment and install in development mode
-uv venv
-source .venv/bin/activate  # On Windows: .venv\Scripts\activate
-uv pip install -e ".[dev]"
-
-# Build the extension module
-maturin develop --uv --features python
+pip install --index-url https://test.pypi.org/simple/ relateby
 ```
 
-### Build Wheel
+Then use `import relateby.pattern` and `import relateby.gram` as above. Note: TestPyPI may have older or pre-release versions; for stable use, install from PyPI.
+
+### From source (development)
+
+To build and install the unified package from the repository:
 
 ```bash
-cd crates/pattern-core
-maturin build --release --features python
-uv pip install ../../target/wheels/pattern_core-*.whl
+cd python/relateby
+pip wheel . -w dist
+pip install dist/relateby-*.whl
 ```
+
+See [Release process](release.md) for build prerequisites (Rust, maturin).
 
 ## Core Concepts
 
-pattern-core provides three main types:
+relateby.pattern provides three main types:
 
 1. **Value**: Property value types (string, int, array, map, etc.)
 2. **Subject**: Self-descriptive value with identity, labels, and properties
@@ -64,30 +75,30 @@ pattern-core provides three main types:
 ### Creating Values
 
 ```python
-import pattern_core
+import relateby.pattern
 
 # Standard types
-str_val = pattern_core.Value.string("hello")
-int_val = pattern_core.Value.int(42)
-decimal_val = pattern_core.Value.decimal(3.14)
-bool_val = pattern_core.Value.boolean(True)
-symbol_val = pattern_core.Value.symbol("alice")
+str_val = relateby.pattern.Value.string("hello")
+int_val = relateby.pattern.Value.int(42)
+decimal_val = relateby.pattern.Value.decimal(3.14)
+bool_val = relateby.pattern.Value.boolean(True)
+symbol_val = relateby.pattern.Value.symbol("alice")
 
 # Extended types
-array_val = pattern_core.Value.array([
-    pattern_core.Value.int(1),
-    pattern_core.Value.int(2),
-    pattern_core.Value.int(3)
+array_val = relateby.pattern.Value.array([
+    relateby.pattern.Value.int(1),
+    relateby.pattern.Value.int(2),
+    relateby.pattern.Value.int(3)
 ])
 
-map_val = pattern_core.Value.map({
-    "name": pattern_core.Value.string("Alice"),
-    "age": pattern_core.Value.int(30),
-    "active": pattern_core.Value.boolean(True)
+map_val = relateby.pattern.Value.map({
+    "name": relateby.pattern.Value.string("Alice"),
+    "age": relateby.pattern.Value.int(30),
+    "active": relateby.pattern.Value.boolean(True)
 })
 
-range_val = pattern_core.Value.range(lower=0.0, upper=100.0)
-measurement_val = pattern_core.Value.measurement(42.5, "meters")
+range_val = relateby.pattern.Value.range(lower=0.0, upper=100.0)
+measurement_val = relateby.pattern.Value.measurement(42.5, "meters")
 ```
 
 ### Extracting Values
@@ -107,7 +118,7 @@ map_dict = map_val.as_map()   # Returns Dict[str, Value]
 Python native types automatically convert to Value:
 
 ```python
-subject = pattern_core.Subject(
+subject = relateby.pattern.Subject(
     identity="alice",
     properties={
         "name": "Alice",  # Auto-converts to Value.string
@@ -124,31 +135,31 @@ subject = pattern_core.Subject(
 
 ```python
 # Basic subject with identity only
-subject = pattern_core.Subject(identity="alice")
+subject = relateby.pattern.Subject(identity="alice")
 
 # Subject with labels
-subject = pattern_core.Subject(
+subject = relateby.pattern.Subject(
     identity="alice",
     labels={"Person", "Employee", "Developer"}
 )
 
 # Subject with properties
-subject = pattern_core.Subject(
+subject = relateby.pattern.Subject(
     identity="alice",
     properties={
-        "name": pattern_core.Value.string("Alice"),
-        "age": pattern_core.Value.int(30),
-        "email": pattern_core.Value.string("alice@example.com")
+        "name": relateby.pattern.Value.string("Alice"),
+        "age": relateby.pattern.Value.int(30),
+        "email": relateby.pattern.Value.string("alice@example.com")
     }
 )
 
 # Subject with everything
-subject = pattern_core.Subject(
+subject = relateby.pattern.Subject(
     identity="alice",
     labels={"Person", "Employee"},
     properties={
-        "name": pattern_core.Value.string("Alice"),
-        "department": pattern_core.Value.string("Engineering")
+        "name": relateby.pattern.Value.string("Alice"),
+        "department": relateby.pattern.Value.string("Engineering")
     }
 )
 ```
@@ -176,7 +187,7 @@ print(f"Labels: {labels}")
 
 ```python
 # Set properties
-subject.set_property("name", pattern_core.Value.string("Alice"))
+subject.set_property("name", relateby.pattern.Value.string("Alice"))
 subject.set_property("age", 30)  # Auto-converts to Value.int
 
 # Get properties
@@ -198,15 +209,15 @@ properties = subject.get_properties()  # Returns Dict[str, Value]
 
 ```python
 # Atomic pattern (no elements)
-atomic = pattern_core.Pattern.point("hello")
+atomic = relateby.pattern.Pattern.point("hello")
 
 # Pattern with elements
-child1 = pattern_core.Pattern.point("a")
-child2 = pattern_core.Pattern.point("b")
-parent = pattern_core.Pattern.pattern("root", [child1, child2])
+child1 = relateby.pattern.Pattern.point("a")
+child2 = relateby.pattern.Pattern.point("b")
+parent = relateby.pattern.Pattern.pattern("root", [child1, child2])
 
 # Pattern from list (convenience method)
-pattern = pattern_core.Pattern.from_list("root", ["a", "b", "c", "d"])
+pattern = relateby.pattern.Pattern.from_list("root", ["a", "b", "c", "d"])
 ```
 
 ### Accessing Pattern Properties
@@ -234,16 +245,16 @@ depth = pattern.depth()    # Maximum nesting depth
 values = pattern.values()  # Returns List[str]
 
 # Check if pattern matches structure
-pattern1 = pattern_core.Pattern.point("a")
-pattern2 = pattern_core.Pattern.point("a")
+pattern1 = relateby.pattern.Pattern.point("a")
+pattern2 = relateby.pattern.Pattern.point("a")
 matches = pattern1.matches(pattern2)  # True
 
 # Check if pattern contains subpattern
-parent = pattern_core.Pattern.pattern("root", [
-    pattern_core.Pattern.point("a"),
-    pattern_core.Pattern.point("b")
+parent = relateby.pattern.Pattern.pattern("root", [
+    relateby.pattern.Pattern.point("a"),
+    relateby.pattern.Pattern.point("b")
 ])
-child = pattern_core.Pattern.point("a")
+child = relateby.pattern.Pattern.point("a")
 contains = parent.contains(child)  # True
 ```
 
@@ -253,21 +264,21 @@ contains = parent.contains(child)  # True
 
 ```python
 # Create Subject
-subject = pattern_core.Subject(
+subject = relateby.pattern.Subject(
     identity="alice",
     labels={"Person"},
-    properties={"name": pattern_core.Value.string("Alice")}
+    properties={"name": relateby.pattern.Value.string("Alice")}
 )
 
 # Create PatternSubject
-pattern = pattern_core.PatternSubject.point(subject)
+pattern = relateby.pattern.PatternSubject.point(subject)
 
 # PatternSubject with elements
-child_subject = pattern_core.Subject(identity="child")
-child_pattern = pattern_core.PatternSubject.point(child_subject)
+child_subject = relateby.pattern.Subject(identity="child")
+child_pattern = relateby.pattern.PatternSubject.point(child_subject)
 
-parent_subject = pattern_core.Subject(identity="parent")
-parent_pattern = pattern_core.PatternSubject.pattern(
+parent_subject = relateby.pattern.Subject(identity="parent")
+parent_pattern = relateby.pattern.PatternSubject.pattern(
     parent_subject,
     [child_pattern]
 )
@@ -316,8 +327,8 @@ upper = pattern.map(str.upper)
 total = pattern.fold(0, lambda acc, val: acc + len(str(val)))
 
 # Combine patterns
-pattern1 = pattern_core.Pattern.point("hello")
-pattern2 = pattern_core.Pattern.point(" world")
+pattern1 = relateby.pattern.Pattern.point("hello")
+pattern2 = relateby.pattern.Pattern.point(" world")
 combined = pattern1.combine(pattern2)
 ```
 
@@ -327,11 +338,11 @@ combined = pattern1.combine(pattern2)
 
 ```python
 # Create relationships from pre-computed lists
-sources = [pattern_core.Pattern.point("Alice"), pattern_core.Pattern.point("Bob")]
-targets = [pattern_core.Pattern.point("TechCorp"), pattern_core.Pattern.point("Startup")]
+sources = [relateby.pattern.Pattern.point("Alice"), relateby.pattern.Pattern.point("Bob")]
+targets = [relateby.pattern.Pattern.point("TechCorp"), relateby.pattern.Pattern.point("Startup")]
 rel_types = ["WORKS_FOR", "FOUNDED"]
 
-relationships = pattern_core.Pattern.zip3(sources, targets, rel_types)
+relationships = relateby.pattern.Pattern.zip3(sources, targets, rel_types)
 
 # Each relationship: Pattern(rel_type, [source, target])
 for rel in relationships:
@@ -342,10 +353,10 @@ for rel in relationships:
 
 ```python
 # Create relationships with derived values
-people = [pattern_core.Pattern.point("Alice"), pattern_core.Pattern.point("Bob")]
-companies = [pattern_core.Pattern.point("TechCorp"), pattern_core.Pattern.point("Startup")]
+people = [relateby.pattern.Pattern.point("Alice"), relateby.pattern.Pattern.point("Bob")]
+companies = [relateby.pattern.Pattern.point("TechCorp"), relateby.pattern.Pattern.point("Startup")]
 
-relationships = pattern_core.Pattern.zip_with(
+relationships = relateby.pattern.Pattern.zip_with(
     people,
     companies,
     lambda p, c: "FOUNDED" if "Startup" in c.value else "WORKS_AT"
@@ -360,7 +371,7 @@ Comonad operations allow you to work with patterns in their context.
 
 ```python
 # Extract value at current position
-pattern = pattern_core.Pattern.point("hello")
+pattern = relateby.pattern.Pattern.point("hello")
 value = pattern.extract()  # Returns "hello"
 ```
 
@@ -368,9 +379,9 @@ value = pattern.extract()  # Returns "hello"
 
 ```python
 # Apply function to all contexts
-pattern = pattern_core.Pattern.pattern("root", [
-    pattern_core.Pattern.point("a"),
-    pattern_core.Pattern.point("b")
+pattern = relateby.pattern.Pattern.pattern("root", [
+    relateby.pattern.Pattern.point("a"),
+    relateby.pattern.Pattern.point("b")
 ])
 
 # Replace each value with its depth
@@ -396,7 +407,7 @@ indices = pattern.indices_at()
 
 ```python
 # Create validation rules
-rules = pattern_core.ValidationRules(
+rules = relateby.pattern.ValidationRules(
     max_depth=10,      # Maximum nesting depth
     max_elements=100   # Maximum elements per pattern
 )
@@ -405,7 +416,7 @@ rules = pattern_core.ValidationRules(
 try:
     pattern.validate(rules)
     print("Pattern is valid")
-except pattern_core.ValidationError as e:
+except relateby.pattern.ValidationError as e:
     print(f"Validation failed: {e.message}")
     print(f"Rule violated: {e.rule}")
     print(f"Location: {e.location}")
@@ -416,9 +427,9 @@ except pattern_core.ValidationError as e:
 ```python
 try:
     deep_pattern = create_very_deep_pattern()  # 100+ levels
-    rules = pattern_core.ValidationRules(max_depth=50)
+    rules = relateby.pattern.ValidationRules(max_depth=50)
     deep_pattern.validate(rules)
-except pattern_core.ValidationError as e:
+except relateby.pattern.ValidationError as e:
     if "depth" in e.rule.lower():
         print(f"Pattern too deep: {e.message}")
     elif "elements" in e.rule.lower():
@@ -450,19 +461,19 @@ nesting = analysis.nesting_patterns  # ["uniform", "sparse"]
 
 ```python
 from typing import List
-import pattern_core
+import relateby.pattern
 
-def process_pattern(p: pattern_core.Pattern) -> List[str]:
+def process_pattern(p: relateby.pattern.Pattern) -> List[str]:
     """Type hints work with type checkers (mypy, pyright)."""
     return p.values()
 
-def create_subject(name: str, age: int) -> pattern_core.Subject:
+def create_subject(name: str, age: int) -> relateby.pattern.Subject:
     """Type checkers validate parameter and return types."""
-    return pattern_core.Subject(
+    return relateby.pattern.Subject(
         identity=name.lower(),
         properties={
-            "name": pattern_core.Value.string(name),
-            "age": pattern_core.Value.int(age)
+            "name": relateby.pattern.Value.string(name),
+            "age": relateby.pattern.Value.int(age)
         }
     )
 ```
@@ -510,12 +521,12 @@ def import_relationships_from_csv(filepath):
     with open(filepath) as f:
         reader = csv.DictReader(f)
         for row in reader:
-            sources.append(pattern_core.Pattern.point(row['source']))
-            targets.append(pattern_core.Pattern.point(row['target']))
+            sources.append(relateby.pattern.Pattern.point(row['source']))
+            targets.append(relateby.pattern.Pattern.point(row['target']))
             rel_types.append(row['relationship_type'])
     
     # Create all relationships in one operation
-    return pattern_core.Pattern.zip3(sources, targets, rel_types)
+    return relateby.pattern.Pattern.zip3(sources, targets, rel_types)
 
 # Usage
 relationships = import_relationships_from_csv('graph_data.csv')
@@ -542,11 +553,11 @@ def create_smart_relationships(users, resources):
         else:
             return "NO_ACCESS"
     
-    return pattern_core.Pattern.zip_with(users, resources, determine_access)
+    return relateby.pattern.Pattern.zip_with(users, resources, determine_access)
 
 # Usage
-users = [pattern_core.Pattern.point("admin_user"), pattern_core.Pattern.point("guest_user")]
-resources = [pattern_core.Pattern.point("database"), pattern_core.Pattern.point("public_api")]
+users = [relateby.pattern.Pattern.point("admin_user"), relateby.pattern.Pattern.point("guest_user")]
+resources = [relateby.pattern.Pattern.point("database"), relateby.pattern.Pattern.point("public_api")]
 access_graph = create_smart_relationships(users, resources)
 ```
 
@@ -561,7 +572,7 @@ relationships_data = nlp_model.predict_relationships(document)  # Returns List[t
 sources = [entities[i] for i, _, _ in relationships_data]
 targets = [entities[j] for _, j, _ in relationships_data]
 types = [rel_type for _, _, rel_type in relationships_data]
-kg = pattern_core.Pattern.zip3(sources, targets, types)
+kg = relateby.pattern.Pattern.zip3(sources, targets, types)
 
 # Method 2: If types need computation
 def classify_relationship(src, tgt):
@@ -571,7 +582,7 @@ def classify_relationship(src, tgt):
     else:
         return "RELATED_TO"
 
-kg = pattern_core.Pattern.zip_with(entities, entities, classify_relationship)
+kg = relateby.pattern.Pattern.zip_with(entities, entities, classify_relationship)
 ```
 
 ### Performance Considerations
@@ -587,32 +598,32 @@ kg = pattern_core.Pattern.zip_with(entities, entities, classify_relationship)
 
 ```python
 # Good: Atomic pattern for leaf
-leaf = pattern_core.Pattern.point("value")
+leaf = relateby.pattern.Pattern.point("value")
 
 # Avoid: Empty elements list
-leaf = pattern_core.Pattern.pattern("value", [])  # Unnecessary
+leaf = relateby.pattern.Pattern.pattern("value", [])  # Unnecessary
 ```
 
 ### 2. Use PatternSubject for Graph-Like Structures
 
 ```python
 # Good: PatternSubject for subjects
-subject = pattern_core.Subject(identity="node1", labels={"Person"})
-pattern = pattern_core.PatternSubject.point(subject)
+subject = relateby.pattern.Subject(identity="node1", labels={"Person"})
+pattern = relateby.pattern.PatternSubject.point(subject)
 
 # Avoid: Plain Pattern for complex subjects
-pattern = pattern_core.Pattern.point("node1")  # Loses structure
+pattern = relateby.pattern.Pattern.point("node1")  # Loses structure
 ```
 
 ### 3. Validate Input Patterns
 
 ```python
 # Good: Validate untrusted patterns
-rules = pattern_core.ValidationRules(max_depth=100, max_elements=1000)
+rules = relateby.pattern.ValidationRules(max_depth=100, max_elements=1000)
 try:
     user_pattern.validate(rules)
     process_pattern(user_pattern)
-except pattern_core.ValidationError as e:
+except relateby.pattern.ValidationError as e:
     log_error(f"Invalid pattern: {e.message}")
 ```
 
@@ -620,7 +631,7 @@ except pattern_core.ValidationError as e:
 
 ```python
 # Good: Type hints for clarity
-def transform(p: pattern_core.Pattern) -> pattern_core.Pattern:
+def transform(p: relateby.pattern.Pattern) -> relateby.pattern.Pattern:
     return p.map(str.upper)
 
 # Avoid: No type hints
@@ -649,15 +660,15 @@ print(found.value)  # May raise AttributeError if None!
 
 ```python
 # Build a file system tree
-root = pattern_core.Pattern.pattern(".", [
-    pattern_core.Pattern.pattern("src", [
-        pattern_core.Pattern.point("main.py"),
-        pattern_core.Pattern.point("utils.py")
+root = relateby.pattern.Pattern.pattern(".", [
+    relateby.pattern.Pattern.pattern("src", [
+        relateby.pattern.Pattern.point("main.py"),
+        relateby.pattern.Pattern.point("utils.py")
     ]),
-    pattern_core.Pattern.pattern("tests", [
-        pattern_core.Pattern.point("test_main.py")
+    relateby.pattern.Pattern.pattern("tests", [
+        relateby.pattern.Pattern.point("test_main.py")
     ]),
-    pattern_core.Pattern.point("README.md")
+    relateby.pattern.Pattern.point("README.md")
 ])
 
 # Count total files
@@ -677,30 +688,30 @@ print(f"Structure: {analysis.summary}")
 
 ```python
 # Create people as Subjects
-alice = pattern_core.Subject(
+alice = relateby.pattern.Subject(
     identity="alice",
     labels={"Person", "Employee"},
     properties={
-        "name": pattern_core.Value.string("Alice"),
-        "age": pattern_core.Value.int(30)
+        "name": relateby.pattern.Value.string("Alice"),
+        "age": relateby.pattern.Value.int(30)
     }
 )
 
-bob = pattern_core.Subject(
+bob = relateby.pattern.Subject(
     identity="bob",
     labels={"Person", "Employee"},
     properties={
-        "name": pattern_core.Value.string("Bob"),
-        "age": pattern_core.Value.int(35)
+        "name": relateby.pattern.Value.string("Bob"),
+        "age": relateby.pattern.Value.int(35)
     }
 )
 
 # Build social graph
-alice_pattern = pattern_core.PatternSubject.point(alice)
-bob_pattern = pattern_core.PatternSubject.point(bob)
+alice_pattern = relateby.pattern.PatternSubject.point(alice)
+bob_pattern = relateby.pattern.PatternSubject.point(bob)
 
 # Alice knows Bob
-alice_with_friends = pattern_core.PatternSubject.pattern(
+alice_with_friends = relateby.pattern.PatternSubject.pattern(
     alice,
     [bob_pattern]
 )
@@ -720,7 +731,7 @@ print(f"Found {len(employees)} employees")
 
 ```python
 # Create data pattern
-data = pattern_core.Pattern.from_list("data", [1, 2, 3, 4, 5])
+data = relateby.pattern.Pattern.from_list("data", [1, 2, 3, 4, 5])
 
 # Transform: multiply by 2
 doubled = data.map(lambda x: int(x) * 2)
@@ -737,11 +748,11 @@ print(f"Total: {total}")
 ### Example 4: Pattern Validation
 
 ```python
-def create_safe_pattern(data: List[str], max_depth: int = 10) -> pattern_core.Pattern:
+def create_safe_pattern(data: List[str], max_depth: int = 10) -> relateby.pattern.Pattern:
     """Create pattern with validation."""
-    pattern = pattern_core.Pattern.from_list("root", data)
+    pattern = relateby.pattern.Pattern.from_list("root", data)
     
-    rules = pattern_core.ValidationRules(
+    rules = relateby.pattern.ValidationRules(
         max_depth=max_depth,
         max_elements=1000
     )
@@ -749,7 +760,7 @@ def create_safe_pattern(data: List[str], max_depth: int = 10) -> pattern_core.Pa
     try:
         pattern.validate(rules)
         return pattern
-    except pattern_core.ValidationError as e:
+    except relateby.pattern.ValidationError as e:
         raise ValueError(f"Pattern validation failed: {e.message}")
 
 # Usage

@@ -60,20 +60,35 @@ cargo test <test_name>
 cargo test -- --nocapture
 ```
 
-### Python Bindings (pattern-core)
+### Python Bindings (unified package: relateby)
+
+End users install the single PyPI project **relateby**; one install provides both subpackages:
+
+```bash
+pip install relateby
+```
+
+Use only the public imports (no legacy `pattern_core` or `gram_codec`):
+
+```python
+import relateby.pattern
+import relateby.gram
+```
+
+See `docs/python-usage.md` and `docs/release.md`. For **development** of the pattern-core or gram-codec crates (building from source, running crate-level tests):
 
 ```bash
 # Build Python extension (requires Python 3.8+, uv)
 cd crates/pattern-core
 maturin develop --uv --features python
 
-# Run Python tests
+# Run Python tests (crate-level)
 cd crates/pattern-core
 pytest tests/python/
 
-# Build Python wheel
-cd crates/pattern-core
-maturin build --release --features python
+# Build unified wheel (from repo)
+cd python/relateby
+pip wheel . -w dist
 ```
 
 ### Code Quality

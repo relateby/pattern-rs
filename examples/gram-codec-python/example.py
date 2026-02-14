@@ -2,25 +2,25 @@
 """
 Gram Codec Python Examples
 
-This script demonstrates how to use the gram_codec Python module
+This script demonstrates how to use the relateby.gram Python module
 for parsing, validating, and serializing gram notation.
 
 Prerequisites:
-    pip install gram-codec
+    pip install relateby
 
-Or install from wheel:
-    pip install ../../target/wheels/gram_codec-*.whl
+Or from TestPyPI (pre-release):
+    pip install --index-url https://test.pypi.org/simple/ relateby
 """
 
 import json
-import gram_codec
+import relateby.gram
 
 print("=== Gram Codec Python Examples ===\n")
 
 # Example 1: Parse gram notation
 print("1. Parse Gram Notation")
 try:
-    result = gram_codec.parse_gram("(alice)-[:KNOWS]->(bob)")
+    result = relateby.gram.parse_gram("(alice)-[:KNOWS]->(bob)")
     print(f"   Pattern count: {result.pattern_count}")
     print(f"   Identifiers: {result.identifiers}")
     print(f"   Result object: {result}")
@@ -39,7 +39,7 @@ test_cases = [
 ]
 
 for gram in test_cases:
-    is_valid = gram_codec.validate_gram(gram)
+    is_valid = relateby.gram.validate_gram(gram)
     status = "✓ valid" if is_valid else "✗ invalid"
     print(f"   \"{gram}\" → {status}")
 
@@ -53,7 +53,7 @@ test_patterns = [
 
 for pattern in test_patterns:
     try:
-        serialized = gram_codec.round_trip(pattern)
+        serialized = relateby.gram.round_trip(pattern)
         is_same = pattern == serialized
         print(f"   Original:   {pattern}")
         print(f"   Serialized: {serialized}")
@@ -74,7 +74,7 @@ complex_patterns = [
 
 for pattern in complex_patterns:
     try:
-        result = gram_codec.parse_gram(pattern)
+        result = relateby.gram.parse_gram(pattern)
         print(f"   ✓ \"{pattern}\" → {result.pattern_count} pattern(s)")
     except ValueError as e:
         print(f"   ✗ \"{pattern}\" → Error: {e}")
@@ -90,14 +90,14 @@ invalid_patterns = [
 
 for pattern in invalid_patterns:
     try:
-        gram_codec.parse_gram(pattern)
+        relateby.gram.parse_gram(pattern)
         print(f"   Unexpected success for: {pattern}")
     except ValueError as e:
         print(f"   ✓ Expected error for \"{pattern}\"")
 
 # Example 6: Version information
 print("\n6. Version Information")
-print(f"   Gram Codec version: {gram_codec.version()}")
+print(f"   Gram Codec version: {relateby.gram.version()}")
 
 # Example 7: Batch validation
 print("\n7. Batch Validation")
@@ -112,7 +112,7 @@ valid_count = 0
 invalid_count = 0
 
 for filename, content in files.items():
-    is_valid = gram_codec.validate_gram(content)
+    is_valid = relateby.gram.validate_gram(content)
     status = "✓ valid" if is_valid else "✗ invalid"
     print(f"   {filename}: {status}")
     
@@ -125,7 +125,7 @@ print(f"   Summary: {valid_count} valid, {invalid_count} invalid")
 
 # Example 8: Working with ParseResult
 print("\n8. Working with ParseResult")
-result = gram_codec.parse_gram("(alice) (bob) (charlie)")
+result = relateby.gram.parse_gram("(alice) (bob) (charlie)")
 print(f"   Type: {type(result)}")
 print(f"   Pattern count: {result.pattern_count}")
 print(f"   Identifiers: {result.identifiers}")
@@ -149,7 +149,7 @@ gram_data = [
 parsed_patterns = []
 for gram in gram_data:
     try:
-        result = gram_codec.parse_gram(gram)
+        result = relateby.gram.parse_gram(gram)
         parsed_patterns.append({
             "input": gram,
             "pattern_count": result.pattern_count,
@@ -173,10 +173,10 @@ print("\n10. Validation Pipeline")
 
 def validate_and_normalize(gram_input):
     """Validate gram notation and return normalized form"""
-    if not gram_codec.validate_gram(gram_input):
+    if not relateby.gram.validate_gram(gram_input):
         raise ValueError(f"Invalid gram notation: {gram_input}")
     
-    return gram_codec.round_trip(gram_input)
+    return relateby.gram.round_trip(gram_input)
 
 test_inputs = [
     "(alice)-->(bob)",
@@ -206,7 +206,7 @@ print("-" * 50)
 gram_input = '(alice:Person {name: "Alice", age: 30})'
 print(f"Input: {gram_input}\n")
 
-ast = gram_codec.parse_to_ast(gram_input)
+ast = relateby.gram.parse_to_ast(gram_input)
 print(f"Identity:   {ast['subject']['identity']}")
 print(f"Labels:     {ast['subject']['labels']}")
 print(f"Properties: {json.dumps(ast['subject']['properties'], indent=2)}")
@@ -218,7 +218,7 @@ print("-" * 50)
 gram_input = '[team:Team | (alice:Person), (bob:Person)]'
 print(f"Input: {gram_input}\n")
 
-ast = gram_codec.parse_to_ast(gram_input)
+ast = relateby.gram.parse_to_ast(gram_input)
 print(f"Parent identity: {ast['subject']['identity']}")
 print(f"Parent labels:   {ast['subject']['labels']}")
 print(f"Number of elements: {len(ast['elements'])}")
@@ -234,7 +234,7 @@ print("-" * 50)
 gram_input = '(data {name: "Test", count: 42, active: true, tags: ["a", "b"]})'
 print(f"Input: {gram_input}\n")
 
-ast = gram_codec.parse_to_ast(gram_input)
+ast = relateby.gram.parse_to_ast(gram_input)
 print("Property types:")
 for key, value in ast['subject']['properties'].items():
     if isinstance(value, dict) and 'type' in value:
@@ -250,7 +250,7 @@ print("-" * 50)
 gram_input = '[org:Org {name: "ACME"} | [team:Team | (alice), (bob)]]'
 print(f"Input: {gram_input}\n")
 
-ast = gram_codec.parse_to_ast(gram_input)
+ast = relateby.gram.parse_to_ast(gram_input)
 
 def print_pattern(pattern, depth=0):
     """Recursively print pattern structure"""
@@ -274,7 +274,7 @@ print("-" * 50)
 gram_input = '(alice:Person {name: "Alice"})'
 print(f"Input: {gram_input}\n")
 
-ast = gram_codec.parse_to_ast(gram_input)
+ast = relateby.gram.parse_to_ast(gram_input)
 
 # Serialize to compact JSON
 compact_json = json.dumps(ast)

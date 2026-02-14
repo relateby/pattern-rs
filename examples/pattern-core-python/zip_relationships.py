@@ -11,10 +11,10 @@ Demonstrates:
 import sys
 
 try:
-    import pattern_core
+    import relateby.pattern
 except ImportError:
-    print("ERROR: pattern_core module not found.")
-    print("Build it with: cd crates/pattern-core && maturin develop --uv --features python")
+    print("ERROR: relateby.pattern not found. Install with: pip install relateby")
+    print("Or from TestPyPI: pip install --index-url https://test.pypi.org/simple/ relateby")
     sys.exit(1)
 
 
@@ -26,23 +26,23 @@ def example_zip3_simple():
 
     # Create source nodes (people)
     sources = [
-        pattern_core.Pattern.point("Alice"),
-        pattern_core.Pattern.point("Bob"),
-        pattern_core.Pattern.point("Charlie"),
+        relateby.pattern.Pattern.point("Alice"),
+        relateby.pattern.Pattern.point("Bob"),
+        relateby.pattern.Pattern.point("Charlie"),
     ]
 
     # Create target nodes (organizations)
     targets = [
-        pattern_core.Pattern.point("TechCorp"),
-        pattern_core.Pattern.point("StartupInc"),
-        pattern_core.Pattern.point("Enterprise Ltd"),
+        relateby.pattern.Pattern.point("TechCorp"),
+        relateby.pattern.Pattern.point("StartupInc"),
+        relateby.pattern.Pattern.point("Enterprise Ltd"),
     ]
 
     # Relationship types from external source (e.g., database, CSV)
     relationship_types = ["WORKS_FOR", "FOUNDED", "CONSULTS_WITH"]
 
     # Create relationships using zip3
-    relationships = pattern_core.Pattern.zip3(sources, targets, relationship_types)
+    relationships = relateby.pattern.Pattern.zip3(sources, targets, relationship_types)
 
     print(f"Created {len(relationships)} relationships:")
     for rel in relationships:
@@ -60,52 +60,52 @@ def example_zip3_subjects():
     print("=" * 60)
 
     # Create people as Subjects
-    alice = pattern_core.Subject(
+    alice = relateby.pattern.Subject(
         identity="alice",
         labels={"Person", "Employee"},
         properties={
-            "name": pattern_core.Value.string("Alice Johnson"),
-            "role": pattern_core.Value.string("Engineer")
+            "name": relateby.pattern.Value.string("Alice Johnson"),
+            "role": relateby.pattern.Value.string("Engineer")
         }
     )
 
-    bob = pattern_core.Subject(
+    bob = relateby.pattern.Subject(
         identity="bob",
         labels={"Person", "Employee"},
         properties={
-            "name": pattern_core.Value.string("Bob Smith"),
-            "role": pattern_core.Value.string("Manager")
+            "name": relateby.pattern.Value.string("Bob Smith"),
+            "role": relateby.pattern.Value.string("Manager")
         }
     )
 
     # Create companies as Subjects
-    techcorp = pattern_core.Subject(
+    techcorp = relateby.pattern.Subject(
         identity="techcorp",
         labels={"Company", "Organization"},
         properties={
-            "name": pattern_core.Value.string("TechCorp"),
-            "industry": pattern_core.Value.string("Technology")
+            "name": relateby.pattern.Value.string("TechCorp"),
+            "industry": relateby.pattern.Value.string("Technology")
         }
     )
 
-    startup = pattern_core.Subject(
+    startup = relateby.pattern.Subject(
         identity="startup",
         labels={"Company", "Organization"},
         properties={
-            "name": pattern_core.Value.string("StartupInc"),
-            "industry": pattern_core.Value.string("SaaS")
+            "name": relateby.pattern.Value.string("StartupInc"),
+            "industry": relateby.pattern.Value.string("SaaS")
         }
     )
 
     # Create Pattern[Subject] nodes
     people = [
-        pattern_core.Pattern.point(alice),
-        pattern_core.Pattern.point(bob),
+        relateby.pattern.Pattern.point(alice),
+        relateby.pattern.Pattern.point(bob),
     ]
 
     companies = [
-        pattern_core.Pattern.point(techcorp),
-        pattern_core.Pattern.point(startup),
+        relateby.pattern.Pattern.point(techcorp),
+        relateby.pattern.Pattern.point(startup),
     ]
 
     # Relationship data from external source
@@ -113,10 +113,10 @@ def example_zip3_subjects():
 
     # Create relationships
     # Note: For relationship identities, we extract the identity from Subject values
-    people_patterns = [pattern_core.Pattern.point(p.value.identity) for p in people]
-    company_patterns = [pattern_core.Pattern.point(c.value.identity) for c in companies]
+    people_patterns = [relateby.pattern.Pattern.point(p.value.identity) for p in people]
+    company_patterns = [relateby.pattern.Pattern.point(c.value.identity) for c in companies]
 
-    relationships = pattern_core.Pattern.zip3(people_patterns, company_patterns, employment_relations)
+    relationships = relateby.pattern.Pattern.zip3(people_patterns, company_patterns, employment_relations)
 
     print(f"Created {len(relationships)} employment relationships:")
     for rel in relationships:
@@ -135,15 +135,15 @@ def example_zip_with_simple():
 
     # Create nodes
     people = [
-        pattern_core.Pattern.point("Alice"),
-        pattern_core.Pattern.point("Bob"),
-        pattern_core.Pattern.point("Charlie"),
+        relateby.pattern.Pattern.point("Alice"),
+        relateby.pattern.Pattern.point("Bob"),
+        relateby.pattern.Pattern.point("Charlie"),
     ]
 
     companies = [
-        pattern_core.Pattern.point("TechCorp"),
-        pattern_core.Pattern.point("StartupInc"),
-        pattern_core.Pattern.point("Enterprise"),
+        relateby.pattern.Pattern.point("TechCorp"),
+        relateby.pattern.Pattern.point("StartupInc"),
+        relateby.pattern.Pattern.point("Enterprise"),
     ]
 
     # Derive relationship type from the nodes being connected
@@ -161,7 +161,7 @@ def example_zip_with_simple():
             return f"EMPLOYED_AT"
 
     # Create relationships with computed values
-    relationships = pattern_core.Pattern.zip_with(people, companies, compute_relationship)
+    relationships = relateby.pattern.Pattern.zip_with(people, companies, compute_relationship)
 
     print(f"Created {len(relationships)} computed relationships:")
     for rel in relationships:
@@ -180,15 +180,15 @@ def example_zip_with_conditional():
 
     # Create nodes with context
     users = [
-        pattern_core.Pattern.point("admin_user"),
-        pattern_core.Pattern.point("regular_user"),
-        pattern_core.Pattern.point("guest_user"),
+        relateby.pattern.Pattern.point("admin_user"),
+        relateby.pattern.Pattern.point("regular_user"),
+        relateby.pattern.Pattern.point("guest_user"),
     ]
 
     resources = [
-        pattern_core.Pattern.point("database"),
-        pattern_core.Pattern.point("api"),
-        pattern_core.Pattern.point("public_page"),
+        relateby.pattern.Pattern.point("database"),
+        relateby.pattern.Pattern.point("api"),
+        relateby.pattern.Pattern.point("public_page"),
     ]
 
     # Determine access type based on user and resource
@@ -209,7 +209,7 @@ def example_zip_with_conditional():
             else:
                 return "NO_ACCESS"
 
-    access_relations = pattern_core.Pattern.zip_with(users, resources, determine_access)
+    access_relations = relateby.pattern.Pattern.zip_with(users, resources, determine_access)
 
     print(f"Created {len(access_relations)} access control relationships:")
     for rel in access_relations:
@@ -239,12 +239,12 @@ def example_bulk_import():
     print(f"Importing {len(import_data)} relationships from external source...")
 
     # Extract columns
-    sources = [pattern_core.Pattern.point(row[0]) for row in import_data]
-    targets = [pattern_core.Pattern.point(row[1]) for row in import_data]
+    sources = [relateby.pattern.Pattern.point(row[0]) for row in import_data]
+    targets = [relateby.pattern.Pattern.point(row[1]) for row in import_data]
     rel_types = [row[2] for row in import_data]
 
     # Bulk create relationships
-    relationships = pattern_core.Pattern.zip3(sources, targets, rel_types)
+    relationships = relateby.pattern.Pattern.zip3(sources, targets, rel_types)
 
     print(f"Successfully imported {len(relationships)} relationships:")
     for i, rel in enumerate(relationships, 1):
@@ -274,11 +274,11 @@ def example_graph_queries():
     ]
 
     # Create friendship relationships
-    sources = [pattern_core.Pattern.point(src) for src, _ in friendships]
-    targets = [pattern_core.Pattern.point(tgt) for _, tgt in friendships]
+    sources = [relateby.pattern.Pattern.point(src) for src, _ in friendships]
+    targets = [relateby.pattern.Pattern.point(tgt) for _, tgt in friendships]
     rel_type = ["FRIENDS_WITH"] * len(friendships)
 
-    relationships = pattern_core.Pattern.zip3(sources, targets, rel_type)
+    relationships = relateby.pattern.Pattern.zip3(sources, targets, rel_type)
 
     print(f"Social network with {len(people)} people and {len(relationships)} friendships:")
 
@@ -309,22 +309,22 @@ def example_comparison():
     print("=" * 60)
 
     users = [
-        pattern_core.Pattern.point("user1"),
-        pattern_core.Pattern.point("user2"),
-        pattern_core.Pattern.point("user3"),
+        relateby.pattern.Pattern.point("user1"),
+        relateby.pattern.Pattern.point("user2"),
+        relateby.pattern.Pattern.point("user3"),
     ]
 
     posts = [
-        pattern_core.Pattern.point("post_a"),
-        pattern_core.Pattern.point("post_b"),
-        pattern_core.Pattern.point("post_c"),
+        relateby.pattern.Pattern.point("post_a"),
+        relateby.pattern.Pattern.point("post_b"),
+        relateby.pattern.Pattern.point("post_c"),
     ]
 
     print("Approach 1: Pre-computed values (zip3)")
     print("  Use when: Data from database, CSV, API")
 
     actions = ["CREATED", "LIKED", "COMMENTED_ON"]
-    rels_zip3 = pattern_core.Pattern.zip3(users, posts, actions)
+    rels_zip3 = relateby.pattern.Pattern.zip3(users, posts, actions)
 
     for rel in rels_zip3:
         print(f"    ({rel.elements[0].value}) -[:{rel.value}]-> ({rel.elements[1].value})")
@@ -332,7 +332,7 @@ def example_comparison():
     print("\nApproach 2: Computed values (zip_with)")
     print("  Use when: Values derived from nodes, business rules")
 
-    rels_zip_with = pattern_core.Pattern.zip_with(
+    rels_zip_with = relateby.pattern.Pattern.zip_with(
         users,
         posts,
         lambda u, p: f"ACTION_BY_{u.value}_ON_{p.value}"

@@ -9,48 +9,47 @@ Python bindings for the gram-codec Rust library, enabling parsing, validation, a
 ### From PyPI (when published)
 
 ```bash
-pip install gram-codec
+pip install relateby
+```
+
+### From TestPyPI (pre-release)
+
+```bash
+pip install --index-url https://test.pypi.org/simple/ relateby
 ```
 
 ### From Wheel (Local Development)
 
 ```bash
-# Build the wheel
-cd crates/gram-codec
-maturin build --release --features python
+# Build the unified wheel from repo root
+cd python/relateby
+pip wheel . -w dist
 
 # Install the wheel
-pip install ../../target/wheels/gram_codec-0.1.0-*.whl
+pip install dist/relateby-*.whl
 ```
 
 ### From Source
 
-```bash
-# Install maturin
-pip install maturin
-
-# Build and install
-cd crates/gram-codec
-maturin develop --features python
-```
+See [Release process](../../docs/release.md) for build prerequisites. From `python/relateby/` run `pip wheel . -w dist` then `pip install dist/relateby-*.whl`.
 
 ## Quick Start
 
 ```python
-import gram_codec
+import relateby.gram
 
 # Parse gram notation
-result = gram_codec.parse_gram("(alice)-[:KNOWS]->(bob)")
+result = relateby.gram.parse_gram("(alice)-[:KNOWS]->(bob)")
 print(f"Parsed {result.pattern_count} patterns")
 
 # Validate gram notation
-is_valid = gram_codec.validate_gram("(hello)")  # True
+is_valid = relateby.gram.validate_gram("(hello)")  # True
 
 # Round-trip (parse and serialize)
-serialized = gram_codec.round_trip("(a)-->(b)")  # "(a)-->(b)"
+serialized = relateby.gram.round_trip("(a)-->(b)")  # "(a)-->(b)"
 
 # Get version
-print(gram_codec.version())  # "0.1.0"
+print(relateby.gram.version())  # "0.1.0"
 ```
 
 ## Current API (Validation Only)
@@ -72,7 +71,7 @@ Parse gram notation and return information about the parsed patterns.
 
 **Example:**
 ```python
-result = gram_codec.parse_gram("(alice)-[:KNOWS]->(bob)")
+result = relateby.gram.parse_gram("(alice)-[:KNOWS]->(bob)")
 print(result.pattern_count)  # 1
 print(result.identifiers)  # []
 ```
@@ -89,8 +88,8 @@ Validate gram notation without parsing.
 
 **Example:**
 ```python
-gram_codec.validate_gram("(hello)")  # True
-gram_codec.validate_gram("(unclosed")  # False
+relateby.gram.validate_gram("(hello)")  # True
+relateby.gram.validate_gram("(unclosed")  # False
 ```
 
 ### `round_trip(input: str) -> str`
@@ -108,7 +107,7 @@ Parse gram notation, serialize it back, and return the serialized form.
 
 **Example:**
 ```python
-serialized = gram_codec.round_trip("(alice)-->(bob)")
+serialized = relateby.gram.round_trip("(alice)-->(bob)")
 print(serialized)  # "(alice)-->(bob)"
 ```
 
@@ -121,7 +120,7 @@ Get the version of gram-codec.
 
 **Example:**
 ```python
-print(gram_codec.version())  # "0.1.0"
+print(relateby.gram.version())  # "0.1.0"
 ```
 
 ### `ParseResult` Class
@@ -139,7 +138,7 @@ Result object from `parse_gram()`.
 
 **Example:**
 ```python
-result = gram_codec.parse_gram("(hello)")
+result = relateby.gram.parse_gram("(hello)")
 print(result.pattern_count)  # 1
 print(result.to_dict())  # {'pattern_count': 1, 'identifiers': []}
 ```
@@ -162,8 +161,8 @@ See `example.py` for comprehensive examples demonstrating:
 ### Running the Examples
 
 ```bash
-# Make sure gram_codec is installed
-pip install ../../target/wheels/gram_codec-*.whl
+# Make sure relateby.gram is installed
+pip install ../../python/relateby/dist/relateby-*.whl
 
 # Run the examples
 python example.py
@@ -174,14 +173,14 @@ python example.py
 ### File Validation
 
 ```python
-import gram_codec
+import relateby.gram
 
 def validate_gram_file(filepath):
     """Validate a gram file"""
     with open(filepath) as f:
         content = f.read()
     
-    return gram_codec.validate_gram(content)
+    return relateby.gram.validate_gram(content)
 
 # Usage
 is_valid = validate_gram_file("data.gram")
@@ -191,7 +190,7 @@ print(f"File is {'valid' if is_valid else 'invalid'}")
 ### Batch Processing
 
 ```python
-import gram_codec
+import relateby.gram
 import glob
 
 def process_gram_files(pattern="**/*.gram"):
@@ -203,7 +202,7 @@ def process_gram_files(pattern="**/*.gram"):
             content = f.read()
         
         try:
-            result = gram_codec.parse_gram(content)
+            result = relateby.gram.parse_gram(content)
             results.append({
                 "file": filepath,
                 "valid": True,
@@ -227,14 +226,14 @@ for r in results:
 ### Data Pipeline Integration
 
 ```python
-import gram_codec
+import relateby.gram
 import pandas as pd
 
 def parse_gram_column(df, column_name):
     """Parse gram notation in a DataFrame column"""
     def parse_safe(gram):
         try:
-            result = gram_codec.parse_gram(gram)
+            result = relateby.gram.parse_gram(gram)
             return result.pattern_count
         except ValueError:
             return None
@@ -255,7 +254,7 @@ print(df)
 ```python
 #!/usr/bin/env python3
 import sys
-import gram_codec
+import relateby.gram
 
 def main():
     if len(sys.argv) < 3:
@@ -267,14 +266,14 @@ def main():
     
     if command == "parse":
         try:
-            result = gram_codec.parse_gram(input_gram)
+            result = relateby.gram.parse_gram(input_gram)
             print(f"Valid: {result.pattern_count} pattern(s)")
         except ValueError as e:
             print(f"Invalid: {e}")
             sys.exit(1)
     
     elif command == "validate":
-        is_valid = gram_codec.validate_gram(input_gram)
+        is_valid = relateby.gram.validate_gram(input_gram)
         print("Valid" if is_valid else "Invalid")
         sys.exit(0 if is_valid else 1)
     
@@ -297,7 +296,7 @@ The Python bindings are powered by native Rust code, providing:
 ### Benchmarking
 
 ```python
-import gram_codec
+import relateby.gram
 import time
 
 gram = "(alice)-[:KNOWS]->(bob)"
@@ -305,7 +304,7 @@ iterations = 10000
 
 start = time.time()
 for _ in range(iterations):
-    gram_codec.parse_gram(gram)
+    relateby.gram.parse_gram(gram)
 end = time.time()
 
 elapsed = end - start
@@ -319,7 +318,7 @@ print(f"Average: {per_call:.3f}ms per parse")
 The package includes type hints for better IDE support:
 
 ```python
-from gram_codec import parse_gram, validate_gram, round_trip, ParseResult
+from relateby.gram import parse_gram, validate_gram, round_trip, ParseResult
 
 # Type-checked usage
 result: ParseResult = parse_gram("(hello)")
@@ -332,10 +331,10 @@ serialized: str = round_trip("(a)-->(b)")
 All parsing errors are raised as `ValueError`:
 
 ```python
-import gram_codec
+import relateby.gram
 
 try:
-    result = gram_codec.parse_gram("(unclosed")
+    result = relateby.gram.parse_gram("(unclosed")
 except ValueError as e:
     print(f"Parse error: {e}")
     # Parse error: Syntax error at ...
@@ -344,25 +343,25 @@ except ValueError as e:
 ## Testing
 
 ```python
-import gram_codec
+import relateby.gram
 import unittest
 
 class TestGramCodec(unittest.TestCase):
     def test_parse_valid(self):
-        result = gram_codec.parse_gram("(hello)")
+        result = relateby.gram.parse_gram("(hello)")
         self.assertEqual(result.pattern_count, 1)
     
     def test_parse_invalid(self):
         with self.assertRaises(ValueError):
-            gram_codec.parse_gram("(unclosed")
+            relateby.gram.parse_gram("(unclosed")
     
     def test_validate(self):
-        self.assertTrue(gram_codec.validate_gram("(hello)"))
-        self.assertFalse(gram_codec.validate_gram("(unclosed"))
+        self.assertTrue(relateby.gram.validate_gram("(hello)"))
+        self.assertFalse(relateby.gram.validate_gram("(unclosed"))
     
     def test_round_trip(self):
         original = "(alice)-->(bob)"
-        serialized = gram_codec.round_trip(original)
+        serialized = relateby.gram.round_trip(original)
         self.assertEqual(original, serialized)
 
 if __name__ == "__main__":
@@ -384,7 +383,7 @@ The current API returns only metadata (pattern count, identifiers). The AST will
 ### Future Usage (Phase 7)
 
 ```python
-from gram_codec import parse_to_ast
+from relateby.gram import parse_to_ast
 
 # Parse to AST
 ast = parse_to_ast("(alice:Person {name: 'Alice', age: 30})")
@@ -438,11 +437,11 @@ This separation keeps the native extension focused on parsing while enabling ful
 
 ### Import Error
 
-If you get `ModuleNotFoundError: No module named 'gram_codec'`:
+If you get `ModuleNotFoundError: No module named 'relateby.gram'`:
 
-1. Make sure the package is installed: `pip list | grep gram-codec`
+1. Make sure the package is installed: `pip list | grep relateby`
 2. Check Python version compatibility: `python --version` (requires >= 3.8)
-3. Reinstall: `pip install --force-reinstall gram-codec`
+3. Reinstall: `pip install --force-reinstall relateby`
 
 ### Build Errors
 

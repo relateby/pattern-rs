@@ -1,0 +1,34 @@
+[project]
+name = "relateby"
+version = "0.1.0"
+description = "Unified Python package for Pattern data structures and Gram notation (relateby.pattern and relateby.gram)"
+readme = "README.md"
+license = { text = "Apache-2.0" }
+requires-python = ">=3.8"
+keywords = [
+    "pattern",
+    "gram",
+    "data-structure",
+    "graph",
+    "notation",
+    "relateby",
+]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: Apache Software License",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.8",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Programming Language :: Rust",
+    "Topic :: Software Development :: Libraries",
+]
+
+[build-system]
+requires = ["maturin>=1.0,<2.0"]
+build-backend = "relateby_build"
+backend-path = ["."]

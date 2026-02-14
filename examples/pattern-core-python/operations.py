@@ -13,10 +13,10 @@ Demonstrates:
 import sys
 
 try:
-    import pattern_core
+    import relateby.pattern
 except ImportError:
-    print("ERROR: pattern_core module not found.")
-    print("Build it with: cd crates/pattern-core && maturin develop --uv --features python")
+    print("ERROR: relateby.pattern not found. Install with: pip install relateby")
+    print("Or from TestPyPI: pip install --index-url https://test.pypi.org/simple/ relateby")
     sys.exit(1)
 
 
@@ -27,7 +27,7 @@ def example_map():
     print("=" * 60)
 
     # Create pattern
-    pattern = pattern_core.Pattern.pattern("hello", pattern_core.Pattern.from_values(["world", "python", "patterns"]))
+    pattern = relateby.pattern.Pattern.pattern("hello", relateby.pattern.Pattern.from_values(["world", "python", "patterns"]))
 
     print(f"Original values: {pattern.values()}")
 
@@ -48,7 +48,7 @@ def example_filter():
     print("=" * 60)
 
     # Create pattern
-    pattern = pattern_core.Pattern.pattern("numbers", pattern_core.Pattern.from_values(["1", "2", "3", "4", "5"]))
+    pattern = relateby.pattern.Pattern.pattern("numbers", relateby.pattern.Pattern.from_values(["1", "2", "3", "4", "5"]))
 
     print(f"All values: {pattern.values()}")
 
@@ -69,7 +69,7 @@ def example_any_all():
     print("=" * 60)
 
     # Create pattern
-    pattern = pattern_core.Pattern.pattern("data", pattern_core.Pattern.from_values(["apple", "apricot", "avocado"]))
+    pattern = relateby.pattern.Pattern.pattern("data", relateby.pattern.Pattern.from_values(["apple", "apricot", "avocado"]))
 
     print(f"Values: {pattern.values()}")
 
@@ -94,7 +94,7 @@ def example_find_first():
     print("=" * 60)
 
     # Create pattern
-    pattern = pattern_core.Pattern.pattern("fruits", pattern_core.Pattern.from_values([
+    pattern = relateby.pattern.Pattern.pattern("fruits", relateby.pattern.Pattern.from_values([
         "apple", "banana", "cherry", "date", "elderberry"
     ]))
 
@@ -121,59 +121,59 @@ def example_fold():
     print("=" * 60)
 
     # Create a Team entity (abstract concept, not a person)
-    team_entity = pattern_core.Subject(
+    team_entity = relateby.pattern.Subject(
         identity="engineering_team",
         labels={"Team", "Department"},
         properties={
-            "name": pattern_core.Value.string("Engineering Team"),
-            "total_budget": pattern_core.Value.int(0),  # Will be set to aggregate
-            "headcount": pattern_core.Value.int(0)       # Will be set to count
+            "name": relateby.pattern.Value.string("Engineering Team"),
+            "total_budget": relateby.pattern.Value.int(0),  # Will be set to aggregate
+            "headcount": relateby.pattern.Value.int(0)       # Will be set to count
         }
     )
 
     # Create team members
-    manager = pattern_core.Subject(
+    manager = relateby.pattern.Subject(
         identity="manager",
         labels={"Person", "Manager"},
         properties={
-            "name": pattern_core.Value.string("Diana"),
-            "salary": pattern_core.Value.int(150000)
+            "name": relateby.pattern.Value.string("Diana"),
+            "salary": relateby.pattern.Value.int(150000)
         }
     )
 
-    dev1 = pattern_core.Subject(
+    dev1 = relateby.pattern.Subject(
         identity="dev1",
         labels={"Person", "Developer"},
         properties={
-            "name": pattern_core.Value.string("Alice"),
-            "salary": pattern_core.Value.int(120000)
+            "name": relateby.pattern.Value.string("Alice"),
+            "salary": relateby.pattern.Value.int(120000)
         }
     )
 
-    dev2 = pattern_core.Subject(
+    dev2 = relateby.pattern.Subject(
         identity="dev2",
         labels={"Person", "Developer"},
         properties={
-            "name": pattern_core.Value.string("Bob"),
-            "salary": pattern_core.Value.int(115000)
+            "name": relateby.pattern.Value.string("Bob"),
+            "salary": relateby.pattern.Value.int(115000)
         }
     )
 
-    dev3 = pattern_core.Subject(
+    dev3 = relateby.pattern.Subject(
         identity="dev3",
         labels={"Person", "Developer"},
         properties={
-            "name": pattern_core.Value.string("Charlie"),
-            "salary": pattern_core.Value.int(110000)
+            "name": relateby.pattern.Value.string("Charlie"),
+            "salary": relateby.pattern.Value.int(110000)
         }
     )
 
     # Create pattern hierarchy: Team contains Manager and Developers
-    team = pattern_core.Pattern.pattern(team_entity, [
-        pattern_core.Pattern.point(manager),
-        pattern_core.Pattern.point(dev1),
-        pattern_core.Pattern.point(dev2),
-        pattern_core.Pattern.point(dev3)
+    team = relateby.pattern.Pattern.pattern(team_entity, [
+        relateby.pattern.Pattern.point(manager),
+        relateby.pattern.Pattern.point(dev1),
+        relateby.pattern.Pattern.point(dev2),
+        relateby.pattern.Pattern.point(dev3)
     ])
 
     print(f"Team: {team_entity.get_property('name').as_string()}")
@@ -208,8 +208,8 @@ def example_fold():
     print(f"Developers: {dev_count}")
 
     # Now update the Team entity's properties with aggregated values
-    team_entity.set_property("total_budget", pattern_core.Value.int(total_budget))
-    team_entity.set_property("headcount", pattern_core.Value.int(headcount))
+    team_entity.set_property("total_budget", relateby.pattern.Value.int(total_budget))
+    team_entity.set_property("headcount", relateby.pattern.Value.int(headcount))
 
     print(f"\nTeam entity updated:")
     print(f"  - Total budget: ${team_entity.get_property('total_budget').as_int():,}")
@@ -224,8 +224,8 @@ def example_combine():
     print("=" * 60)
 
     # Create two patterns
-    pattern1 = pattern_core.Pattern.point("hello")
-    pattern2 = pattern_core.Pattern.point(" world")
+    pattern1 = relateby.pattern.Pattern.point("hello")
+    pattern2 = relateby.pattern.Pattern.point(" world")
 
     print(f"Pattern 1: {pattern1.value}")
     print(f"Pattern 2: {pattern2.value}")
@@ -243,19 +243,19 @@ def example_matches():
     print("=" * 60)
 
     # Create patterns with same structure
-    pattern1 = pattern_core.Pattern.pattern("root", [
-        pattern_core.Pattern.point("a"),
-        pattern_core.Pattern.point("b")
+    pattern1 = relateby.pattern.Pattern.pattern("root", [
+        relateby.pattern.Pattern.point("a"),
+        relateby.pattern.Pattern.point("b")
     ])
 
-    pattern2 = pattern_core.Pattern.pattern("root", [
-        pattern_core.Pattern.point("a"),
-        pattern_core.Pattern.point("b")
+    pattern2 = relateby.pattern.Pattern.pattern("root", [
+        relateby.pattern.Pattern.point("a"),
+        relateby.pattern.Pattern.point("b")
     ])
 
-    pattern3 = pattern_core.Pattern.pattern("root", [
-        pattern_core.Pattern.point("x"),
-        pattern_core.Pattern.point("y")
+    pattern3 = relateby.pattern.Pattern.pattern("root", [
+        relateby.pattern.Pattern.point("x"),
+        relateby.pattern.Pattern.point("y")
     ])
 
     print(f"Pattern 1 values: {pattern1.values()}")
@@ -274,15 +274,15 @@ def example_contains():
     print("=" * 60)
 
     # Create decorated pattern (value decorates the elements)
-    decorated = pattern_core.Pattern.pattern("decoration", [
-        pattern_core.Pattern.point("elem1"),
-        pattern_core.Pattern.point("elem2"),
-        pattern_core.Pattern.point("elem3")
+    decorated = relateby.pattern.Pattern.pattern("decoration", [
+        relateby.pattern.Pattern.point("elem1"),
+        relateby.pattern.Pattern.point("elem2"),
+        relateby.pattern.Pattern.point("elem3")
     ])
 
     # Create search patterns
-    elem1 = pattern_core.Pattern.point("elem1")
-    elem4 = pattern_core.Pattern.point("elem4")
+    elem1 = relateby.pattern.Pattern.point("elem1")
+    elem4 = relateby.pattern.Pattern.point("elem4")
 
     print(f"Pattern values: {decorated.values()}")
 
@@ -298,12 +298,12 @@ def example_values_extraction():
     print("=" * 60)
 
     # Create nested pattern
-    pattern = pattern_core.Pattern.pattern("root", [
-        pattern_core.Pattern.pattern("branch1", [
-            pattern_core.Pattern.point("leaf1"),
-            pattern_core.Pattern.point("leaf2")
+    pattern = relateby.pattern.Pattern.pattern("root", [
+        relateby.pattern.Pattern.pattern("branch1", [
+            relateby.pattern.Pattern.point("leaf1"),
+            relateby.pattern.Pattern.point("leaf2")
         ]),
-        pattern_core.Pattern.point("leaf3")
+        relateby.pattern.Pattern.point("leaf3")
     ])
 
     # Get all values (pre-order traversal)
@@ -320,12 +320,12 @@ def example_structural_properties():
     print("=" * 60)
 
     # Create pattern
-    pattern = pattern_core.Pattern.pattern("root", [
-        pattern_core.Pattern.pattern("branch", [
-            pattern_core.Pattern.point("leaf1"),
-            pattern_core.Pattern.point("leaf2")
+    pattern = relateby.pattern.Pattern.pattern("root", [
+        relateby.pattern.Pattern.pattern("branch", [
+            relateby.pattern.Pattern.point("leaf1"),
+            relateby.pattern.Pattern.point("leaf2")
         ]),
-        pattern_core.Pattern.point("leaf3")
+        relateby.pattern.Pattern.point("leaf3")
     ])
 
     print(f"Length (direct elements): {pattern.length()}")
@@ -342,7 +342,7 @@ def example_complex_transformation():
     print("=" * 60)
 
     # Create data pattern
-    data = pattern_core.Pattern.pattern("data", pattern_core.Pattern.from_values([
+    data = relateby.pattern.Pattern.pattern("data", relateby.pattern.Pattern.from_values([
         "apple", "banana", "cherry", "date", "elderberry", "fig"
     ]))
 
@@ -359,7 +359,7 @@ def example_complex_transformation():
     # Fold: concatenate with commas
     if step2_patterns:
         # Create pattern from filtered results
-        filtered_pattern = pattern_core.Pattern.pattern(
+        filtered_pattern = relateby.pattern.Pattern.pattern(
             "filtered",
             step2_patterns
         )
@@ -382,12 +382,12 @@ def example_paramorphism_depth_weighted():
     #      5    3
     #     / \
     #    2   1
-    pattern = pattern_core.Pattern.pattern(10, [
-        pattern_core.Pattern.pattern(5, [
-            pattern_core.Pattern.point(2),
-            pattern_core.Pattern.point(1)
+    pattern = relateby.pattern.Pattern.pattern(10, [
+        relateby.pattern.Pattern.pattern(5, [
+            relateby.pattern.Pattern.point(2),
+            relateby.pattern.Pattern.point(1)
         ]),
-        pattern_core.Pattern.point(3)
+        relateby.pattern.Pattern.point(3)
     ])
 
     print(f"Pattern structure: {pattern.values()}")
@@ -420,12 +420,12 @@ def example_paramorphism_statistics():
     print("=" * 60)
 
     # Create pattern
-    pattern = pattern_core.Pattern.pattern(10, [
-        pattern_core.Pattern.pattern(5, [
-            pattern_core.Pattern.point(2),
-            pattern_core.Pattern.point(1)
+    pattern = relateby.pattern.Pattern.pattern(10, [
+        relateby.pattern.Pattern.pattern(5, [
+            relateby.pattern.Pattern.point(2),
+            relateby.pattern.Pattern.point(1)
         ]),
-        pattern_core.Pattern.point(3)
+        relateby.pattern.Pattern.point(3)
     ])
 
     print(f"Pattern structure: {pattern.values()}")
@@ -464,12 +464,12 @@ def example_paramorphism_transformation():
     print("=" * 60)
 
     # Create pattern
-    pattern = pattern_core.Pattern.pattern(10, [
-        pattern_core.Pattern.pattern(5, [
-            pattern_core.Pattern.point(2),
-            pattern_core.Pattern.point(1)
+    pattern = relateby.pattern.Pattern.pattern(10, [
+        relateby.pattern.Pattern.pattern(5, [
+            relateby.pattern.Pattern.point(2),
+            relateby.pattern.Pattern.point(1)
         ]),
-        pattern_core.Pattern.point(3)
+        relateby.pattern.Pattern.point(3)
     ])
 
     print(f"Original structure: {pattern.values()}")
@@ -482,10 +482,10 @@ def example_paramorphism_transformation():
 
         if not element_results:
             # Atomic: just double the value
-            return pattern_core.Pattern.point(new_value)
+            return relateby.pattern.Pattern.point(new_value)
 
         # Pattern: double value and keep transformed children
-        return pattern_core.Pattern.pattern(new_value, element_results)
+        return relateby.pattern.Pattern.pattern(new_value, element_results)
 
     transformed = pattern.para(double_values)
     print(f"Transformed structure: {transformed.values()}")
@@ -502,47 +502,47 @@ def example_paramorphism_subject_analysis():
     print("=" * 60)
 
     # Create organizational hierarchy
-    ceo = pattern_core.Subject(
+    ceo = relateby.pattern.Subject(
         identity="ceo",
         labels={"Person", "Executive"},
         properties={
-            "name": pattern_core.Value.string("Diana"),
-            "salary": pattern_core.Value.int(300000)
+            "name": relateby.pattern.Value.string("Diana"),
+            "salary": relateby.pattern.Value.int(300000)
         }
     )
 
-    eng_manager = pattern_core.Subject(
+    eng_manager = relateby.pattern.Subject(
         identity="eng_mgr",
         labels={"Person", "Manager"},
         properties={
-            "name": pattern_core.Value.string("Alice"),
-            "salary": pattern_core.Value.int(150000)
+            "name": relateby.pattern.Value.string("Alice"),
+            "salary": relateby.pattern.Value.int(150000)
         }
     )
 
-    dev1 = pattern_core.Subject(
+    dev1 = relateby.pattern.Subject(
         identity="dev1",
         labels={"Person", "Developer"},
         properties={
-            "name": pattern_core.Value.string("Bob"),
-            "salary": pattern_core.Value.int(120000)
+            "name": relateby.pattern.Value.string("Bob"),
+            "salary": relateby.pattern.Value.int(120000)
         }
     )
 
-    dev2 = pattern_core.Subject(
+    dev2 = relateby.pattern.Subject(
         identity="dev2",
         labels={"Person", "Developer"},
         properties={
-            "name": pattern_core.Value.string("Charlie"),
-            "salary": pattern_core.Value.int(115000)
+            "name": relateby.pattern.Value.string("Charlie"),
+            "salary": relateby.pattern.Value.int(115000)
         }
     )
 
     # Build hierarchy: CEO -> Eng Manager -> Devs
-    org = pattern_core.Pattern.pattern(ceo, [
-        pattern_core.Pattern.pattern(eng_manager, [
-            pattern_core.Pattern.point(dev1),
-            pattern_core.Pattern.point(dev2)
+    org = relateby.pattern.Pattern.pattern(ceo, [
+        relateby.pattern.Pattern.pattern(eng_manager, [
+            relateby.pattern.Pattern.point(dev1),
+            relateby.pattern.Pattern.point(dev2)
         ])
     ])
 
@@ -603,9 +603,9 @@ def example_paramorphism_vs_fold():
     print("=" * 60)
 
     # Create pattern
-    pattern = pattern_core.Pattern.pattern(10, [
-        pattern_core.Pattern.point(5),
-        pattern_core.Pattern.point(3)
+    pattern = relateby.pattern.Pattern.pattern(10, [
+        relateby.pattern.Pattern.point(5),
+        relateby.pattern.Pattern.point(3)
     ])
 
     print(f"Pattern: {pattern.values()}")
@@ -644,28 +644,28 @@ def example_pattern_subject_operations():
     print("=" * 60)
 
     # Create Subjects
-    alice = pattern_core.Subject(
+    alice = relateby.pattern.Subject(
         identity="alice",
         labels={"Person", "Employee"},
-        properties={"name": pattern_core.Value.string("Alice")}
+        properties={"name": relateby.pattern.Value.string("Alice")}
     )
 
-    bob = pattern_core.Subject(
+    bob = relateby.pattern.Subject(
         identity="bob",
         labels={"Person", "Manager"},
-        properties={"name": pattern_core.Value.string("Bob")}
+        properties={"name": relateby.pattern.Value.string("Bob")}
     )
 
-    charlie = pattern_core.Subject(
+    charlie = relateby.pattern.Subject(
         identity="charlie",
         labels={"Person", "Employee"},
-        properties={"name": pattern_core.Value.string("Charlie")}
+        properties={"name": relateby.pattern.Value.string("Charlie")}
     )
 
     # Create pattern
-    bob_pattern = pattern_core.Pattern.point(bob)
-    charlie_pattern = pattern_core.Pattern.point(charlie)
-    alice_pattern = pattern_core.Pattern.pattern(alice, [bob_pattern, charlie_pattern])
+    bob_pattern = relateby.pattern.Pattern.point(bob)
+    charlie_pattern = relateby.pattern.Pattern.point(charlie)
+    alice_pattern = relateby.pattern.Pattern.pattern(alice, [bob_pattern, charlie_pattern])
 
     print(f"Total subjects: {alice_pattern.size()}")
 
