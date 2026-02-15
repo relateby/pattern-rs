@@ -28,7 +28,21 @@ classifiers = [
     "Topic :: Software Development :: Libraries",
 ]
 
+[project.optional-dependencies]
+# Development: testing and building from source
+# Install with: pip install relateby[dev]
+dev = [
+    "maturin>=1.0,<2.0",
+    "pytest>=7.0",
+    "pytest-cov>=4.0",
+]
+# All optional dependencies (add new extras above and reference them here)
+# Install with: pip install relateby[all]
+all = [
+    "relateby[dev]",
+]
+
 [build-system]
-requires = ["maturin>=1.0,<2.0"]
+requires = ["maturin>=1.0,<2.0", "tomli>=2.0; python_version<'3.11'"]
 build-backend = "relateby_build"
 backend-path = ["."]

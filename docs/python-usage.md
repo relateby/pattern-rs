@@ -24,9 +24,10 @@ Comprehensive API reference and usage guide for the **relateby** Python package.
 
 ```bash
 pip install relateby
+# Or with optional dependencies: pip install relateby[dev] or relateby[all]
 ```
 
-One install provides both subpackages. Use them as:
+One install provides both subpackages. See [Python packaging](python-packaging.md) for extras and adding optional libraries. Use them as:
 
 ```python
 import relateby.pattern

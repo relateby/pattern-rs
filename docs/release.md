@@ -1,6 +1,6 @@
 # Releasing the Relateby Python Package
 
-This document describes how to build and publish the unified **relateby** package to PyPI (or TestPyPI for a dry-run). One install delivers `relateby.pattern` and `relateby.gram`; there are no top-level `pattern_core` or `gram_codec` imports.
+This document describes how to build and publish the unified **relateby** package to PyPI. For optional installs (e.g. `pip install relateby[dev]`) and how to add new extras, see [Python packaging](python-packaging.md). One install delivers `relateby.pattern` and `relateby.gram`; there are no top-level `pattern_core` or `gram_codec` imports.
 
 **Dry-run approach**: Always validate with a TestPyPI upload and install test before publishing to production PyPI.
 
@@ -137,3 +137,19 @@ python -c "import relateby.pattern; import relateby.gram; print('OK')"
 3. **Dry-run**: `twine upload --repository testpypi dist/*` then `pip install --index-url https://test.pypi.org/simple/ relateby` and `import relateby.pattern`, `import relateby.gram`.
 4. **Production**: `twine upload dist/*`.
 5. Optionally verify with `pip install relateby` and the same import check.
+
+---
+
+## 7. Publishing the single-crate packages (optional)
+
+You can also publish **relateby-pattern** and **relateby-gram** so users can install pattern-only or gram-only (or both) into the same `relateby` namespace. See [Python packaging](python-packaging.md) for the layout.
+
+1. **Set version** — In each of `python/relateby-pattern/pyproject.toml` and `python/relateby-gram/pyproject.toml`, set `version` to the same release version as `relateby` (e.g. `0.1.0`). Commit as needed.
+2. **Build** — From the repository root:
+   ```bash
+   cd python/relateby-pattern && pip wheel . -w dist
+   cd python/relateby-gram   && pip wheel . -w dist
+   ```
+3. **Publish** — From each directory, upload that package’s dist (e.g. `twine upload dist/relateby_pattern-*.whl` from `python/relateby-pattern`, and similarly for `relateby_gram` from `python/relateby-gram`). Use TestPyPI first if desired.
+
+Each package has its own PyPI project name (`relateby-pattern`, `relateby-gram`). Keep their versions in sync with the unified `relateby` package for clarity.

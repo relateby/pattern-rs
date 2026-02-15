@@ -217,25 +217,43 @@ def build_wheel(
     return wheel_basename
 
 
-def _generate_metadata(project_dir: Path, version: str) -> str:
-    """Minimal METADATA content from pyproject.toml."""
+def _load_pyproject(project_dir: Path) -> dict[str, Any]:
+    """Load pyproject.toml as TOML (stdlib tomllib on 3.11+, else tomli)."""
     pyproject = project_dir / "pyproject.toml"
-    text = pyproject.read_text()
-    name = "relateby"
-    desc = "Unified Python package for Pattern data structures and Gram notation (relateby.pattern and relateby.gram)"
-    for line in text.split("\n"):
-        if line.strip().startswith("description"):
-            m = re.search(r'=\s*["\']([^"\']+)["\']', line)
-            if m:
-                desc = m.group(1)
-            break
-    return f"""Metadata-Version: 2.1
-Name: {name}
-Version: {version}
-Summary: {desc}
-License: Apache-2.0
-Requires-Python: >=3.8
-"""
+    text = pyproject.read_text(encoding="utf-8")
+    if sys.version_info >= (3, 11):
+        import tomllib
+        return tomllib.loads(text)  # type: ignore[attr-defined]
+    import tomli
+    return tomli.loads(text)
+
+
+def _generate_metadata(project_dir: Path, version: str) -> str:
+    """METADATA content from pyproject.toml, including optional-dependencies."""
+    data = _load_pyproject(project_dir)
+    project = data.get("project", {})
+    name = project.get("name", "relateby")
+    desc = project.get("description", "Unified Python package for Pattern data structures and Gram notation (relateby.pattern and relateby.gram)")
+    requires_python = project.get("requires-python", ">=3.8")
+
+    lines = [
+        "Metadata-Version: 2.1",
+        f"Name: {name}",
+        f"Version: {version}",
+        f"Summary: {desc}",
+        "License: Apache-2.0",
+        f"Requires-Python: {requires_python}",
+    ]
+
+    # Optional dependencies (extras) for pip install relateby[dev], etc.
+    optional = project.get("optional-dependencies", {})
+    for extra, deps in optional.items():
+        lines.append(f"Provides-Extra: {extra}")
+        for dep in deps:
+            if isinstance(dep, str):
+                lines.append(f"Requires-Dist: {dep}; extra == {repr(extra)}")
+
+    return "\n".join(lines) + "\n"
 
 
 def build_sdist(
