@@ -534,7 +534,11 @@ fn frame_all_excluded_algorithms_return_empty() {
     let include: Rc<dyn Fn(&Pattern<Subject>) -> bool> = Rc::new(|_| false);
     let framed = frame_query(include, gq);
 
-    assert_eq!((framed.query_nodes)().len(), 0, "all-excluded frame has no nodes");
+    assert_eq!(
+        (framed.query_nodes)().len(),
+        0,
+        "all-excluded frame has no nodes"
+    );
     assert_eq!(
         (framed.query_relationships)().len(),
         0,
@@ -606,7 +610,11 @@ fn frame_nested_composition_filters_correctly() {
     let female_frame = frame_query(female_pred, person_frame);
 
     let nodes = (female_frame.query_nodes)();
-    assert_eq!(nodes.len(), 1, "nested frame should contain only A (Person+Female)");
+    assert_eq!(
+        nodes.len(),
+        1,
+        "nested frame should contain only A (Person+Female)"
+    );
     assert_eq!(nodes[0].value.identity, Symbol("A".to_string()));
 }
 

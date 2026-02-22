@@ -602,7 +602,11 @@ fn bfs_start_node_not_in_graph_returns_singleton() {
     let ghost = node("Z"); // not inserted into the graph
     let visited = bfs(&gq, &undirected(), &ghost);
     // BFS always includes the start; no incident rels → only start returned
-    assert_eq!(visited.len(), 1, "BFS from absent node returns just that node");
+    assert_eq!(
+        visited.len(),
+        1,
+        "BFS from absent node returns just that node"
+    );
     assert_eq!(visited[0].value.identity, Symbol("Z".to_string()));
 }
 
@@ -611,7 +615,11 @@ fn dfs_start_node_not_in_graph_returns_singleton() {
     let gq = chain_abc();
     let ghost = node("Z");
     let visited = dfs(&gq, &undirected(), &ghost);
-    assert_eq!(visited.len(), 1, "DFS from absent node returns just that node");
+    assert_eq!(
+        visited.len(),
+        1,
+        "DFS from absent node returns just that node"
+    );
     assert_eq!(visited[0].value.identity, Symbol("Z".to_string()));
 }
 
@@ -626,7 +634,11 @@ fn all_infinity_weight_blocks_all_traversal() {
         Rc::new(|_rel: &Pattern<Subject>, _dir: TraversalDirection| f64::INFINITY);
 
     let visited = bfs(&gq, &blocked, &a);
-    assert_eq!(visited.len(), 1, "all-infinity weight: BFS visits only start node");
+    assert_eq!(
+        visited.len(),
+        1,
+        "all-infinity weight: BFS visits only start node"
+    );
 
     assert!(
         !has_path(&gq, &blocked, &a, &b),
