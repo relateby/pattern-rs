@@ -115,4 +115,4 @@ assert_eq!(result, 28);
 
 - See [contracts/type-signatures.md](contracts/type-signatures.md) for the full API contract.
 - See [data-model.md](data-model.md) for the data model.
-- Reference: `../gram-hs/docs/reference/features/paramorphism.md`.
+- Reference: `../pattern-hs/docs/reference/features/paramorphism.md`.

@@ -12,9 +12,9 @@ This document consolidates research findings for implementing the three missing 
 
 ### Source Location
 
-**Haskell Implementation**: `../gram-hs/libs/pattern/src/Pattern/Core.hs` (lines 945-1028)  
-**Test Suite**: `../gram-hs/libs/pattern/tests/Spec/Pattern/CoreSpec.hs` (lines 4023-4238)  
-**Property Tests**: `../gram-hs/libs/pattern/tests/Spec/Pattern/Properties.hs` (lines 1210-1252)
+**Haskell Implementation**: `../pattern-hs/libs/pattern/src/Pattern/Core.hs` (lines 945-1028)  
+**Test Suite**: `../pattern-hs/libs/pattern/tests/Spec/Pattern/CoreSpec.hs` (lines 4023-4238)  
+**Property Tests**: `../pattern-hs/libs/pattern/tests/Spec/Pattern/Properties.hs` (lines 1210-1252)
 
 ### Function Specifications
 
@@ -328,4 +328,3 @@ All research complete. No NEEDS CLARIFICATION items remain. Ready to proceed to 
 4. Comprehensive test suite available in gram-hs
 5. All functions maintain O(n) or better complexity with short-circuit evaluation
 6. No platform-specific concerns or dependency requirements
-

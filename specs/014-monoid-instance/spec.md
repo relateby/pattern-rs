@@ -15,7 +15,7 @@ In Haskell, this is expressed as a Monoid instance with `mempty` as the identity
 - Pattern data structure (features 004-006)
 - Pattern combination operations via `Combinable` trait (feature 013-semigroup-instance)
 
-**Reference**: The authoritative implementation is in `../gram-hs/libs/pattern/` (Haskell source code). Historical notes may exist in `../gram-hs/specs/011-monoid-instance/` but should be verified against actual source.
+**Reference**: The authoritative implementation is in `../pattern-hs/libs/pattern/` (Haskell source code). Historical notes may exist in `../pattern-hs/specs/011-monoid-instance/` but should be verified against actual source.
 
 **Implementation Guidance**: Follow idiomatic Rust patterns by implementing `std::default::Default` rather than creating a custom Monoid trait. Document monoid laws in test comments and documentation, not in trait constraints.
 
@@ -236,4 +236,3 @@ let result = patterns.into_iter()
 ```
 
 This is the idiomatic Rust way to handle accumulation with an identity element.
-

@@ -43,8 +43,8 @@
 
 **⚠️ CRITICAL**: No user story work can begin until this phase is complete
 
-- [x] T009 Study gram-hs Traversable instance in ../gram-hs/libs/pattern/src/Pattern/Core.hs
-- [x] T010 Study gram-hs Traversable tests in ../gram-hs/libs/pattern/tests/Spec/Pattern/Properties.hs
+- [x] T009 Study gram-hs Traversable instance in ../pattern-hs/libs/pattern/src/Pattern/Core.hs
+- [x] T010 Study gram-hs Traversable tests in ../pattern-hs/libs/pattern/tests/Spec/Pattern/Properties.hs
 - [x] T011 Document traversal order requirements (depth-first, root-first) in implementation notes
 - [x] T012 Add test utilities for effect counting (short-circuit verification) in crates/pattern-core/src/test_utils/
 - [x] T013 [P] Add proptest pattern generators with effects in crates/pattern-core/src/test_utils/
@@ -433,4 +433,3 @@ With multiple developers:
 **Independent Stories**: US1, US3, US5 can start in parallel after Foundational phase
 
 **MVP Scope**: Phases 1, 2, and 3 (37 tasks total) deliver core traversable functionality
-

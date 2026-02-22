@@ -132,16 +132,16 @@ A developer needs to verify that pattern validation and structure analysis funct
 - **Feature 003 (Test Infrastructure)**: Provides testing framework, equivalence checking utilities, and test synchronization infrastructure for verifying behavioral equivalence with gram-hs
 - **Feature 004 (Pattern Data Structure)**: Provides the core Pattern type definition that validation and analysis functions operate on
 - **Feature 005 (Basic Pattern Type)**: Provides pattern construction, access, and basic inspection utilities that validation and analysis functions may use
-- **gram-hs Reference Implementation**: Provides the reference specification, function signatures, and test cases at `../gram-hs/libs/pattern/src/` for pattern validation and structure analysis functions
+- **gram-hs Reference Implementation**: Provides the reference specification, function signatures, and test cases at `../pattern-hs/libs/pattern/src/` for pattern validation and structure analysis functions
 
 ## References
 
 ### Primary Source (Authoritative)
 
-- **gram-hs Library Implementation**: `../gram-hs/libs/` - Haskell library source code
-  - Pattern Validation: `../gram-hs/libs/pattern/src/Pattern.hs` (validation functions)
-  - Structure Analysis: `../gram-hs/libs/pattern/src/Pattern.hs` (structure analysis utilities)
-  - Tests: `../gram-hs/libs/pattern/tests/` (test cases for validation and structure analysis)
+- **gram-hs Library Implementation**: `../pattern-hs/libs/` - Haskell library source code
+  - Pattern Validation: `../pattern-hs/libs/pattern/src/Pattern.hs` (validation functions)
+  - Structure Analysis: `../pattern-hs/libs/pattern/src/Pattern.hs` (structure analysis utilities)
+  - Tests: `../pattern-hs/libs/pattern/tests/` (test cases for validation and structure analysis)
 
 ### Testing Tool
 
@@ -153,15 +153,15 @@ A developer needs to verify that pattern validation and structure analysis funct
 
 ### Secondary Sources
 
-- **gram-hs Design Documents** (Context Only): `../gram-hs/specs/003-pattern-structure-review/`
-  - Feature Specification: `../gram-hs/specs/003-pattern-structure-review/spec.md` (for context, may be outdated)
+- **gram-hs Design Documents** (Context Only): `../pattern-hs/specs/003-pattern-structure-review/`
+  - Feature Specification: `../pattern-hs/specs/003-pattern-structure-review/spec.md` (for context, may be outdated)
 - **Porting Guide**: `docs/porting-guide.md` - Systematic approach for porting from gram-hs (includes Library vs CLI distinction)
 - **Project Plan**: `docs/pattern-rs-project-plan.md` - Overall architecture and design decisions
 - **TODO**: `TODO.md` - Feature tracking and porting checklist
 
 ### Important Distinction
 
-- **`../gram-hs/libs/`** = Haskell library source code (authoritative reference implementation to port)
+- **`../pattern-hs/libs/`** = Haskell library source code (authoritative reference implementation to port)
 - **`gramref`** = CLI tool for generating test patterns (testing utility)
 
-The Haskell implementation in `../gram-hs/libs/` is the authoritative source of truth for implementation. Design documents in `../gram-hs/specs/` are useful for context but may contain outdated information or design mistakes that were corrected in the actual implementation.
+The Haskell implementation in `../pattern-hs/libs/` is the authoritative source of truth for implementation. Design documents in `../pattern-hs/specs/` are useful for context but may contain outdated information or design mistakes that were corrected in the actual implementation.

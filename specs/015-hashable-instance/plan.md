@@ -40,9 +40,9 @@ Implement hashing support for Pattern<V> by adding a `std::hash::Hash` trait imp
 ### I. Reference Implementation Fidelity ✅
 
 - **Status**: Will be verified
-- **Action**: Port Hashable instance semantics from `../gram-hs/libs/pattern/src/Pattern/Core.hs` (lines 477-535)
+- **Action**: Port Hashable instance semantics from `../pattern-hs/libs/pattern/src/Pattern/Core.hs` (lines 477-535)
 - **Verification**: Behavioral equivalence tests comparing with gram-hs reference
-- **Reference Spec**: `../gram-hs/specs/012-hashable-instance/` (for context, verify against actual code)
+- **Reference Spec**: `../pattern-hs/specs/012-hashable-instance/` (for context, verify against actual code)
 - **Note**: Implementation uses `Hash` trait (idiomatic Rust), semantics remain equivalent
 
 ### II. Correctness & Compatibility ✅
@@ -82,7 +82,7 @@ Implement hashing support for Pattern<V> by adding a `std::hash::Hash` trait imp
 - **Status**: Future consideration
 - **Justification**: Hash trait enables efficient JavaScript Map/Set usage in WASM bindings (future work)
 
-**Note**: When porting features from gram-hs, reference the local implementation at `../gram-hs` and corresponding feature specifications in `../gram-hs/specs/`. See [porting guide](../../../docs/porting-guide.md) for detailed porting instructions.
+**Note**: When porting features from gram-hs, reference the local implementation at `../pattern-hs` and corresponding feature specifications in `../pattern-hs/specs/`. See [porting guide](../../../docs/porting-guide.md) for detailed porting instructions.
 
 ## Project Structure
 
@@ -128,7 +128,7 @@ crates/pattern-core/
 Research documented in [ANALYSIS.md](ANALYSIS.md). Key findings:
 
 1. **Haskell Hashable Instance Analysis** ✅
-   - **Source**: `../gram-hs/libs/pattern/src/Pattern/Core.hs` lines 477-535
+   - **Source**: `../pattern-hs/libs/pattern/src/Pattern/Core.hs` lines 477-535
    - **Implementation**: `hashWithSalt salt (Pattern v es) = salt \`hashWithSalt\` v \`hashWithSalt\` es`
    - **Properties**: Structure-preserving, consistent with Eq, distinguishes structures
    
@@ -309,8 +309,8 @@ See [tasks.md](tasks.md) for detailed task breakdown.
 
 ## References
 
-- **Haskell Source**: `../gram-hs/libs/pattern/src/Pattern/Core.hs` (lines 477-535)
-- **Haskell Spec**: `../gram-hs/specs/012-hashable-instance/` (development notes)
+- **Haskell Source**: `../pattern-hs/libs/pattern/src/Pattern/Core.hs` (lines 477-535)
+- **Haskell Spec**: `../pattern-hs/specs/012-hashable-instance/` (development notes)
 - **Rust Hash**: https://doc.rust-lang.org/std/hash/trait.Hash.html
 - **Porting Guide**: `../../../docs/porting-guide.md`
 - **Analysis**: [ANALYSIS.md](ANALYSIS.md) (comprehensive evaluation)
@@ -328,4 +328,3 @@ See [tasks.md](tasks.md) for detailed task breakdown.
 **Plan Status**: ✅ Complete and ready for task generation
 
 **Implementation Ready**: All design decisions made, all documentation complete, implementation can proceed immediately.
-

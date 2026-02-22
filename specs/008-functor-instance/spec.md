@@ -112,14 +112,14 @@ Developers need assurance that applying the identity transformation does not mod
 ## References
 
 ### Primary Reference (Authoritative)
-- `../gram-hs/libs/pattern/src/Pattern/Core.hs` - Functor instance implementation (lines 536-617)
+- `../pattern-hs/libs/pattern/src/Pattern/Core.hs` - Functor instance implementation (lines 536-617)
 
 ### Test References
-- `../gram-hs/libs/pattern/tests/Spec/Pattern/Properties.hs` - Functor law tests (lines 176-203)
+- `../pattern-hs/libs/pattern/tests/Spec/Pattern/Properties.hs` - Functor law tests (lines 176-203)
 
 ### Documentation Reference
-- `../gram-hs/docs/` - Up-to-date documentation about the implementation
+- `../pattern-hs/docs/` - Up-to-date documentation about the implementation
 - Functor instance documentation in Pattern.Core.hs provides detailed examples and semantics
 
 ### Historical Reference (Context Only)
-- `../gram-hs/specs/005-functor-instance/` - Historical notes from incremental development (may be outdated, verify against actual code)
+- `../pattern-hs/specs/005-functor-instance/` - Historical notes from incremental development (may be outdated, verify against actual code)

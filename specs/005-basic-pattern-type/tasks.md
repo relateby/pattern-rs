@@ -289,7 +289,7 @@ With a single developer:
 - Commit after each task or logical group
 - Stop at any checkpoint to validate story independently
 - Avoid: vague tasks, same file conflicts, cross-story dependencies that break independence
-- Reference gram-hs implementation at `../gram-hs/libs/pattern/src/Pattern/Core.hs` for behavioral equivalence
+- Reference gram-hs implementation at `../pattern-hs/libs/pattern/src/Pattern/Core.hs` for behavioral equivalence
 - All functions must match gram-hs signatures: `point`, `pattern`, `fromList`, `length`, `size`, `depth`
 - Accessors `value` and `elements` are field accessors in Haskell, methods in Rust
 - Depth returns 0 for atomic patterns (corrected from previous inconsistency)

@@ -480,5 +480,4 @@ let count = result.size();  // Count afterward
 - **Feature Spec**: [spec.md](./spec.md)
 - **API Contracts**: [contracts/comonad.md](./contracts/comonad.md)
 - **Data Model**: [data-model.md](./data-model.md)
-- **Haskell Reference**: `../gram-hs/libs/pattern/src/Pattern/Core.hs`
-
+- **Haskell Reference**: `../pattern-hs/libs/pattern/src/Pattern/Core.hs`

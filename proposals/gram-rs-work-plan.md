@@ -13,7 +13,7 @@ This work plan outlines the prioritized tasks to bring pattern-rs library module
 
 **Related Documents**:
 - [Implementation Gap Analysis](pattern-rs-implementation-gaps.md) - Detailed gap analysis
-- [gram-hs Porting Guide](../gram-hs/docs/reference/PORTING-GUIDE.md) - Reference implementation guide
+- [gram-hs Porting Guide](../pattern-hs/docs/reference/PORTING-GUIDE.md) - Reference implementation guide
 
 ---
 

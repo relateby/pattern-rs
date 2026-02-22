@@ -47,7 +47,7 @@ Extracts test cases from gram-hs reference implementation and converts them to t
 
 **Usage** (placeholder - to be implemented):
 ```bash
-./extract.sh ../gram-hs > tests/common/test_cases.json
+./extract.sh ../pattern-hs > tests/common/test_cases.json
 ```
 
 **Alternative: Using gram-hs CLI**:

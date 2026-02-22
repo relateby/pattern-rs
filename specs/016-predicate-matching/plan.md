@@ -25,7 +25,7 @@ Complete the predicate-based pattern matching implementation for the Pattern typ
 
 *GATE: Must pass before Phase 0 research. Re-check after Phase 1 design.*
 
-**Reference Implementation Fidelity**: ✅ Feature ports predicate matching from gram-hs located at `../gram-hs/specs/012-predicate-matching/`. Reference implementation provides authoritative behavior for all predicate and matching operations. Behavioral equivalence will be verified through test cases comparing results with gram-hs output. The Rust implementation will maintain functional equivalence while using idiomatic Rust patterns (Option instead of Maybe, borrowed references instead of immutable values, Fn trait instead of function types).
+**Reference Implementation Fidelity**: ✅ Feature ports predicate matching from gram-hs located at `../pattern-hs/specs/012-predicate-matching/`. Reference implementation provides authoritative behavior for all predicate and matching operations. Behavioral equivalence will be verified through test cases comparing results with gram-hs output. The Rust implementation will maintain functional equivalence while using idiomatic Rust patterns (Option instead of Maybe, borrowed references instead of immutable values, Fn trait instead of function types).
 
 **Correctness & Compatibility**: ✅ Implementation prioritizes correctness over optimization. All functions will have comprehensive unit tests, property-based tests, and edge case coverage matching gram-hs behavior. API contracts will be documented and verified through integration tests. Breaking changes from reference behavior require explicit justification.
 
@@ -41,7 +41,7 @@ Complete the predicate-based pattern matching implementation for the Pattern typ
 
 **External Language Bindings & Examples**: N/A for this feature. Pattern matching functions are Rust-native and don't require changes to existing WASM bindings or examples. Future work may expose these functions through WASM interface if needed.
 
-**Note**: When porting features from gram-hs, reference the local implementation at `../gram-hs` and corresponding feature specifications in `../gram-hs/specs/`. See [porting guide](../../../docs/porting-guide.md) for detailed porting instructions.
+**Note**: When porting features from gram-hs, reference the local implementation at `../pattern-hs` and corresponding feature specifications in `../pattern-hs/specs/`. See [porting guide](../../../docs/porting-guide.md) for detailed porting instructions.
 
 ### Post-Phase 1 Design Review
 

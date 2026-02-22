@@ -43,8 +43,8 @@ Additionally, add comprehensive test coverage for existing query operations (`le
 
 **Status**: PASS
 
-- Porting from `../gram-hs/libs/pattern/src/Pattern/Core.hs` lines 945-1010
-- Reference spec: `../gram-hs/specs/008-basic-query-functions/spec.md`
+- Porting from `../pattern-hs/libs/pattern/src/Pattern/Core.hs` lines 945-1010
+- Reference spec: `../pattern-hs/specs/008-basic-query-functions/spec.md`
 - Functions to port: `anyValue`, `allValues`, `filter` (exact Haskell implementations identified)
 - Will verify behavioral equivalence through cross-implementation tests
 
@@ -93,7 +93,7 @@ Additionally, add comprehensive test coverage for existing query operations (`le
 
 **Action**: None required for this feature
 
-**Note**: When porting features from gram-hs, reference the local implementation at `../gram-hs` and corresponding feature specifications in `../gram-hs/specs/`. See [porting guide](../../../docs/porting-guide.md) for detailed porting instructions.
+**Note**: When porting features from gram-hs, reference the local implementation at `../pattern-hs` and corresponding feature specifications in `../pattern-hs/specs/`. See [porting guide](../../../docs/porting-guide.md) for detailed porting instructions.
 
 ## Project Structure
 
@@ -164,8 +164,8 @@ Research confirms exact behavioral equivalence:
 - Property tests maintain complementarity relationships from Haskell
 
 **Verification Method**: 
-- Direct source code comparison (`../gram-hs/libs/pattern/src/Pattern/Core.hs` lines 945-1028)
-- Test suite analysis (`../gram-hs/libs/pattern/tests/Spec/Pattern/CoreSpec.hs`)
+- Direct source code comparison (`../pattern-hs/libs/pattern/src/Pattern/Core.hs` lines 945-1028)
+- Test suite analysis (`../pattern-hs/libs/pattern/tests/Spec/Pattern/CoreSpec.hs`)
 - Documented in `research.md`
 
 ### ✅ II. Correctness & Compatibility - VERIFIED

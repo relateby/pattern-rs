@@ -308,7 +308,7 @@ pub enum SerializeError {
 
 ### Requirement: Semantic Equivalence
 
-**Strategy** (from `../gram-hs/docs/reference/features/gram-serialization.md`): Test "structural equality after serialization/deserialization cycles" using `gram -> pattern -> gram -> pattern`.
+**Strategy** (from `../pattern-hs/docs/reference/features/gram-serialization.md`): Test "structural equality after serialization/deserialization cycles" using `gram -> pattern -> gram -> pattern`.
 
 For all patterns produced by `parse_gram`, serialization and re-parsing must produce structurally equivalent patterns:
 

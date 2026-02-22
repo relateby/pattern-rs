@@ -505,5 +505,4 @@ let result = pattern.fold(0, |acc, v| acc + v);
 - **Feature Spec**: [spec.md](./spec.md) - Requirements and user stories
 - **Type Signatures**: [contracts/type-signatures.md](./contracts/type-signatures.md) - API contracts
 - **Functor Instance**: [../008-functor-instance/](../008-functor-instance/) - Related feature
-- **gram-hs Implementation**: `../../../gram-hs/libs/pattern/src/Pattern/Core.hs`
-
+- **gram-hs Implementation**: `../../../pattern-hs/libs/pattern/src/Pattern/Core.hs`

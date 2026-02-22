@@ -51,9 +51,9 @@ Implement Comonad operations (`extract` and `extend`) for Pattern to enable posi
 **Status**: PASS - Faithful port with documented conceptual enhancement
 
 **Verification**:
-- ✅ Haskell implementation reviewed: `../gram-hs/libs/pattern/src/Pattern/Core.hs` (lines 720-728, 1104-1138)
-- ✅ Tests reviewed: `../gram-hs/libs/pattern/tests/Spec/Pattern/CoreSpec.hs` (lines 4242-4400), `Properties.hs` (lines 1287-1332)
-- ✅ Feature spec reviewed: `../gram-hs/specs/014-comonad-instance/spec.md`
+- ✅ Haskell implementation reviewed: `../pattern-hs/libs/pattern/src/Pattern/Core.hs` (lines 720-728, 1104-1138)
+- ✅ Tests reviewed: `../pattern-hs/libs/pattern/tests/Spec/Pattern/CoreSpec.hs` (lines 4242-4400), `Properties.hs` (lines 1287-1332)
+- ✅ Feature spec reviewed: `../pattern-hs/specs/014-comonad-instance/spec.md`
 - ✅ Behavioral equivalence plan: Property tests will verify Comonad laws match gram-hs behavior
 - ✅ Output comparison: Helper functions (`depth_at`, `size_at`, `indices_at`) will be tested against gram-hs outputs
 
@@ -64,9 +64,9 @@ Implement Comonad operations (`extract` and `extend`) for Pattern to enable posi
 - Rationale: Makes "decorative computation" pattern explicit without changing behavior
 
 **Reference Paths**:
-- Haskell source: `../gram-hs/libs/pattern/src/Pattern/Core.hs`
-- Helper tests: `../gram-hs/libs/pattern/tests/Spec/Pattern/CoreSpec.hs`
-- Law tests: `../gram-hs/libs/pattern/tests/Spec/Pattern/Properties.hs`
+- Haskell source: `../pattern-hs/libs/pattern/src/Pattern/Core.hs`
+- Helper tests: `../pattern-hs/libs/pattern/tests/Spec/Pattern/CoreSpec.hs`
+- Law tests: `../pattern-hs/libs/pattern/tests/Spec/Pattern/Properties.hs`
 
 ### ✅ II. Correctness & Compatibility
 
@@ -149,7 +149,7 @@ impl<V> Pattern<V> {
 - Multi-target: Pure functions, WASM-compatible
 - Examples: Will demonstrate all operations with practical use cases
 
-**Note**: When porting features from gram-hs, reference the local implementation at `../gram-hs` and corresponding feature specifications in `../gram-hs/specs/`. See [porting guide](../../../docs/porting-guide.md) for detailed porting instructions.
+**Note**: When porting features from gram-hs, reference the local implementation at `../pattern-hs` and corresponding feature specifications in `../pattern-hs/specs/`. See [porting guide](../../../docs/porting-guide.md) for detailed porting instructions.
 
 ## Project Structure
 
@@ -285,9 +285,9 @@ From spec.md Success Criteria:
 ## References
 
 - **Feature Spec**: [spec.md](./spec.md)
-- **Haskell Reference**: `../gram-hs/libs/pattern/src/Pattern/Core.hs` (lines 720-728, 1104-1138)
-- **Haskell Tests**: `../gram-hs/libs/pattern/tests/Spec/Pattern/CoreSpec.hs` (lines 4242-4400)
-- **Haskell Law Tests**: `../gram-hs/libs/pattern/tests/Spec/Pattern/Properties.hs` (lines 1287-1332)
+- **Haskell Reference**: `../pattern-hs/libs/pattern/src/Pattern/Core.hs` (lines 720-728, 1104-1138)
+- **Haskell Tests**: `../pattern-hs/libs/pattern/tests/Spec/Pattern/CoreSpec.hs` (lines 4242-4400)
+- **Haskell Law Tests**: `../pattern-hs/libs/pattern/tests/Spec/Pattern/Properties.hs` (lines 1287-1332)
 - **Analysis**: [ANALYSIS.md](./ANALYSIS.md)
 - **Recommendation**: [RECOMMENDATION.md](./RECOMMENDATION.md)
 - **Constitution**: `../../.specify/memory/constitution.md`

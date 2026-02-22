@@ -51,7 +51,7 @@ The Comonad implementation (feature 018) revealed that explicit code quality che
 ### Added
 
 - Reference Implementation Location section in constitution
-- Local path details for gram-hs reference (`../gram-hs`)
+- Local path details for gram-hs reference (`../pattern-hs`)
 
 ### Changed
 

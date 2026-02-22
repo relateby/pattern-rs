@@ -16,8 +16,8 @@
   - Spec requires validation functions that check structural constraints (FR-001, FR-003)
   - Existing placeholder `assert_pattern_structure_valid` in `test_utils/helpers.rs` suggests this pattern
   - Idiomatic Rust uses `Result` for validation (Ok for valid, Err for invalid)
-- **Source**: To be verified from `../gram-hs/libs/pattern/src/Pattern.hs` (authoritative source of truth)
-- **Note**: Design documents in `../gram-hs/specs/003-pattern-structure-review/` may provide context but the actual Haskell source code is authoritative
+- **Source**: To be verified from `../pattern-hs/libs/pattern/src/Pattern.hs` (authoritative source of truth)
+- **Note**: Design documents in `../pattern-hs/specs/003-pattern-structure-review/` may provide context but the actual Haskell source code is authoritative
 
 **Rust Translation**:
 ```rust
@@ -32,8 +32,8 @@ impl<V> Pattern<V> {
 ```
 
 **Action Required**: 
-- Study `../gram-hs/libs/pattern/src/Pattern.hs` to verify function signature and behavior
-- Review test files in `../gram-hs/libs/pattern/tests/` to understand expected behavior
+- Study `../pattern-hs/libs/pattern/src/Pattern.hs` to verify function signature and behavior
+- Review test files in `../pattern-hs/libs/pattern/tests/` to understand expected behavior
 - Ensure implementation matches gram-hs behavior exactly
 
 ### 2. Structure Analysis Utilities from gram-hs
@@ -48,7 +48,7 @@ impl<V> Pattern<V> {
   - Spec requires structure analysis utilities (FR-002, FR-005)
   - Analysis should provide detailed information beyond basic inspection (length, size, depth from feature 005)
   - Return structured data type for comprehensive analysis results
-- **Source**: To be verified from `../gram-hs/libs/pattern/src/Pattern.hs` (authoritative source of truth)
+- **Source**: To be verified from `../pattern-hs/libs/pattern/src/Pattern.hs` (authoritative source of truth)
 - **Note**: Structure analysis complements basic inspection utilities (length, size, depth) from feature 005
 
 **Rust Translation**:
@@ -70,8 +70,8 @@ impl<V> Pattern<V> {
 ```
 
 **Action Required**:
-- Study `../gram-hs/libs/pattern/src/Pattern.hs` to verify analysis function signatures and return types
-- Review test files in `../gram-hs/libs/pattern/tests/` to understand expected analysis output
+- Study `../pattern-hs/libs/pattern/src/Pattern.hs` to verify analysis function signatures and return types
+- Review test files in `../pattern-hs/libs/pattern/tests/` to understand expected analysis output
 - Ensure analysis results match gram-hs behavior exactly
 
 ### 3. Validation Rules and Constraints from gram-hs
@@ -88,7 +88,7 @@ impl<V> Pattern<V> {
   - Spec requires configurable validation rules (FR-003, FR-012)
   - Existing placeholder structure provides good foundation
   - `Option<usize>` allows optional constraints (None means no limit)
-- **Source**: To be verified from `../gram-hs/libs/pattern/src/Pattern.hs` (authoritative source of truth)
+- **Source**: To be verified from `../pattern-hs/libs/pattern/src/Pattern.hs` (authoritative source of truth)
 - **Note**: The existing `ValidationRules` placeholder in `test_utils/helpers.rs` should be moved to main pattern module or kept in test_utils based on gram-hs structure
 
 **Rust Translation**:
@@ -113,7 +113,7 @@ impl Default for ValidationRules {
 ```
 
 **Action Required**:
-- Study `../gram-hs/libs/pattern/src/Pattern.hs` to verify rule structure matches gram-hs
+- Study `../pattern-hs/libs/pattern/src/Pattern.hs` to verify rule structure matches gram-hs
 - Check if additional rule types are needed (e.g., min_depth, element type constraints)
 - Ensure rule application logic matches gram-hs behavior
 
@@ -130,7 +130,7 @@ impl Default for ValidationRules {
   - Spec requires detailed error information (FR-004)
   - Location path helps developers identify where validation failed
   - Path can be represented as vector of strings (e.g., ["elements", "0", "elements", "1"])
-- **Source**: To be verified from `../gram-hs/libs/pattern/src/Pattern.hs` (authoritative source of truth)
+- **Source**: To be verified from `../pattern-hs/libs/pattern/src/Pattern.hs` (authoritative source of truth)
 - **Note**: The existing `ValidationError` placeholder in `test_utils/helpers.rs` should be moved to main pattern module or kept in test_utils based on gram-hs structure
 
 **Rust Translation**:
@@ -156,7 +156,7 @@ impl ValidationError {
 ```
 
 **Action Required**:
-- Study `../gram-hs/libs/pattern/src/Pattern.hs` to verify error structure matches gram-hs
+- Study `../pattern-hs/libs/pattern/src/Pattern.hs` to verify error structure matches gram-hs
 - Review test files to see how errors are constructed and what location format is used
 - Ensure error messages match gram-hs format and style
 
@@ -219,7 +219,7 @@ All NEEDS CLARIFICATION items from Technical Context have been addressed with im
 - ✅ Validation rules structure: Use existing `ValidationRules` with `max_depth`, `max_elements`, `required_fields` based on spec requirements
 - ✅ Error structure: Use existing `ValidationError` with `message`, `rule_violated`, `location` based on spec requirements
 
-**Note**: All decisions are based on spec requirements and existing placeholder code. Final verification required by studying the actual gram-hs implementation in `../gram-hs/libs/pattern/src/Pattern.hs` to ensure exact behavioral equivalence.
+**Note**: All decisions are based on spec requirements and existing placeholder code. Final verification required by studying the actual gram-hs implementation in `../pattern-hs/libs/pattern/src/Pattern.hs` to ensure exact behavioral equivalence.
 
 ### 8. Integration with Existing Pattern Type
 
@@ -237,4 +237,3 @@ All NEEDS CLARIFICATION items from Technical Context have been addressed with im
   - Separate validation module - rejected (validation is core pattern functionality)
 
 **Note**: The existing `Pattern<V>` type from feature 004 provides `length()`, `size()`, `depth()`, and `is_atomic()` methods. Validation and analysis functions should complement these, not duplicate them.
-

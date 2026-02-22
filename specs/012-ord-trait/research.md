@@ -9,7 +9,7 @@
 
 **Task**: Understand the Pattern Ord instance from gram-hs reference implementation
 
-**Source**: `../gram-hs/libs/pattern/src/Pattern/Core.hs` lines 335-339
+**Source**: `../pattern-hs/libs/pattern/src/Pattern/Core.hs` lines 335-339
 
 **Findings**:
 
@@ -282,8 +282,7 @@ impl<V: Ord> Ord for Pattern<V> {
 
 ## References
 
-- **Haskell Ord Instance**: `../gram-hs/libs/pattern/src/Pattern/Core.hs` lines 272-339
+- **Haskell Ord Instance**: `../pattern-hs/libs/pattern/src/Pattern/Core.hs` lines 272-339
 - **Rust Ord Documentation**: https://doc.rust-lang.org/std/cmp/trait.Ord.html
 - **Rust PartialOrd Documentation**: https://doc.rust-lang.org/std/cmp/trait.PartialOrd.html
 - **Vec Ord Implementation**: https://doc.rust-lang.org/std/vec/struct.Vec.html#impl-Ord
-

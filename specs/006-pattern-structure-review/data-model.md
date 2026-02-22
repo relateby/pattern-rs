@@ -5,7 +5,7 @@
 
 ## Overview
 
-This document defines the validation functions and structure analysis utilities for the Pattern type. These functions operate on the existing `Pattern<V>` type defined in feature 004, adding validation and analysis capabilities for pattern structure. All functions must match the gram-hs reference implementation in `../gram-hs/libs/pattern/src/Pattern.hs` (to be verified during implementation).
+This document defines the validation functions and structure analysis utilities for the Pattern type. These functions operate on the existing `Pattern<V>` type defined in feature 004, adding validation and analysis capabilities for pattern structure. All functions must match the gram-hs reference implementation in `../pattern-hs/libs/pattern/src/Pattern.hs` (to be verified during implementation).
 
 ## Core Entities
 
@@ -271,4 +271,3 @@ N/A - Validation and analysis functions operate on immutable pattern instances. 
 - **No constraints**: `ValidationRules::default()` should accept all patterns
 - **Conflicting rules**: Rules are independent (no conflict detection needed)
 - **Invalid rules**: Invalid rule values (e.g., negative max_depth) should be handled gracefully
-

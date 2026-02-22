@@ -352,7 +352,7 @@ This document tracks research questions that need to be answered during the plan
   - Parser implementation guidelines based on parse tree structure
 
 - **Pattern Core**: `crates/pattern-core/` (Pattern and Subject types)
-- **gram-hs**: `../gram-hs/` (reference for non-grammar aspects)
+- **gram-hs**: `../pattern-hs/` (reference for non-grammar aspects)
 
 ## Decision Log
 

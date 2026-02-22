@@ -45,7 +45,7 @@ Expose the existing Rust paramorphism API (`para`) in the pattern-core Python bi
 
 **Constitution Check Result**: ✅ **ALL GATES PASS**
 
-**Note**: When porting features from gram-hs, reference the local implementation at `../gram-hs` and corresponding feature specifications in `../gram-hs/specs/`. See [porting guide](../../docs/porting-guide.md) for detailed porting instructions.
+**Note**: When porting features from gram-hs, reference the local implementation at `../pattern-hs` and corresponding feature specifications in `../pattern-hs/specs/`. See [porting guide](../../docs/porting-guide.md) for detailed porting instructions.
 
 ## Project Structure
 

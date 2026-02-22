@@ -1,6 +1,6 @@
 //! Basic fold operation tests for Pattern<V>
 //!
-//! Tests ported from gram-hs: ../gram-hs/libs/pattern/tests/Spec/Pattern/CoreSpec.hs
+//! Tests ported from gram-hs: ../pattern-hs/libs/pattern/tests/Spec/Pattern/CoreSpec.hs
 //! Lines 1054-1152: Foldable Instance tests
 
 use pattern_core::Pattern;

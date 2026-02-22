@@ -138,14 +138,14 @@ Developers need to combine foldable operations with other functional patterns (f
 ## References
 
 ### Primary Reference (Authoritative)
-- `../gram-hs/libs/pattern/src/Pattern/Core.hs` - Foldable instance implementation (lines 750-751)
+- `../pattern-hs/libs/pattern/src/Pattern/Core.hs` - Foldable instance implementation (lines 750-751)
 
 ### Test References
-- `../gram-hs/libs/pattern/tests/Spec/Pattern/CoreSpec.hs` - Foldable tests (lines 1054-1499, comprehensive fold operation tests)
+- `../pattern-hs/libs/pattern/tests/Spec/Pattern/CoreSpec.hs` - Foldable tests (lines 1054-1499, comprehensive fold operation tests)
 
 ### Documentation Reference
-- `../gram-hs/docs/` - Up-to-date documentation about the implementation
+- `../pattern-hs/docs/` - Up-to-date documentation about the implementation
 - Foldable instance documentation in Pattern/Core.hs provides detailed examples and semantics
 
 ### Historical Reference (Context Only)
-- `../gram-hs/specs/006-foldable-instance/` - Historical notes from incremental development (may be outdated, verify against actual code)
+- `../pattern-hs/specs/006-foldable-instance/` - Historical notes from incremental development (may be outdated, verify against actual code)

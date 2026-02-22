@@ -7,7 +7,7 @@
 
 ## Summary
 
-Add a structure-aware folding operation `para` to `Pattern<V>` that gives the folding function access to both the current pattern and recursively computed results from its elements. This enables pattern-of-elements analysis (e.g., detecting A, B, A sequences), depth-weighted aggregations, and element-count-aware computations. The implementation ports the gram-hs `para` from `../gram-hs/libs/pattern/src/Pattern/Core.hs` (lines 1188–1190) with behavioral equivalence verified by property and unit tests.
+Add a structure-aware folding operation `para` to `Pattern<V>` that gives the folding function access to both the current pattern and recursively computed results from its elements. This enables pattern-of-elements analysis (e.g., detecting A, B, A sequences), depth-weighted aggregations, and element-count-aware computations. The implementation ports the gram-hs `para` from `../pattern-hs/libs/pattern/src/Pattern/Core.hs` (lines 1188–1190) with behavioral equivalence verified by property and unit tests.
 
 ## Technical Context
 
@@ -27,13 +27,13 @@ Add a structure-aware folding operation `para` to `Pattern<V>` that gives the fo
 
 | Principle | Status | Notes |
 |-----------|--------|--------|
-| **I. Reference Implementation Fidelity** | PASS | Para will be ported from `../gram-hs/libs/pattern/src/Pattern/Core.hs` (para at lines 1188–1190). Equivalence tests will be ported from `../gram-hs/libs/pattern/tests/Spec/Pattern/CoreSpec.hs` (paramorphism describe block) and `../gram-hs/libs/pattern/tests/Spec/Pattern/Properties.hs` (T025–T030). |
+| **I. Reference Implementation Fidelity** | PASS | Para will be ported from `../pattern-hs/libs/pattern/src/Pattern/Core.hs` (para at lines 1188–1190). Equivalence tests will be ported from `../pattern-hs/libs/pattern/tests/Spec/Pattern/CoreSpec.hs` (paramorphism describe block) and `../pattern-hs/libs/pattern/tests/Spec/Pattern/Properties.hs` (T025–T030). |
 | **II. Correctness & Compatibility** | PASS | API and semantics will match gram-hs para; no breaking changes to existing Pattern API. |
 | **III. Rust Native Idioms** | PASS | Method on `Pattern<V>`, `Fn(&Pattern<V>, &[R]) -> R` for the folding function; references to avoid unnecessary cloning. |
 | **IV. Multi-Target Library Design** | PASS | No new platform-specific code; para is pure and fits existing pattern-core design. |
 | **V. External Language Bindings & Examples** | PASS | Doc examples in quickstart and inline; Python bindings can expose para in a follow-up if needed (out of scope for this feature). |
 
-**Note**: When porting features from gram-hs, reference the local implementation at `../gram-hs` and corresponding feature specifications in `../gram-hs/specs/`. See [porting guide](../../docs/porting-guide.md) for detailed porting instructions.
+**Note**: When porting features from gram-hs, reference the local implementation at `../pattern-hs` and corresponding feature specifications in `../pattern-hs/specs/`. See [porting guide](../../docs/porting-guide.md) for detailed porting instructions.
 
 ## Project Structure
 

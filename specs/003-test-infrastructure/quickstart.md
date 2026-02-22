@@ -297,7 +297,7 @@ cargo test test_validate_test_cases
 **Using extraction script** (alternative):
 ```bash
 # Extract test cases (when implemented)
-./scripts/sync-tests/extract.sh ../gram-hs > tests/common/test_cases.json
+./scripts/sync-tests/extract.sh ../pattern-hs > tests/common/test_cases.json
 
 # Validate extracted test cases
 cargo test test_validate_test_cases

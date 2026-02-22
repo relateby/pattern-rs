@@ -202,7 +202,7 @@ let patterns2 = parse_gram(&serialized).unwrap();
 assert_eq!(patterns1, patterns2);  // Must be structurally equivalent
 ```
 
-**Rationale** (from `../gram-hs/docs/reference/features/gram-serialization.md`):
+**Rationale** (from `../pattern-hs/docs/reference/features/gram-serialization.md`):
 - Tests **semantic preservation** of Pattern structures, not syntactic preservation of gram text
 - **Robust**: Independent of formatting differences (whitespace, comments)
 - **Canonical**: Verifies that parse → serialize → parse produces identical Pattern structures

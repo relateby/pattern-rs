@@ -8,13 +8,13 @@ pattern-rs is a Rust port of the gram-hs reference implementation, providing a P
 
 ## Key Reference: gram-hs
 
-The Haskell reference implementation is located at `../gram-hs` (relative to this repository root):
-- **Source Code (Authoritative)**: `../gram-hs/libs/` - Haskell library implementations (source of truth for behavior)
-- **Documentation**: `../gram-hs/docs/` - Up-to-date implementation documentation
-- **Tests (Authoritative)**: `../gram-hs/libs/*/tests/` - Test suites showing expected behavior
-- **Historical Notes**: `../gram-hs/specs/` - Historical context only (may be outdated)
+The Haskell reference implementation is located at `../pattern-hs` (relative to this repository root):
+- **Source Code (Authoritative)**: `../pattern-hs/libs/` - Haskell library implementations (source of truth for behavior)
+- **Documentation**: `../pattern-hs/docs/` - Up-to-date implementation documentation
+- **Tests (Authoritative)**: `../pattern-hs/libs/*/tests/` - Test suites showing expected behavior
+- **Historical Notes**: `../pattern-hs/specs/` - Historical context only (may be outdated)
 
-When porting features, study the Haskell source in `../gram-hs/libs/` as authoritative, and port to idiomatic Rust (not literal translation).
+When porting features, study the Haskell source in `../pattern-hs/libs/` as authoritative, and port to idiomatic Rust (not literal translation).
 
 ## Core Concepts
 
@@ -166,10 +166,10 @@ pattern-rs/
 
 ### Porting Features from gram-hs
 
-1. Read the authoritative Haskell source in `../gram-hs/libs/`
-2. Review up-to-date documentation in `../gram-hs/docs/`
-3. Study test cases in `../gram-hs/libs/*/tests/` for expected behavior
-4. Review historical notes in `../gram-hs/specs/XXX-feature-name/` for context (may be outdated)
+1. Read the authoritative Haskell source in `../pattern-hs/libs/`
+2. Review up-to-date documentation in `../pattern-hs/docs/`
+3. Study test cases in `../pattern-hs/libs/*/tests/` for expected behavior
+4. Review historical notes in `../pattern-hs/specs/XXX-feature-name/` for context (may be outdated)
 5. Create feature specification using `/speckit.specify` (if available)
 6. Port to idiomatic Rust (NOT literal translation)
 7. Verify behavior matches reference tests
@@ -286,3 +286,10 @@ Key cursor rule highlights:
 - Python bindings require Python 3.8+ with type hints
 - Use `cargo test` and `cargo clippy` for validation
 - Validate gram notation with `gram-lint` tool
+
+## Active Technologies
+- Rust 1.70.0 (MSRV), Edition 2021 + std (HashMap, Vec, HashSet) — no new external crates required (030-graph-classifier)
+- N/A (in-memory data structures only) (030-graph-classifier)
+
+## Recent Changes
+- 030-graph-classifier: Added Rust 1.70.0 (MSRV), Edition 2021 + std (HashMap, Vec, HashSet) — no new external crates required

@@ -35,7 +35,7 @@ Deliver a single consumable WASM package that unifies pattern-core and gram-code
 
 **Re-check after Phase 1 design**: All gates still pass. data-model.md and contracts/ define the JS/WASM surface; quickstart aligns with spec SC-001.
 
-**Note**: When porting features from gram-hs, reference the local implementation at `../gram-hs` and corresponding feature specifications in `../gram-hs/specs/`. See [porting guide](../../docs/porting-guide.md) for detailed porting instructions.
+**Note**: When porting features from gram-hs, reference the local implementation at `../pattern-hs` and corresponding feature specifications in `../pattern-hs/specs/`. See [porting guide](../../docs/porting-guide.md) for detailed porting instructions.
 
 ## Project Structure
 

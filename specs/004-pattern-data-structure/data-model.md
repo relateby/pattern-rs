@@ -183,10 +183,10 @@ For `Pattern<V>` to implement traits, `V` must implement:
 
 ## References
 
-- **Primary Source (Authoritative)**: gram-hs Implementation: `../gram-hs/libs/`
-  - Pattern: `../gram-hs/libs/pattern/src/Pattern.hs`
-  - Subject: `../gram-hs/libs/subject/src/Subject/Core.hs`
-- **Secondary Source (Context Only)**: gram-hs Design Documents: `../gram-hs/specs/001-pattern-data-structure/`
-  - Type Signatures: `../gram-hs/specs/001-pattern-data-structure/contracts/type-signatures.md` (may be outdated)
+- **Primary Source (Authoritative)**: gram-hs Implementation: `../pattern-hs/libs/`
+  - Pattern: `../pattern-hs/libs/pattern/src/Pattern.hs`
+  - Subject: `../pattern-hs/libs/subject/src/Subject/Core.hs`
+- **Secondary Source (Context Only)**: gram-hs Design Documents: `../pattern-hs/specs/001-pattern-data-structure/`
+  - Type Signatures: `../pattern-hs/specs/001-pattern-data-structure/contracts/type-signatures.md` (may be outdated)
 - Feature Spec: `spec.md`
 - Research: `research.md`

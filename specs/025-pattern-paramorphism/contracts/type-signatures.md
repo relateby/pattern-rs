@@ -97,6 +97,6 @@ let (s, c, d): (i32, usize, usize) = p.para(|pat, rs| {
 
 ## Reference
 
-- gram-hs: `../gram-hs/libs/pattern/src/Pattern/Core.hs` (lines 1188–1190)
-- gram-hs docs: `../gram-hs/docs/reference/features/paramorphism.md`
-- Porting guide: `../gram-hs/docs/reference/PORTING-GUIDE.md` (Paramorphism Implementation)
+- gram-hs: `../pattern-hs/libs/pattern/src/Pattern/Core.hs` (lines 1188–1190)
+- gram-hs docs: `../pattern-hs/docs/reference/features/paramorphism.md`
+- Porting guide: `../pattern-hs/docs/reference/PORTING-GUIDE.md` (Paramorphism Implementation)

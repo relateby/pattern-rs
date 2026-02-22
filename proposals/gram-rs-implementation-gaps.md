@@ -2,7 +2,7 @@
 
 **Date**: 2026-01-29  
 **Purpose**: Identify library features from gram-hs that need to be ported to pattern-rs  
-**Reference**: gram-hs at ../gram-hs (Haskell reference implementation)
+**Reference**: gram-hs at ../pattern-hs (Haskell reference implementation)
 
 ## Executive Summary
 

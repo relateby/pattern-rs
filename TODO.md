@@ -1,6 +1,6 @@
 # pattern-rs TODO
 
-This TODO tracks the incremental porting of features from the gram-hs reference implementation (`../gram-hs`) to pattern-rs. Features are organized by development phase and follow the gram-hs feature numbering where applicable.
+This TODO tracks the incremental porting of features from the gram-hs reference implementation (`../pattern-hs`) to pattern-rs. Features are organized by development phase and follow the gram-hs feature numbering where applicable.
 
 **Reference**: See `docs/porting-guide.md` for porting workflow and `plan/pattern-rs-work-plan.md` for prioritized work plan to achieve feature parity with gram-hs.
 
@@ -84,7 +84,7 @@ See `plan/pattern-rs-work-plan.md` for detailed implementation plan (2.5-3.5 wee
 **Status**: Complete - 162 tests, multi-platform (Rust, WASM, Python)
 
 ### 020-gram-parsing-conformance: Parser Conformance
-**Primary Reference**: `../gram-hs/libs/gram/src/Gram/Parse.hs`
+**Primary Reference**: `../pattern-hs/libs/gram/src/Gram/Parse.hs`
 **Status**: Not started
 
 - [ ] Study Haskell implementation
@@ -94,7 +94,7 @@ See `plan/pattern-rs-work-plan.md` for detailed implementation plan (2.5-3.5 wee
 - [ ] Verify equivalence with gram-hs
 
 ### 021-gram-serializer-updates: Serializer Enhancements
-**Primary Reference**: `../gram-hs/libs/gram/src/Gram/Serialize.hs`
+**Primary Reference**: `../pattern-hs/libs/gram/src/Gram/Serialize.hs`
 **Status**: Not started
 
 - [ ] Study Haskell implementation
@@ -103,7 +103,7 @@ See `plan/pattern-rs-work-plan.md` for detailed implementation plan (2.5-3.5 wee
 - [ ] Verify equivalence with gram-hs
 
 ### 022-subject-serialization: Subject Type Serialization
-**Primary Reference**: `../gram-hs/libs/subject/`
+**Primary Reference**: `../pattern-hs/libs/subject/`
 **Status**: Not started
 
 - [ ] Study Haskell implementation
@@ -111,7 +111,7 @@ See `plan/pattern-rs-work-plan.md` for detailed implementation plan (2.5-3.5 wee
 - [ ] Verify equivalence with gram-hs
 
 ### 023-gram-serialization-update: Serialization Updates
-**Primary Reference**: `../gram-hs/libs/gram/`
+**Primary Reference**: `../pattern-hs/libs/gram/`
 **Status**: Not started
 
 - [ ] Study Haskell implementation
@@ -160,9 +160,9 @@ See `plan/pattern-rs-work-plan.md` for detailed implementation plan (2.5-3.5 wee
 ## Phase 6: Advanced Pattern Operations 🎯 HIGH PRIORITY
 
 ### 🆕 PARAMORPHISM: Structure-Aware Folding (P0 - CRITICAL)
-**Primary Reference**: `../gram-hs/libs/pattern/src/Pattern/Core.hs` lines 32-34
-**Documentation**: `../gram-hs/docs/reference/features/paramorphism.md`
-**Porting Guide**: `../gram-hs/docs/reference/PORTING-GUIDE.md` lines 386-543
+**Primary Reference**: `../pattern-hs/libs/pattern/src/Pattern/Core.hs` lines 32-34
+**Documentation**: `../pattern-hs/docs/reference/features/paramorphism.md`
+**Porting Guide**: `../pattern-hs/docs/reference/PORTING-GUIDE.md` lines 386-543
 **Status**: **NOT STARTED** - Critical gap identified in feature parity analysis
 
 **Priority**: P0 - Critical for structure-aware operations
@@ -193,8 +193,8 @@ impl<V> Pattern<V> {
 - [x] Verify equivalence with gram-hs
 
 ### 026-graph-lens: Graph Lens Operations (P1 - HIGH PRIORITY)
-**Primary Reference**: `../gram-hs/libs/pattern/src/Pattern/Graph.hs`
-**Documentation**: `../gram-hs/docs/reference/features/graph-lens.md`
+**Primary Reference**: `../pattern-hs/libs/pattern/src/Pattern/Graph.hs`
+**Documentation**: `../pattern-hs/docs/reference/features/graph-lens.md`
 **Status**: **NOT STARTED** - Critical gap identified in feature parity analysis
 
 **Priority**: P1 - High priority for graph interpretation
@@ -214,8 +214,8 @@ impl<V> Pattern<V> {
 - [ ] Verify equivalence with gram-hs
 
 ### 🆕 018-comonad-verification: Comonad Instance Verification (P1 - HIGH PRIORITY)
-**Primary Reference**: `../gram-hs/libs/pattern/src/Pattern/Core.hs` (Comonad instance)
-**Documentation**: `../gram-hs/docs/reference/features/typeclass-instances.md` lines 121-131
+**Primary Reference**: `../pattern-hs/libs/pattern/src/Pattern/Core.hs` (Comonad instance)
+**Documentation**: `../pattern-hs/docs/reference/features/typeclass-instances.md` lines 121-131
 **Status**: **NEEDS VERIFICATION** - Implementation exists but needs verification
 
 **Priority**: P1 - High priority for context-aware operations
@@ -232,7 +232,7 @@ impl<V> Pattern<V> {
 - [ ] Verify equivalence with gram-hs
 
 ### 025-pattern-path-semantics: Pattern Path Operations
-**Primary Reference**: `../gram-hs/libs/`
+**Primary Reference**: `../pattern-hs/libs/`
 **Status**: Not started
 
 - [ ] Study Haskell implementation
@@ -241,7 +241,7 @@ impl<V> Pattern<V> {
 - [ ] Verify equivalence with gram-hs
 
 ### 027-decouple-identity-assignment: Identity Management
-**Primary Reference**: `../gram-hs/libs/`
+**Primary Reference**: `../pattern-hs/libs/`
 **Status**: Not started
 
 - [ ] Study Haskell implementation
@@ -249,7 +249,7 @@ impl<V> Pattern<V> {
 - [ ] Verify equivalence with gram-hs
 
 ### 028-integration-polish: Integration & Polish
-**Primary Reference**: `../gram-hs/libs/`
+**Primary Reference**: `../pattern-hs/libs/`
 **Status**: Not started
 
 - [ ] Study Haskell implementation
@@ -262,7 +262,7 @@ impl<V> Pattern<V> {
 ## Phase 7: Validation & Documentation (P2 - MEDIUM PRIORITY)
 
 ### 🆕 VALIDATION: Enhanced Validation (P2 - MEDIUM PRIORITY)
-**Primary Reference**: `../gram-hs/libs/gram/src/Gram/Validate.hs`
+**Primary Reference**: `../pattern-hs/libs/gram/src/Gram/Validate.hs`
 **Status**: **PARTIAL** - Basic validation exists, needs enhancement
 
 **Priority**: P2 - Medium priority for correctness
@@ -414,7 +414,7 @@ impl<V> Pattern<V> {
 
 - **Priority Work**: Focus on P0 (Paramorphism) and P1 (Graph Lens, Comonad Verification) features to achieve library feature parity. See `plan/pattern-rs-work-plan.md` for detailed implementation plan (2.5-3.5 weeks estimated).
 
-- **Reference Implementation**: Always verify against the actual Haskell source code in `../gram-hs/libs/` before marking features complete. The Haskell implementation is the authoritative source of truth. Documentation in `../gram-hs/docs/` provides up-to-date information about the implementation. Historical notes in `../gram-hs/specs/` guided incremental development but may be outdated. See `docs/porting-guide.md` for detailed workflow.
+- **Reference Implementation**: Always verify against the actual Haskell source code in `../pattern-hs/libs/` before marking features complete. The Haskell implementation is the authoritative source of truth. Documentation in `../pattern-hs/docs/` provides up-to-date information about the implementation. Historical notes in `../pattern-hs/specs/` guided incremental development but may be outdated. See `docs/porting-guide.md` for detailed workflow.
 
 - **Deferred Features**: Some features may be deferred if their core functionality is already covered by other features. For example, feature 007 (additional pattern builders) is deferred because the essential constructors (`point`, `pattern`) are already available from feature 005. Feature 017 (Applicative instance) is deferred due to no practical use cases. Deferred features can be revisited later based on user needs.
 

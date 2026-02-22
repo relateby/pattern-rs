@@ -129,8 +129,8 @@ test result: ok. 6 passed; 0 failed
 
 ## 📚 References
 
-- **gram-hs Schema Generator**: `../gram-hs/libs/gram/src/Gram/Schema/JSONSchema.hs`
-- **gram-hs JSON Implementation**: `../gram-hs/libs/gram/src/Gram/JSON.hs`
+- **gram-hs Schema Generator**: `../pattern-hs/libs/gram/src/Gram/Schema/JSONSchema.hs`
+- **gram-hs JSON Implementation**: `../pattern-hs/libs/gram/src/Gram/JSON.hs`
 - **gram-hs Commit**: `3b3bc9b` - "fix(json): align field names with semantic correctness"
 
 ---

@@ -433,7 +433,6 @@ None - this is a new feature. Adds methods to existing `Pattern<V>` type.
 ## References
 
 - **Haskell Foldable**: `Data.Foldable` typeclass
-- **gram-hs Implementation**: `../gram-hs/libs/pattern/src/Pattern/Core.hs` (line 750-751)
+- **gram-hs Implementation**: `../pattern-hs/libs/pattern/src/Pattern/Core.hs` (line 750-751)
 - **Rust Iterator::fold**: Standard library pattern
 - **Feature 008**: Functor instance (`map` method) for API consistency
-

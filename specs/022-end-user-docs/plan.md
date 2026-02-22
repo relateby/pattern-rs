@@ -10,7 +10,7 @@
 ### Existing Infrastructure
 - **Crate `pattern-core`**: Defines the fundamental `Pattern<V>` data structure. Key constructors: `Pattern::point(v)` and `Pattern::pattern(v, elements)`.
 - **Crate `gram-codec`**: Handles parsing and serialization between Gram notation and `Pattern` structures.
-- **Reference Documentation**: `../gram-hs/docs/guide/` contains a comprehensive guide for the Haskell implementation.
+- **Reference Documentation**: `../pattern-hs/docs/guide/` contains a comprehensive guide for the Haskell implementation.
 - **CLI Tools**: `gramref` (formerly `gram-hs`) is used for validation and test generation.
 
 ### Target Documentation Structure

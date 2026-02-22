@@ -33,7 +33,7 @@ Publish a **single** Python package to PyPI under the project name `relateby`. O
 
 No violations. Complexity Tracking not used.
 
-**Note**: When porting features from gram-hs, reference `../gram-hs`. This feature does not port from gram-hs.
+**Note**: When porting features from gram-hs, reference `../pattern-hs`. This feature does not port from gram-hs.
 
 ## Project Structure
 

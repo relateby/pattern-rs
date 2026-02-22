@@ -122,7 +122,7 @@ Developers want to use patterns as keys in ordered data structures (like BTreeMa
 
 - **Pattern Type**: Depends on the existing Pattern<V> type definition (feature 004)
 - **Equality Traits**: Depends on existing PartialEq and Eq implementations for Pattern (feature 004)
-- **Haskell Reference**: Requires access to `../gram-hs/libs/` for Ord typeclass implementation
+- **Haskell Reference**: Requires access to `../pattern-hs/libs/` for Ord typeclass implementation
 - **Test Infrastructure**: Depends on property-based testing framework (proptest) from feature 003
 
 ### Assumptions
@@ -135,7 +135,7 @@ Developers want to use patterns as keys in ordered data structures (like BTreeMa
 
 ### Reference Implementation Notes
 
-- **Primary Source**: `../gram-hs/libs/` - Haskell Ord typeclass instance for Pattern
-- **Documentation**: `../gram-hs/docs/` - Ordering semantics and usage examples
-- **Test Cases**: `../gram-hs/libs/*/tests/` - Property tests and concrete comparison examples
-- **Historical Context**: `../gram-hs/specs/009-ord-instance/` - Development notes (verify against actual code)
+- **Primary Source**: `../pattern-hs/libs/` - Haskell Ord typeclass instance for Pattern
+- **Documentation**: `../pattern-hs/docs/` - Ordering semantics and usage examples
+- **Test Cases**: `../pattern-hs/libs/*/tests/` - Property tests and concrete comparison examples
+- **Historical Context**: `../pattern-hs/specs/009-ord-instance/` - Development notes (verify against actual code)

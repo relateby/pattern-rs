@@ -448,8 +448,8 @@ But still **not strong enough to justify immediate implementation**.
 
 ## References
 
-- **Haskell Implementation**: `../gram-hs/libs/pattern/src/Pattern/Core.hs` (lines 720-728, 1104-1138)
-- **Haskell Tests**: `../gram-hs/libs/pattern/tests/Spec/Pattern/CoreSpec.hs` (lines 4242-4400)
-- **Haskell Property Tests**: `../gram-hs/libs/pattern/tests/Spec/Pattern/Properties.hs` (lines 1287-1332)
-- **Feature Spec**: `../gram-hs/specs/014-comonad-instance/spec.md`
+- **Haskell Implementation**: `../pattern-hs/libs/pattern/src/Pattern/Core.hs` (lines 720-728, 1104-1138)
+- **Haskell Tests**: `../pattern-hs/libs/pattern/tests/Spec/Pattern/CoreSpec.hs` (lines 4242-4400)
+- **Haskell Property Tests**: `../pattern-hs/libs/pattern/tests/Spec/Pattern/Properties.hs` (lines 1287-1332)
+- **Feature Spec**: `../pattern-hs/specs/014-comonad-instance/spec.md`
 - **Porting Guide**: `docs/porting-guide.md` - Idiomatic Rust principles

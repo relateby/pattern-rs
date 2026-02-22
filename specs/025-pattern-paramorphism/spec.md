@@ -139,7 +139,7 @@ As a library user, I want to define custom folding functions that have access to
 - Paramorphism is implemented as a method on `Pattern<V>` following Rust idioms (not a standalone function).
 - The implementation uses references (`&Pattern<V>`, `&[R]`) to avoid unnecessary cloning.
 - Stack depth for recursion is sufficient for typical pattern depths (patterns with thousands of nesting levels are not a common use case).
-- The gram-hs reference implementation in `../gram-hs/libs/pattern/src/Pattern/Core.hs` is the authoritative source for behavioral equivalence.
+- The gram-hs reference implementation in `../pattern-hs/libs/pattern/src/Pattern/Core.hs` is the authoritative source for behavioral equivalence.
 
 ## Out of Scope
 

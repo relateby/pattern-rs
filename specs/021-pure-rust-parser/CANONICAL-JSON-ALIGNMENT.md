@@ -202,10 +202,10 @@ After changes:
 
 ## 📚 References
 
-- **gram-hs JSON Schema**: `../gram-hs/specs/029-canonical-json-pattern/contracts/json-schema.json`
-- **gram-hs Spec**: `../gram-hs/specs/029-canonical-json-pattern/spec.md`
-- **gram-hs Data Model**: `../gram-hs/specs/029-canonical-json-pattern/data-model.md`
-- **gram-hs TypeScript Types**: `../gram-hs/specs/029-canonical-json-pattern/contracts/typescript-types.ts`
+- **gram-hs JSON Schema**: `../pattern-hs/specs/029-canonical-json-pattern/contracts/json-schema.json`
+- **gram-hs Spec**: `../pattern-hs/specs/029-canonical-json-pattern/spec.md`
+- **gram-hs Data Model**: `../pattern-hs/specs/029-canonical-json-pattern/data-model.md`
+- **gram-hs TypeScript Types**: `../pattern-hs/specs/029-canonical-json-pattern/contracts/typescript-types.ts`
 
 ---
 

@@ -190,7 +190,7 @@ pub fn js_object_to_value_map(
     }
 
     let mut map = HashMap::new();
-    let keys = js_sys::Object::keys(obj.unchecked_ref());
+    let keys = js_sys::Object::keys(obj.unchecked_ref::<js_sys::Object>());
 
     for i in 0..keys.length() {
         let key = keys.get(i);

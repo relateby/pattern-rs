@@ -60,9 +60,9 @@ Port pattern construction functions, accessors, and inspection utilities from gr
 
 ### I. Reference Implementation Fidelity ✅
 - **Status**: PASS
-- **Verification**: Feature spec references the actual Haskell implementation in `../gram-hs/libs/` as the authoritative source of truth
+- **Verification**: Feature spec references the actual Haskell implementation in `../pattern-hs/libs/` as the authoritative source of truth
 - **Plan**: Port construction, access, and inspection functions from Haskell to Rust, maintaining behavioral equivalence
-- **Reference Path**: `../gram-hs/libs/pattern/src/Pattern.hs` (primary source) and `../gram-hs/specs/002-basic-pattern-type/` (context only)
+- **Reference Path**: `../pattern-hs/libs/pattern/src/Pattern.hs` (primary source) and `../pattern-hs/specs/002-basic-pattern-type/` (context only)
 
 ### II. Correctness & Compatibility (NON-NEGOTIABLE) ✅
 - **Status**: PASS
@@ -84,7 +84,7 @@ Port pattern construction functions, accessors, and inspection utilities from gr
 - **Verification**: WASM bindings are out of scope for this feature
 - **Plan**: Functions must compile for WASM but bindings deferred to later features
 
-**Note**: When porting features from gram-hs, **always use the Haskell implementation in `../gram-hs/libs/` as the authoritative source of truth**. Design documents in `../gram-hs/specs/` are useful for context but may contain outdated information or design mistakes that were corrected in the actual implementation. See [porting guide](../../../docs/porting-guide.md) for detailed porting instructions.
+**Note**: When porting features from gram-hs, **always use the Haskell implementation in `../pattern-hs/libs/` as the authoritative source of truth**. Design documents in `../pattern-hs/specs/` are useful for context but may contain outdated information or design mistakes that were corrected in the actual implementation. See [porting guide](../../../docs/porting-guide.md) for detailed porting instructions.
 
 ## Project Structure
 
@@ -162,4 +162,3 @@ All research tasks completed:
 **Next Command**: `/speckit.tasks` to break the plan into implementation tasks
 
 The plan will be ready for task breakdown after Phase 0 and Phase 1 are complete.
-

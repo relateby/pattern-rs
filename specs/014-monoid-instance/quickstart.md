@@ -241,5 +241,4 @@ After specification is approved:
 - **Data Model**: [data-model.md](data-model.md)
 - **Research**: [research.md](research.md)
 - **Feature 013**: Semigroup/Combinable trait
-- **Haskell Reference**: `../gram-hs/libs/pattern/` (Monoid instance)
-
+- **Haskell Reference**: `../pattern-hs/libs/pattern/` (Monoid instance)

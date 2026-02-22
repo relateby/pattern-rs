@@ -29,7 +29,7 @@ Using existing Rust workspace structure:
 
 - [x] T001 Verify Rust toolchain version 1.75+ is installed
 - [x] T002 Verify existing Pattern<V> type and fold() method in crates/pattern-core/src/pattern.rs
-- [x] T003 [P] Review Haskell reference implementation at ../gram-hs/libs/pattern/src/Pattern/Core.hs lines 945-1028
+- [x] T003 [P] Review Haskell reference implementation at ../pattern-hs/libs/pattern/src/Pattern/Core.hs lines 945-1028
 
 ---
 
@@ -420,6 +420,5 @@ With 4 developers available:
 - Tests are MANDATORY for this feature (not optional)
 - Commit after each logical group of tasks
 - Stop at any checkpoint to validate story independently
-- Reference Haskell implementation at ../gram-hs/libs/pattern/src/Pattern/Core.hs
+- Reference Haskell implementation at ../pattern-hs/libs/pattern/src/Pattern/Core.hs
 - Cross-implementation testing uses gram-hs test cases as source of truth
-

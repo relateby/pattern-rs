@@ -54,8 +54,8 @@ Foundational (Phase 2) ← Must complete before any user story
 
 - [x] T001 [P] Verify Pattern<V> type exists in crates/pattern-core/src/pattern.rs
 - [x] T002 [P] Verify proptest dependency available in Cargo.toml
-- [x] T003 [P] Review gram-hs Functor implementation at ../gram-hs/libs/pattern/src/Pattern/Core.hs lines 536-617
-- [x] T004 [P] Review gram-hs Functor tests at ../gram-hs/libs/pattern/tests/Spec/Pattern/Properties.hs lines 176-203
+- [x] T003 [P] Review gram-hs Functor implementation at ../pattern-hs/libs/pattern/src/Pattern/Core.hs lines 536-617
+- [x] T004 [P] Review gram-hs Functor tests at ../pattern-hs/libs/pattern/tests/Spec/Pattern/Properties.hs lines 176-203
 
 **Acceptance**: All prerequisites verified, gram-hs implementation reviewed
 
@@ -287,4 +287,3 @@ Per [porting guide](../../../docs/porting-guide.md):
 - Maintain functor laws through property tests
 - Use idiomatic Rust patterns
 - Document relationship to Haskell implementation
-

@@ -55,7 +55,7 @@ Port pattern validation functions and structure analysis utilities from gram-hs 
 - ✅ Validation function pattern: `validate(&self, rules: &ValidationRules) -> Result<(), ValidationError>` (based on spec and existing placeholder, to be verified against gram-hs)
 - ✅ Structure analysis pattern: `analyze_structure(&self) -> StructureAnalysis` (based on spec requirements, to be verified against gram-hs)
 - ✅ Validation rules: `ValidationRules` with `max_depth`, `max_elements`, `required_fields` (based on existing placeholder, to be verified against gram-hs)
-- **Note**: Final verification required by studying `../gram-hs/libs/pattern/src/Pattern.hs` during implementation
+- **Note**: Final verification required by studying `../pattern-hs/libs/pattern/src/Pattern.hs` during implementation
 
 ## Constitution Check
 
@@ -63,9 +63,9 @@ Port pattern validation functions and structure analysis utilities from gram-hs 
 
 ### I. Reference Implementation Fidelity ✅
 - **Status**: PASS
-- **Verification**: Feature spec references the actual Haskell implementation in `../gram-hs/libs/` as the authoritative source of truth
+- **Verification**: Feature spec references the actual Haskell implementation in `../pattern-hs/libs/` as the authoritative source of truth
 - **Plan**: Port validation and structure analysis functions from Haskell to Rust, maintaining behavioral equivalence
-- **Reference Path**: `../gram-hs/libs/pattern/src/Pattern.hs` (primary source) and `../gram-hs/specs/003-pattern-structure-review/` (context only)
+- **Reference Path**: `../pattern-hs/libs/pattern/src/Pattern.hs` (primary source) and `../pattern-hs/specs/003-pattern-structure-review/` (context only)
 
 ### II. Correctness & Compatibility (NON-NEGOTIABLE) ✅
 - **Status**: PASS
@@ -87,7 +87,7 @@ Port pattern validation functions and structure analysis utilities from gram-hs 
 - **Verification**: WASM bindings are out of scope for this feature
 - **Plan**: Functions must compile for WASM but bindings deferred to later features
 
-**Note**: When porting features from gram-hs, **always use the Haskell implementation in `../gram-hs/libs/` as the authoritative source of truth**. Design documents in `../gram-hs/specs/` are useful for context but may contain outdated information or design mistakes that were corrected in the actual implementation. See [porting guide](../../../docs/porting-guide.md) for detailed porting instructions.
+**Note**: When porting features from gram-hs, **always use the Haskell implementation in `../pattern-hs/libs/` as the authoritative source of truth**. Design documents in `../pattern-hs/specs/` are useful for context but may contain outdated information or design mistakes that were corrected in the actual implementation. See [porting guide](../../../docs/porting-guide.md) for detailed porting instructions.
 
 ## Project Structure
 
@@ -136,7 +136,7 @@ tests/
 
 ### I. Reference Implementation Fidelity ✅
 - **Status**: PASS
-- **Verification**: Research document identifies need to verify against `../gram-hs/libs/pattern/src/Pattern.hs`
+- **Verification**: Research document identifies need to verify against `../pattern-hs/libs/pattern/src/Pattern.hs`
 - **Plan**: Implementation will verify exact function signatures and behavior against gram-hs during development
 
 ### II. Correctness & Compatibility (NON-NEGOTIABLE) ✅

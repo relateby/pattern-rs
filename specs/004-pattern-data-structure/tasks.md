@@ -368,4 +368,4 @@ With multiple developers:
 - Avoid: vague tasks, same file conflicts, cross-story dependencies that break independence
 - All trait implementations should use derive macros where possible (Clone, PartialEq, Eq)
 - Custom implementations needed for Debug and Display traits
-- Reference gram-hs implementation at `../gram-hs/libs/` for behavioral equivalence
+- Reference gram-hs implementation at `../pattern-hs/libs/` for behavioral equivalence

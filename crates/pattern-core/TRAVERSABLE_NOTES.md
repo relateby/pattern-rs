@@ -6,7 +6,7 @@
 
 ## Haskell Reference Implementation
 
-**Location**: `../gram-hs/libs/pattern/src/Pattern/Core.hs`
+**Location**: `../pattern-hs/libs/pattern/src/Pattern/Core.hs`
 
 ### Traversable Instance (Haskell)
 
@@ -165,7 +165,7 @@ pattern.traverse_option(f).map(|p| p.depth()) == Some(pattern.depth())
 
 ## Testing Strategy
 
-**From gram-hs tests** (`../gram-hs/libs/pattern/tests/Spec/Pattern/Properties.hs`):
+**From gram-hs tests** (`../pattern-hs/libs/pattern/tests/Spec/Pattern/Properties.hs`):
 
 1. **Property tests** (proptest, 100+ cases):
    - Identity law for each effect type
@@ -186,9 +186,8 @@ pattern.traverse_option(f).map(|p| p.depth()) == Some(pattern.depth())
 
 ## References
 
-- **Haskell Implementation**: `../gram-hs/libs/pattern/src/Pattern/Core.hs`
-- **Haskell Tests**: `../gram-hs/libs/pattern/tests/Spec/Pattern/Properties.hs`
+- **Haskell Implementation**: `../pattern-hs/libs/pattern/src/Pattern/Core.hs`
+- **Haskell Tests**: `../pattern-hs/libs/pattern/tests/Spec/Pattern/Properties.hs`
 - **Research**: `specs/010-traversable-instance/research.md`
 - **Data Model**: `specs/010-traversable-instance/data-model.md`
 - **Type Signatures**: `specs/010-traversable-instance/contracts/type-signatures.md`
-

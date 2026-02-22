@@ -37,9 +37,9 @@ Implement PartialOrd and Ord traits for Pattern<V> to enable deterministic order
 ### I. Reference Implementation Fidelity ✅
 
 - **Status**: Will be verified
-- **Action**: Port Ord typeclass instance from `../gram-hs/libs/pattern/src/Pattern.hs`
+- **Action**: Port Ord typeclass instance from `../pattern-hs/libs/pattern/src/Pattern.hs`
 - **Verification**: Behavioral equivalence tests comparing with gram-hs reference
-- **Reference Spec**: `../gram-hs/specs/009-ord-instance/` (for context, verify against actual code)
+- **Reference Spec**: `../pattern-hs/specs/009-ord-instance/` (for context, verify against actual code)
 
 ### II. Correctness & Compatibility ✅
 
@@ -76,7 +76,7 @@ Implement PartialOrd and Ord traits for Pattern<V> to enable deterministic order
 - **Status**: No changes needed
 - **Justification**: Ordering is internal to Rust; WASM bindings can expose comparison results if needed in future
 
-**Note**: When porting features from gram-hs, reference the local implementation at `../gram-hs` and corresponding feature specifications in `../gram-hs/specs/`. See [porting guide](../../../docs/porting-guide.md) for detailed porting instructions.
+**Note**: When porting features from gram-hs, reference the local implementation at `../pattern-hs` and corresponding feature specifications in `../pattern-hs/specs/`. See [porting guide](../../../docs/porting-guide.md) for detailed porting instructions.
 
 ## Project Structure
 
@@ -122,7 +122,7 @@ crates/pattern-core/
 ### Research Tasks
 
 1. **Haskell Ord Instance Analysis**
-   - **Source**: `../gram-hs/libs/pattern/src/Pattern.hs`
+   - **Source**: `../pattern-hs/libs/pattern/src/Pattern.hs`
    - **Focus**: How does the Ord instance compare patterns?
    - **Questions**:
      - Is it lexicographic comparison (value first, then elements)?
@@ -343,7 +343,7 @@ Expected tasks will include:
 
 ## References
 
-- **Haskell Source**: `../gram-hs/libs/pattern/src/Pattern.hs` (Ord instance)
-- **Haskell Spec**: `../gram-hs/specs/009-ord-instance/` (development notes)
+- **Haskell Source**: `../pattern-hs/libs/pattern/src/Pattern.hs` (Ord instance)
+- **Haskell Spec**: `../pattern-hs/specs/009-ord-instance/` (development notes)
 - **Rust Ord Trait**: https://doc.rust-lang.org/std/cmp/trait.Ord.html
 - **Porting Guide**: `../../../docs/porting-guide.md`

@@ -1848,7 +1848,7 @@ impl<V> Pattern<V> {
     ///
     /// # Reference
     ///
-    /// Ported from gram-hs: `../gram-hs/libs/pattern/src/Pattern/Core.hs` (lines 1188-1190)
+    /// Ported from gram-hs: `../pattern-hs/libs/pattern/src/Pattern/Core.hs` (lines 1188-1190)
     pub fn para<R, F>(&self, f: F) -> R
     where
         F: Fn(&Pattern<V>, &[R]) -> R,

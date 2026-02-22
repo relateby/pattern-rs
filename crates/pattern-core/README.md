@@ -220,5 +220,5 @@ Tests include:
 ## Reference Implementation
 
 This crate is a faithful port of the gram-hs reference implementation:
-- Reference: `../gram-hs/libs/pattern/` and `../gram-hs/libs/subject/`
-- Feature Spec: `../gram-hs/specs/001-pattern-data-structure/`
+- Reference: `../pattern-hs/libs/pattern/` and `../pattern-hs/libs/subject/`
+- Feature Spec: `../pattern-hs/specs/001-pattern-data-structure/`

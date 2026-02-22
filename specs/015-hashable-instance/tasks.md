@@ -47,7 +47,7 @@ Each user story is independently testable and delivers value on its own.
 - [X] T002 Review existing Eq/Ord trait implementations for Pattern
 - [X] T003 Review Symbol type in crates/pattern-core/src/subject.rs
 - [X] T004 Verify proptest dependency in crates/pattern-core/Cargo.toml
-- [X] T005 Review gram-hs Hashable instance in ../gram-hs/libs/pattern/src/Pattern/Core.hs lines 477-535
+- [X] T005 Review gram-hs Hashable instance in ../pattern-hs/libs/pattern/src/Pattern/Core.hs lines 477-535
 
 **Completion Criteria**:
 - ✅ Familiar with Pattern structure and existing trait implementations
@@ -315,4 +315,3 @@ Polish & Verification (Phase 5)
 ---
 
 **Ready to begin**: Start with T001-T005 (Setup), then proceed to US1 (T006-T019) for MVP delivery.
-
