@@ -16,7 +16,7 @@
 
 **Purpose**: Project configuration before any code is written.
 
-- [ ] T001 Add `thread-safe = []` feature flag to `crates/pattern-core/Cargo.toml`
+- [X] T001 Add `thread-safe = []` feature flag to `crates/pattern-core/Cargo.toml`
 
 ---
 
@@ -26,13 +26,13 @@
 
 **⚠️ CRITICAL**: No user story implementation can begin until this phase is complete.
 
-- [ ] T002 Create `crates/pattern-core/src/graph/graph_query.rs` with `TraversalDirection` enum (`Forward`, `Backward`; derives `Debug, Clone, Copy, PartialEq, Eq`)
-- [ ] T003 [P] Add `TraversalWeight<V>` type alias (`Rc<dyn Fn(&Pattern<V>, TraversalDirection) -> f64>`) and feature-gated `Arc` variant in `crates/pattern-core/src/graph/graph_query.rs`
-- [ ] T004 [P] Add canonical weight functions `undirected`, `directed`, `directed_reverse` in `crates/pattern-core/src/graph/graph_query.rs`
-- [ ] T005 Define `GraphQuery<V>` struct with all 9 `Rc<dyn Fn(...)>` fields (`query_nodes`, `query_relationships`, `query_incident_rels`, `query_source`, `query_target`, `query_degree`, `query_node_by_id`, `query_relationship_by_id`, `query_containers`) with full doc comments and invariant list in `crates/pattern-core/src/graph/graph_query.rs`
-- [ ] T006 Implement manual `Clone` for `GraphQuery<V>` using `Rc::clone` per field in `crates/pattern-core/src/graph/graph_query.rs`
-- [ ] T007 Update `crates/pattern-core/src/graph/mod.rs` to add `pub mod graph_query;` and re-export `TraversalDirection`, `TraversalWeight`, `undirected`, `directed`, `directed_reverse`, `GraphQuery`
-- [ ] T008 Update `crates/pattern-core/src/lib.rs` to re-export `TraversalDirection`, `TraversalWeight`, `undirected`, `directed`, `directed_reverse`, `GraphQuery` from `graph` module
+- [X] T002 Create `crates/pattern-core/src/graph/graph_query.rs` with `TraversalDirection` enum (`Forward`, `Backward`; derives `Debug, Clone, Copy, PartialEq, Eq`)
+- [X] T003 [P] Add `TraversalWeight<V>` type alias (`Rc<dyn Fn(&Pattern<V>, TraversalDirection) -> f64>`) and feature-gated `Arc` variant in `crates/pattern-core/src/graph/graph_query.rs`
+- [X] T004 [P] Add canonical weight functions `undirected`, `directed`, `directed_reverse` in `crates/pattern-core/src/graph/graph_query.rs`
+- [X] T005 Define `GraphQuery<V>` struct with all 9 `Rc<dyn Fn(...)>` fields (`query_nodes`, `query_relationships`, `query_incident_rels`, `query_source`, `query_target`, `query_degree`, `query_node_by_id`, `query_relationship_by_id`, `query_containers`) with full doc comments and invariant list in `crates/pattern-core/src/graph/graph_query.rs`
+- [X] T006 Implement manual `Clone` for `GraphQuery<V>` using `Rc::clone` per field in `crates/pattern-core/src/graph/graph_query.rs`
+- [X] T007 Update `crates/pattern-core/src/graph/mod.rs` to add `pub mod graph_query;` and re-export `TraversalDirection`, `TraversalWeight`, `undirected`, `directed`, `directed_reverse`, `GraphQuery`
+- [X] T008 Update `crates/pattern-core/src/lib.rs` to re-export `TraversalDirection`, `TraversalWeight`, `undirected`, `directed`, `directed_reverse`, `GraphQuery` from `graph` module
 
 **Checkpoint**: `cargo build -p pattern-core` compiles with the new types; `GraphQuery<V>` and weight functions are accessible from crate root.
 
@@ -46,21 +46,21 @@
 
 ### Implementation for User Story 1
 
-- [ ] T009 [US1] Add `from_pattern_graph` constructor to `crates/pattern-core/src/pattern_graph.rs` implementing all 9 fields: `query_nodes` and `query_relationships` from HashMap values; `query_incident_rels` and `query_degree` via source/target identity scan; `query_source`/`query_target` from `rel.elements[0]`/`rel.elements[1]`; `query_node_by_id`/`query_relationship_by_id` as direct HashMap lookups; `query_containers` scanning `pg_relationships`, `pg_walks`, `pg_annotations`; add TODO comment for deferred `from_graph_lens`
-- [ ] T010 [US1] Update `crates/pattern-core/src/lib.rs` to re-export `from_pattern_graph`
-- [ ] T011 [US1] Create `crates/pattern-core/src/graph/algorithms.rs` with private `reachable_neighbors` helper (inline-annotated; filters incident rels by finite traversal cost; returns neighbor node for each passable rel) and `bfs` implementation (VecDeque queue, HashSet visited, returns nodes in visit order including start)
-- [ ] T012 [P] [US1] Add `dfs` to `crates/pattern-core/src/graph/algorithms.rs` (Vec stack, HashSet visited, returns nodes in DFS order including start)
-- [ ] T013 [P] [US1] Add `is_neighbor` to `crates/pattern-core/src/graph/algorithms.rs` (checks if any reachable neighbor has matching identity)
-- [ ] T014 [P] [US1] Add `is_connected` to `crates/pattern-core/src/graph/algorithms.rs` (empty graph = true; otherwise BFS length == query_nodes length)
-- [ ] T015 [US1] Add `shortest_path` to `crates/pattern-core/src/graph/algorithms.rs` (Dijkstra with BTreeMap priority queue; same-node returns `Some(vec![node])`; disconnected returns `None`)
-- [ ] T016 [P] [US1] Add `has_path` to `crates/pattern-core/src/graph/algorithms.rs` (delegates to `shortest_path`)
-- [ ] T017 [P] [US1] Add `connected_components` to `crates/pattern-core/src/graph/algorithms.rs` (BFS per unvisited node; returns `Vec<Vec<Pattern<V>>>`)
-- [ ] T018 [P] [US1] Add `degree_centrality` to `crates/pattern-core/src/graph/algorithms.rs` (no `TraversalWeight` param; uses `query_degree`; normalizes by `n-1`; returns `HashMap<V::Id, f64>`)
-- [ ] T019 Update `crates/pattern-core/src/graph/mod.rs` to add `pub mod algorithms;` and re-export `bfs`, `dfs`, `is_neighbor`, `is_connected`, `shortest_path`, `has_path`, `connected_components`, `degree_centrality`
-- [ ] T020 Update `crates/pattern-core/src/lib.rs` to re-export algorithms from T019
-- [ ] T021 [P] [US1] Create `crates/pattern-core/tests/graph_query.rs` with construction tests: HS-T015 (all 9 `GraphQuery` fields return correct results from `from_pattern_graph`), HS-T016 (structural invariants hold for any valid graph), HS-T017 (`undirected`/`directed`/`directed_reverse` return correct costs for Forward/Backward)
-- [ ] T022 [US1] Create `crates/pattern-core/tests/algorithms.rs` with correctness tests for `bfs` (visit order, includes start), `dfs` (DFS order), `shortest_path` (min-cost path, same-node, disconnected), `has_path`, `connected_components` (correct partition), `degree_centrality` (star graph: center=1.0, leaf=1/(n-1))
-- [ ] T022b [P] [US1] Add representation-independence test to `crates/pattern-core/tests/algorithms.rs`: construct a `GraphQuery<Subject>` by hand using literal closures (no `PatternGraph` backing); run `bfs` and `connected_components` against it; verify correct results — confirms algorithms depend only on the `GraphQuery` interface, not on `PatternGraph` internals (SC-002)
+- [X] T009 [US1] Add `from_pattern_graph` constructor to `crates/pattern-core/src/pattern_graph.rs` implementing all 9 fields: `query_nodes` and `query_relationships` from HashMap values; `query_incident_rels` and `query_degree` via source/target identity scan; `query_source`/`query_target` from `rel.elements[0]`/`rel.elements[1]`; `query_node_by_id`/`query_relationship_by_id` as direct HashMap lookups; `query_containers` scanning `pg_relationships`, `pg_walks`, `pg_annotations`; add TODO comment for deferred `from_graph_lens`
+- [X] T010 [US1] Update `crates/pattern-core/src/lib.rs` to re-export `from_pattern_graph`
+- [X] T011 [US1] Create `crates/pattern-core/src/graph/algorithms.rs` with private `reachable_neighbors` helper (inline-annotated; filters incident rels by finite traversal cost; returns neighbor node for each passable rel) and `bfs` implementation (VecDeque queue, HashSet visited, returns nodes in visit order including start)
+- [X] T012 [P] [US1] Add `dfs` to `crates/pattern-core/src/graph/algorithms.rs` (Vec stack, HashSet visited, returns nodes in DFS order including start)
+- [X] T013 [P] [US1] Add `is_neighbor` to `crates/pattern-core/src/graph/algorithms.rs` (checks if any reachable neighbor has matching identity)
+- [X] T014 [P] [US1] Add `is_connected` to `crates/pattern-core/src/graph/algorithms.rs` (empty graph = true; otherwise BFS length == query_nodes length)
+- [X] T015 [US1] Add `shortest_path` to `crates/pattern-core/src/graph/algorithms.rs` (Dijkstra with BTreeMap priority queue; same-node returns `Some(vec![node])`; disconnected returns `None`)
+- [X] T016 [P] [US1] Add `has_path` to `crates/pattern-core/src/graph/algorithms.rs` (delegates to `shortest_path`)
+- [X] T017 [P] [US1] Add `connected_components` to `crates/pattern-core/src/graph/algorithms.rs` (BFS per unvisited node; returns `Vec<Vec<Pattern<V>>>`)
+- [X] T018 [P] [US1] Add `degree_centrality` to `crates/pattern-core/src/graph/algorithms.rs` (no `TraversalWeight` param; uses `query_degree`; normalizes by `n-1`; returns `HashMap<V::Id, f64>`)
+- [X] T019 Update `crates/pattern-core/src/graph/mod.rs` to add `pub mod algorithms;` and re-export `bfs`, `dfs`, `is_neighbor`, `is_connected`, `shortest_path`, `has_path`, `connected_components`, `degree_centrality`
+- [X] T020 Update `crates/pattern-core/src/lib.rs` to re-export algorithms from T019
+- [X] T021 [P] [US1] Create `crates/pattern-core/tests/graph_query.rs` with construction tests: HS-T015 (all 9 `GraphQuery` fields return correct results from `from_pattern_graph`), HS-T016 (structural invariants hold for any valid graph), HS-T017 (`undirected`/`directed`/`directed_reverse` return correct costs for Forward/Backward)
+- [X] T022 [US1] Create `crates/pattern-core/tests/algorithms.rs` with correctness tests for `bfs` (visit order, includes start), `dfs` (DFS order), `shortest_path` (min-cost path, same-node, disconnected), `has_path`, `connected_components` (correct partition), `degree_centrality` (star graph: center=1.0, leaf=1/(n-1))
+- [X] T022b [P] [US1] Add representation-independence test to `crates/pattern-core/tests/algorithms.rs`: construct a `GraphQuery<Subject>` by hand using literal closures (no `PatternGraph` backing); run `bfs` and `connected_components` against it; verify correct results — confirms algorithms depend only on the `GraphQuery` interface, not on `PatternGraph` internals (SC-002)
 
 **Checkpoint**: `cargo test -p pattern-core -- graph_query algorithms` passes. A `PatternGraph` can be wrapped and queried with any of the 7 algorithms above.
 
@@ -74,12 +74,12 @@
 
 ### Implementation for User Story 2
 
-- [ ] T023 [P] [US2] Add `topological_sort` to `crates/pattern-core/src/graph/algorithms.rs` (DFS post-order with in-stack cycle detection; ignores `TraversalWeight`; uses `query_source`/`query_target` only; returns `None` on cycle)
-- [ ] T024 [P] [US2] Add `has_cycle` to `crates/pattern-core/src/graph/algorithms.rs` (delegates to `topological_sort`)
-- [ ] T025 [P] [US2] Add `all_paths` to `crates/pattern-core/src/graph/algorithms.rs` (DFS simple-path enumeration; no repeated nodes; returns `Vec<Vec<Pattern<V>>>`)
-- [ ] T026 Update `crates/pattern-core/src/graph/mod.rs` and `crates/pattern-core/src/lib.rs` to re-export `topological_sort`, `has_cycle`, `all_paths`
-- [ ] T027 [US2] Add traversal direction tests to `crates/pattern-core/tests/algorithms.rs`: directed BFS on A→B→C from A returns only forward-reachable nodes; backward traversal from C returns A and B; undirected from any node reaches all nodes; custom weighted `shortest_path` respects costs
-- [ ] T028 [US2] Add structural algorithm tests to `crates/pattern-core/tests/algorithms.rs`: `topological_sort` on a DAG returns valid topological order; cyclic graph returns `None`; `has_cycle` returns correct boolean; `all_paths` on simple graph returns all simple paths
+- [X] T023 [P] [US2] Add `topological_sort` to `crates/pattern-core/src/graph/algorithms.rs` (DFS post-order with in-stack cycle detection; ignores `TraversalWeight`; uses `query_source`/`query_target` only; returns `None` on cycle)
+- [X] T024 [P] [US2] Add `has_cycle` to `crates/pattern-core/src/graph/algorithms.rs` (delegates to `topological_sort`)
+- [X] T025 [P] [US2] Add `all_paths` to `crates/pattern-core/src/graph/algorithms.rs` (DFS simple-path enumeration; no repeated nodes; returns `Vec<Vec<Pattern<V>>>`)
+- [X] T026 Update `crates/pattern-core/src/graph/mod.rs` and `crates/pattern-core/src/lib.rs` to re-export `topological_sort`, `has_cycle`, `all_paths`
+- [X] T027 [US2] Add traversal direction tests to `crates/pattern-core/tests/algorithms.rs`: directed BFS on A→B→C from A returns only forward-reachable nodes; backward traversal from C returns A and B; undirected from any node reaches all nodes; custom weighted `shortest_path` respects costs
+- [X] T028 [US2] Add structural algorithm tests to `crates/pattern-core/tests/algorithms.rs`: `topological_sort` on a DAG returns valid topological order; cyclic graph returns `None`; `has_cycle` returns correct boolean; `all_paths` on simple graph returns all simple paths
 
 **Checkpoint**: `cargo test -p pattern-core -- algorithms` passes all traversal direction tests. Same `GraphQuery` value used with different weights produces verifiably different results.
 
@@ -93,13 +93,13 @@
 
 ### Implementation for User Story 3
 
-- [ ] T029 [US3] Add `frame_query` combinator to `crates/pattern-core/src/graph/graph_query.rs`: filter `query_nodes` and `query_relationships` by predicate; filter `query_incident_rels` to exclude rels with endpoints outside frame; filter `query_node_by_id` and `query_relationship_by_id` results by predicate; filter `query_containers` results by predicate; recalculate `query_degree` as filtered incident rel count
-- [ ] T030 [US3] Add `memoize_incident_rels` combinator to `crates/pattern-core/src/graph/graph_query.rs`: eagerly build `HashMap<V::Id, Vec<Pattern<V>>>` from all nodes at construction time; wrap `query_incident_rels` and `query_degree` to serve from cache; all other fields pass through unchanged
-- [ ] T031 [P] [US3] Add `minimum_spanning_tree` to `crates/pattern-core/src/graph/algorithms.rs` (Kruskal's with path-compression union-find; edge cost = `min(fwd, bwd)`; infinite-cost edges excluded; returns `Vec<Pattern<V>>` of nodes in MST)
-- [ ] T032 [P] [US3] Add `betweenness_centrality` to `crates/pattern-core/src/graph/algorithms.rs` (Brandes algorithm: BFS phase to compute sigma/pred/dist per source node; back-propagation phase for delta accumulation; unnormalized scores; returns `HashMap<V::Id, f64>`)
-- [ ] T033 Update `crates/pattern-core/src/graph/mod.rs` and `crates/pattern-core/src/lib.rs` to re-export `frame_query`, `memoize_incident_rels`, `minimum_spanning_tree`, `betweenness_centrality`
-- [ ] T034 [US3] Add frame combinator tests to `crates/pattern-core/tests/graph_query.rs`: HS-T047 (nodes outside predicate excluded from `query_nodes`), HS-T048 (`query_incident_rels` excludes rels with endpoints outside frame), HS-T049 (`memoize_incident_rels` returns same results as base), HS-T050 (`query_degree` equals `len(query_incident_rels)` after memoize), HS-T051 (all 7 structural invariants hold on framed query)
-- [ ] T035 [US3] Add composition and advanced algorithm tests to `crates/pattern-core/tests/algorithms.rs`: `minimum_spanning_tree` on 3-node weighted graph; `betweenness_centrality` on path graph (middle node scores higher than endpoints); `frame_query` + BFS produces results consistent with predicate filter
+- [X] T029 [US3] Add `frame_query` combinator to `crates/pattern-core/src/graph/graph_query.rs`: filter `query_nodes` and `query_relationships` by predicate; filter `query_incident_rels` to exclude rels with endpoints outside frame; filter `query_node_by_id` and `query_relationship_by_id` results by predicate; filter `query_containers` results by predicate; recalculate `query_degree` as filtered incident rel count
+- [X] T030 [US3] Add `memoize_incident_rels` combinator to `crates/pattern-core/src/graph/graph_query.rs`: eagerly build `HashMap<V::Id, Vec<Pattern<V>>>` from all nodes at construction time; wrap `query_incident_rels` and `query_degree` to serve from cache; all other fields pass through unchanged
+- [X] T031 [P] [US3] Add `minimum_spanning_tree` to `crates/pattern-core/src/graph/algorithms.rs` (Kruskal's with path-compression union-find; edge cost = `min(fwd, bwd)`; infinite-cost edges excluded; returns `Vec<Pattern<V>>` of nodes in MST)
+- [X] T032 [P] [US3] Add `betweenness_centrality` to `crates/pattern-core/src/graph/algorithms.rs` (Brandes algorithm: BFS phase to compute sigma/pred/dist per source node; back-propagation phase for delta accumulation; unnormalized scores; returns `HashMap<V::Id, f64>`)
+- [X] T033 Update `crates/pattern-core/src/graph/mod.rs` and `crates/pattern-core/src/lib.rs` to re-export `frame_query`, `memoize_incident_rels`, `minimum_spanning_tree`, `betweenness_centrality`
+- [X] T034 [US3] Add frame combinator tests to `crates/pattern-core/tests/graph_query.rs`: HS-T047 (nodes outside predicate excluded from `query_nodes`), HS-T048 (`query_incident_rels` excludes rels with endpoints outside frame), HS-T049 (`memoize_incident_rels` returns same results as base), HS-T050 (`query_degree` equals `len(query_incident_rels)` after memoize), HS-T051 (all 7 structural invariants hold on framed query)
+- [X] T035 [US3] Add composition and advanced algorithm tests to `crates/pattern-core/tests/algorithms.rs`: `minimum_spanning_tree` on 3-node weighted graph; `betweenness_centrality` on path graph (middle node scores higher than endpoints); `frame_query` + BFS produces results consistent with predicate filter
 
 **Checkpoint**: `cargo test -p pattern-core -- graph_query algorithms` passes frame and combinator tests. Frame results are consistent across all algorithms.
 
@@ -113,11 +113,11 @@
 
 ### Implementation for User Story 4
 
-- [ ] T036 [P] [US4] Add `query_annotations_of(classifier: &GraphClassifier<Extra, V>, q: &GraphQuery<V>, element: &Pattern<V>)` to `crates/pattern-core/src/graph/algorithms.rs`: filters `query_containers` results by `GraphClass::GAnnotation` using classifier
-- [ ] T037 [P] [US4] Add `query_walks_containing(classifier: &GraphClassifier<Extra, V>, q: &GraphQuery<V>, element: &Pattern<V>)` to `crates/pattern-core/src/graph/algorithms.rs`: filters `query_containers` results by `GraphClass::GWalk` using classifier
-- [ ] T038 [P] [US4] Add `query_co_members(q: &GraphQuery<V>, element: &Pattern<V>, container: &Pattern<V>)` to `crates/pattern-core/src/graph/algorithms.rs`: returns `container.elements` excluding `element` (matched by identity)
-- [ ] T039 Update `crates/pattern-core/src/graph/mod.rs` and `crates/pattern-core/src/lib.rs` to re-export `query_annotations_of`, `query_walks_containing`, `query_co_members`
-- [ ] T040 [US4] Add context helper tests to `crates/pattern-core/tests/graph_query.rs`: HS-T056 (`query_containers` returns correct containers); `query_annotations_of` returns only annotation patterns; `query_walks_containing` returns only walk patterns; `query_co_members` returns correct co-members within a walk, excluding the queried element
+- [X] T036 [P] [US4] Add `query_annotations_of(classifier: &GraphClassifier<Extra, V>, q: &GraphQuery<V>, element: &Pattern<V>)` to `crates/pattern-core/src/graph/algorithms.rs`: filters `query_containers` results by `GraphClass::GAnnotation` using classifier
+- [X] T037 [P] [US4] Add `query_walks_containing(classifier: &GraphClassifier<Extra, V>, q: &GraphQuery<V>, element: &Pattern<V>)` to `crates/pattern-core/src/graph/algorithms.rs`: filters `query_containers` results by `GraphClass::GWalk` using classifier
+- [X] T038 [P] [US4] Add `query_co_members(q: &GraphQuery<V>, element: &Pattern<V>, container: &Pattern<V>)` to `crates/pattern-core/src/graph/algorithms.rs`: returns `container.elements` excluding `element` (matched by identity)
+- [X] T039 Update `crates/pattern-core/src/graph/mod.rs` and `crates/pattern-core/src/lib.rs` to re-export `query_annotations_of`, `query_walks_containing`, `query_co_members`
+- [X] T040 [US4] Add context helper tests to `crates/pattern-core/tests/graph_query.rs`: HS-T056 (`query_containers` returns correct containers); `query_annotations_of` returns only annotation patterns; `query_walks_containing` returns only walk patterns; `query_co_members` returns correct co-members within a walk, excluding the queried element
 
 **Checkpoint**: `cargo test -p pattern-core -- graph_query` passes all context helper tests. All 4 user stories are independently functional.
 
@@ -127,12 +127,12 @@
 
 **Purpose**: Code quality, WASM verification, thread-safe feature validation, constitution compliance.
 
-- [ ] T041 Run `cargo fmt --all` in repo root and fix any formatting issues across all modified files
-- [ ] T042 [P] Run `cargo clippy --workspace -- -D warnings` and fix all warnings in new files (`graph_query.rs`, `algorithms.rs`, modified `pattern_graph.rs`, `lib.rs`, `mod.rs`)
-- [ ] T043 Run `cargo build --workspace` and confirm native build succeeds with no errors
-- [ ] T044 Run `cargo build --workspace --target wasm32-unknown-unknown` and confirm all new closures and data structures compile for WASM target
-- [ ] T045 Run `cargo build --workspace --features thread-safe` and confirm the `thread-safe` Cargo feature compiles (Arc variant of GraphQuery and TraversalWeight must build without errors)
-- [ ] T046 Run `cargo test --workspace` and confirm all tests pass
+- [X] T041 Run `cargo fmt --all` in repo root and fix any formatting issues across all modified files
+- [X] T042 [P] Run `cargo clippy --workspace -- -D warnings` and fix all warnings in new files (`graph_query.rs`, `algorithms.rs`, modified `pattern_graph.rs`, `lib.rs`, `mod.rs`)
+- [X] T043 Run `cargo build --workspace` and confirm native build succeeds with no errors
+- [X] T044 Run `cargo build --workspace --target wasm32-unknown-unknown` and confirm all new closures and data structures compile for WASM target
+- [X] T045 Run `cargo build --workspace --features thread-safe` and confirm the `thread-safe` Cargo feature compiles (Arc variant of GraphQuery and TraversalWeight must build without errors)
+- [X] T046 Run `cargo test --workspace` and confirm all tests pass
 
 ---
 

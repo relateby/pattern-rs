@@ -32,6 +32,7 @@ crate-type = ["cdylib", "rlib"]
 default = []
 python = ["pyo3"]
 wasm = ["wasm-bindgen", "js-sys"]
+thread-safe = []
 
 [[bench]]
 name = "fold_benchmarks"

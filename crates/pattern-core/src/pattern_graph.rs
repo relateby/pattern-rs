@@ -7,6 +7,7 @@
 use std::collections::HashMap;
 
 use crate::graph::graph_classifier::{GraphClass, GraphClassifier, GraphValue};
+use crate::graph::graph_query::GraphQuery;
 use crate::pattern::Pattern;
 use crate::reconcile::{HasIdentity, Mergeable, ReconciliationPolicy, Refinable};
 use crate::subject::Symbol;
@@ -328,6 +329,216 @@ where
     Extra: 'static,
 {
     from_patterns_with_policy(classifier, &ReconciliationPolicy::LastWriteWins, patterns)
+}
+
+// ============================================================================
+// GraphQuery constructor
+// ============================================================================
+
+/// Wraps a `PatternGraph` in a `GraphQuery<V>`.
+///
+/// All nine `GraphQuery` fields are implemented against the `PatternGraph` maps.
+///
+/// # Complexity
+///
+/// - `query_nodes` / `query_relationships`: O(n) / O(r) to collect values
+/// - `query_incident_rels`: O(r) scan of all relationships
+/// - `query_source` / `query_target`: O(1) element access
+/// - `query_degree`: O(r) scan
+/// - `query_node_by_id` / `query_relationship_by_id`: O(log n) / O(log r) HashMap lookup
+/// - `query_containers`: O(r + w + a) scan of relationships, walks, annotations
+///
+/// # Deferred
+///
+/// TODO: `from_graph_lens` — deferred until `GraphLens` type is available in pattern-rs.
+#[cfg(not(feature = "thread-safe"))]
+pub fn from_pattern_graph<Extra, V>(graph: std::rc::Rc<PatternGraph<Extra, V>>) -> GraphQuery<V>
+where
+    Extra: 'static,
+    V: GraphValue + Clone + 'static,
+    V::Id: Clone + Eq + std::hash::Hash + 'static,
+{
+    use std::rc::Rc;
+
+    let g1 = Rc::clone(&graph);
+    let query_nodes = Rc::new(move || g1.pg_nodes.values().cloned().collect());
+
+    let g2 = Rc::clone(&graph);
+    let query_relationships = Rc::new(move || g2.pg_relationships.values().cloned().collect());
+
+    let g3 = Rc::clone(&graph);
+    let query_incident_rels = Rc::new(move |node: &Pattern<V>| {
+        let node_id = node.value.identify();
+        g3.pg_relationships
+            .values()
+            .filter(|rel| {
+                rel.elements.len() == 2
+                    && (rel.elements[0].value.identify() == node_id
+                        || rel.elements[1].value.identify() == node_id)
+            })
+            .cloned()
+            .collect()
+    });
+
+    // query_source and query_target read directly from relationship elements (O(1))
+    let query_source = Rc::new(|rel: &Pattern<V>| rel.elements.first().cloned());
+    let query_target = Rc::new(|rel: &Pattern<V>| rel.elements.get(1).cloned());
+
+    let g4 = Rc::clone(&graph);
+    let query_degree = Rc::new(move |node: &Pattern<V>| {
+        let node_id = node.value.identify();
+        g4.pg_relationships
+            .values()
+            .filter(|rel| {
+                rel.elements.len() == 2
+                    && (rel.elements[0].value.identify() == node_id
+                        || rel.elements[1].value.identify() == node_id)
+            })
+            .count()
+    });
+
+    let g5 = Rc::clone(&graph);
+    let query_node_by_id = Rc::new(move |id: &V::Id| g5.pg_nodes.get(id).cloned());
+
+    let g6 = Rc::clone(&graph);
+    let query_relationship_by_id = Rc::new(move |id: &V::Id| g6.pg_relationships.get(id).cloned());
+
+    let g7 = Rc::clone(&graph);
+    let query_containers = Rc::new(move |element: &Pattern<V>| {
+        let elem_id = element.value.identify();
+        let mut containers = Vec::new();
+
+        // Relationships: element is an endpoint (source or target)
+        for rel in g7.pg_relationships.values() {
+            if rel.elements.len() == 2
+                && (rel.elements[0].value.identify() == elem_id
+                    || rel.elements[1].value.identify() == elem_id)
+            {
+                containers.push(rel.clone());
+            }
+        }
+
+        // Walks: element is one of the walk's direct sub-elements
+        for walk in g7.pg_walks.values() {
+            if walk.elements.iter().any(|e| e.value.identify() == elem_id) {
+                containers.push(walk.clone());
+            }
+        }
+
+        // Annotations: element is the single inner element
+        for ann in g7.pg_annotations.values() {
+            if ann.elements.len() == 1 && ann.elements[0].value.identify() == elem_id {
+                containers.push(ann.clone());
+            }
+        }
+
+        containers
+    });
+
+    GraphQuery {
+        query_nodes,
+        query_relationships,
+        query_incident_rels,
+        query_source,
+        query_target,
+        query_degree,
+        query_node_by_id,
+        query_relationship_by_id,
+        query_containers,
+    }
+}
+
+#[cfg(feature = "thread-safe")]
+pub fn from_pattern_graph<Extra, V>(graph: std::sync::Arc<PatternGraph<Extra, V>>) -> GraphQuery<V>
+where
+    Extra: Send + Sync + 'static,
+    V: GraphValue + Clone + Send + Sync + 'static,
+    V::Id: Clone + Eq + std::hash::Hash + Send + Sync + 'static,
+{
+    use std::sync::Arc;
+
+    let g1 = Arc::clone(&graph);
+    let query_nodes = Arc::new(move || g1.pg_nodes.values().cloned().collect());
+
+    let g2 = Arc::clone(&graph);
+    let query_relationships = Arc::new(move || g2.pg_relationships.values().cloned().collect());
+
+    let g3 = Arc::clone(&graph);
+    let query_incident_rels = Arc::new(move |node: &Pattern<V>| {
+        let node_id = node.value.identify();
+        g3.pg_relationships
+            .values()
+            .filter(|rel| {
+                rel.elements.len() == 2
+                    && (rel.elements[0].value.identify() == node_id
+                        || rel.elements[1].value.identify() == node_id)
+            })
+            .cloned()
+            .collect()
+    });
+
+    let query_source = Arc::new(|rel: &Pattern<V>| rel.elements.first().cloned());
+    let query_target = Arc::new(|rel: &Pattern<V>| rel.elements.get(1).cloned());
+
+    let g4 = Arc::clone(&graph);
+    let query_degree = Arc::new(move |node: &Pattern<V>| {
+        let node_id = node.value.identify();
+        g4.pg_relationships
+            .values()
+            .filter(|rel| {
+                rel.elements.len() == 2
+                    && (rel.elements[0].value.identify() == node_id
+                        || rel.elements[1].value.identify() == node_id)
+            })
+            .count()
+    });
+
+    let g5 = Arc::clone(&graph);
+    let query_node_by_id = Arc::new(move |id: &V::Id| g5.pg_nodes.get(id).cloned());
+
+    let g6 = Arc::clone(&graph);
+    let query_relationship_by_id = Arc::new(move |id: &V::Id| g6.pg_relationships.get(id).cloned());
+
+    let g7 = Arc::clone(&graph);
+    let query_containers = Arc::new(move |element: &Pattern<V>| {
+        let elem_id = element.value.identify();
+        let mut containers = Vec::new();
+
+        for rel in g7.pg_relationships.values() {
+            if rel.elements.len() == 2
+                && (rel.elements[0].value.identify() == elem_id
+                    || rel.elements[1].value.identify() == elem_id)
+            {
+                containers.push(rel.clone());
+            }
+        }
+
+        for walk in g7.pg_walks.values() {
+            if walk.elements.iter().any(|e| e.value.identify() == elem_id) {
+                containers.push(walk.clone());
+            }
+        }
+
+        for ann in g7.pg_annotations.values() {
+            if ann.elements.len() == 1 && ann.elements[0].value.identify() == elem_id {
+                containers.push(ann.clone());
+            }
+        }
+
+        containers
+    });
+
+    GraphQuery {
+        query_nodes,
+        query_relationships,
+        query_incident_rels,
+        query_source,
+        query_target,
+        query_degree,
+        query_node_by_id,
+        query_relationship_by_id,
+        query_containers,
+    }
 }
 
 /// Builds a graph from an iterable of patterns using the given policy.

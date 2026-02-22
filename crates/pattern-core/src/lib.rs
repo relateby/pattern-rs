@@ -184,12 +184,16 @@ pub mod python;
 pub mod wasm;
 
 pub use graph::{
-    canonical_classifier, classify_by_shape, from_test_node, GraphClass, GraphClassifier,
-    GraphValue,
+    all_paths, betweenness_centrality, bfs, canonical_classifier, classify_by_shape,
+    connected_components, degree_centrality, dfs, directed, directed_reverse, frame_query,
+    from_test_node, has_cycle, has_path, is_connected, is_neighbor, memoize_incident_rels,
+    minimum_spanning_tree, query_annotations_of, query_co_members, query_walks_containing,
+    shortest_path, topological_sort, undirected, GraphClass, GraphClassifier, GraphQuery,
+    GraphValue, TraversalDirection, TraversalWeight,
 };
 pub use pattern::{Pattern, StructureAnalysis, ValidationError, ValidationRules};
 pub use pattern_graph::{
-    from_patterns, from_patterns_with_policy, merge as pg_merge,
+    from_pattern_graph, from_patterns, from_patterns_with_policy, merge as pg_merge,
     merge_with_policy as pg_merge_with_policy, PatternGraph,
 };
 pub use reconcile::{
