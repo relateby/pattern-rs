@@ -11,10 +11,10 @@
 
 **Findings**:
 - **Decision**: Pattern type is `data Pattern v = Pattern { value :: v, elements :: [Pattern v] }`
-- **Rationale**: This is the canonical structure from the actual gram-hs implementation in `../gram-hs/libs/pattern/src/Pattern.hs`
+- **Rationale**: This is the canonical structure from the actual gram-hs implementation in `../pattern-hs/libs/pattern/src/Pattern.hs`
 - **Alternatives considered**: None - this is the reference implementation structure
-- **Source**: `../gram-hs/libs/pattern/src/Pattern.hs` (authoritative source of truth)
-- **Note**: Design documents in `../gram-hs/specs/001-pattern-data-structure/contracts/type-signatures.md` were reviewed for context but the actual Haskell source code is authoritative
+- **Source**: `../pattern-hs/libs/pattern/src/Pattern.hs` (authoritative source of truth)
+- **Note**: Design documents in `../pattern-hs/specs/001-pattern-data-structure/contracts/type-signatures.md` were reviewed for context but the actual Haskell source code is authoritative
 
 **Rust Translation**:
 ```rust
@@ -24,7 +24,7 @@ pub struct Pattern<V> {
 }
 ```
 
-**Note**: The actual gram-hs implementation in `../gram-hs/libs/pattern/src/Pattern.hs` defines the `Pattern v` type. The Subject type is defined in the gram-hs `libs/subject/src/Subject/Core.hs` module (verified in actual source code, not design documents) and can be ported as part of this feature. Subject is a single type (not Node, Edge, etc.) with identity, labels, and properties.
+**Note**: The actual gram-hs implementation in `../pattern-hs/libs/pattern/src/Pattern.hs` defines the `Pattern v` type. The Subject type is defined in the gram-hs `libs/subject/src/Subject/Core.hs` module (verified in actual source code, not design documents) and can be ported as part of this feature. Subject is a single type (not Node, Edge, etc.) with identity, labels, and properties.
 
 ### 2. Rust Trait Implementation Strategy
 
@@ -72,7 +72,7 @@ pub struct Pattern<V> {
   - Manual comparison - rejected (too error-prone)
   - External testing tools - rejected (use existing infrastructure)
 - **Implementation Notes**:
-  - Port test cases from `../gram-hs/libs/*/tests/`
+  - Port test cases from `../pattern-hs/libs/*/tests/`
   - Use `gram-hs` CLI tool for test case generation if needed (per `docs/gram-hs-cli-testing-guide.md`)
 
 ### 5. S-Expression vs Tree Terminology
@@ -105,13 +105,13 @@ All NEEDS CLARIFICATION items from Technical Context have been resolved:
 
 ## References
 
-- **Primary Source (Authoritative)**: gram-hs Implementation: `../gram-hs/libs/`
-  - Pattern: `../gram-hs/libs/pattern/src/Pattern.hs`
-  - Subject: `../gram-hs/libs/subject/src/Subject/Core.hs`
-  - Tests: `../gram-hs/libs/*/tests/`
-- **Secondary Source (Context Only)**: gram-hs Design Documents: `../gram-hs/specs/001-pattern-data-structure/`
-  - Type Signatures: `../gram-hs/specs/001-pattern-data-structure/contracts/type-signatures.md` (may be outdated)
-  - Feature Spec: `../gram-hs/specs/001-pattern-data-structure/spec.md` (for context)
+- **Primary Source (Authoritative)**: gram-hs Implementation: `../pattern-hs/libs/`
+  - Pattern: `../pattern-hs/libs/pattern/src/Pattern.hs`
+  - Subject: `../pattern-hs/libs/subject/src/Subject/Core.hs`
+  - Tests: `../pattern-hs/libs/*/tests/`
+- **Secondary Source (Context Only)**: gram-hs Design Documents: `../pattern-hs/specs/001-pattern-data-structure/`
+  - Type Signatures: `../pattern-hs/specs/001-pattern-data-structure/contracts/type-signatures.md` (may be outdated)
+  - Feature Spec: `../pattern-hs/specs/001-pattern-data-structure/spec.md` (for context)
 - Porting Guide: `docs/porting-guide.md`
 - Test Infrastructure: `specs/003-test-infrastructure/`
 - gram-hs CLI Testing Guide: `docs/gram-hs-cli-testing-guide.md`

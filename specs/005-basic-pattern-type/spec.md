@@ -148,20 +148,20 @@ A developer needs to verify that pattern construction, access, and inspection fu
 - **Feature 002 (Workspace Setup)**: Provides multi-crate workspace with `pattern-core` crate
 - **Feature 003 (Test Infrastructure)**: Provides testing framework, equivalence checking utilities, and test synchronization infrastructure for verifying behavioral equivalence with gram-hs
 - **Feature 004 (Pattern Data Structure)**: Provides the core Pattern type definition that construction, access, and inspection functions operate on
-- **gram-hs Reference Implementation**: Provides the reference specification, function signatures, and test cases at `../gram-hs/libs/pattern/src/` for pattern construction, access, and inspection functions
+- **gram-hs Reference Implementation**: Provides the reference specification, function signatures, and test cases at `../pattern-hs/libs/pattern/src/` for pattern construction, access, and inspection functions
 
 ## References
 
-- **Primary Source (Authoritative)**: **gram-hs Implementation**: `../gram-hs/libs/` - Haskell library source code
-  - Pattern Construction: `../gram-hs/libs/pattern/src/Pattern.hs` (construction functions)
-  - Pattern Access: `../gram-hs/libs/pattern/src/Pattern.hs` (accessor functions)
-  - Pattern Inspection: `../gram-hs/libs/pattern/src/Pattern.hs` (inspection utilities)
-  - Tests: `../gram-hs/libs/pattern/tests/` (test cases for construction, access, and inspection)
-- **Secondary Source (Context Only)**: gram-hs Design Documents: `../gram-hs/specs/002-basic-pattern-type/`
-  - Feature Specification: `../gram-hs/specs/002-basic-pattern-type/spec.md` (for context, may be outdated)
-  - Type Signatures: `../gram-hs/specs/002-basic-pattern-type/contracts/type-signatures.md` (for context, verify against actual code)
+- **Primary Source (Authoritative)**: **gram-hs Implementation**: `../pattern-hs/libs/` - Haskell library source code
+  - Pattern Construction: `../pattern-hs/libs/pattern/src/Pattern.hs` (construction functions)
+  - Pattern Access: `../pattern-hs/libs/pattern/src/Pattern.hs` (accessor functions)
+  - Pattern Inspection: `../pattern-hs/libs/pattern/src/Pattern.hs` (inspection utilities)
+  - Tests: `../pattern-hs/libs/pattern/tests/` (test cases for construction, access, and inspection)
+- **Secondary Source (Context Only)**: gram-hs Design Documents: `../pattern-hs/specs/002-basic-pattern-type/`
+  - Feature Specification: `../pattern-hs/specs/002-basic-pattern-type/spec.md` (for context, may be outdated)
+  - Type Signatures: `../pattern-hs/specs/002-basic-pattern-type/contracts/type-signatures.md` (for context, verify against actual code)
 - **Porting Guide**: `docs/porting-guide.md` - Systematic approach for porting from gram-hs
 - **Project Plan**: `docs/pattern-rs-project-plan.md` - Overall architecture and design decisions
 - **TODO**: `TODO.md` - Feature tracking and porting checklist
 
-**Important**: The Haskell implementation in `../gram-hs/libs/` is the authoritative source of truth. Design documents in `../gram-hs/specs/` are useful for context but may contain outdated information or design mistakes that were corrected in the actual implementation.
+**Important**: The Haskell implementation in `../pattern-hs/libs/` is the authoritative source of truth. Design documents in `../pattern-hs/specs/` are useful for context but may contain outdated information or design mistakes that were corrected in the actual implementation.

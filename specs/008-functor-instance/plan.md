@@ -60,9 +60,9 @@ Implement idiomatic Rust mapping functionality for the `Pattern<V>` type that pr
 
 ### I. Reference Implementation Fidelity ✅
 - **Status**: PASS
-- **Verification**: Feature spec references the actual Haskell Functor instance in `../gram-hs/libs/pattern/src/Pattern/Core.hs` as the authoritative source of behavioral requirements
+- **Verification**: Feature spec references the actual Haskell Functor instance in `../pattern-hs/libs/pattern/src/Pattern/Core.hs` as the authoritative source of behavioral requirements
 - **Plan**: Implement Rust functionality that maintains the same behavior (structure-preserving value transformation) while using idiomatic Rust syntax
-- **Reference Path**: `../gram-hs/libs/pattern/src/Pattern/Core.hs` (lines 536-617) and test file `../gram-hs/libs/pattern/tests/Spec/Pattern/Properties.hs` (lines 176-203)
+- **Reference Path**: `../pattern-hs/libs/pattern/src/Pattern/Core.hs` (lines 536-617) and test file `../pattern-hs/libs/pattern/tests/Spec/Pattern/Properties.hs` (lines 176-203)
 - **Porting Approach**: Per docs/porting-guide.md, we port **concepts and behavior**, not syntax. The Haskell implementation defines what the code should do; the Rust implementation achieves this idiomatically.
 
 ### II. Correctness & Compatibility (NON-NEGOTIABLE) ✅
@@ -87,7 +87,7 @@ Implement idiomatic Rust mapping functionality for the `Pattern<V>` type that pr
 - **Verification**: WASM bindings are out of scope for this feature
 - **Plan**: Methods must compile for WASM but bindings deferred to later features
 
-**Note**: When porting features from gram-hs, **always use the Haskell implementation in `../gram-hs/libs/` as the behavioral specification**. Per docs/porting-guide.md, we port concepts and behavior (what the code does), not syntax (how it looks in Haskell). The Rust implementation should be idiomatic while maintaining behavioral equivalence. See [docs/porting-guide.md](../../../docs/porting-guide.md) section on "Idiomatic Rust vs Literal Translation" for detailed guidance.
+**Note**: When porting features from gram-hs, **always use the Haskell implementation in `../pattern-hs/libs/` as the behavioral specification**. Per docs/porting-guide.md, we port concepts and behavior (what the code does), not syntax (how it looks in Haskell). The Rust implementation should be idiomatic while maintaining behavioral equivalence. See [docs/porting-guide.md](../../../docs/porting-guide.md) section on "Idiomatic Rust vs Literal Translation" for detailed guidance.
 
 ## Project Structure
 
@@ -446,8 +446,8 @@ From spec.md (all must pass):
 
 ## References
 
-- **Haskell Implementation**: `../gram-hs/libs/pattern/src/Pattern/Core.hs` (lines 536-617)
-- **Haskell Tests**: `../gram-hs/libs/pattern/tests/Spec/Pattern/Properties.hs` (lines 176-203)
+- **Haskell Implementation**: `../pattern-hs/libs/pattern/src/Pattern/Core.hs` (lines 536-617)
+- **Haskell Tests**: `../pattern-hs/libs/pattern/tests/Spec/Pattern/Properties.hs` (lines 176-203)
 - **Porting Guide**: `docs/porting-guide.md` - Section on "Idiomatic Rust vs Literal Translation"
 - **Rust Standard Library**: `Option::map`, `Result::map` for API conventions
 - **Implementation Notes**: [IMPLEMENTATION_NOTES.md](./IMPLEMENTATION_NOTES.md) - Design rationale

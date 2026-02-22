@@ -41,7 +41,7 @@
 **References**:
 - Rust RFC 1598: Generic Associated Types
 - Rust standard library documentation for Option, Result
-- gram-hs Functor instance: `../gram-hs/libs/pattern/src/Pattern/Core.hs` lines 536-617
+- gram-hs Functor instance: `../pattern-hs/libs/pattern/src/Pattern/Core.hs` lines 536-617
 
 ---
 
@@ -231,7 +231,7 @@ where
 - Test with various value types: integers, strings, complex types
 
 **References**:
-- gram-hs tests: `../gram-hs/libs/pattern/tests/Spec/Pattern/Properties.hs` lines 176-203
+- gram-hs tests: `../pattern-hs/libs/pattern/tests/Spec/Pattern/Properties.hs` lines 176-203
 - proptest documentation
 - Category Theory: Functor Laws
 
@@ -296,4 +296,3 @@ The design is ready for Phase 1 (detailed design and contracts).
 4. **Standard library is the guide**: When in doubt, follow what Rust's standard library does (`Option::map`, `Result::map`)
 
 This research supports the core principle from docs/porting-guide.md: **port concepts and behavior, not syntax**.
-

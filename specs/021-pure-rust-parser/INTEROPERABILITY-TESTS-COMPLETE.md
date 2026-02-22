@@ -120,7 +120,7 @@
 
 ### Schema File Status
 
-The static schema file (`../gram-hs/specs/029-canonical-json-pattern/contracts/json-schema.json`) still shows old field names (`value`/`symbol`), but:
+The static schema file (`../pattern-hs/specs/029-canonical-json-pattern/contracts/json-schema.json`) still shows old field names (`value`/`symbol`), but:
 
 - ✅ **Schema generator** uses correct names (`subject`/`identity`)
 - ✅ **gram-hs implementation** uses correct names

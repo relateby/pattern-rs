@@ -2,7 +2,7 @@
 
 **Feature**: 016-predicate-matching  
 **Date**: 2025-01-05  
-**Reference**: gram-hs implementation at `../gram-hs/libs/pattern/`
+**Reference**: gram-hs implementation at `../pattern-hs/libs/pattern/`
 
 ## Purpose
 
@@ -11,9 +11,9 @@ with the Haskell reference implementation (`gram-hs`) for all predicate matching
 
 ## Reference Implementation Location
 
-- **Source**: `../gram-hs/libs/pattern/src/Pattern/Core.hs`
-- **Tests**: `../gram-hs/libs/pattern/tests/Spec/Pattern/CoreSpec.hs`
-- **Documentation**: `../gram-hs/docs/`
+- **Source**: `../pattern-hs/libs/pattern/src/Pattern/Core.hs`
+- **Tests**: `../pattern-hs/libs/pattern/tests/Spec/Pattern/CoreSpec.hs`
+- **Documentation**: `../pattern-hs/docs/`
 
 ## Function Mapping
 

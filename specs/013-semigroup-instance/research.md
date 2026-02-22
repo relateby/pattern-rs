@@ -9,7 +9,7 @@
 
 **Task**: Understand the Pattern Semigroup instance from gram-hs reference implementation
 
-**Source**: `../gram-hs/libs/pattern/src/Pattern/Core.hs` (Semigroup instance location needs verification)
+**Source**: `../pattern-hs/libs/pattern/src/Pattern/Core.hs` (Semigroup instance location needs verification)
 
 **Findings**:
 
@@ -38,7 +38,7 @@ instance Semigroup v => Semigroup (Pattern v) where
 - No special handling needed for atomic patterns (empty elements concatenate to empty)
 
 **Verification Needed**: 
-- Confirm exact implementation in `../gram-hs/libs/pattern/src/Pattern/Core.hs`
+- Confirm exact implementation in `../pattern-hs/libs/pattern/src/Pattern/Core.hs`
 - Verify any special cases or alternative combination strategies
 - Check if there are multiple Semigroup instances for different use cases
 
@@ -400,9 +400,8 @@ Provide Combinable implementations for common types:
 
 ## References
 
-- **Haskell Semigroup Instance**: `../gram-hs/libs/pattern/src/Pattern/Core.hs` (to be verified)
-- **Haskell Spec**: `../gram-hs/specs/010-semigroup-instance/` (for context)
+- **Haskell Semigroup Instance**: `../pattern-hs/libs/pattern/src/Pattern/Core.hs` (to be verified)
+- **Haskell Spec**: `../pattern-hs/specs/010-semigroup-instance/` (for context)
 - **Rust API Guidelines**: https://rust-lang.github.io/api-guidelines/
 - **Vec extend**: https://doc.rust-lang.org/std/vec/struct.Vec.html#method.extend
 - **Porting Guide**: `../../../docs/porting-guide.md`
-

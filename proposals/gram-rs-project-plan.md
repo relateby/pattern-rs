@@ -79,7 +79,7 @@ thiserror = "2.0"
 ```bash
 # Clone both repositories
 git clone https://github.com/relateby/pattern-rs.git
-git clone https://github.com/relateby/pattern-hs.git ../gram-hs
+git clone https://github.com/relateby/pattern-hs.git ../pattern-hs
 
 # Add gram-hs as a submodule for reference
 cd pattern-rs
@@ -136,7 +136,7 @@ fn sync_gram_hs_tests() {
     // Extract test cases from gram-hs
     Command::new("stack")
         .args(&["test", "--dump-test-json"])
-        .current_dir("../gram-hs")
+        .current_dir("../pattern-hs")
         .output()
         .expect("Failed to run gram-hs tests");
     

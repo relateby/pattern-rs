@@ -53,9 +53,9 @@ Port the core Pattern data structure from gram-hs to Rust, implementing `Pattern
 
 ### I. Reference Implementation Fidelity ✅
 - **Status**: PASS
-- **Verification**: Feature spec references the actual Haskell implementation in `../gram-hs/libs/` as the authoritative source of truth
+- **Verification**: Feature spec references the actual Haskell implementation in `../pattern-hs/libs/` as the authoritative source of truth
 - **Plan**: Port `Pattern v` from Haskell to Rust `Pattern<V>`, maintaining structural equivalence
-- **Reference Path**: `../gram-hs/libs/` (primary source) and `../gram-hs/specs/001-pattern-data-structure/` (context only)
+- **Reference Path**: `../pattern-hs/libs/` (primary source) and `../pattern-hs/specs/001-pattern-data-structure/` (context only)
 
 ### II. Correctness & Compatibility (NON-NEGOTIABLE) ✅
 - **Status**: PASS
@@ -77,7 +77,7 @@ Port the core Pattern data structure from gram-hs to Rust, implementing `Pattern
 - **Verification**: WASM bindings are out of scope for this feature (spec notes "not usable from JavaScript yet")
 - **Plan**: WASM compilation verification only; bindings deferred to later features
 
-**Note**: When porting features from gram-hs, **always use the Haskell implementation in `../gram-hs/libs/` as the authoritative source of truth**. Design documents in `../gram-hs/specs/` are useful for context but may contain outdated information or design mistakes that were corrected in the actual implementation. See [porting guide](../../../docs/porting-guide.md) for detailed porting instructions.
+**Note**: When porting features from gram-hs, **always use the Haskell implementation in `../pattern-hs/libs/` as the authoritative source of truth**. Design documents in `../pattern-hs/specs/` are useful for context but may contain outdated information or design mistakes that were corrected in the actual implementation. See [porting guide](../../../docs/porting-guide.md) for detailed porting instructions.
 
 ## Project Structure
 

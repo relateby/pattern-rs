@@ -59,7 +59,7 @@ Implement bidirectional transformation between gram notation (human-readable tex
 
 **⚠️ DEVIATION - EXPLICITLY JUSTIFIED**
 
-This feature uses **`tree-sitter-gram` as the authoritative reference**, NOT `../gram-hs`.
+This feature uses **`tree-sitter-gram` as the authoritative reference**, NOT `../pattern-hs`.
 
 **Rationale**: The tree-sitter-gram repository contains the canonical grammar definition for gram notation. For parsing and serialization, the grammar is the source of truth, not any specific implementation. The tree-sitter-gram grammar is:
 - Maintained separately as a language-agnostic specification

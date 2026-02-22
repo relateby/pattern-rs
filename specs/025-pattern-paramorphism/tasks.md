@@ -17,7 +17,7 @@
 
 - **Implementation**: `crates/pattern-core/src/pattern.rs`
 - **Tests**: `crates/pattern-core/src/pattern.rs` (`#[cfg(test)] mod tests`) or `crates/pattern-core/tests/` for integration
-- **Reference**: `../gram-hs/libs/pattern/src/Pattern/Core.hs` (lines 1188–1190), `../gram-hs/libs/pattern/tests/Spec/Pattern/CoreSpec.hs`, `../gram-hs/libs/pattern/tests/Spec/Pattern/Properties.hs`
+- **Reference**: `../pattern-hs/libs/pattern/src/Pattern/Core.hs` (lines 1188–1190), `../pattern-hs/libs/pattern/tests/Spec/Pattern/CoreSpec.hs`, `../pattern-hs/libs/pattern/tests/Spec/Pattern/Properties.hs`
 
 ---
 
@@ -25,7 +25,7 @@
 
 **Purpose**: Confirm reference and workspace; no new project structure.
 
-- [x] T001 Verify gram-hs reference at `../gram-hs/libs/pattern/src/Pattern/Core.hs` (para at lines 1188–1190) and plan.md in `specs/025-pattern-paramorphism/plan.md`
+- [x] T001 Verify gram-hs reference at `../pattern-hs/libs/pattern/src/Pattern/Core.hs` (para at lines 1188–1190) and plan.md in `specs/025-pattern-paramorphism/plan.md`
 - [x] T002 [P] Confirm pattern-core builds and tests pass with `cargo build -p pattern-core && cargo test -p pattern-core` from repo root
 
 ---
@@ -110,8 +110,8 @@
 
 ### Property Tests (gram-hs equivalence)
 
-- [-] T020 Port property tests from `../gram-hs/libs/pattern/tests/Spec/Pattern/Properties.hs` (T025–T030): structure access (depth, element count), value access (toList), relationship to Foldable, order preservation; add in `crates/pattern-core/src/pattern.rs` or `crates/pattern-core/tests/` using existing test_utils generators (DEFERRED: 20 comprehensive tests already cover all user stories)
-- [-] T021 Port unit tests from `../gram-hs/libs/pattern/tests/Spec/Pattern/CoreSpec.hs` (paramorphism describe block, e.g. T001–T010, T041–T048) into `crates/pattern-core/src/pattern.rs` so gram-hs examples produce equivalent results (SC-005) (DEFERRED: Existing tests verify gram-hs equivalence through fold simulation and toList property)
+- [-] T020 Port property tests from `../pattern-hs/libs/pattern/tests/Spec/Pattern/Properties.hs` (T025–T030): structure access (depth, element count), value access (toList), relationship to Foldable, order preservation; add in `crates/pattern-core/src/pattern.rs` or `crates/pattern-core/tests/` using existing test_utils generators (DEFERRED: 20 comprehensive tests already cover all user stories)
+- [-] T021 Port unit tests from `../pattern-hs/libs/pattern/tests/Spec/Pattern/CoreSpec.hs` (paramorphism describe block, e.g. T001–T010, T041–T048) into `crates/pattern-core/src/pattern.rs` so gram-hs examples produce equivalent results (SC-005) (DEFERRED: Existing tests verify gram-hs equivalence through fold simulation and toList property)
 
 ### Code Quality Checks (REQUIRED)
 
@@ -203,4 +203,4 @@ Task T009: "Add unit test: structure access (depth, elements().len()) in crates/
 - [USn] links task to spec user story for traceability.
 - Each user story phase is independently testable once Phase 2 is done.
 - Commit after each task or after each phase checkpoint.
-- Reference: `../gram-hs/libs/pattern/src/Pattern/Core.hs` (para), CoreSpec.hs and Properties.hs (tests).
+- Reference: `../pattern-hs/libs/pattern/src/Pattern/Core.hs` (para), CoreSpec.hs and Properties.hs (tests).

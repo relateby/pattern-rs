@@ -21,7 +21,7 @@
 - **Alternatives considered**: 
   - Only full constructor - rejected (lacks convenience for atomic patterns)
   - Builder pattern - deferred (not in gram-hs, may add later if needed)
-- **Source**: Verified from `../gram-hs/libs/pattern/src/Pattern/Core.hs` (lines 862-889)
+- **Source**: Verified from `../pattern-hs/libs/pattern/src/Pattern/Core.hs` (lines 862-889)
 - **Implementation Notes**:
   - Functions are generic over `V`
   - No validation needed (Pattern structure itself is valid)
@@ -67,7 +67,7 @@ impl<V> Pattern<V> {
 - **Alternatives considered**: 
   - Standalone functions - rejected (methods are more idiomatic in Rust)
   - Returning owned values - rejected (inefficient, unnecessary)
-- **Source**: Verified from `../gram-hs/libs/pattern/src/Pattern/Core.hs` (lines 267-270, data type definition)
+- **Source**: Verified from `../pattern-hs/libs/pattern/src/Pattern/Core.hs` (lines 267-270, data type definition)
 - **Implementation Notes**:
   - Accessors should be simple field access (no computation)
   - Type information is preserved through generics
@@ -107,7 +107,7 @@ impl<V> Pattern<V> {
 - **Alternatives considered**: 
   - `is_atomic` helper - can be derived as `length p == 0` but not in gram-hs
   - Additional structural analysis - deferred (can add later if needed)
-- **Source**: Verified from `../gram-hs/libs/pattern/src/Pattern/Core.hs` (lines 904-943)
+- **Source**: Verified from `../pattern-hs/libs/pattern/src/Pattern/Core.hs` (lines 904-943)
 - **Implementation Notes**:
   - `length` is O(1) - just returns length of elements list
   - `size` is O(n) - recursively counts all nodes
@@ -178,7 +178,7 @@ impl<V> Pattern<V> {
   - Manual comparison - rejected (too error-prone)
   - External testing tools - rejected (use existing infrastructure)
 - **Implementation Notes**:
-  - Port test cases from `../gram-hs/libs/pattern/tests/`
+  - Port test cases from `../pattern-hs/libs/pattern/tests/`
   - Test construction functions with various inputs
   - Test accessors return correct values
   - Test inspection utilities with various pattern structures
@@ -214,7 +214,7 @@ All NEEDS CLARIFICATION items from Technical Context have been resolved by verif
 - ✅ Input validation: No validation needed (Pattern structure is always valid)
 - ✅ Special case constructor: `point()` for atomic patterns, primary constructor `pattern()` for patterns with elements, `from_list()` for value lists
 
-**Note**: All decisions have been verified against the actual gram-hs implementation in `../gram-hs/libs/pattern/src/Pattern/Core.hs`. Function signatures match gram-hs with Rust naming conventions (snake_case).
+**Note**: All decisions have been verified against the actual gram-hs implementation in `../pattern-hs/libs/pattern/src/Pattern/Core.hs`. Function signatures match gram-hs with Rust naming conventions (snake_case).
 
 ## Open Questions (Deferred to Implementation)
 
@@ -225,14 +225,13 @@ All NEEDS CLARIFICATION items from Technical Context have been resolved by verif
 
 ## References
 
-- **Primary Source (Authoritative)**: gram-hs Implementation: `../gram-hs/libs/`
-  - Pattern Construction/Access/Inspection: `../gram-hs/libs/pattern/src/Pattern.hs`
-  - Tests: `../gram-hs/libs/pattern/tests/`
-- **Secondary Source (Context Only)**: gram-hs Design Documents: `../gram-hs/specs/002-basic-pattern-type/`
-  - Type Signatures: `../gram-hs/specs/002-basic-pattern-type/contracts/type-signatures.md` (may be outdated)
-  - Feature Spec: `../gram-hs/specs/002-basic-pattern-type/spec.md` (for context)
+- **Primary Source (Authoritative)**: gram-hs Implementation: `../pattern-hs/libs/`
+  - Pattern Construction/Access/Inspection: `../pattern-hs/libs/pattern/src/Pattern.hs`
+  - Tests: `../pattern-hs/libs/pattern/tests/`
+- **Secondary Source (Context Only)**: gram-hs Design Documents: `../pattern-hs/specs/002-basic-pattern-type/`
+  - Type Signatures: `../pattern-hs/specs/002-basic-pattern-type/contracts/type-signatures.md` (may be outdated)
+  - Feature Spec: `../pattern-hs/specs/002-basic-pattern-type/spec.md` (for context)
 - Porting Guide: `docs/porting-guide.md`
 - Test Infrastructure: `specs/003-test-infrastructure/`
 - gram-hs CLI Testing Guide: `docs/gram-hs-cli-testing-guide.md`
 - Existing Pattern Implementation: `crates/pattern-core/src/pattern.rs`
-

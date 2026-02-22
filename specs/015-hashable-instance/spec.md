@@ -16,7 +16,7 @@ In Haskell (gram-hs), this is expressed as a Hashable instance that combines has
 - Eq/PartialEq traits (feature 004)
 - Ord/PartialOrd traits (feature 012)
 
-**Reference**: The authoritative implementation is in `../gram-hs/libs/pattern/src/Pattern/Core.hs` (Haskell source code, lines 477-535).
+**Reference**: The authoritative implementation is in `../pattern-hs/libs/pattern/src/Pattern/Core.hs` (Haskell source code, lines 477-535).
 
 **Implementation Guidance**: Follow idiomatic Rust patterns by implementing `std::hash::Hash` with conditional trait bounds (`impl<V: Hash> Hash for Pattern<V>`). This approach only allows hashing for patterns where the value type is hashable, which is semantically correct.
 
@@ -242,4 +242,3 @@ This is idiomatic Rust for efficient collection operations.
 - HashMap lookup: O(1) average case
 - HashSet deduplication: O(n) for n patterns vs O(n²) naive
 - Deep nesting: Acceptable performance (hashing is typically fast relative to other operations)
-

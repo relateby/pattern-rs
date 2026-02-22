@@ -9,7 +9,7 @@
 
 **Task**: Understand the Pattern Monoid instance from gram-hs reference implementation
 
-**Source**: `../gram-hs/libs/pattern/src/Pattern/Core.hs` or similar location
+**Source**: `../pattern-hs/libs/pattern/src/Pattern/Core.hs` or similar location
 
 **Expected Haskell Implementation Pattern**:
 ```haskell

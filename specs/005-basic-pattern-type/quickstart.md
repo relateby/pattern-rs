@@ -381,7 +381,7 @@ All functions maintain behavioral equivalence with the gram-hs reference impleme
 - `pattern.size()` matches `size :: Pattern v -> Int`
 - `pattern.depth()` matches `depth :: Pattern v -> Int` (note: atomic patterns have depth 0)
 
-Reference: `../gram-hs/libs/pattern/src/Pattern/Core.hs`
+Reference: `../pattern-hs/libs/pattern/src/Pattern/Core.hs`
 
 ## Next Steps
 

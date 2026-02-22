@@ -24,7 +24,7 @@
 **Purpose**: Verify existing implementation and prepare for new methods
 
 - [x] T001 Verify existing predicate methods compile and pass tests (any_value, all_values, filter)
-- [x] T002 Review gram-hs reference implementation at `../gram-hs/specs/012-predicate-matching/` for behavioral equivalence requirements
+- [x] T002 Review gram-hs reference implementation at `../pattern-hs/specs/012-predicate-matching/` for behavioral equivalence requirements
 - [x] T003 [P] Create .gitignore entries for Rust project (target/, *.rs.bk, Cargo.lock for libraries, .idea/, *.log, .env*)
 
 ---
@@ -161,9 +161,9 @@
 
 **Purpose**: Verify behavioral equivalence with reference implementation (SC-007: 100% equivalence in test cases)
 
-- [x] T071 Review gram-hs test suite in `../gram-hs/libs/pattern/tests/Spec/Pattern/CoreSpec.hs` for find_first (findPattern) test cases
-- [x] T072 Review gram-hs test suite in `../gram-hs/libs/pattern/tests/Spec/Pattern/CoreSpec.hs` for matches test cases
-- [x] T073 Review gram-hs test suite in `../gram-hs/libs/pattern/tests/Spec/Pattern/CoreSpec.hs` for contains test cases
+- [x] T071 Review gram-hs test suite in `../pattern-hs/libs/pattern/tests/Spec/Pattern/CoreSpec.hs` for find_first (findPattern) test cases
+- [x] T072 Review gram-hs test suite in `../pattern-hs/libs/pattern/tests/Spec/Pattern/CoreSpec.hs` for matches test cases
+- [x] T073 Review gram-hs test suite in `../pattern-hs/libs/pattern/tests/Spec/Pattern/CoreSpec.hs` for contains test cases
 - [x] T074 [P] Add equivalence tests for find_first in crates/pattern-core/tests/query_find_first.rs (compare with gram-hs expected output)
 - [x] T075 [P] Add equivalence tests for matches in crates/pattern-core/tests/predicate_matches.rs (compare with gram-hs expected output)
 - [x] T076 [P] Add equivalence tests for contains in crates/pattern-core/tests/predicate_contains.rs (compare with gram-hs expected output)
@@ -321,4 +321,3 @@ With multiple developers (after Phase 1):
 - Property tests verify mathematical relationships between all methods
 - Benchmarks verify performance targets from success criteria
 - Equivalence tests verify behavioral equivalence with gram-hs reference implementation
-

@@ -56,7 +56,7 @@ Establish comprehensive testing infrastructure for pattern-rs including property
 *GATE: Must pass before Phase 0 research. Re-check after Phase 1 design.*
 
 ### I. Reference Implementation Fidelity
-✅ **PASS**: Testing infrastructure supports behavioral equivalence checking with gram-hs reference implementation (User Story 2, FR-004, FR-005). Test extraction utilities enable reuse of gram-hs test cases (User Story 4, FR-009, FR-010). Infrastructure is designed to verify correctness against `../gram-hs` reference implementation.
+✅ **PASS**: Testing infrastructure supports behavioral equivalence checking with gram-hs reference implementation (User Story 2, FR-004, FR-005). Test extraction utilities enable reuse of gram-hs test cases (User Story 4, FR-009, FR-010). Infrastructure is designed to verify correctness against `../pattern-hs` reference implementation.
 
 ### II. Correctness & Compatibility (NON-NEGOTIABLE)
 ✅ **PASS**: Testing infrastructure prioritizes correctness verification through property-based testing, equivalence checking, and snapshot testing. All infrastructure is designed to ensure compatibility with gram-hs reference behavior. No breaking changes from reference implementation.
@@ -70,7 +70,7 @@ Establish comprehensive testing infrastructure for pattern-rs including property
 ### V. External Language Bindings & Examples
 ✅ **PASS**: Testing infrastructure is internal to the Rust codebase and does not directly affect external language bindings. However, ensuring correctness through testing indirectly supports reliable external bindings.
 
-**Note**: When porting features from gram-hs, reference the local implementation at `../gram-hs` and corresponding feature specifications in `../gram-hs/specs/`. See [porting guide](../../../docs/porting-guide.md) for detailed porting instructions.
+**Note**: When porting features from gram-hs, reference the local implementation at `../pattern-hs` and corresponding feature specifications in `../pattern-hs/specs/`. See [porting guide](../../../docs/porting-guide.md) for detailed porting instructions.
 
 ## Project Structure
 

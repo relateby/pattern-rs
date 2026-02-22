@@ -13,7 +13,7 @@ In Haskell, this is expressed as a Semigroup instance. In Rust, the implementati
 
 **Foundation**: This feature builds on the Pattern data structure (features 004-006) and requires that the value type `V` also supports some form of combination operation.
 
-**Reference**: The authoritative implementation is in `../gram-hs/libs/pattern/` (Haskell source code). Historical notes may exist in `../gram-hs/specs/010-semigroup-instance/` but should be verified against actual source.
+**Reference**: The authoritative implementation is in `../pattern-hs/libs/pattern/` (Haskell source code). Historical notes may exist in `../pattern-hs/specs/010-semigroup-instance/` but should be verified against actual source.
 
 **Implementation Guidance**: The implementation should prioritize Rust idioms over direct Haskell translation. Since Rust doesn't have a standard Semigroup trait and custom algebraic traits are non-idiomatic, prefer concrete methods or standard library traits where appropriate.
 

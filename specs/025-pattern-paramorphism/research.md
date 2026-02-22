@@ -11,7 +11,7 @@ Paramorphism is a structure-aware folding operation. This document consolidates 
 
 ## 1. Reference Implementation Semantics
 
-**Source**: `../gram-hs/libs/pattern/src/Pattern/Core.hs` (lines 1188–1190)
+**Source**: `../pattern-hs/libs/pattern/src/Pattern/Core.hs` (lines 1188–1190)
 
 ```haskell
 para :: (Pattern v -> [r] -> r) -> Pattern v -> r
@@ -29,7 +29,7 @@ para f (Pattern v els) =
 
 ## 2. Rust Porting Pattern
 
-**Source**: `../gram-hs/docs/reference/PORTING-GUIDE.md` (lines 386–543)
+**Source**: `../pattern-hs/docs/reference/PORTING-GUIDE.md` (lines 386–543)
 
 **Decision**: Use references throughout: `&self`, `&Pattern<V>`, `&[R]` for the folding function. Collect element results into `Vec<R>` before calling the user function so the closure receives a slice. Use a single public method `para<R, F>(&self, f: F) -> R` where `F: Fn(&Pattern<V>, &[R]) -> R`.
 
@@ -41,7 +41,7 @@ para f (Pattern v els) =
 
 ## 3. Relationship to Foldable and Comonad
 
-**Source**: `../gram-hs/docs/reference/features/paramorphism.md` (Relationship to Other Operations)
+**Source**: `../pattern-hs/docs/reference/features/paramorphism.md` (Relationship to Other Operations)
 
 **Decision**: Document in quickstart and inline docs that (1) **Foldable** (e.g. `fold`) gives value-only folding; (2) **Paramorphism** (`para`) gives structure + element results for aggregation; (3) **Comonad** (e.g. `extend`) gives structure-aware transformation (returns a Pattern). Do not change Foldable or Comonad implementations; para is additive.
 
@@ -53,7 +53,7 @@ para f (Pattern v els) =
 
 ## 4. Property Tests to Port
 
-**Source**: `../gram-hs/libs/pattern/tests/Spec/Pattern/Properties.hs` (T025–T030) and `CoreSpec.hs` (paramorphism describe block)
+**Source**: `../pattern-hs/libs/pattern/tests/Spec/Pattern/Properties.hs` (T025–T030) and `CoreSpec.hs` (paramorphism describe block)
 
 **Decision**: Port the following as unit and property tests:
 

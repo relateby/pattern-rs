@@ -138,7 +138,7 @@ This is a library crate feature. All implementation goes in:
 **Purpose**: Verify behavioral equivalence with gram-hs reference implementation
 
 - [x] T040 [P] Create equivalence test file crates/pattern-core/tests/semigroup_equivalence.rs
-- [x] T041 [P] Research gram-hs Semigroup instance in ../gram-hs/libs/pattern/src/Pattern/Core.hs to identify test cases
+- [x] T041 [P] Research gram-hs Semigroup instance in ../pattern-hs/libs/pattern/src/Pattern/Core.hs to identify test cases
 - [x] T042 Port test cases from gram-hs test suite to crates/pattern-core/tests/semigroup_equivalence.rs
 - [x] T043 Verify all ported tests pass with identical behavior
 - [x] T044 Document any intentional deviations from gram-hs in IMPLEMENTATION_NOTES.md
@@ -317,4 +317,3 @@ With multiple developers:
 - Phase 2 is critical blocking phase - must complete before any user story work
 - User Story 2 depends on User Story 1 (can't test associativity without combine())
 - Follow test → implementation → verify pattern for each story
-

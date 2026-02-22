@@ -29,7 +29,7 @@ All work is in the existing `crates/pattern-core/` crate:
 **Purpose**: Minimal setup - most infrastructure already exists
 
 - [X] T001 Review existing Pattern<V> struct and verify PartialEq/Eq implementations in crates/pattern-core/src/pattern.rs
-- [X] T002 [P] Review gram-hs Ord instance implementation at ../gram-hs/libs/pattern/src/Pattern/Core.hs (lines 335-339)
+- [X] T002 [P] Review gram-hs Ord instance implementation at ../pattern-hs/libs/pattern/src/Pattern/Core.hs (lines 335-339)
 - [X] T003 [P] Verify proptest is available and working with existing pattern tests in crates/pattern-core/tests/
 
 **Checkpoint**: Setup complete - foundation ready for trait implementations
@@ -380,4 +380,3 @@ With multiple developers:
 - MVP is User Story 1 - delivers core comparison and sorting capability
 - Commit after each task or logical group for incremental progress
 - Avoid: vague tasks, same file conflicts, cross-story dependencies that break independence
-

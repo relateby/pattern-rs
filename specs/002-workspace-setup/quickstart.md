@@ -183,4 +183,4 @@ serde = { workspace = true }
 - See `plan.md` for detailed implementation plan
 - See `contracts/` for configuration contracts
 - See `data-model.md` for workspace entity definitions
-- Reference `../gram-hs` for gram-hs implementation details
+- Reference `../pattern-hs` for gram-hs implementation details

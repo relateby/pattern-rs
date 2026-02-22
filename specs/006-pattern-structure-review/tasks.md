@@ -27,13 +27,13 @@
 
 **⚠️ FINDING**: Validation and analysis functions do NOT exist in gram-hs yet. This feature implements NEW functionality. Research tasks verify that functions don't exist and document our implementation approach.
 
-- [x] T001 Study gram-hs validation functions in `../gram-hs/libs/pattern/src/Pattern.hs` and document function signatures
+- [x] T001 Study gram-hs validation functions in `../pattern-hs/libs/pattern/src/Pattern.hs` and document function signatures
   - **Result**: No validation functions found in gram-hs. This is new functionality for pattern-rs.
-- [x] T002 Study gram-hs structure analysis utilities in `../gram-hs/libs/pattern/src/Pattern.hs` and document function signatures
+- [x] T002 Study gram-hs structure analysis utilities in `../pattern-hs/libs/pattern/src/Pattern.hs` and document function signatures
   - **Result**: No structure analysis utilities found in gram-hs. This is new functionality for pattern-rs.
-- [x] T003 Review gram-hs test cases in `../gram-hs/libs/pattern/tests/` to understand expected validation behavior
+- [x] T003 Review gram-hs test cases in `../pattern-hs/libs/pattern/tests/` to understand expected validation behavior
   - **Result**: No validation test cases found. Only `traverse`-based validation examples exist (not structural validation).
-- [x] T004 Review gram-hs test cases in `../gram-hs/libs/pattern/tests/` to understand expected analysis behavior
+- [x] T004 Review gram-hs test cases in `../pattern-hs/libs/pattern/tests/` to understand expected analysis behavior
   - **Result**: No structure analysis test cases found. Only basic query functions (length, size, depth) exist.
 - [x] T005 Verify ValidationRules structure matches gram-hs implementation (compare with existing placeholder in `crates/pattern-core/src/test_utils/helpers.rs`)
   - **Result**: No ValidationRules in gram-hs. Our structure (max_depth, max_elements, required_fields) is designed based on spec requirements.

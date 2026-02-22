@@ -3,7 +3,7 @@
 **Feature Branch**: `022-end-user-docs`  
 **Created**: 2026-01-19  
 **Status**: Draft  
-**Input**: User description: "End-user documentation in docs/ that covers pattern concepts, gram notation and basic usage in rust. The documentation can take inspiration from ../gram-hs/docs/"
+**Input**: User description: "End-user documentation in docs/ that covers pattern concepts, gram notation and basic usage in rust. The documentation can take inspiration from ../pattern-hs/docs/"
 
 ## User Scenarios & Testing *(mandatory)*
 

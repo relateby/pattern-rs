@@ -243,12 +243,12 @@ The Subject type is defined in this feature as a self-descriptive value type tha
 
 ## References
 
-- **Primary Source (Authoritative)**: gram-hs Implementation: `../gram-hs/libs/`
-  - Pattern: `../gram-hs/libs/pattern/src/Pattern.hs`
-  - Subject: `../gram-hs/libs/subject/src/Subject/Core.hs`
-- **Secondary Source (Context Only)**: gram-hs Design Documents: `../gram-hs/specs/001-pattern-data-structure/`
-  - Type Signatures: `../gram-hs/specs/001-pattern-data-structure/contracts/type-signatures.md` (may be outdated)
+- **Primary Source (Authoritative)**: gram-hs Implementation: `../pattern-hs/libs/`
+  - Pattern: `../pattern-hs/libs/pattern/src/Pattern.hs`
+  - Subject: `../pattern-hs/libs/subject/src/Subject/Core.hs`
+- **Secondary Source (Context Only)**: gram-hs Design Documents: `../pattern-hs/specs/001-pattern-data-structure/`
+  - Type Signatures: `../pattern-hs/specs/001-pattern-data-structure/contracts/type-signatures.md` (may be outdated)
 - Data Model: `../data-model.md`
 - Feature Spec: `../spec.md`
 
-**Note**: This document defines the Rust API contracts. The actual type definitions were verified against the Haskell source code in `../gram-hs/libs/`, not just the design documents.
+**Note**: This document defines the Rust API contracts. The actual type definitions were verified against the Haskell source code in `../pattern-hs/libs/`, not just the design documents.

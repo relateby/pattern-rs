@@ -16,16 +16,16 @@ For information on the project's testing infrastructure, see **[Testing Infrastr
 
 ## Reference Implementation
 
-This project is a port of the [gram-hs](https://github.com/relateby/pattern-hs) reference implementation. The reference implementation is available locally at `../gram-hs` (relative to this repository root).
+This project is a port of the [gram-hs](https://github.com/relateby/pattern-hs) reference implementation. The reference implementation is available locally at `../pattern-hs` (relative to this repository root).
 
 **Key Reference Locations**:
-- **Source Code (Authoritative)**: `../gram-hs/libs/` - Haskell library implementations - **This is the source of truth**
-- **Documentation (Up-to-date)**: `../gram-hs/docs/` - Up-to-date documentation about the implementation
-- **Tests (Authoritative)**: `../gram-hs/libs/*/tests/` - Test suites for behavioral equivalence verification - **Shows expected behavior**
-- **Historical Notes (Context Only)**: `../gram-hs/specs/` - Historical notes that guided incremental development (may be outdated, use for context only)
+- **Source Code (Authoritative)**: `../pattern-hs/libs/` - Haskell library implementations - **This is the source of truth**
+- **Documentation (Up-to-date)**: `../pattern-hs/docs/` - Up-to-date documentation about the implementation
+- **Tests (Authoritative)**: `../pattern-hs/libs/*/tests/` - Test suites for behavioral equivalence verification - **Shows expected behavior**
+- **Historical Notes (Context Only)**: `../pattern-hs/specs/` - Historical notes that guided incremental development (may be outdated, use for context only)
 - **Online Repository**: https://github.com/relateby/pattern-hs
 
-All functionality is designed to faithfully replicate the behavior of the Haskell implementation. We are porting the Haskell implementation to idiomatic Rust. When porting features, developers should study the actual Haskell source code in `../gram-hs/libs/` as the authoritative source and refer to up-to-date documentation in `../gram-hs/docs/`. The historical notes in `../gram-hs/specs/` guided incremental development and may be useful for understanding the feature's purpose and approach, but they are NOT authoritative and may be outdated.
+All functionality is designed to faithfully replicate the behavior of the Haskell implementation. We are porting the Haskell implementation to idiomatic Rust. When porting features, developers should study the actual Haskell source code in `../pattern-hs/libs/` as the authoritative source and refer to up-to-date documentation in `../pattern-hs/docs/`. The historical notes in `../pattern-hs/specs/` guided incremental development and may be useful for understanding the feature's purpose and approach, but they are NOT authoritative and may be outdated.
 
 ## Quick Start
 
@@ -187,16 +187,16 @@ See the [examples/](examples/) directory for usage examples:
 
 When porting features from gram-hs, see [porting guide](docs/porting-guide.md) for detailed instructions. The guide covers:
 
-- How to reference the local gram-hs implementation at `../gram-hs`
+- How to reference the local gram-hs implementation at `../pattern-hs`
 - Systematic workflow for porting features
 - Haskell → Rust translation patterns
 - Verification and testing strategies
 
 **Quick Start for Porting**:
-1. Study the Haskell implementation in `../gram-hs/libs/` - **This is the source of truth**
-2. Review the up-to-date documentation in `../gram-hs/docs/` - **Information about the implementation**
-3. Review the Haskell tests in `../gram-hs/libs/*/tests/` - **Shows expected behavior**
-4. Review the historical notes in `../gram-hs/specs/XXX-feature-name/` (for context only, may be outdated)
+1. Study the Haskell implementation in `../pattern-hs/libs/` - **This is the source of truth**
+2. Review the up-to-date documentation in `../pattern-hs/docs/` - **Information about the implementation**
+3. Review the Haskell tests in `../pattern-hs/libs/*/tests/` - **Shows expected behavior**
+4. Review the historical notes in `../pattern-hs/specs/XXX-feature-name/` (for context only, may be outdated)
 5. Create a new feature specification using `/speckit.specify`
 6. Follow the porting guide for implementation (porting Haskell to idiomatic Rust)
 

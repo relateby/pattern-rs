@@ -108,7 +108,7 @@ where
 
 **Verification Against gram-hs**:
 ```haskell
--- gram-hs implementation (../gram-hs/libs/pattern/src/Pattern/Core.hs)
+-- gram-hs implementation (../pattern-hs/libs/pattern/src/Pattern/Core.hs)
 findPattern :: (Pattern v -> Bool) -> Pattern v -> Maybe (Pattern v)
 findPattern p pat
   | p pat = Just pat
@@ -172,7 +172,7 @@ where
 
 **Verification Against gram-hs**:
 ```haskell
--- gram-hs implementation (../gram-hs/libs/pattern/src/Pattern/Core.hs)
+-- gram-hs implementation (../pattern-hs/libs/pattern/src/Pattern/Core.hs)
 matches :: (Eq v) => Pattern v -> Pattern v -> Bool
 matches (Pattern v1 els1) (Pattern v2 els2) =
   v1 == v2 && length els1 == length els2 && 
@@ -223,7 +223,7 @@ where
 
 **Verification Against gram-hs**:
 ```haskell
--- gram-hs implementation (../gram-hs/libs/pattern/src/Pattern/Core.hs)
+-- gram-hs implementation (../pattern-hs/libs/pattern/src/Pattern/Core.hs)
 contains :: (Eq v) => Pattern v -> Pattern v -> Bool
 contains pat subpat =
   pat `matches` subpat || any (`contains` subpat) (elements pat)
@@ -398,7 +398,7 @@ Documentation style will match existing any_value, all_values, filter documentat
 ### Equivalence Tests (gram-hs)
 
 Extract test cases from gram-hs test suite:
-- `../gram-hs/libs/pattern/tests/Spec/Pattern/CoreSpec.hs`
+- `../pattern-hs/libs/pattern/tests/Spec/Pattern/CoreSpec.hs`
 - Compare outputs for identical inputs
 - Document any intentional deviations
 

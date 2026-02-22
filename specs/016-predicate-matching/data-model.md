@@ -393,4 +393,4 @@ Behavioral equivalence with gram-hs verified through:
 2. Property-based tests for mathematical properties
 3. Edge case coverage matching gram-hs test suite
 
-Reference implementation: `../gram-hs/libs/pattern/src/Pattern/Core.hs`
+Reference implementation: `../pattern-hs/libs/pattern/src/Pattern/Core.hs`

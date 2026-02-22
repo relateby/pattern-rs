@@ -166,9 +166,9 @@
 //! # Reference Implementation
 //!
 //! This crate is ported from the gram-hs reference implementation:
-//! - Pattern: `../gram-hs/libs/pattern/src/Pattern.hs`
-//! - Subject: `../gram-hs/libs/subject/src/Subject/Core.hs`
-//! - Feature Spec: `../gram-hs/specs/001-pattern-data-structure/`
+//! - Pattern: `../pattern-hs/libs/pattern/src/Pattern.hs`
+//! - Subject: `../pattern-hs/libs/subject/src/Subject/Core.hs`
+//! - Feature Spec: `../pattern-hs/specs/001-pattern-data-structure/`
 
 pub mod pattern;
 pub mod subject;

@@ -38,9 +38,9 @@ Implement associative combination operations for Pattern<V> to enable merging tw
 ### I. Reference Implementation Fidelity ✅
 
 - **Status**: Will be verified
-- **Action**: Port Semigroup instance from `../gram-hs/libs/pattern/src/Pattern.hs`
+- **Action**: Port Semigroup instance from `../pattern-hs/libs/pattern/src/Pattern.hs`
 - **Verification**: Behavioral equivalence tests comparing with gram-hs reference
-- **Reference Spec**: `../gram-hs/specs/010-semigroup-instance/` (for context, verify against actual code)
+- **Reference Spec**: `../pattern-hs/specs/010-semigroup-instance/` (for context, verify against actual code)
 
 ### II. Correctness & Compatibility ✅
 
@@ -77,7 +77,7 @@ Implement associative combination operations for Pattern<V> to enable merging tw
 - **Status**: Future consideration
 - **Justification**: Combination operations are internal to Rust; WASM bindings may expose combination functionality in future if needed
 
-**Note**: When porting features from gram-hs, reference the local implementation at `../gram-hs` and corresponding feature specifications in `../gram-hs/specs/`. See [porting guide](../../../docs/porting-guide.md) for detailed porting instructions.
+**Note**: When porting features from gram-hs, reference the local implementation at `../pattern-hs` and corresponding feature specifications in `../pattern-hs/specs/`. See [porting guide](../../../docs/porting-guide.md) for detailed porting instructions.
 
 ## Project Structure
 
@@ -123,7 +123,7 @@ crates/pattern-core/
 ### Research Tasks
 
 1. **Haskell Semigroup Instance Analysis**
-   - **Source**: `../gram-hs/libs/pattern/src/Pattern.hs`
+   - **Source**: `../pattern-hs/libs/pattern/src/Pattern.hs`
    - **Focus**: How does the Semigroup instance combine patterns?
    - **Questions**:
      - What is the exact combination semantics? (value combination + element concatenation? other?)
@@ -367,7 +367,7 @@ Expected tasks will include:
 
 ## References
 
-- **Haskell Source**: `../gram-hs/libs/pattern/src/Pattern.hs` (Semigroup instance)
-- **Haskell Spec**: `../gram-hs/specs/010-semigroup-instance/` (development notes)
+- **Haskell Source**: `../pattern-hs/libs/pattern/src/Pattern.hs` (Semigroup instance)
+- **Haskell Spec**: `../pattern-hs/specs/010-semigroup-instance/` (development notes)
 - **Rust Idioms**: https://rust-lang.github.io/api-guidelines/
 - **Porting Guide**: `../../../docs/porting-guide.md`

@@ -97,8 +97,8 @@ All from [spec.md](./spec.md):
 
 ## References
 
-- **Haskell Implementation**: `../gram-hs/libs/pattern/src/Pattern/Core.hs` (lines 536-617)
-- **Haskell Tests**: `../gram-hs/libs/pattern/tests/Spec/Pattern/Properties.hs` (lines 176-203)
+- **Haskell Implementation**: `../pattern-hs/libs/pattern/src/Pattern/Core.hs` (lines 536-617)
+- **Haskell Tests**: `../pattern-hs/libs/pattern/tests/Spec/Pattern/Properties.hs` (lines 176-203)
 - **Porting Guide**: `../../../docs/porting-guide.md` - Updated with idiomatic principles
 - **Rust Patterns**: Standard library `map` methods for conventions
 
@@ -112,4 +112,3 @@ git checkout 008-functor-instance
 # Begin implementation
 # See plan.md for phase breakdown
 ```
-

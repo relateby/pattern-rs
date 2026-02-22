@@ -170,19 +170,19 @@ Developers need to apply asynchronous operations (like database lookups, API cal
 ## References
 
 ### Primary Reference (Authoritative)
-- `../gram-hs/libs/pattern/src/Pattern/Core.hs` - Traversable instance implementation
+- `../pattern-hs/libs/pattern/src/Pattern/Core.hs` - Traversable instance implementation
 - Haskell Traversable typeclass documentation and laws
 
 ### Test References
-- `../gram-hs/libs/pattern/tests/Spec/Pattern/Properties.hs` - Traversable law tests
-- `../gram-hs/libs/pattern/tests/` - Traversable behavior tests
+- `../pattern-hs/libs/pattern/tests/Spec/Pattern/Properties.hs` - Traversable law tests
+- `../pattern-hs/libs/pattern/tests/` - Traversable behavior tests
 
 ### Documentation Reference
-- `../gram-hs/docs/` - Up-to-date documentation about the implementation
+- `../pattern-hs/docs/` - Up-to-date documentation about the implementation
 - Traversable instance documentation in Pattern/Core.hs provides detailed examples and semantics
 
 ### Historical Reference (Context Only)
-- `../gram-hs/specs/007-traversable-instance/` - Historical notes from incremental development (may be outdated, verify against actual code)
+- `../pattern-hs/specs/007-traversable-instance/` - Historical notes from incremental development (may be outdated, verify against actual code)
 
 ## Design Decisions
 

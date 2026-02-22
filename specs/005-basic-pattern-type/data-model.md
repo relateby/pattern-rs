@@ -5,7 +5,7 @@
 
 ## Overview
 
-This document defines the construction functions, accessor methods, and inspection utilities for the Pattern type. These functions operate on the existing `Pattern<V>` type defined in feature 004, adding convenient APIs for creating, accessing, and analyzing pattern instances. All functions match the gram-hs reference implementation in `../gram-hs/libs/pattern/src/Pattern/Core.hs`.
+This document defines the construction functions, accessor methods, and inspection utilities for the Pattern type. These functions operate on the existing `Pattern<V>` type defined in feature 004, adding convenient APIs for creating, accessing, and analyzing pattern instances. All functions match the gram-hs reference implementation in `../pattern-hs/libs/pattern/src/Pattern/Core.hs`.
 
 ## Core Functions and Methods
 

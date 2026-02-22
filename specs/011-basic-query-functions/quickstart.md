@@ -315,7 +315,7 @@ mod tests {
 - **API Documentation**: `cargo doc --open`
 - **Full Specification**: `specs/011-basic-query-functions/spec.md`
 - **Type Signatures**: `specs/011-basic-query-functions/contracts/type-signatures.md`
-- **Haskell Reference**: `../gram-hs/libs/pattern/src/Pattern/Core.hs` (lines 945-1028)
+- **Haskell Reference**: `../pattern-hs/libs/pattern/src/Pattern/Core.hs` (lines 945-1028)
 
 ## Cheat Sheet
 
@@ -344,5 +344,4 @@ pattern
 
 - Check test files for examples: `crates/pattern-core/tests/query_*.rs`
 - Review property tests: `crates/pattern-core/tests/property/query_operations.rs`
-- Compare with Haskell examples: `../gram-hs/libs/pattern/tests/Spec/Pattern/CoreSpec.hs`
-
+- Compare with Haskell examples: `../pattern-hs/libs/pattern/tests/Spec/Pattern/CoreSpec.hs`

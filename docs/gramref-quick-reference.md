@@ -8,14 +8,14 @@
 
 **Location**: `/Users/akollegger/.cabal/bin/gramref` (or in PATH)
 
-**Not to be confused with**: The `../gram-hs/` library which contains the Haskell source code to port.
+**Not to be confused with**: The `../pattern-hs/` library which contains the Haskell source code to port.
 
 ## Important Distinction
 
-| Aspect | `../gram-hs/` Library | `gramref` CLI Tool |
+| Aspect | `../pattern-hs/` Library | `gramref` CLI Tool |
 |--------|----------------------|-------------------|
 | **What** | Haskell source code | Executable program |
-| **Location** | `../gram-hs/libs/` | `/Users/akollegger/.cabal/bin/gramref` |
+| **Location** | `../pattern-hs/libs/` | `/Users/akollegger/.cabal/bin/gramref` |
 | **Purpose** | Reference implementation to port | Testing and validation tool |
 | **Use for** | Reading code, understanding algorithms | Generating test data, checking outputs |
 | **When** | During implementation | During testing |
@@ -226,5 +226,5 @@ gramref generate --seed 42 --deterministic --format json
 ---
 
 **Remember**: 
-- Read from `../gram-hs/libs/` when implementing
+- Read from `../pattern-hs/libs/` when implementing
 - Execute `gramref` when testing

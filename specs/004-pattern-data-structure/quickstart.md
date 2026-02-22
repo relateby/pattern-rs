@@ -293,7 +293,7 @@ let pattern: Pattern<Subject> = Pattern {
 - Feature Spec: `spec.md`
 - Data Model: `data-model.md`
 - Type Signatures: `contracts/type-signatures.md`
-- **Primary Source (Authoritative)**: gram-hs Implementation: `../gram-hs/libs/`
-  - Pattern: `../gram-hs/libs/pattern/src/Pattern.hs`
-  - Subject: `../gram-hs/libs/subject/src/Subject/Core.hs`
-- **Secondary Source (Context Only)**: gram-hs Design Documents: `../gram-hs/specs/001-pattern-data-structure/`
+- **Primary Source (Authoritative)**: gram-hs Implementation: `../pattern-hs/libs/`
+  - Pattern: `../pattern-hs/libs/pattern/src/Pattern.hs`
+  - Subject: `../pattern-hs/libs/subject/src/Subject/Core.hs`
+- **Secondary Source (Context Only)**: gram-hs Design Documents: `../pattern-hs/specs/001-pattern-data-structure/`

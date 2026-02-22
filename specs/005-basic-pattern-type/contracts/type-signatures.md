@@ -5,7 +5,7 @@
 
 ## Overview
 
-This document defines the public API type signatures for pattern construction functions, accessor methods, and inspection utilities. These serve as the contracts that define the interface users will interact with. All signatures match the gram-hs reference implementation in `../gram-hs/libs/pattern/src/Pattern/Core.hs`.
+This document defines the public API type signatures for pattern construction functions, accessor methods, and inspection utilities. These serve as the contracts that define the interface users will interact with. All signatures match the gram-hs reference implementation in `../pattern-hs/libs/pattern/src/Pattern/Core.hs`.
 
 ## Core Module: pattern_core
 
@@ -360,4 +360,4 @@ All functions must maintain behavioral equivalence with the gram-hs reference im
 - Accessors must return identical values
 - Inspection utilities must return identical results (note: `depth()` returns 0 for atomic patterns)
 
-Reference implementation: `../gram-hs/libs/pattern/src/Pattern/Core.hs`
+Reference implementation: `../pattern-hs/libs/pattern/src/Pattern/Core.hs`

@@ -6,7 +6,7 @@
 **Last Updated**: 2025-01-04
 
 > **Important Distinction**: This document describes the `gramref` CLI tool, which is separate from 
-> the `../gram-hs/` Haskell library reference implementation. The library at `../gram-hs/libs/` 
+> the `../pattern-hs/` Haskell library reference implementation. The library at `../pattern-hs/libs/` 
 > is the source code we port to Rust; the `gramref` CLI tool is what we use for testing.
 
 ## Overview

@@ -257,6 +257,6 @@ This makes the decorative computation pattern explicit while still being pragmat
 ## See Also
 
 - **Detailed Analysis**: `specs/018-comonad-instance/ANALYSIS.md` (original analysis)
-- **Haskell Implementation**: `../gram-hs/libs/pattern/src/Pattern/Core.hs:720-728, 1104-1138`
+- **Haskell Implementation**: `../pattern-hs/libs/pattern/src/Pattern/Core.hs:720-728, 1104-1138`
 - **TODO**: `../../TODO.md` (updated with new recommendation)
 - **README**: `specs/018-comonad-instance/README.md` (overview)

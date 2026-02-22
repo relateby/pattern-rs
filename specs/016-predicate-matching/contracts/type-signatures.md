@@ -276,7 +276,7 @@ Required property verifications:
 ### Equivalence Tests
 
 Compare outputs with gram-hs reference implementation:
-- Extract test cases from `../gram-hs/libs/pattern/tests/`
+- Extract test cases from `../pattern-hs/libs/pattern/tests/`
 - Verify identical behavior for identical inputs
 - Document any intentional deviations
 
@@ -307,4 +307,3 @@ None. All additions are new methods that don't affect existing API:
 - No signature changes
 - No behavioral changes to existing functionality
 - Backward compatible with all existing code
-

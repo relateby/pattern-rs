@@ -201,9 +201,9 @@ let paths = p.indices_at();
 
 ## References
 
-- **Haskell Implementation**: `../gram-hs/libs/pattern/src/Pattern/Core.hs` (lines 720-728, 1104-1138)
-- **Haskell Tests**: `../gram-hs/libs/pattern/tests/Spec/Pattern/CoreSpec.hs` (lines 4242-4400)
-- **Haskell Property Tests**: `../gram-hs/libs/pattern/tests/Spec/Pattern/Properties.hs` (lines 1287-1332)
+- **Haskell Implementation**: `../pattern-hs/libs/pattern/src/Pattern/Core.hs` (lines 720-728, 1104-1138)
+- **Haskell Tests**: `../pattern-hs/libs/pattern/tests/Spec/Pattern/CoreSpec.hs` (lines 4242-4400)
+- **Haskell Property Tests**: `../pattern-hs/libs/pattern/tests/Spec/Pattern/Properties.hs` (lines 1287-1332)
 - **Feature Spec**: `specs/018-comonad-instance/spec.md`
 - **Analysis**: `specs/018-comonad-instance/ANALYSIS.md`
 - **Recommendation**: `specs/018-comonad-instance/RECOMMENDATION.md`
@@ -216,4 +216,3 @@ This implementation demonstrates that **conceptual correctness matters**. While 
 
 **Feature Status**: ✅ COMPLETE - Ready for use  
 **Next Feature**: Phase 4 - Gram Notation Serialization
-

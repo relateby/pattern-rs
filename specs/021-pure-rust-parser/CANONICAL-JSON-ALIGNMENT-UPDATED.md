@@ -162,10 +162,10 @@ After changes:
 
 ## 📚 References
 
-- **gram-hs JSON Implementation**: `../gram-hs/libs/gram/src/Gram/JSON.hs`
+- **gram-hs JSON Implementation**: `../pattern-hs/libs/gram/src/Gram/JSON.hs`
 - **gram-hs Commit**: `3b3bc9b` - "fix(json): align field names with semantic correctness"
-- **gram-hs JSON Schema**: `../gram-hs/specs/029-canonical-json-pattern/contracts/json-schema.json`
-- **gram-hs Spec**: `../gram-hs/specs/029-canonical-json-pattern/spec.md`
+- **gram-hs JSON Schema**: `../pattern-hs/specs/029-canonical-json-pattern/contracts/json-schema.json`
+- **gram-hs Spec**: `../pattern-hs/specs/029-canonical-json-pattern/spec.md`
 
 ---
 

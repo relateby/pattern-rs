@@ -11,7 +11,7 @@ Templates requiring updates:
   - ✅ spec-template.md (no changes needed - compatible with principles)
 Follow-up TODOs: None
 Previous changes (1.0.0 → 1.0.1):
-  - I. Reference Implementation Fidelity: Added reference to local path ../gram-hs and ../gram-hs/specs/
+  - I. Reference Implementation Fidelity: Added reference to local path ../pattern-hs and ../pattern-hs/specs/
   - Development Workflow: Updated verification steps to include local reference paths
   - Reference Implementation Location section with local path details
 -->
@@ -21,14 +21,14 @@ Previous changes (1.0.0 → 1.0.1):
 ## Core Principles
 
 ### I. Reference Implementation Fidelity
-Every feature and function MUST faithfully replicate the behavior of the gram-hs reference implementation located at `../gram-hs`. When porting functionality, verify correctness against the Haskell implementation through:
+Every feature and function MUST faithfully replicate the behavior of the gram-hs reference implementation located at `../pattern-hs`. When porting functionality, verify correctness against the Haskell implementation through:
 - Behavioral equivalence testing
 - Output comparison with reference implementation
 - Edge case coverage matching reference behavior
 - Documentation alignment with reference semantics
-- Reference to corresponding feature specifications in `../gram-hs/specs/`
+- Reference to corresponding feature specifications in `../pattern-hs/specs/`
 
-**Rationale**: The gram-hs implementation serves as the authoritative specification. The reference implementation is available locally at `../gram-hs` with incremental feature development documented in `../gram-hs/specs/`. Deviations must be explicitly justified and documented as intentional design decisions, not accidental omissions.
+**Rationale**: The gram-hs implementation serves as the authoritative specification. The reference implementation is available locally at `../pattern-hs` with incremental feature development documented in `../pattern-hs/specs/`. Deviations must be explicitly justified and documented as intentional design decisions, not accidental omissions.
 
 ### II. Correctness & Compatibility (NON-NEGOTIABLE)
 All implementations MUST prioritize correctness over performance optimizations. Compatibility with the reference implementation's API contracts, data formats, and behavioral guarantees is mandatory. Breaking changes from the reference implementation require explicit justification and documentation.
@@ -81,9 +81,9 @@ The project MUST include minimal, working examples demonstrating usage from exte
 
 ### Reference Implementation Verification
 Before marking any feature as complete:
-1. Review the corresponding feature specification in `../gram-hs/specs/` (if available)
-2. Verify behavior matches gram-hs reference implementation at `../gram-hs`
-3. Compare implementation with the Haskell source code in `../gram-hs/libs/`
+1. Review the corresponding feature specification in `../pattern-hs/specs/` (if available)
+2. Verify behavior matches gram-hs reference implementation at `../pattern-hs`
+3. Compare implementation with the Haskell source code in `../pattern-hs/libs/`
 4. Document any intentional deviations with rationale
 5. Include test cases that demonstrate equivalence (or document differences)
 6. Update examples if API changes affect external language bindings
@@ -121,13 +121,13 @@ All PRs and code reviews MUST verify compliance with these principles. Complexit
 ## Reference Implementation Location
 
 The gram-hs reference implementation is available locally at:
-- **Path**: `../gram-hs` (relative to pattern-rs repository root)
-- **Feature Specifications**: `../gram-hs/specs/` contains incremental feature development
-- **Source Code**: `../gram-hs/libs/` contains the Haskell library implementations
+- **Path**: `../pattern-hs` (relative to pattern-rs repository root)
+- **Feature Specifications**: `../pattern-hs/specs/` contains incremental feature development
+- **Source Code**: `../pattern-hs/libs/` contains the Haskell library implementations
 - **Online Repository**: https://github.com/relateby/pattern-hs
 
 When porting features, developers MUST:
-1. Reference the corresponding feature specification in `../gram-hs/specs/`
-2. Study the Haskell implementation in `../gram-hs/libs/`
-3. Port tests from `../gram-hs/libs/*/tests/` to ensure behavioral equivalence
+1. Reference the corresponding feature specification in `../pattern-hs/specs/`
+2. Study the Haskell implementation in `../pattern-hs/libs/`
+3. Port tests from `../pattern-hs/libs/*/tests/` to ensure behavioral equivalence
 4. Follow the same feature numbering and naming conventions where possible

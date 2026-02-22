@@ -478,7 +478,6 @@ Comonad operations do not return `Result` or `Option`. They always succeed for v
 ## References
 
 - **Haskell Comonad laws**: https://hackage.haskell.org/package/comonad
-- **gram-hs implementation**: `../gram-hs/libs/pattern/src/Pattern/Core.hs`
+- **gram-hs implementation**: `../pattern-hs/libs/pattern/src/Pattern/Core.hs`
 - **Feature spec**: [spec.md](../spec.md)
 - **Data model**: [data-model.md](../data-model.md)
-

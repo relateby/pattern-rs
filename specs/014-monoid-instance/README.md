@@ -155,7 +155,7 @@ The feature is complete when:
 - **Feature 008**: Functor trait (map operations)
 
 ### External References
-- **Haskell Reference**: `../gram-hs/libs/pattern/` (Monoid instance)
+- **Haskell Reference**: `../pattern-hs/libs/pattern/` (Monoid instance)
 - **Rust std**: [`std::default::Default`](https://doc.rust-lang.org/std/default/trait.Default.html)
 
 ---
@@ -188,4 +188,3 @@ The feature provides immediate practical value:
 ---
 
 **Ready for planning phase - Run `/speckit.plan` to proceed.**
-

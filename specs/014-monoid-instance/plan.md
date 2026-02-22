@@ -39,9 +39,9 @@ Implement identity element support for Pattern<V> by adding a `Default` trait im
 ### I. Reference Implementation Fidelity ✅
 
 - **Status**: Will be verified
-- **Action**: Port Monoid instance identity semantics from `../gram-hs/libs/pattern/src/Pattern.hs`
+- **Action**: Port Monoid instance identity semantics from `../pattern-hs/libs/pattern/src/Pattern.hs`
 - **Verification**: Behavioral equivalence tests comparing with gram-hs reference
-- **Reference Spec**: `../gram-hs/specs/011-monoid-instance/` (for context, verify against actual code)
+- **Reference Spec**: `../pattern-hs/specs/011-monoid-instance/` (for context, verify against actual code)
 - **Note**: Implementation uses `Default` trait (idiomatic Rust) instead of custom Monoid trait, but semantics remain equivalent
 
 ### II. Correctness & Compatibility ✅
@@ -83,7 +83,7 @@ Implement identity element support for Pattern<V> by adding a `Default` trait im
 - **Status**: Future consideration
 - **Justification**: Default patterns are internal to Rust; WASM bindings may expose default pattern functionality in future if needed for JavaScript interop
 
-**Note**: When porting features from gram-hs, reference the local implementation at `../gram-hs` and corresponding feature specifications in `../gram-hs/specs/`. See [porting guide](../../../docs/porting-guide.md) for detailed porting instructions.
+**Note**: When porting features from gram-hs, reference the local implementation at `../pattern-hs` and corresponding feature specifications in `../pattern-hs/specs/`. See [porting guide](../../../docs/porting-guide.md) for detailed porting instructions.
 
 ## Project Structure
 
@@ -132,7 +132,7 @@ crates/pattern-core/
 Research has been completed and documented in [research.md](research.md). Key findings:
 
 1. **Haskell Monoid Instance Analysis** ✅
-   - **Source**: `../gram-hs/libs/pattern/src/Pattern.hs`
+   - **Source**: `../pattern-hs/libs/pattern/src/Pattern.hs`
    - **Finding**: Identity pattern is `Pattern mempty []` where `mempty` is the value type's monoid identity
    - **Combination**: Identity satisfies `mempty <> p = p` and `p <> mempty = p`
    - **Structure**: Default value component + empty elements list
@@ -413,8 +413,8 @@ Expected tasks will include:
 
 ## References
 
-- **Haskell Source**: `../gram-hs/libs/pattern/src/Pattern.hs` (Monoid instance)
-- **Haskell Spec**: `../gram-hs/specs/011-monoid-instance/` (development notes)
+- **Haskell Source**: `../pattern-hs/libs/pattern/src/Pattern.hs` (Monoid instance)
+- **Haskell Spec**: `../pattern-hs/specs/011-monoid-instance/` (development notes)
 - **Rust Default**: https://doc.rust-lang.org/std/default/trait.Default.html
 - **Porting Guide**: `../../../docs/porting-guide.md`
 - **Feature 013 Plan**: `../013-semigroup-instance/plan.md` (Semigroup/Combinable)

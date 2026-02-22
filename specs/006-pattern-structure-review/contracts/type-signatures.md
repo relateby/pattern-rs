@@ -5,7 +5,7 @@
 
 ## Overview
 
-This document defines the public API type signatures for pattern validation functions and structure analysis utilities. These serve as the contracts that define the interface users will interact with. All signatures must match the gram-hs reference implementation in `../gram-hs/libs/pattern/src/Pattern.hs` (to be verified during implementation).
+This document defines the public API type signatures for pattern validation functions and structure analysis utilities. These serve as the contracts that define the interface users will interact with. All signatures must match the gram-hs reference implementation in `../pattern-hs/libs/pattern/src/Pattern.hs` (to be verified during implementation).
 
 ## Core Module: pattern_core
 
@@ -230,5 +230,4 @@ All functions must maintain behavioral equivalence with the gram-hs reference im
 - Validation functions must produce identical validation results for identical inputs and rules
 - Analysis functions must produce identical analysis results for identical inputs
 
-Reference implementation: `../gram-hs/libs/pattern/src/Pattern.hs` (to be verified during implementation)
-
+Reference implementation: `../pattern-hs/libs/pattern/src/Pattern.hs` (to be verified during implementation)

@@ -3,7 +3,7 @@
 **Feature Branch**: `019-gram-codec`  
 **Created**: 2026-01-06  
 **Status**: Draft  
-**Input**: User description: "Basic gram Codec as described in 019 of TODO.md and using `../tree-sitter-gram` as the standard grammar reference and the `gram-lint` CLI tool for validating _all_ gram snippets. Unlike most other features, `../gram-hs` is not authoritative but `../tree-sitter-gram` is. Also, when reviewing a parser library, remember that this will be used in WASM and Python as well, so make sure the choice of parser library supports that."
+**Input**: User description: "Basic gram Codec as described in 019 of TODO.md and using `../tree-sitter-gram` as the standard grammar reference and the `gram-lint` CLI tool for validating _all_ gram snippets. Unlike most other features, `../pattern-hs` is not authoritative but `../tree-sitter-gram` is. Also, when reviewing a parser library, remember that this will be used in WASM and Python as well, so make sure the choice of parser library supports that."
 
 ## Clarifications
 
@@ -174,4 +174,3 @@ As a developer using the Pattern library, I need the codec to support all gram s
 - The codec focuses on correctness and completeness first, with performance optimization (e.g., streaming, incremental parsing) as potential future enhancements
 - Path flattening (converting linear relationship chains into nested structures) is handled by the parser according to tree-sitter-gram semantics
 - Pattern references (identifiers that reference other patterns) are parsed as identifiers, with reference resolution being a separate concern outside the codec's scope
-

@@ -462,7 +462,6 @@ fn balance_factor(p: &Pattern<String>) -> Pattern<f64> {
 ## References
 
 - **Pattern definition**: `crates/pattern-core/src/pattern/mod.rs`
-- **Haskell reference**: `../gram-hs/libs/pattern/src/Pattern/Core.hs` (lines 720-728)
+- **Haskell reference**: `../pattern-hs/libs/pattern/src/Pattern/Core.hs` (lines 720-728)
 - **Feature spec**: [spec.md](./spec.md)
 - **API contracts**: [contracts/comonad.md](./contracts/comonad.md)
-

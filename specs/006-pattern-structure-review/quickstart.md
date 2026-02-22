@@ -400,7 +400,7 @@ All functions must maintain behavioral equivalence with the gram-hs reference im
 - Validation functions must produce identical validation results for identical inputs and rules
 - Analysis functions must produce identical analysis results for identical inputs
 
-Reference: `../gram-hs/libs/pattern/src/Pattern.hs` (to be verified during implementation)
+Reference: `../pattern-hs/libs/pattern/src/Pattern.hs` (to be verified during implementation)
 
 ## Next Steps
 

@@ -172,19 +172,19 @@ A developer needs to use patterns in web applications via WebAssembly. They need
 - **Feature 001 (Rust Init)**: Provides Rust project structure and build configuration
 - **Feature 002 (Workspace Setup)**: Provides multi-crate workspace with `pattern-core` crate
 - **Feature 003 (Test Infrastructure)**: Provides testing framework, equivalence checking utilities, and test synchronization infrastructure for verifying behavioral equivalence with gram-hs
-- **gram-hs Reference Implementation**: Provides the reference specification, type signatures, and test cases at `../gram-hs/specs/001-pattern-data-structure/`
+- **gram-hs Reference Implementation**: Provides the reference specification, type signatures, and test cases at `../pattern-hs/specs/001-pattern-data-structure/`
 
 ## References
 
-- **Primary Source (Authoritative)**: **gram-hs Implementation**: `../gram-hs/libs/` - Haskell library source code
-  - Pattern: `../gram-hs/libs/pattern/src/Pattern.hs`
-  - Subject: `../gram-hs/libs/subject/src/Subject/Core.hs`
-  - Tests: `../gram-hs/libs/*/tests/`
-- **Secondary Source (Context Only)**: gram-hs Design Documents: `../gram-hs/specs/001-pattern-data-structure/`
-  - Feature Specification: `../gram-hs/specs/001-pattern-data-structure/spec.md` (for context, may be outdated)
-  - Type Signatures: `../gram-hs/specs/001-pattern-data-structure/contracts/type-signatures.md` (for context, may be outdated)
+- **Primary Source (Authoritative)**: **gram-hs Implementation**: `../pattern-hs/libs/` - Haskell library source code
+  - Pattern: `../pattern-hs/libs/pattern/src/Pattern.hs`
+  - Subject: `../pattern-hs/libs/subject/src/Subject/Core.hs`
+  - Tests: `../pattern-hs/libs/*/tests/`
+- **Secondary Source (Context Only)**: gram-hs Design Documents: `../pattern-hs/specs/001-pattern-data-structure/`
+  - Feature Specification: `../pattern-hs/specs/001-pattern-data-structure/spec.md` (for context, may be outdated)
+  - Type Signatures: `../pattern-hs/specs/001-pattern-data-structure/contracts/type-signatures.md` (for context, may be outdated)
 - **Porting Guide**: `docs/porting-guide.md` - Systematic approach for porting from gram-hs
 - **Project Plan**: `docs/pattern-rs-project-plan.md` - Overall architecture and design decisions
 - **TODO**: `TODO.md` - Feature tracking and porting checklist
 
-**Important**: The Haskell implementation in `../gram-hs/libs/` is the authoritative source of truth. Design documents in `../gram-hs/specs/` are useful for context but may contain outdated information or design mistakes that were corrected in the actual implementation.
+**Important**: The Haskell implementation in `../pattern-hs/libs/` is the authoritative source of truth. Design documents in `../pattern-hs/specs/` are useful for context but may contain outdated information or design mistakes that were corrected in the actual implementation.

@@ -126,7 +126,6 @@ If you can't answer "yes" to all of these, defer the feature.
 ## See Also
 
 - **Detailed Analysis**: `specs/017-applicative-instance/ANALYSIS.md`
-- **Haskell Implementation**: `../gram-hs/libs/pattern/src/Pattern/Core.hs:670-676`
+- **Haskell Implementation**: `../pattern-hs/libs/pattern/src/Pattern/Core.hs:670-676`
 - **Porting Guide**: `docs/porting-guide.md` - Idiomatic Rust vs. literal translation
 - **Existing Features**: Phase 3 features (008-016) provide better alternatives
-

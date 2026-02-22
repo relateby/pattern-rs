@@ -5,22 +5,22 @@ This guide provides a systematic approach for porting features from the gram-hs 
 ## Reference Implementation Location
 
 The gram-hs reference implementation is available locally at:
-- **Path**: `../gram-hs` (relative to pattern-rs repository root)
-- **Source Code (Authoritative)**: `../gram-hs/libs/` - Haskell library implementations - **This is the source of truth**
-- **Documentation (Up-to-date)**: `../gram-hs/docs/` - Up-to-date documentation about the implementation
-- **Tests (Authoritative)**: `../gram-hs/libs/*/tests/` - Test suites for verification - **Shows expected behavior**
-- **Historical Notes (Context Only)**: `../gram-hs/specs/` - Historical notes that guided incremental development (may be outdated, use for context only)
+- **Path**: `../pattern-hs` (relative to pattern-rs repository root)
+- **Source Code (Authoritative)**: `../pattern-hs/libs/` - Haskell library implementations - **This is the source of truth**
+- **Documentation (Up-to-date)**: `../pattern-hs/docs/` - Up-to-date documentation about the implementation
+- **Tests (Authoritative)**: `../pattern-hs/libs/*/tests/` - Test suites for verification - **Shows expected behavior**
+- **Historical Notes (Context Only)**: `../pattern-hs/specs/` - Historical notes that guided incremental development (may be outdated, use for context only)
 
 ## Important: Library vs CLI Tool
 
 **Critical Distinction**: There are two separate things you'll work with - don't confuse them!
 
-### The `../gram-hs/` Library (Reference Implementation)
+### The `../pattern-hs/` Library (Reference Implementation)
 
-- **Location**: `../gram-hs/libs/` (relative to pattern-rs root)
+- **Location**: `../pattern-hs/libs/` (relative to pattern-rs root)
 - **Purpose**: Haskell source code to port to Rust
 - **Use for**: Reading implementations, understanding algorithms, studying type signatures
-- **Example**: Study `../gram-hs/libs/pattern/src/Pattern.hs` to understand Pattern type
+- **Example**: Study `../pattern-hs/libs/pattern/src/Pattern.hs` to understand Pattern type
 - **When**: During implementation - when writing Rust code
 
 ### The `gramref` CLI Tool (Testing Tool)
@@ -32,7 +32,7 @@ The gram-hs reference implementation is available locally at:
 - **When**: During testing - when verifying your Rust implementation
 
 **Key Rule**: 
-- **Read** from the **library** (`../gram-hs/libs/`) when implementing functionality
+- **Read** from the **library** (`../pattern-hs/libs/`) when implementing functionality
 - **Execute** the **CLI tool** (`gramref`) when testing that functionality
 
 For detailed usage of the `gramref` CLI tool, see: [gramref-cli-testing-guide.md](gramref-cli-testing-guide.md)
@@ -127,7 +127,7 @@ impl<V> Pattern<V> {
 
 ### 1. Identify Feature to Port
 
-Check `../gram-hs/specs/` for available features. Features are numbered incrementally:
+Check `../pattern-hs/specs/` for available features. Features are numbered incrementally:
 - `001-pattern-data-structure`
 - `002-basic-pattern-type`
 - `003-pattern-structure-review`
@@ -137,9 +137,9 @@ Check `../gram-hs/specs/` for available features. Features are numbered incremen
 
 **CRITICAL: The Haskell Implementation is the Source of Truth**
 
-The Haskell implementation in `../gram-hs/libs/` is the authoritative source of truth. We are porting the actual Haskell implementation to idiomatic Rust.
+The Haskell implementation in `../pattern-hs/libs/` is the authoritative source of truth. We are porting the actual Haskell implementation to idiomatic Rust.
 
-Historical notes in `../gram-hs/specs/` guided incremental development and may be useful for understanding the feature's purpose and approach, but they are NOT authoritative. They may contain:
+Historical notes in `../pattern-hs/specs/` guided incremental development and may be useful for understanding the feature's purpose and approach, but they are NOT authoritative. They may contain:
 - Outdated information that was corrected during implementation
 - Design mistakes that were fixed in the actual code
 - Progressive design changes where later work overrides earlier work
@@ -148,19 +148,19 @@ Historical notes in `../gram-hs/specs/` guided incremental development and may b
 **Always prefer the Haskell implementation over design documents. When in doubt, check the actual source code.**
 
 **Primary Source (Authoritative)**:
-- **Haskell Implementation** (`../gram-hs/libs/`):
+- **Haskell Implementation** (`../pattern-hs/libs/`):
   - Source files in `libs/*/src/` - **This is the source of truth for type signatures and behavior**
   - Test files in `libs/*/tests/` - **This is the source of truth for expected behavior**
   - Documentation in source files (Haddock comments) - **This is the source of truth for API documentation**
 
 **Documentation (Up-to-date)**:
-- **Implementation Documentation** (`../gram-hs/docs/`):
+- **Implementation Documentation** (`../pattern-hs/docs/`):
   - `docs/reference/` - Architecture and feature documentation (up-to-date information about the implementation)
   - `docs/users/` - User guides and examples (up-to-date usage information)
   - `docs/design/` - Design documentation (up-to-date design information)
 
 **Historical Notes (Context Only)**:
-- **Feature Specification** (`../gram-hs/specs/XXX-feature-name/`):
+- **Feature Specification** (`../pattern-hs/specs/XXX-feature-name/`):
   - These are historical notes that guided incremental development, NOT authoritative sources
   - `spec.md` - Feature requirements and user stories (useful for understanding purpose and approach)
   - `plan.md` - Implementation plan (may be outdated)
@@ -175,13 +175,13 @@ Historical notes in `../gram-hs/specs/` guided incremental development and may b
 Use `/speckit.specify` to create a new feature specification:
 
 ```bash
-/speckit.specify Port Feature XXX from gram-hs reference implementation. Reference ../gram-hs/libs/ for the authoritative implementation. Design documents in ../gram-hs/specs/XXX-feature-name/ are for context only.
+/speckit.specify Port Feature XXX from gram-hs reference implementation. Reference ../pattern-hs/libs/ for the authoritative implementation. Design documents in ../pattern-hs/specs/XXX-feature-name/ are for context only.
 ```
 
 **Important**: In your spec, include:
-- **Primary reference**: Link to Haskell source code: `../gram-hs/libs/*/src/` - **This is the source of truth**
-- **Documentation reference**: Link to gram-hs documentation: `../gram-hs/docs/` - **Up-to-date information about the implementation**
-- **Historical reference**: Link to gram-hs feature specs: `../gram-hs/specs/XXX-feature-name/` - **Historical notes for context only, may be outdated**
+- **Primary reference**: Link to Haskell source code: `../pattern-hs/libs/*/src/` - **This is the source of truth**
+- **Documentation reference**: Link to gram-hs documentation: `../pattern-hs/docs/` - **Up-to-date information about the implementation**
+- **Historical reference**: Link to gram-hs feature specs: `../pattern-hs/specs/XXX-feature-name/` - **Historical notes for context only, may be outdated**
 - Behavioral equivalence requirements (verify against actual Haskell implementation, not historical notes)
 - Note that we are porting the Haskell implementation to idiomatic Rust
 
@@ -189,15 +189,15 @@ Use `/speckit.specify` to create a new feature specification:
 
 **CRITICAL: Use the Haskell Implementation as the Source of Truth**
 
-Start with the actual Haskell source code in `../gram-hs/libs/*/src/`. We are porting the Haskell implementation to idiomatic Rust. Also review the up-to-date documentation in `../gram-hs/docs/`. The historical notes in `../gram-hs/specs/XXX-feature-name/contracts/type-signatures.md` may be outdated or incorrect - always verify against the actual source code.
+Start with the actual Haskell source code in `../pattern-hs/libs/*/src/`. We are porting the Haskell implementation to idiomatic Rust. Also review the up-to-date documentation in `../pattern-hs/docs/`. The historical notes in `../pattern-hs/specs/XXX-feature-name/contracts/type-signatures.md` may be outdated or incorrect - always verify against the actual source code.
 
 **Step 1: Find the Haskell Implementation**
 
 1. Identify which library module(s) implement the feature:
    ```bash
    # Find relevant source files
-   find ../gram-hs/libs -name "*.hs" -type f | grep -i pattern
-   find ../gram-hs/libs -name "*.hs" -type f | grep -i subject
+   find ../pattern-hs/libs -name "*.hs" -type f | grep -i pattern
+   find ../pattern-hs/libs -name "*.hs" -type f | grep -i subject
    ```
 
 2. Read the actual type definitions from the `.hs` source files:
@@ -236,13 +236,13 @@ When you encounter a Haskell typeclass instance (like `Functor`, `Applicative`, 
 **Example**: To find the Pattern type definition:
 ```bash
 # Look in the pattern library
-cat ../gram-hs/libs/pattern/src/Pattern.hs | grep -A 5 "^data Pattern"
+cat ../pattern-hs/libs/pattern/src/Pattern.hs | grep -A 5 "^data Pattern"
 ```
 
 **Example**: To find the Subject type definition:
 ```bash
 # Look in the subject library
-cat ../gram-hs/libs/subject/src/Subject/Core.hs | grep -A 10 "^data Subject"
+cat ../pattern-hs/libs/subject/src/Subject/Core.hs | grep -A 10 "^data Subject"
 ```
 
 ### 4.5. Common Pitfalls: Assuming Types Exist
@@ -255,19 +255,19 @@ cat ../gram-hs/libs/subject/src/Subject/Core.hs | grep -A 10 "^data Subject"
 - TODO checklists
 
 **Always verify** by checking:
-1. **The actual Haskell source code** in `../gram-hs/libs/*/src/` - **This is the source of truth**
-2. The gram-hs test files in `../gram-hs/libs/*/tests/` - **This shows what actually exists**
+1. **The actual Haskell source code** in `../pattern-hs/libs/*/src/` - **This is the source of truth**
+2. The gram-hs test files in `../pattern-hs/libs/*/tests/` - **This shows what actually exists**
 
 **Example**: If a requirement says "provide Subject types" but you can't find `data Subject` in the Haskell source for that feature's library, then:
 - Subject types are NOT defined in this feature
 - Pattern<V> is generic and can work with any value type V
 - Subject types, if they exist, are defined in other libraries and are just value types
 
-**Rule of thumb**: Only port types that are explicitly defined in the Haskell source code (`*.hs` files) for the feature you're porting. Historical notes in `../gram-hs/specs/` guided incremental development but are NOT authoritative - always verify against the actual source code and up-to-date documentation in `../gram-hs/docs/`.
+**Rule of thumb**: Only port types that are explicitly defined in the Haskell source code (`*.hs` files) for the feature you're porting. Historical notes in `../pattern-hs/specs/` guided incremental development but are NOT authoritative - always verify against the actual source code and up-to-date documentation in `../pattern-hs/docs/`.
 
 ### 5. Port Tests (TDD Approach)
 
-Port test cases from `../gram-hs/libs/*/tests/`:
+Port test cases from `../pattern-hs/libs/*/tests/`:
 
 1. Create test file in `tests/equivalence/` or `tests/integration/`
 2. Port test cases maintaining the same test data and expected outputs
@@ -289,7 +289,7 @@ See [gramref CLI Testing Guide](gramref-cli-testing-guide.md) for more details o
 
 ### 6. Implement Functionality (Idiomatically)
 
-Port the **behavior** from `../gram-hs/libs/*/src/` using **idiomatic Rust**:
+Port the **behavior** from `../pattern-hs/libs/*/src/` using **idiomatic Rust**:
 
 - **Understand the concept**: Read the Haskell code to understand what it does and why
 - **Implement idiomatically**: Write Rust code that achieves the same behavior using Rust conventions
@@ -476,7 +476,7 @@ This approach:
 **API Evolution:**
 
 The gram-hs API has evolved over time. When porting, always use the **current** gram-hs API as the source of truth:
-- Check `../gram-hs/libs/pattern/src/Pattern/Core.hs` for the actual function signatures
+- Check `../pattern-hs/libs/pattern/src/Pattern/Core.hs` for the actual function signatures
 - Update Rust implementation to match current gram-hs API, even if it means breaking changes
 - Document breaking changes in migration notes if needed
 
@@ -485,10 +485,10 @@ The gram-hs API has evolved over time. When porting, always use the **current** 
 For each feature being ported:
 
 ### Understanding Phase
-- [ ] **Studied Haskell implementation** in `../gram-hs/libs/*/src/` - **Understand the concept and behavior**
-- [ ] Reviewed gram-hs documentation in `../gram-hs/docs/` - **Up-to-date information about the implementation**
-- [ ] Reviewed Haskell tests in `../gram-hs/libs/*/tests/` - **Expected behavior and test cases**
-- [ ] Reviewed `../gram-hs/specs/XXX-feature-name/spec.md` - **Historical context (may be outdated)**
+- [ ] **Studied Haskell implementation** in `../pattern-hs/libs/*/src/` - **Understand the concept and behavior**
+- [ ] Reviewed gram-hs documentation in `../pattern-hs/docs/` - **Up-to-date information about the implementation**
+- [ ] Reviewed Haskell tests in `../pattern-hs/libs/*/tests/` - **Expected behavior and test cases**
+- [ ] Reviewed `../pattern-hs/specs/XXX-feature-name/spec.md` - **Historical context (may be outdated)**
 - [ ] **Identified the core concept** - What problem does this solve? What behavior does it provide?
 
 ### Design Phase
@@ -518,13 +518,13 @@ The gram-hs reference implementation contains multiple features organized increm
 
 ```bash
 # List feature specifications (for context)
-ls -1 ../gram-hs/specs/
+ls -1 ../pattern-hs/specs/
 
 # List actual library implementations (source of truth)
-ls -1 ../gram-hs/libs/
+ls -1 ../pattern-hs/libs/
 ```
 
-**Important**: The actual implementations are in `../gram-hs/libs/`. Up-to-date documentation is in `../gram-hs/docs/`. The specifications in `../gram-hs/specs/` are historical notes that guided incremental development but may be outdated. Always check the actual Haskell source code in `libs/*/src/` as the authoritative source, and refer to `../gram-hs/docs/` for up-to-date documentation. We are porting the Haskell implementation to idiomatic Rust.
+**Important**: The actual implementations are in `../pattern-hs/libs/`. Up-to-date documentation is in `../pattern-hs/docs/`. The specifications in `../pattern-hs/specs/` are historical notes that guided incremental development but may be outdated. Always check the actual Haskell source code in `libs/*/src/` as the authoritative source, and refer to `../pattern-hs/docs/` for up-to-date documentation. We are porting the Haskell implementation to idiomatic Rust.
 
 Each feature directory in `specs/` contains (historical notes for context only, may be outdated):
 - `spec.md` - Feature specification (historical notes)
@@ -533,12 +533,12 @@ Each feature directory in `specs/` contains (historical notes for context only, 
 - `quickstart.md` - Usage examples (may be outdated)
 - Other design artifacts
 
-**Note**: Features are numbered sequentially. When creating a new feature in pattern-rs, use the same feature number and name from gram-hs to maintain consistency (e.g., `002-basic-pattern-type`). However, always verify the actual implementation in `../gram-hs/libs/` and refer to up-to-date documentation in `../gram-hs/docs/` rather than relying on the historical notes. The historical notes guided incremental development but are not authoritative sources.
+**Note**: Features are numbered sequentially. When creating a new feature in pattern-rs, use the same feature number and name from gram-hs to maintain consistency (e.g., `002-basic-pattern-type`). However, always verify the actual implementation in `../pattern-hs/libs/` and refer to up-to-date documentation in `../pattern-hs/docs/` rather than relying on the historical notes. The historical notes guided incremental development but are not authoritative sources.
 
 ## Resources
 
 - **gram-hs Repository**: https://github.com/relateby/pattern-hs
-- **Local Reference**: `../gram-hs`
+- **Local Reference**: `../pattern-hs`
 - **gram-hs CLI Tool**: `/Users/akollegger/.cabal/bin/gram-hs` (or `gram-hs` if in PATH)
   - **Testing Guide**: [gramref CLI Testing Guide](gramref-cli-testing-guide.md) - Comprehensive guide for using gramref CLI for testing and equivalence checking
   - **Manpage**: `/Users/akollegger/.cabal/share/man/man1/gram-hs.1` or `man gram-hs`

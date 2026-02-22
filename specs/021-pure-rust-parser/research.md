@@ -13,8 +13,8 @@ This research document addresses key technical decisions and patterns needed to 
 ## Reference Implementation Guidance
 
 **Primary References**:
-- **Porting Guide**: `../gram-hs/docs/reference/PORTING-GUIDE.md` - Implementation order and testing strategies
-- **Gram Serialization**: `../gram-hs/docs/reference/features/gram-serialization.md` - Serialization/parsing specification
+- **Porting Guide**: `../pattern-hs/docs/reference/PORTING-GUIDE.md` - Implementation order and testing strategies
+- **Gram Serialization**: `../pattern-hs/docs/reference/features/gram-serialization.md` - Serialization/parsing specification
 - **gram-hs CLI**: Can generate test data and provide canonical outputs for conformance testing
 
 **Key Insight from Porting Guide**: Gram serialization (Phase 3) depends on Pattern (Phase 1) and Subject (Phase 2) being complete. This feature focuses on replacing the parser implementation while maintaining the same Pattern/Subject structures.
@@ -576,7 +576,7 @@ let serialized = to_gram_patterns(&patterns).unwrap();
 assert_eq!(original, serialized);  // ❌ Brittle, fails on formatting changes
 ```
 
-**Rationale** (from `../gram-hs/docs/reference/features/gram-serialization.md`):
+**Rationale** (from `../pattern-hs/docs/reference/features/gram-serialization.md`):
 
 - **Semantic Equivalence**: Round-trip tests verify "structural equality after serialization/deserialization cycles"
 - **Formatting Independence**: Gram notation formatting (whitespace, comment placement) may vary, but Pattern semantics must be preserved

@@ -110,13 +110,13 @@ This means:
 
 | Principle | Status | Notes |
 |-----------|--------|--------|
-| **I. Reference Implementation Fidelity** | PASS | Behavior MUST match gram-hs reference at `../gram-hs` and Rust pattern-core. Where Python (024) exposes an operation, behavior MUST match Python; where Rust has an operation (e.g. para from 025) not yet in Python, WASM MUST expose it. Parity tests and shared corpus verify equivalence. |
+| **I. Reference Implementation Fidelity** | PASS | Behavior MUST match gram-hs reference at `../pattern-hs` and Rust pattern-core. Where Python (024) exposes an operation, behavior MUST match Python; where Rust has an operation (e.g. para from 025) not yet in Python, WASM MUST expose it. Parity tests and shared corpus verify equivalence. |
 | **II. Correctness & Compatibility** | PASS | API contracts (contracts/wasm-api.md, typescript-types.md) and data-model.md define the boundary; fallible operations preserve Rust Result as Either-like at boundary. No breaking changes to existing Rust API. |
 | **III. Rust Native Idioms** | PASS | Rust side uses Result, references, idiomatic pattern-core; WASM layer converts to/from JsValue and Either-like return shape only at the boundary. |
 | **IV. Multi-Target Library Design** | PASS | WASM code isolated behind feature flag; native and Python builds unchanged. Public APIs compatible with WASM constraints (no blocking I/O). |
 | **V. External Language Bindings & Examples** | PASS | Minimal working examples for WASM (browser and Node) and TypeScript usage; quickstart.md and package README document build, load, and effect-ts usage. |
 
-**Note**: When porting features from gram-hs, reference the local implementation at `../gram-hs` and corresponding feature specifications in `../gram-hs/specs/`. See [porting guide](../../docs/porting-guide.md) for detailed porting instructions.
+**Note**: When porting features from gram-hs, reference the local implementation at `../pattern-hs` and corresponding feature specifications in `../pattern-hs/specs/`. See [porting guide](../../docs/porting-guide.md) for detailed porting instructions.
 
 ## Project Structure
 

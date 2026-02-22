@@ -322,8 +322,8 @@ proptest! {
 
 ## References
 
-- **gram-hs Haskell implementation**: `../gram-hs/libs/pattern/src/Pattern/Core.hs`
-- **gram-hs tests**: `../gram-hs/libs/pattern/tests/Spec/Pattern/`
+- **gram-hs Haskell implementation**: `../pattern-hs/libs/pattern/src/Pattern/Core.hs`
+- **gram-hs tests**: `../pattern-hs/libs/pattern/tests/Spec/Pattern/`
 - **Feature spec**: [spec.md](./spec.md)
 - **Analysis**: [ANALYSIS.md](./ANALYSIS.md)
 - **Recommendation**: [RECOMMENDATION.md](./RECOMMENDATION.md)

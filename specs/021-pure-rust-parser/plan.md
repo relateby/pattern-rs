@@ -65,7 +65,7 @@ Replace the current tree-sitter-gram dependency (C code) with a pure Rust parser
 
 **STATUS**: ⚠️ EXCEPTION - Requires Justification
 
-**Assessment**: This feature intentionally deviates from the standard reference implementation approach. Instead of porting from `../gram-hs`, this feature treats `../tree-sitter-gram` as the authoritative specification.
+**Assessment**: This feature intentionally deviates from the standard reference implementation approach. Instead of porting from `../pattern-hs`, this feature treats `../tree-sitter-gram` as the authoritative specification.
 
 **Justification**: 
 - **Grammar Authority**: tree-sitter-gram defines the authoritative gram notation grammar via Tree-sitter's grammar DSL and comprehensive test corpus
@@ -78,8 +78,8 @@ Replace the current tree-sitter-gram dependency (C code) with a pure Rust parser
 2. Pass 100% of test corpus cases in `../tree-sitter-gram/test/corpus/`
 3. Document any intentional parsing behavior differences from gram-hs (if discovered during testing)
 4. Maintain semantic equivalence: same Pattern structures produced for same gram notation input
-5. Follow guidance from `../gram-hs/docs/reference/PORTING-GUIDE.md` for Phase 3 (Gram Serialization) implementation
-6. Use round-trip testing strategy from `../gram-hs/docs/reference/features/gram-serialization.md`: `gram -> pattern -> gram -> pattern` for semantic equivalence
+5. Follow guidance from `../pattern-hs/docs/reference/PORTING-GUIDE.md` for Phase 3 (Gram Serialization) implementation
+6. Use round-trip testing strategy from `../pattern-hs/docs/reference/features/gram-serialization.md`: `gram -> pattern -> gram -> pattern` for semantic equivalence
 
 **Additional Context**:
 - Per porting guide, Gram serialization (Phase 3) depends on Pattern (Phase 1) and Subject (Phase 2) being complete

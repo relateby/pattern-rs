@@ -18,7 +18,7 @@ The Basic Gram Codec provides bidirectional transformation between gram notation
 
 ### Authoritative Grammar Reference
 
-**IMPORTANT**: Unlike most other features, `../gram-hs` is **NOT** authoritative for this feature. Instead:
+**IMPORTANT**: Unlike most other features, `../pattern-hs` is **NOT** authoritative for this feature. Instead:
 
 - **Grammar Authority**: `../tree-sitter-gram/grammar.js` defines all syntax rules
 - **Validation Tool**: `gram-lint` CLI validates all gram notation
