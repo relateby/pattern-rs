@@ -45,18 +45,19 @@ echo ""
 run_check "Native build" cargo build --workspace
 echo ""
 
-# 4. WASM build (optional - only builds implemented crates)
+# 4. WASM build (optional - matches GitHub Actions: cargo build --workspace)
 echo -n "Checking WASM target... "
 if rustup target list --installed | grep -q wasm32-unknown-unknown; then
     echo -e "${GREEN}✓${NC}"
-    # Only build crates that are actually implemented
+    # Build the full workspace to match CI - catches type errors in all WASM crates
     # WASM is optional for now, so don't fail the script if it fails
     echo -n "Running WASM build... "
-    if cargo build --target wasm32-unknown-unknown -p pattern-core > /tmp/ci-check.log 2>&1; then
+    if cargo build --target wasm32-unknown-unknown --workspace > /tmp/ci-check.log 2>&1; then
         echo -e "${GREEN}✓${NC}"
     else
         echo -e "${YELLOW}⚠${NC} (failed, but non-blocking)"
         echo "  WASM build failed - this is optional for now"
+        tail -20 /tmp/ci-check.log
     fi
 else
     echo -e "${YELLOW}⚠${NC} (not installed, skipping)"
