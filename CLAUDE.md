@@ -286,3 +286,10 @@ Key cursor rule highlights:
 - Python bindings require Python 3.8+ with type hints
 - Use `cargo test` and `cargo clippy` for validation
 - Validate gram notation with `gram-lint` tool
+
+## Active Technologies
+- Rust 1.70.0 (MSRV), Edition 2021 + std (HashMap, Vec, HashSet) — no new external crates required (030-graph-classifier)
+- N/A (in-memory data structures only) (030-graph-classifier)
+
+## Recent Changes
+- 030-graph-classifier: Added Rust 1.70.0 (MSRV), Edition 2021 + std (HashMap, Vec, HashSet) — no new external crates required
