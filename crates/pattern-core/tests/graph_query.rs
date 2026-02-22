@@ -8,9 +8,9 @@ use std::collections::{HashMap, HashSet};
 use std::rc::Rc;
 
 use pattern_core::{
-    canonical_classifier, directed, directed_reverse, frame_query, from_pattern_graph,
-    from_patterns, memoize_incident_rels, undirected, GraphClass, GraphQuery, GraphValue, Pattern,
-    PatternGraph, Subject, Symbol, TraversalDirection,
+    canonical_classifier, connected_components, directed, directed_reverse, frame_query,
+    from_pattern_graph, from_patterns, is_connected, memoize_incident_rels, undirected, GraphClass,
+    GraphQuery, GraphValue, Pattern, PatternGraph, Subject, Symbol, TraversalDirection,
 };
 
 // ============================================================================
@@ -507,28 +507,107 @@ fn hs_t056_query_co_members() {
     let gq = from_pattern_graph(pg);
 
     let ab = (gq.query_relationship_by_id)(&Symbol("AB".to_string())).expect("AB must exist");
-    let walk_pat = (gq.query_node_by_id)(&Symbol("W1".to_string()))
-        .or_else(|| {
-            (gq.query_relationships)()
-                .into_iter()
-                .find(|r| r.value.identity == Symbol("W1".to_string()))
-        })
-        .or_else(|| {
-            // walk W1 is in pg_walks, not pg_nodes or pg_relationships
-            // We need another way to get it...
-            // Let's use query_containers of AB
-            let containers = (gq.query_containers)(&ab);
-            containers
-                .into_iter()
-                .find(|c| c.value.identity == Symbol("W1".to_string()))
-        });
+    // W1 is a walk (pg_walks), not a node or relationship; reach it via query_containers.
+    let containers = (gq.query_containers)(&ab);
+    let w_pat = containers
+        .into_iter()
+        .find(|c| c.value.identity == Symbol("W1".to_string()))
+        .expect("walk W1 must be a container of AB");
 
-    if let Some(w_pat) = walk_pat {
-        let co_members = pattern_core::query_co_members(&gq, &ab, &w_pat);
-        assert_eq!(co_members.len(), 1, "AB should have 1 co-member in W1 (BC)");
-        assert_eq!(co_members[0].value.identity, Symbol("BC".to_string()));
+    let co_members = pattern_core::query_co_members(&gq, &ab, &w_pat);
+    assert_eq!(co_members.len(), 1, "AB should have 1 co-member in W1 (BC)");
+    assert_eq!(co_members[0].value.identity, Symbol("BC".to_string()));
+}
+
+// ============================================================================
+// GraphQuery manual construction (representation-independence smoke test)
+// ============================================================================
+
+// ============================================================================
+// Edge cases from spec
+// ============================================================================
+
+#[test]
+fn frame_all_excluded_algorithms_return_empty() {
+    // Predicate that excludes everything
+    let gq = mixed_graph_query();
+    let include: Rc<dyn Fn(&Pattern<Subject>) -> bool> = Rc::new(|_| false);
+    let framed = frame_query(include, gq);
+
+    assert_eq!((framed.query_nodes)().len(), 0, "all-excluded frame has no nodes");
+    assert_eq!(
+        (framed.query_relationships)().len(),
+        0,
+        "all-excluded frame has no relationships"
+    );
+
+    // is_connected on empty frame is vacuously true
+    assert!(
+        pattern_core::is_connected(&framed, &undirected()),
+        "empty frame is vacuously connected"
+    );
+
+    // connected_components on empty frame is empty
+    let components = pattern_core::connected_components(&framed, &undirected());
+    assert_eq!(components.len(), 0, "empty frame has no components");
+}
+
+#[test]
+fn frame_nested_composition_filters_correctly() {
+    // Build a graph with 3 nodes: A (Person+Female), B (Person+Male), C (Thing)
+    fn labeled2(id: &str, l1: &str, l2: &str) -> Pattern<Subject> {
+        let mut labels = HashSet::new();
+        labels.insert(l1.to_string());
+        labels.insert(l2.to_string());
+        Pattern {
+            value: Subject {
+                identity: Symbol(id.to_string()),
+                labels,
+                properties: HashMap::new(),
+            },
+            elements: vec![],
+        }
     }
-    // If walk_pat is None, the test silently passes (walk not reachable via graph_query — expected)
+    fn labeled1(id: &str, l1: &str) -> Pattern<Subject> {
+        let mut labels = HashSet::new();
+        labels.insert(l1.to_string());
+        Pattern {
+            value: Subject {
+                identity: Symbol(id.to_string()),
+                labels,
+                properties: HashMap::new(),
+            },
+            elements: vec![],
+        }
+    }
+
+    let a = labeled2("A", "Person", "Female");
+    let b = labeled2("B", "Person", "Male");
+    let c = labeled1("C", "Thing");
+
+    let classifier = canonical_classifier::<Subject>();
+    let pg = Rc::new(from_patterns(
+        &classifier,
+        vec![
+            rel("AB", a.clone(), b.clone()),
+            rel("BC", b.clone(), c.clone()),
+        ],
+    ));
+    let gq = from_pattern_graph(pg);
+
+    // First frame: only Person nodes
+    let person_pred: Rc<dyn Fn(&Pattern<Subject>) -> bool> =
+        Rc::new(|p: &Pattern<Subject>| p.value.labels.contains("Person"));
+    let person_frame = frame_query(Rc::clone(&person_pred), gq);
+
+    // Second frame on top: only Female nodes
+    let female_pred: Rc<dyn Fn(&Pattern<Subject>) -> bool> =
+        Rc::new(|p: &Pattern<Subject>| p.value.labels.contains("Female"));
+    let female_frame = frame_query(female_pred, person_frame);
+
+    let nodes = (female_frame.query_nodes)();
+    assert_eq!(nodes.len(), 1, "nested frame should contain only A (Person+Female)");
+    assert_eq!(nodes[0].value.identity, Symbol("A".to_string()));
 }
 
 // ============================================================================

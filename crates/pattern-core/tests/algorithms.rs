@@ -590,3 +590,53 @@ fn betweenness_centrality_path_graph() {
         "middle node B should have higher betweenness than C: b={b_score} c={c_score}"
     );
 }
+
+// ============================================================================
+// Edge cases from spec
+// ============================================================================
+
+#[test]
+fn bfs_start_node_not_in_graph_returns_singleton() {
+    // A node constructed outside the graph — query_incident_rels returns []
+    let gq = chain_abc();
+    let ghost = node("Z"); // not inserted into the graph
+    let visited = bfs(&gq, &undirected(), &ghost);
+    // BFS always includes the start; no incident rels → only start returned
+    assert_eq!(visited.len(), 1, "BFS from absent node returns just that node");
+    assert_eq!(visited[0].value.identity, Symbol("Z".to_string()));
+}
+
+#[test]
+fn dfs_start_node_not_in_graph_returns_singleton() {
+    let gq = chain_abc();
+    let ghost = node("Z");
+    let visited = dfs(&gq, &undirected(), &ghost);
+    assert_eq!(visited.len(), 1, "DFS from absent node returns just that node");
+    assert_eq!(visited[0].value.identity, Symbol("Z".to_string()));
+}
+
+#[test]
+fn all_infinity_weight_blocks_all_traversal() {
+    let gq = chain_abc();
+    let a = (gq.query_node_by_id)(&Symbol("A".to_string())).expect("A");
+    let b = (gq.query_node_by_id)(&Symbol("B".to_string())).expect("B");
+
+    // Weight that returns INFINITY in every direction for every edge
+    let blocked: TraversalWeight<Subject> =
+        Rc::new(|_rel: &Pattern<Subject>, _dir: TraversalDirection| f64::INFINITY);
+
+    let visited = bfs(&gq, &blocked, &a);
+    assert_eq!(visited.len(), 1, "all-infinity weight: BFS visits only start node");
+
+    assert!(
+        !has_path(&gq, &blocked, &a, &b),
+        "all-infinity weight: no path exists between any two nodes"
+    );
+
+    let components = connected_components(&gq, &blocked);
+    assert_eq!(
+        components.len(),
+        3,
+        "all-infinity weight: every node is its own component"
+    );
+}

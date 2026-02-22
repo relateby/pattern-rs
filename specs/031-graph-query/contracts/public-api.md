@@ -78,11 +78,11 @@ pub fn directed_reverse<V>() -> TraversalWeight<V>;
 
 ```rust
 /// Construct a GraphQuery from a PatternGraph.
-/// O(log n) node/relationship lookups via HashMap.
-pub fn from_pattern_graph<V>(graph: Rc<PatternGraph<V>>) -> GraphQuery<V>
+/// O(1) average node/relationship lookups via HashMap.
+pub fn from_pattern_graph<Extra, V>(graph: Rc<PatternGraph<Extra, V>>) -> GraphQuery<V>
 where
-    V: GraphValue + Clone + Eq,
-    V::Id: Clone + Eq + Hash,
+    V: GraphValue + Clone + 'static,
+    V::Id: Clone + Eq + Hash + 'static,
 ```
 
 ### from_graph_lens (DEFERRED)

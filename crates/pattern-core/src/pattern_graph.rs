@@ -345,7 +345,7 @@ where
 /// - `query_incident_rels`: O(r) scan of all relationships
 /// - `query_source` / `query_target`: O(1) element access
 /// - `query_degree`: O(r) scan
-/// - `query_node_by_id` / `query_relationship_by_id`: O(log n) / O(log r) HashMap lookup
+/// - `query_node_by_id` / `query_relationship_by_id`: O(1) average HashMap lookup
 /// - `query_containers`: O(r + w + a) scan of relationships, walks, annotations
 ///
 /// # Deferred
