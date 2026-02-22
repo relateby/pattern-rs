@@ -26,7 +26,7 @@ All paths are relative to repository root:
 
 **Purpose**: Add required `Ord` bound to `Symbol`. Unblocks all user stories.
 
-- [ ] T001 Add `PartialOrd, Ord` to the `#[derive(...)]` on `Symbol` in `crates/pattern-core/src/subject.rs` (change from `Clone, PartialEq, Eq, Hash` to `Clone, PartialEq, Eq, Hash, PartialOrd, Ord`); run `cargo test --workspace` to confirm no regressions
+- [X] T001 Add `PartialOrd, Ord` to the `#[derive(...)]` on `Symbol` in `crates/pattern-core/src/subject.rs` (change from `Clone, PartialEq, Eq, Hash` to `Clone, PartialEq, Eq, Hash, PartialOrd, Ord`); run `cargo test --workspace` to confirm no regressions
 
 **Checkpoint**: `cargo build -p pattern-core` compiles. `Symbol` now satisfies `Ord + Hash + Clone` as required by `GraphValue::Id`.
 
@@ -38,12 +38,12 @@ All paths are relative to repository root:
 
 **⚠️ CRITICAL**: US2 and US3 cannot be implemented until this phase is complete.
 
-- [ ] T002 Define traits `HasIdentity<V, I: Ord>` (fn `identity(v: &V) -> &I`), `Mergeable` (associated `type MergeStrategy`; fn `merge(strategy: &Self::MergeStrategy, a: Self, b: Self) -> Self`), and `Refinable` (fn `is_refinement_of(sup: &Self, sub: &Self) -> bool`) in new file `crates/pattern-core/src/reconcile.rs` (reference: Reconcile.hs lines 109–127)
-- [ ] T003 Define `ReconciliationPolicy<S>` enum with variants `LastWriteWins`, `FirstWriteWins`, `Merge(ElementMergeStrategy, S)`, `Strict`; define `ElementMergeStrategy` enum with `ReplaceElements`, `AppendElements`, `UnionElements` in `crates/pattern-core/src/reconcile.rs` (reference: Reconcile.hs lines 134–162)
-- [ ] T004 Define `SubjectMergeStrategy { label_merge: LabelMerge, property_merge: PropertyMerge }`, `LabelMerge` (`UnionLabels | IntersectLabels | ReplaceLabels`), and `PropertyMerge` (`ReplaceProperties | ShallowMerge | DeepMerge`) in `crates/pattern-core/src/reconcile.rs` (reference: Reconcile.hs lines 171–198)
-- [ ] T005 Implement `HasIdentity<Subject, Symbol>` (delegates to `subject.identity`), `Mergeable for Subject` (MergeStrategy = SubjectMergeStrategy; merges labels by union, properties by right-bias), and `Refinable for Subject` (same identity + label/property subsets) in `crates/pattern-core/src/reconcile.rs` (reference: Reconcile.hs lines 167–197)
-- [ ] T006 Define `ReconcileError` struct and implement `reconcile<V>(policy: &ReconciliationPolicy<V::MergeStrategy>, pattern: &Pattern<V>) -> Result<Pattern<V>, ReconcileError>` dispatching on policy variant in `crates/pattern-core/src/reconcile.rs` (reference: Reconcile.hs lines 239–248; `Strict` returns `Err` on differing duplicate content, all other variants return `Ok`)
-- [ ] T007 Add `pub mod reconcile;` declaration to `crates/pattern-core/src/lib.rs`
+- [X] T002 Define traits `HasIdentity<V, I: Ord>` (fn `identity(v: &V) -> &I`), `Mergeable` (associated `type MergeStrategy`; fn `merge(strategy: &Self::MergeStrategy, a: Self, b: Self) -> Self`), and `Refinable` (fn `is_refinement_of(sup: &Self, sub: &Self) -> bool`) in new file `crates/pattern-core/src/reconcile.rs` (reference: Reconcile.hs lines 109–127)
+- [X] T003 Define `ReconciliationPolicy<S>` enum with variants `LastWriteWins`, `FirstWriteWins`, `Merge(ElementMergeStrategy, S)`, `Strict`; define `ElementMergeStrategy` enum with `ReplaceElements`, `AppendElements`, `UnionElements` in `crates/pattern-core/src/reconcile.rs` (reference: Reconcile.hs lines 134–162)
+- [X] T004 Define `SubjectMergeStrategy { label_merge: LabelMerge, property_merge: PropertyMerge }`, `LabelMerge` (`UnionLabels | IntersectLabels | ReplaceLabels`), and `PropertyMerge` (`ReplaceProperties | ShallowMerge | DeepMerge`) in `crates/pattern-core/src/reconcile.rs` (reference: Reconcile.hs lines 171–198)
+- [X] T005 Implement `HasIdentity<Subject, Symbol>` (delegates to `subject.identity`), `Mergeable for Subject` (MergeStrategy = SubjectMergeStrategy; merges labels by union, properties by right-bias), and `Refinable for Subject` (same identity + label/property subsets) in `crates/pattern-core/src/reconcile.rs` (reference: Reconcile.hs lines 167–197)
+- [X] T006 Define `ReconcileError` struct and implement `reconcile<V>(policy: &ReconciliationPolicy<V::MergeStrategy>, pattern: &Pattern<V>) -> Result<Pattern<V>, ReconcileError>` dispatching on policy variant in `crates/pattern-core/src/reconcile.rs` (reference: Reconcile.hs lines 239–248; `Strict` returns `Err` on differing duplicate content, all other variants return `Ok`)
+- [X] T007 Add `pub mod reconcile;` declaration to `crates/pattern-core/src/lib.rs`
 
 **Checkpoint**: `cargo build -p pattern-core` compiles with reconcile module. `ReconciliationPolicy`, `HasIdentity`, `Mergeable`, `Refinable` available.
 
@@ -57,18 +57,18 @@ All paths are relative to repository root:
 
 ### Implementation
 
-- [ ] T008 [US1] Create `crates/pattern-core/src/graph/mod.rs` (empty re-export stub) and `crates/pattern-core/src/graph/graph_classifier.rs` (empty module file with `use` imports for `Pattern`, `Subject`, `Symbol`)
-- [ ] T009 [US1] Define `GraphClass<Extra>` enum with variants `GNode`, `GRelationship`, `GAnnotation`, `GWalk`, `GOther(Extra)` and derive `Debug, Clone, PartialEq, Eq`; implement `map_other<F, B>(self, f: F) -> GraphClass<B>` method in `crates/pattern-core/src/graph/graph_classifier.rs` (reference: porting guide Part 1)
-- [ ] T010 [US1] Define `GraphValue` trait with `type Id: Ord + Clone + Hash` and `fn identify(&self) -> &Self::Id`; implement `GraphValue for Subject` with `type Id = Symbol` returning `&self.identity` in `crates/pattern-core/src/graph/graph_classifier.rs` (reference: porting guide Part 2)
-- [ ] T011 [US1] Define `GraphClassifier<Extra, V>` struct with field `classify: Box<dyn Fn(&Pattern<V>) -> GraphClass<Extra> + 'static>`; implement `GraphClassifier::new<F>(f: F) -> Self` constructor in `crates/pattern-core/src/graph/graph_classifier.rs` (reference: porting guide Part 3)
-- [ ] T012 [US1] Implement private functions `is_node_like<V>(p: &Pattern<V>) -> bool` (returns `p.elements.is_empty()`), `is_relationship_like<V>(p: &Pattern<V>) -> bool` (returns `p.elements.len() == 2 && both elements is_node_like`), and `is_valid_walk<V: GraphValue>(rels: &[Pattern<V>]) -> bool` (frontier algorithm: seed with both endpoints of first rel; for each subsequent rel, advance frontier to opposite endpoint if one end matches; return false if frontier empties) in `crates/pattern-core/src/graph/graph_classifier.rs` (reference: porting guide Part 4)
-- [ ] T013 [US1] Implement `pub fn classify_by_shape<V: GraphValue>(pattern: &Pattern<V>) -> GraphClass<()>` with 5-branch priority logic: `els.is_empty()` → `GNode`; `els.len() == 1` → `GAnnotation`; `els.len() == 2 && all is_node_like` → `GRelationship`; `all is_relationship_like && is_valid_walk` → `GWalk`; else → `GOther(())` in `crates/pattern-core/src/graph/graph_classifier.rs` (reference: porting guide Part 4)
-- [ ] T014 [US1] Implement `pub fn canonical_classifier<V: GraphValue + 'static>() -> GraphClassifier<(), V>` that calls `GraphClassifier::new(|p| classify_by_shape(p))` in `crates/pattern-core/src/graph/graph_classifier.rs` (reference: porting guide Part 5)
-- [ ] T015 [US1] Add `pub mod graph;` to `crates/pattern-core/src/lib.rs`; populate `crates/pattern-core/src/graph/mod.rs` with `pub use graph_classifier::{GraphClass, GraphClassifier, GraphValue, classify_by_shape, canonical_classifier};`
+- [X] T008 [US1] Create `crates/pattern-core/src/graph/mod.rs` (empty re-export stub) and `crates/pattern-core/src/graph/graph_classifier.rs` (empty module file with `use` imports for `Pattern`, `Subject`, `Symbol`)
+- [X] T009 [US1] Define `GraphClass<Extra>` enum with variants `GNode`, `GRelationship`, `GAnnotation`, `GWalk`, `GOther(Extra)` and derive `Debug, Clone, PartialEq, Eq`; implement `map_other<F, B>(self, f: F) -> GraphClass<B>` method in `crates/pattern-core/src/graph/graph_classifier.rs` (reference: porting guide Part 1)
+- [X] T010 [US1] Define `GraphValue` trait with `type Id: Ord + Clone + Hash` and `fn identify(&self) -> &Self::Id`; implement `GraphValue for Subject` with `type Id = Symbol` returning `&self.identity` in `crates/pattern-core/src/graph/graph_classifier.rs` (reference: porting guide Part 2)
+- [X] T011 [US1] Define `GraphClassifier<Extra, V>` struct with field `classify: Box<dyn Fn(&Pattern<V>) -> GraphClass<Extra> + 'static>`; implement `GraphClassifier::new<F>(f: F) -> Self` constructor in `crates/pattern-core/src/graph/graph_classifier.rs` (reference: porting guide Part 3)
+- [X] T012 [US1] Implement private functions `is_node_like<V>(p: &Pattern<V>) -> bool` (returns `p.elements.is_empty()`), `is_relationship_like<V>(p: &Pattern<V>) -> bool` (returns `p.elements.len() == 2 && both elements is_node_like`), and `is_valid_walk<V: GraphValue>(rels: &[Pattern<V>]) -> bool` (frontier algorithm: seed with both endpoints of first rel; for each subsequent rel, advance frontier to opposite endpoint if one end matches; return false if frontier empties) in `crates/pattern-core/src/graph/graph_classifier.rs` (reference: porting guide Part 4)
+- [X] T013 [US1] Implement `pub fn classify_by_shape<V: GraphValue>(pattern: &Pattern<V>) -> GraphClass<()>` with 5-branch priority logic: `els.is_empty()` → `GNode`; `els.len() == 1` → `GAnnotation`; `els.len() == 2 && all is_node_like` → `GRelationship`; `all is_relationship_like && is_valid_walk` → `GWalk`; else → `GOther(())` in `crates/pattern-core/src/graph/graph_classifier.rs` (reference: porting guide Part 4)
+- [X] T014 [US1] Implement `pub fn canonical_classifier<V: GraphValue + 'static>() -> GraphClassifier<(), V>` that calls `GraphClassifier::new(|p| classify_by_shape(p))` in `crates/pattern-core/src/graph/graph_classifier.rs` (reference: porting guide Part 5)
+- [X] T015 [US1] Add `pub mod graph;` to `crates/pattern-core/src/lib.rs`; populate `crates/pattern-core/src/graph/mod.rs` with `pub use graph_classifier::{GraphClass, GraphClassifier, GraphValue, classify_by_shape, canonical_classifier};`
 
 ### Tests
 
-- [ ] T016 [US1] Write `crates/pattern-core/tests/graph_classifier.rs`: define local helpers `fn node(s: &str) -> Pattern<Subject>` and `fn pat(s: &str, els: Vec<Pattern<Subject>>) -> Pattern<Subject>`; port all 8 test cases from `../pattern-hs/libs/pattern/tests/Spec/Pattern/Graph/GraphClassifierSpec.hs`: (1) atomic→GNode, (2) 1-element→GAnnotation, (3) 2-node-elements→GRelationship, (4) chain `r1=[A,B] r2=[B,C] r3=[D,C]`→GWalk (tests direction-agnostic chaining), (5) star `r1=[A,B] r2=[A,C] r3=[A,D]`→GOther, (6) rel-containing-non-node→GOther, (7) walk-containing-non-rel→GOther, (8) `canonical_classifier.classify(n) == GNode`
+- [X] T016 [US1] Write `crates/pattern-core/tests/graph_classifier.rs`: define local helpers `fn node(s: &str) -> Pattern<Subject>` and `fn pat(s: &str, els: Vec<Pattern<Subject>>) -> Pattern<Subject>`; port all 8 test cases from `../pattern-hs/libs/pattern/tests/Spec/Pattern/Graph/GraphClassifierSpec.hs`: (1) atomic→GNode, (2) 1-element→GAnnotation, (3) 2-node-elements→GRelationship, (4) chain `r1=[A,B] r2=[B,C] r3=[D,C]`→GWalk (tests direction-agnostic chaining), (5) star `r1=[A,B] r2=[A,C] r3=[A,D]`→GOther, (6) rel-containing-non-node→GOther, (7) walk-containing-non-rel→GOther, (8) `canonical_classifier.classify(n) == GNode`
 
 **Checkpoint**: `cargo test -p pattern-core graph_classifier` — 8 tests pass. Classification of any `Pattern<Subject>` works correctly.
 
@@ -82,18 +82,18 @@ All paths are relative to repository root:
 
 ### Implementation
 
-- [ ] T017 [US2] Define `PatternGraph<Extra, V: GraphValue>` struct with fields `pg_nodes: HashMap<V::Id, Pattern<V>>`, `pg_relationships: HashMap<V::Id, Pattern<V>>`, `pg_walks: HashMap<V::Id, Pattern<V>>`, `pg_annotations: HashMap<V::Id, Pattern<V>>`, `pg_other: HashMap<V::Id, (Extra, Pattern<V>)>`, `pg_conflicts: HashMap<V::Id, Vec<Pattern<V>>>` and implement `empty() -> Self` in new file `crates/pattern-core/src/pattern_graph.rs`
-- [ ] T018 [US2] Implement private `insert_node` and `insert_other` in `crates/pattern-core/src/pattern_graph.rs`: for each, call `identify(value(p))` to get the key; if key absent insert directly; if key present call `reconcile(policy, &twoOccurrences(existing, incoming))` — on `Ok(merged)` update the map, on `Err` push incoming to `pg_conflicts` (define `fn two_occurrences(existing: &Pattern<V>, p: Pattern<V>) -> Pattern<V>` as `Pattern { value: existing.value.clone(), elements: vec![p] }`)
-- [ ] T019 [US2] Implement private `insert_relationship` in `crates/pattern-core/src/pattern_graph.rs`: first call `merge_with_policy(classifier, policy, elements[0].clone(), graph)` then `merge_with_policy(classifier, policy, elements[1].clone(), graph)` to recursively insert the 2 endpoint nodes, then insert the relationship itself into `pg_relationships` with collision handling
-- [ ] T020 [US2] Implement private `insert_annotation` in `crates/pattern-core/src/pattern_graph.rs`: first call `merge_with_policy(classifier, policy, elements[0].clone(), graph)` to recursively insert the single inner element, then insert the annotation into `pg_annotations` with collision handling
-- [ ] T021 [US2] Implement private `insert_walk` in `crates/pattern-core/src/pattern_graph.rs`: fold `merge_with_policy(classifier, policy, elem, graph)` over all elements (each relationship in turn, which recursively inserts their nodes), then insert the walk itself into `pg_walks` with collision handling
-- [ ] T022 [US2] Implement `pub fn merge_with_policy<Extra, V>(classifier: &GraphClassifier<Extra, V>, policy: &ReconciliationPolicy<V::MergeStrategy>, pattern: Pattern<V>, graph: PatternGraph<Extra, V>) -> PatternGraph<Extra, V>` dispatching via `(classifier.classify)(&pattern)` to the 5 insert functions in `crates/pattern-core/src/pattern_graph.rs`
-- [ ] T023 [US2] Implement `pub fn merge<Extra, V>(classifier: &GraphClassifier<Extra, V>, pattern: Pattern<V>, graph: PatternGraph<Extra, V>) -> PatternGraph<Extra, V>` (calls `merge_with_policy` with `ReconciliationPolicy::LastWriteWins`) and `pub fn from_patterns<Extra, V>` and `pub fn from_patterns_with_policy<Extra, V>` (each folds `merge`/`merge_with_policy` over `impl IntoIterator<Item = Pattern<V>>` starting from `PatternGraph::empty()`) in `crates/pattern-core/src/pattern_graph.rs`
-- [ ] T024 [US2] Add `pub mod pattern_graph;` to `crates/pattern-core/src/lib.rs`
+- [X] T017 [US2] Define `PatternGraph<Extra, V: GraphValue>` struct with fields `pg_nodes: HashMap<V::Id, Pattern<V>>`, `pg_relationships: HashMap<V::Id, Pattern<V>>`, `pg_walks: HashMap<V::Id, Pattern<V>>`, `pg_annotations: HashMap<V::Id, Pattern<V>>`, `pg_other: HashMap<V::Id, (Extra, Pattern<V>)>`, `pg_conflicts: HashMap<V::Id, Vec<Pattern<V>>>` and implement `empty() -> Self` in new file `crates/pattern-core/src/pattern_graph.rs`
+- [X] T018 [US2] Implement private `insert_node` and `insert_other` in `crates/pattern-core/src/pattern_graph.rs`: for each, call `identify(value(p))` to get the key; if key absent insert directly; if key present call `reconcile(policy, &twoOccurrences(existing, incoming))` — on `Ok(merged)` update the map, on `Err` push incoming to `pg_conflicts` (define `fn two_occurrences(existing: &Pattern<V>, p: Pattern<V>) -> Pattern<V>` as `Pattern { value: existing.value.clone(), elements: vec![p] }`)
+- [X] T019 [US2] Implement private `insert_relationship` in `crates/pattern-core/src/pattern_graph.rs`: first call `merge_with_policy(classifier, policy, elements[0].clone(), graph)` then `merge_with_policy(classifier, policy, elements[1].clone(), graph)` to recursively insert the 2 endpoint nodes, then insert the relationship itself into `pg_relationships` with collision handling
+- [X] T020 [US2] Implement private `insert_annotation` in `crates/pattern-core/src/pattern_graph.rs`: first call `merge_with_policy(classifier, policy, elements[0].clone(), graph)` to recursively insert the single inner element, then insert the annotation into `pg_annotations` with collision handling
+- [X] T021 [US2] Implement private `insert_walk` in `crates/pattern-core/src/pattern_graph.rs`: fold `merge_with_policy(classifier, policy, elem, graph)` over all elements (each relationship in turn, which recursively inserts their nodes), then insert the walk itself into `pg_walks` with collision handling
+- [X] T022 [US2] Implement `pub fn merge_with_policy<Extra, V>(classifier: &GraphClassifier<Extra, V>, policy: &ReconciliationPolicy<V::MergeStrategy>, pattern: Pattern<V>, graph: PatternGraph<Extra, V>) -> PatternGraph<Extra, V>` dispatching via `(classifier.classify)(&pattern)` to the 5 insert functions in `crates/pattern-core/src/pattern_graph.rs`
+- [X] T023 [US2] Implement `pub fn merge<Extra, V>(classifier: &GraphClassifier<Extra, V>, pattern: Pattern<V>, graph: PatternGraph<Extra, V>) -> PatternGraph<Extra, V>` (calls `merge_with_policy` with `ReconciliationPolicy::LastWriteWins`) and `pub fn from_patterns<Extra, V>` and `pub fn from_patterns_with_policy<Extra, V>` (each folds `merge`/`merge_with_policy` over `impl IntoIterator<Item = Pattern<V>>` starting from `PatternGraph::empty()`) in `crates/pattern-core/src/pattern_graph.rs`
+- [X] T024 [US2] Add `pub mod pattern_graph;` to `crates/pattern-core/src/lib.rs`
 
 ### Tests
 
-- [ ] T025 [US2] Write `crates/pattern-core/tests/pattern_graph.rs`: define local helpers `fn node(s: &str) -> Pattern<Subject>` and `fn rel(r: &str, a: &str, b: &str) -> Pattern<Subject>`; port all tests from `../pattern-hs/libs/pattern/tests/Spec/Pattern/PatternGraphSpec.hs`: (1) empty graph — all 6 maps have size 0, (2) merge node — `pg_nodes` size 1, (3) merge relationship after nodes — `pg_nodes` size 2 / `pg_relationships` size 1, (4) `from_patterns` mixed list — correct counts, (5) unrecognized 3-node-element pattern — appears in `pg_other` not other maps, (6) duplicate identity `LastWriteWins` — single entry remains, (7) `from_patterns_with_policy FirstWriteWins` — first value kept, (8) walk decomposition — `pgWalks=1 / pgRelationships=2 / pgNodes=3` with correct identity keys present
+- [X] T025 [US2] Write `crates/pattern-core/tests/pattern_graph.rs`: define local helpers `fn node(s: &str) -> Pattern<Subject>` and `fn rel(r: &str, a: &str, b: &str) -> Pattern<Subject>`; port all tests from `../pattern-hs/libs/pattern/tests/Spec/Pattern/PatternGraphSpec.hs`: (1) empty graph — all 6 maps have size 0, (2) merge node — `pg_nodes` size 1, (3) merge relationship after nodes — `pg_nodes` size 2 / `pg_relationships` size 1, (4) `from_patterns` mixed list — correct counts, (5) unrecognized 3-node-element pattern — appears in `pg_other` not other maps, (6) duplicate identity `LastWriteWins` — single entry remains, (7) `from_patterns_with_policy FirstWriteWins` — first value kept, (8) walk decomposition — `pgWalks=1 / pgRelationships=2 / pgNodes=3` with correct identity keys present
 
 **Checkpoint**: `cargo test -p pattern-core pattern_graph` passes. Full pipeline from pattern list → `PatternGraph` with correct collection membership.
 
@@ -107,7 +107,7 @@ All paths are relative to repository root:
 
 ### Tests
 
-- [ ] T026 [US3] Add custom classifier test to `crates/pattern-core/tests/pattern_graph.rs`: define `#[derive(Debug, PartialEq)] enum MyDomain { DomainHyperedge, DomainOther }`; build a `GraphClassifier<MyDomain, Subject>` whose closure routes patterns with `elements.len() > 2 && all elements node-shaped` to `GOther(DomainHyperedge)` and delegates everything else to `classify_by_shape` mapping `GOther(()) → GOther(DomainOther)`; call `from_patterns(myClassifier, [n1, n2, n3, hyperedge])`; assert `pg_nodes.len() == 3`, `pg_other.len() == 1`, and `pg_other["hyper"] == (DomainHyperedge, hyperedge_pattern)` (port from PatternGraphSpec.hs custom classifier test, lines 137–170)
+- [X] T026 [US3] Add custom classifier test to `crates/pattern-core/tests/pattern_graph.rs`: define `#[derive(Debug, PartialEq)] enum MyDomain { DomainHyperedge, DomainOther }`; build a `GraphClassifier<MyDomain, Subject>` whose closure routes patterns with `elements.len() > 2 && all elements node-shaped` to `GOther(DomainHyperedge)` and delegates everything else to `classify_by_shape` mapping `GOther(()) → GOther(DomainOther)`; call `from_patterns(myClassifier, [n1, n2, n3, hyperedge])`; assert `pg_nodes.len() == 3`, `pg_other.len() == 1`, and `pg_other["hyper"] == (DomainHyperedge, hyperedge_pattern)` (port from PatternGraphSpec.hs custom classifier test, lines 137–170)
 
 **Checkpoint**: `cargo test -p pattern-core` — custom classifier tag is correctly preserved in `pg_other`.
 
@@ -121,11 +121,11 @@ All paths are relative to repository root:
 
 ### Implementation
 
-- [ ] T027 [US4] Implement `pub fn from_test_node<V, F>(test_node: F) -> GraphClassifier<(), V> where F: Fn(&Pattern<V>) -> bool + 'static` in `crates/pattern-core/src/graph/graph_classifier.rs`: wraps the predicate in `GraphClassifier::new(move |p| if test_node(p) { GNode } else { GOther(()) })` (reference: porting guide Part 6)
+- [X] T027 [US4] Implement `pub fn from_test_node<V, F>(test_node: F) -> GraphClassifier<(), V> where F: Fn(&Pattern<V>) -> bool + 'static` in `crates/pattern-core/src/graph/graph_classifier.rs`: wraps the predicate in `GraphClassifier::new(move |p| if test_node(p) { GNode } else { GOther(()) })` (reference: porting guide Part 6)
 
 ### Tests
 
-- [ ] T028 [US4] Add `from_test_node` tests to `crates/pattern-core/tests/graph_classifier.rs`: (1) a predicate `|p| p.elements.is_empty()` wrapped via `from_test_node` classifies an atomic pattern as `GNode`; (2) the same classifier classifies a pattern with elements as `GOther(())`
+- [X] T028 [US4] Add `from_test_node` tests to `crates/pattern-core/tests/graph_classifier.rs`: (1) a predicate `|p| p.elements.is_empty()` wrapped via `from_test_node` classifies an atomic pattern as `GNode`; (2) the same classifier classifies a pattern with elements as `GOther(())`
 
 **Checkpoint**: `cargo test -p pattern-core graph_classifier` still passes with `from_test_node` tests added.
 
@@ -135,11 +135,11 @@ All paths are relative to repository root:
 
 **Purpose**: Complete public API wiring, enforce code quality, verify multi-target compatibility.
 
-- [ ] T029 Complete `pub use` re-exports in `crates/pattern-core/src/lib.rs` for all new public items: from `graph::graph_classifier` — `GraphClass, GraphClassifier, GraphValue, classify_by_shape, canonical_classifier, from_test_node`; from `reconcile` — `ReconciliationPolicy, ElementMergeStrategy, HasIdentity, Mergeable, Refinable`; from `pattern_graph` — `PatternGraph, merge as pg_merge, merge_with_policy as pg_merge_with_policy, from_patterns, from_patterns_with_policy`
-- [ ] T030 [P] Run `cargo fmt --all` and commit any formatting fixes across all new source files
-- [ ] T031 [P] Run `cargo clippy --workspace -- -D warnings` and fix all linting warnings in new files (`reconcile.rs`, `graph/graph_classifier.rs`, `pattern_graph.rs`)
-- [ ] T032 Run `cargo build --workspace --target wasm32-unknown-unknown` to verify WASM compatibility (no blocking I/O, no filesystem access introduced by new code)
-- [ ] T033 Run `./scripts/ci-local.sh` and confirm all checks pass (format, clippy, native build, WASM build, full test suite)
+- [X] T029 Complete `pub use` re-exports in `crates/pattern-core/src/lib.rs` for all new public items: from `graph::graph_classifier` — `GraphClass, GraphClassifier, GraphValue, classify_by_shape, canonical_classifier, from_test_node`; from `reconcile` — `ReconciliationPolicy, ElementMergeStrategy, HasIdentity, Mergeable, Refinable`; from `pattern_graph` — `PatternGraph, merge as pg_merge, merge_with_policy as pg_merge_with_policy, from_patterns, from_patterns_with_policy`
+- [X] T030 [P] Run `cargo fmt --all` and commit any formatting fixes across all new source files
+- [X] T031 [P] Run `cargo clippy --workspace -- -D warnings` and fix all linting warnings in new files (`reconcile.rs`, `graph/graph_classifier.rs`, `pattern_graph.rs`)
+- [X] T032 Run `cargo build --workspace --target wasm32-unknown-unknown` to verify WASM compatibility (no blocking I/O, no filesystem access introduced by new code)
+- [X] T033 Run `./scripts/ci-local.sh` and confirm all checks pass (format, clippy, native build, WASM build, full test suite)
 
 ---
 

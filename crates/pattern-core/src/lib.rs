@@ -170,7 +170,10 @@
 //! - Subject: `../pattern-hs/libs/subject/src/Subject/Core.hs`
 //! - Feature Spec: `../pattern-hs/specs/001-pattern-data-structure/`
 
+pub mod graph;
 pub mod pattern;
+pub mod pattern_graph;
+pub mod reconcile;
 pub mod subject;
 pub mod test_utils;
 
@@ -180,7 +183,19 @@ pub mod python;
 #[cfg(feature = "wasm")]
 pub mod wasm;
 
+pub use graph::{
+    canonical_classifier, classify_by_shape, from_test_node, GraphClass, GraphClassifier,
+    GraphValue,
+};
 pub use pattern::{Pattern, StructureAnalysis, ValidationError, ValidationRules};
+pub use pattern_graph::{
+    from_patterns, from_patterns_with_policy, merge as pg_merge,
+    merge_with_policy as pg_merge_with_policy, PatternGraph,
+};
+pub use reconcile::{
+    ElementMergeStrategy, HasIdentity, LabelMerge, Mergeable, PropertyMerge, ReconciliationPolicy,
+    Refinable, SubjectMergeStrategy,
+};
 pub use subject::{PropertyRecord, RangeValue, Subject, Symbol, Value};
 
 // Re-export comonad operations for convenient access
