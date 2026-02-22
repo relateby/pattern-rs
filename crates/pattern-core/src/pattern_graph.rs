@@ -252,7 +252,7 @@ where
                     g.pg_conflicts.entry(i).or_default().push(p);
                 }
                 Ok(merged) => {
-                    g.pg_other.insert(i, (extra, merged));
+                    g.pg_other.insert(i, (existing_extra, merged));
                 }
             }
         }

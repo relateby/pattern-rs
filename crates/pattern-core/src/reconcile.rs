@@ -333,7 +333,7 @@ where
 
 fn reconcile_strict<V>(pattern: &Pattern<V>) -> Result<Pattern<V>, ReconcileError>
 where
-    V: HasIdentity<V, Symbol> + PartialEq + Clone,
+    V: HasIdentity<V, Symbol> + Mergeable + Refinable + PartialEq + Clone,
 {
     let occurrence_map = collect_by_identity(pattern);
     for occurrences in occurrence_map.values() {
@@ -348,5 +348,8 @@ where
             }
         }
     }
-    Ok(pattern.clone())
+    Ok(reconcile_non_strict(
+        &ReconciliationPolicy::FirstWriteWins,
+        pattern,
+    ))
 }
