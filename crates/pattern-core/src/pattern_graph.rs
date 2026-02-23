@@ -351,6 +351,9 @@ where
 /// # Deferred
 ///
 /// TODO: `from_graph_lens` — deferred until `GraphLens` type is available in pattern-rs.
+///
+/// Rc and Arc variants are intentionally separate (no macro): only one is compiled per build,
+/// trait bounds stay clear, and we avoid fragile abstraction over pointer types.
 #[cfg(not(feature = "thread-safe"))]
 pub fn from_pattern_graph<Extra, V>(graph: std::rc::Rc<PatternGraph<Extra, V>>) -> GraphQuery<V>
 where

@@ -113,7 +113,7 @@ pub fn directed_reverse<V: Send + Sync + 'static>() -> TraversalWeight<V> {
 }
 
 // ============================================================================
-// GraphQuery struct  (Rc default; Arc under thread-safe feature)
+// GraphQuery struct (Rc default; Arc under thread-safe feature)
 // ============================================================================
 
 /// Portable graph query interface: a struct of nine closures.
@@ -231,6 +231,9 @@ impl<V: GraphValue> Clone for GraphQuery<V> {
 /// - `query_node_by_id(i)` — base lookup; returns `None` if result doesn't satisfy predicate
 /// - `query_relationship_by_id(i)` — base lookup; returns `None` if result doesn't satisfy predicate
 /// - `query_containers(p)` — base containers filtered by predicate
+///
+/// Rc and Arc variants are intentionally separate (no macro): only one is compiled per build,
+/// and Rust does not abstract over Rc/Arc here without macros or runtime indirection.
 #[cfg(not(feature = "thread-safe"))]
 #[allow(clippy::type_complexity)]
 pub fn frame_query<V>(

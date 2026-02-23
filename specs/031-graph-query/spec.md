@@ -4,7 +4,7 @@
 **Created**: 2026-02-22
 **Status**: Draft
 **Depends on**: 030-graph-classifier
-**Mirrors**: `proposals/graph-query-porting-guiide.md`
+**Mirrors**: `proposals/graph-query-porting-guide.md`
 
 ## User Scenarios & Testing *(mandatory)*
 
