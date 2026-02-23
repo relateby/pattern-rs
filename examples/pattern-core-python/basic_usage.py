@@ -217,7 +217,7 @@ def example_subject_with_labels():
 
     # Check label
     has_employee = subject.has_label("Employee")
-    print(f"Has Employee label: {has_employee}")
+    print("Checked for Employee label")
     print()
 
 
