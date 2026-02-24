@@ -8,10 +8,10 @@ use std::rc::Rc;
 
 use pattern_core::{
     all_paths, betweenness_centrality, bfs, canonical_classifier, connected_components,
-    degree_centrality, dfs, directed, directed_reverse, from_pattern_graph, from_patterns,
-    has_cycle, has_path, is_connected, is_neighbor, minimum_spanning_tree, shortest_path,
-    topological_sort, undirected, GraphQuery, GraphValue, Pattern, PatternGraph, Subject, Symbol,
-    TraversalDirection, TraversalWeight,
+    degree_centrality, dfs, directed, directed_reverse, from_patterns,
+    graph_query_from_pattern_graph, has_cycle, has_path, is_connected, is_neighbor,
+    minimum_spanning_tree, shortest_path, topological_sort, undirected, GraphQuery, GraphValue,
+    Pattern, PatternGraph, Subject, Symbol, TraversalDirection, TraversalWeight,
 };
 
 // ============================================================================
@@ -44,7 +44,7 @@ fn rel(id: &str, src: Pattern<Subject>, tgt: Pattern<Subject>) -> Pattern<Subjec
 fn make_gq(patterns: Vec<Pattern<Subject>>) -> GraphQuery<Subject> {
     let classifier = canonical_classifier::<Subject>();
     let pg = Rc::new(from_patterns(&classifier, patterns));
-    from_pattern_graph(pg)
+    graph_query_from_pattern_graph(pg)
 }
 
 /// Build a linear chain: A→B→C

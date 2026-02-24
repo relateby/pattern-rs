@@ -185,16 +185,18 @@ pub mod wasm;
 
 pub use graph::{
     all_paths, betweenness_centrality, bfs, canonical_classifier, classify_by_shape,
-    connected_components, degree_centrality, dfs, directed, directed_reverse, frame_query,
-    from_test_node, has_cycle, has_path, is_connected, is_neighbor, memoize_incident_rels,
-    minimum_spanning_tree, query_annotations_of, query_co_members, query_walks_containing,
-    shortest_path, topological_sort, undirected, GraphClass, GraphClassifier, GraphQuery,
-    GraphValue, TraversalDirection, TraversalWeight,
+    connected_components, degree_centrality, dfs, directed, directed_reverse, filter_graph,
+    fold_graph, frame_query, from_graph_lens, from_pattern_graph, from_test_node, has_cycle,
+    has_path, is_connected, is_neighbor, map_all_graph, map_graph, map_with_context, materialize,
+    memoize_incident_rels, minimum_spanning_tree, para_graph, para_graph_fixed,
+    query_annotations_of, query_co_members, query_walks_containing, shortest_path,
+    topological_sort, undirected, unfold_graph, CategoryMappers, GraphClass, GraphClassifier,
+    GraphQuery, GraphValue, GraphView, Substitution, TraversalDirection, TraversalWeight,
 };
-pub use pattern::{Pattern, StructureAnalysis, ValidationError, ValidationRules};
+pub use pattern::{unfold, Pattern, StructureAnalysis, ValidationError, ValidationRules};
 pub use pattern_graph::{
-    from_pattern_graph, from_patterns, from_patterns_with_policy, merge as pg_merge,
-    merge_with_policy as pg_merge_with_policy, PatternGraph,
+    from_pattern_graph as graph_query_from_pattern_graph, from_patterns, from_patterns_with_policy,
+    merge as pg_merge, merge_with_policy as pg_merge_with_policy, PatternGraph,
 };
 pub use reconcile::{
     ElementMergeStrategy, HasIdentity, LabelMerge, Mergeable, PropertyMerge, ReconciliationPolicy,

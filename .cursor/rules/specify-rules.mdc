@@ -38,6 +38,8 @@ Auto-generated from all feature plans. Last updated: 2025-12-27
 - N/A (release artifacts are built then uploaded; no persistent project storage) (029-relateby-pypi-release)
 - Rust 1.70+ (workspace MSRV), Python 3.8+ (requires-python) + maturin (build/publish), PyO3 (pattern-core and gram-codec `python` features); unified package build may use a wrapper with build script that invokes cargo/maturin for both crates (029-relateby-pypi-release)
 - N/A (release artifacts built then uploaded) (029-relateby-pypi-release)
+- Rust 1.70.0 (workspace MSRV), Edition 2021 + `std` only — `HashMap`, `HashSet`, `Vec`, `Rc`/`Arc` (no new external crates); depends on 030-graph-classifier and 031-graph-query types (032-graph-transform)
+- N/A (in-memory; views and transformations over PatternGraph/GraphQuery) (032-graph-transform)
 
 - Rust (MSRV: 1.70.0, edition: 2021) (002-workspace-setup)
 
@@ -57,9 +59,9 @@ cargo test [ONLY COMMANDS FOR ACTIVE TECHNOLOGIES][ONLY COMMANDS FOR ACTIVE TECH
 Rust (MSRV: 1.70.0, edition: 2021): Follow standard conventions
 
 ## Recent Changes
+- 032-graph-transform: Added Rust 1.70.0 (workspace MSRV), Edition 2021 + `std` only — `HashMap`, `HashSet`, `Vec`, `Rc`/`Arc` (no new external crates); depends on 030-graph-classifier and 031-graph-query types
+- 032-graph-transform: Added Rust 1.70.0 (workspace MSRV), Edition 2021 + `std` only — `HashMap`, `HashSet`, `Vec`, `Rc`/`Arc` (no new external crates); depends on 030-graph-classifier and 031-graph-query types
 - 029-relateby-pypi-release: Added Rust 1.70+ (workspace MSRV), Python 3.8+ (requires-python) + maturin (build/publish), PyO3 (pattern-core and gram-codec `python` features); unified package build may use a wrapper with build script that invokes cargo/maturin for both crates
-- 029-relateby-pypi-release: Added Rust 1.70+ (workspace MSRV), Python 3.8+ (package requires-python) + maturin (existing, crates/pattern-core), PyO3 (pattern-core `python` feature); for publish: twine or maturin publish, PyPI API token
-- 028-unified-gram-wasm: Added Rust 1.70+ (workspace MSRV), edition 2021 + pattern-core (path), gram-codec (path), wasm-bindgen 0.2, js-sys 0.3
 
 
 <!-- MANUAL ADDITIONS START -->
