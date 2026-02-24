@@ -111,8 +111,8 @@
 
 **Independent Test**: DAG view + para_graph with max-predecessors-plus-one; root nodes 1, others max(pred)+1. Cyclic view + para_graph_fixed with convergence predicate; assert stabilization.
 
-- [X] T026 [US7] Implement `para_graph(f, view) -> HashMap<V::Id, R>` with topological order for DAGs in `crates/pattern-core/src/graph/transform/para.rs`
-- [X] T027 [US7] Implement `para_graph_fixed(converged, f, init, view) -> HashMap<V::Id, R>` in `crates/pattern-core/src/graph/transform/para.rs`
+- [X] T026 [US7] Implement `para_graph(f, view) -> HashMap<V::Id, R>` with `topo_shape_sort` (two-pass: inter-bucket shape class order + within-bucket Kahn's algorithm for GAnnotation/GOther) in `crates/pattern-core/src/graph/transform/para.rs`
+- [X] T027 [US7] Implement `para_graph_fixed(converged, f, init, view) -> HashMap<V::Id, R>` using `para_graph_with_seed` helper for Gauss-Seidel round iteration in `crates/pattern-core/src/graph/transform/para.rs`
 - [X] T028 [US7] Re-export para_graph and para_graph_fixed from `crates/pattern-core/src/graph/transform/mod.rs` and `crates/pattern-core/src/lib.rs`
 
 ---

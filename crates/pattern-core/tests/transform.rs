@@ -53,6 +53,13 @@ fn rel(id: &str, src: &str, tgt: &str) -> Pattern<Subject> {
     }
 }
 
+fn annot(id: &str, target_id: &str) -> Pattern<Subject> {
+    Pattern {
+        value: subj(id),
+        elements: vec![node(target_id)],
+    }
+}
+
 // ============================================================================
 // unfold
 // ============================================================================
@@ -286,20 +293,38 @@ fn map_with_context_uses_snapshot() {
 }
 
 // ============================================================================
-// para_graph (DAG)
+// para_graph — Pass 1: inter-bucket (shape class) ordering
 // ============================================================================
 
 #[test]
-fn para_graph_depth_in_dag() {
+fn para_graph_nodes_have_no_sub_elements() {
     let classifier = classifier();
-    // Chain: a -> b -> c (a is root, c is leaf)
-    let graph = from_patterns(&classifier, vec![rel("r1", "a", "b"), rel("r2", "b", "c")]);
+    let graph = from_patterns(&classifier, vec![node("a"), node("b"), rel("r1", "a", "b")]);
     let view = from_pattern_graph(&classifier, &graph);
 
-    // Compute depth: root = 0, each node = max(pred_depths) + 1
+    // Count sub-element results each element receives
+    let sub_counts = para_graph(
+        |_query, _element, sub_results: &[usize]| sub_results.len(),
+        &view,
+    );
+
+    // Nodes are atomic (no syntactic children) → 0 sub-results
+    assert_eq!(sub_counts[&Symbol("a".to_string())], 0);
+    assert_eq!(sub_counts[&Symbol("b".to_string())], 0);
+    // Relationship contains 2 node elements → 2 sub-results
+    assert_eq!(sub_counts[&Symbol("r1".to_string())], 2);
+}
+
+#[test]
+fn para_graph_structural_depth() {
+    let classifier = classifier();
+    let graph = from_patterns(&classifier, vec![node("a"), node("b"), rel("r1", "a", "b")]);
+    let view = from_pattern_graph(&classifier, &graph);
+
+    // Structural depth: no sub-elements → 0; container → max(sub_depths) + 1
     let depths = para_graph(
-        |_query, _node, pred_results: &[usize]| {
-            pred_results
+        |_query, _element, sub_results: &[usize]| {
+            sub_results
                 .iter()
                 .cloned()
                 .max()
@@ -309,20 +334,116 @@ fn para_graph_depth_in_dag() {
         &view,
     );
 
-    let a_depth = depths[&Symbol("a".to_string())];
-    let b_depth = depths[&Symbol("b".to_string())];
-    let c_depth = depths[&Symbol("c".to_string())];
+    // Nodes have no syntactic children → depth 0
+    assert_eq!(depths[&Symbol("a".to_string())], 0);
+    assert_eq!(depths[&Symbol("b".to_string())], 0);
+    // Relationship contains nodes (depth 0) → depth 1
+    assert_eq!(depths[&Symbol("r1".to_string())], 1);
+}
 
-    // a has no predecessors → depth 0
-    assert_eq!(a_depth, 0);
-    // b's predecessor is a (depth 0) → depth 1
-    assert_eq!(b_depth, 1);
-    // c's predecessor is b (depth 1) → depth 2
-    assert_eq!(c_depth, 2);
+#[test]
+fn para_graph_processes_all_element_types() {
+    let classifier = classifier();
+    let graph = from_patterns(&classifier, vec![node("a"), node("b"), rel("r1", "a", "b")]);
+    let view = from_pattern_graph(&classifier, &graph);
+
+    let results = para_graph(|_query, _element, _sub_results: &[usize]| 1usize, &view);
+
+    // All 3 elements (2 nodes + 1 relationship) should be in the result map
+    assert_eq!(results.len(), 3);
+    assert!(results.contains_key(&Symbol("a".to_string())));
+    assert!(results.contains_key(&Symbol("b".to_string())));
+    assert!(results.contains_key(&Symbol("r1".to_string())));
 }
 
 // ============================================================================
-// para_graph_fixed (cyclic convergence)
+// para_graph — Pass 2: within-bucket (Kahn's) ordering for GAnnotation
+// ============================================================================
+
+#[test]
+fn para_graph_annotation_of_annotation_ordering() {
+    let classifier = classifier();
+    // n: node; b: annotation of n; a: annotation of b
+    // Without within-bucket sort, a might be processed before b, getting subResults=[].
+    // With Kahn's sort, b is guaranteed to come before a.
+    let graph = from_patterns(
+        &classifier,
+        vec![
+            node("n"),
+            annot("b", "n"), // GAnnotation, elements=[node("n")]
+            annot("a", "b"), // GAnnotation, elements=[node("b")]
+        ],
+    );
+    let view = from_pattern_graph(&classifier, &graph);
+
+    let sub_counts = para_graph(
+        |_query, _element, sub_results: &[usize]| sub_results.len(),
+        &view,
+    );
+
+    // node "n": no sub-elements → 0
+    assert_eq!(sub_counts[&Symbol("n".to_string())], 0);
+    // annotation "b" annotates node "n" (cross-bucket dep, always satisfied) → 1
+    assert_eq!(sub_counts[&Symbol("b".to_string())], 1);
+    // annotation "a" annotates annotation "b" (within-bucket dep, satisfied by Kahn's) → 1
+    assert_eq!(sub_counts[&Symbol("a".to_string())], 1);
+}
+
+#[test]
+fn para_graph_cycle_soft_miss() {
+    // Use a classifier that puts ALL non-node patterns in GOther so that
+    // insert_other is called (unlike insert_annotation, it does NOT recursively
+    // extract sub-elements). This ensures the cycle-creating identities exist
+    // *only* in the GOther bucket — a clean isolation of within-bucket cycle handling.
+    let other_classifier: GraphClassifier<(), Subject> =
+        GraphClassifier::new(|p: &Pattern<Subject>| {
+            if p.elements.is_empty() {
+                GraphClass::GNode
+            } else {
+                GraphClass::GOther(())
+            }
+        });
+
+    // a "contains" b, b "contains" a → 2-element cycle in the GOther bucket.
+    let pattern_a = Pattern {
+        value: subj("a"),
+        elements: vec![node("b")],
+    };
+    let pattern_b = Pattern {
+        value: subj("b"),
+        elements: vec![node("a")],
+    };
+    let graph = from_patterns(&other_classifier, vec![pattern_a, pattern_b]);
+    let view = from_pattern_graph(&other_classifier, &graph);
+
+    let sub_counts = para_graph(
+        |_query, _element, sub_results: &[usize]| sub_results.len(),
+        &view,
+    );
+
+    // Both elements present in result (no elements dropped, no panic)
+    assert_eq!(sub_counts.len(), 2);
+
+    let a = sub_counts[&Symbol("a".to_string())];
+    let b = sub_counts[&Symbol("b".to_string())];
+
+    // Cycle members are processed sequentially in encountered order.
+    // The first-processed member cannot yet see the other → soft-miss (subResults=[]).
+    // The second finds the first already in the accumulator (gets 1).
+    // Total intra-cycle sub_count == 1 for a 2-element cycle.
+    assert!(
+        a == 0 || b == 0,
+        "first cycle member must get subResults=[]"
+    );
+    assert_eq!(
+        a + b,
+        1,
+        "exactly one intra-cycle result visible in a 2-element cycle"
+    );
+}
+
+// ============================================================================
+// para_graph_fixed (convergence)
 // ============================================================================
 
 #[test]
@@ -331,15 +452,56 @@ fn para_graph_fixed_converges_on_simple_graph() {
     let graph = from_patterns(&classifier, vec![node("a"), node("b"), rel("r1", "a", "b")]);
     let view = from_pattern_graph(&classifier, &graph);
 
-    // Simple: each node gets 1 + max(predecessor values), init = 0
+    // Structural depth: no sub-elements → 0; container → max(sub_depths) + 1
     let result = para_graph_fixed(
         |old: &usize, new: &usize| old == new,
-        |_query, _node, preds: &[usize]| preds.iter().cloned().max().map(|v| v + 1).unwrap_or(1),
+        |_query, _element, sub_results: &[usize]| {
+            sub_results
+                .iter()
+                .cloned()
+                .max()
+                .map(|d| d + 1)
+                .unwrap_or(0)
+        },
         0usize,
         &view,
     );
 
-    // Should converge: a=1 (no preds), b=2 (pred a=1)
+    // All 3 elements should be in the result
     assert!(result.contains_key(&Symbol("a".to_string())));
     assert!(result.contains_key(&Symbol("b".to_string())));
+    assert!(result.contains_key(&Symbol("r1".to_string())));
+    // Nodes: depth 0 (no sub-elements)
+    assert_eq!(result[&Symbol("a".to_string())], 0);
+    assert_eq!(result[&Symbol("b".to_string())], 0);
+    // Relationship contains nodes (depth 0) → depth 1
+    assert_eq!(result[&Symbol("r1".to_string())], 1);
+}
+
+#[test]
+fn para_graph_fixed_annotation_of_annotation_converges() {
+    let classifier = classifier();
+    let graph = from_patterns(
+        &classifier,
+        vec![node("n"), annot("b", "n"), annot("a", "b")],
+    );
+    let view = from_pattern_graph(&classifier, &graph);
+
+    let result = para_graph_fixed(
+        |old: &usize, new: &usize| old == new,
+        |_query, _element, sub_results: &[usize]| {
+            sub_results
+                .iter()
+                .cloned()
+                .max()
+                .map(|d| d + 1)
+                .unwrap_or(0)
+        },
+        0usize,
+        &view,
+    );
+
+    assert_eq!(result[&Symbol("n".to_string())], 0); // node: depth 0
+    assert_eq!(result[&Symbol("b".to_string())], 1); // annotation of n (depth 0) → 1
+    assert_eq!(result[&Symbol("a".to_string())], 2); // annotation of b (depth 1) → 2
 }

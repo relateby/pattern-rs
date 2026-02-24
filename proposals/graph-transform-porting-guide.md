@@ -433,7 +433,8 @@ paraGraph :: (GraphQuery v -> Pattern v -> [r] -> r)
           -> GraphView extra v
           -> Map (Id v) r
 
-paraGraphFixed :: (r -> r -> Bool)
+paraGraphFixed :: (GraphValue v, Ord (Id v))
+               => (r -> r -> Bool)
                -> (GraphQuery v -> Pattern v -> [r] -> r)
                -> r
                -> GraphView extra v
@@ -443,37 +444,77 @@ paraGraphFixed :: (r -> r -> Bool)
 ### Rust
 
 ```rust
-pub fn para_graph<Extra, V: GraphValue, R>(
+pub fn para_graph<Extra, V: GraphValue, R: Clone>(
     f: impl Fn(&GraphQuery<V>, &Pattern<V>, &[R]) -> R,
     view: &GraphView<Extra, V>,
-) -> HashMap<V::Id, R> { ... }
+) -> HashMap<V::Id, R>
+where
+    V::Id: Eq + Hash + Clone,
+{ ... }
 
 pub fn para_graph_fixed<Extra, V: GraphValue, R: Clone>(
     converged: impl Fn(&R, &R) -> bool,
     f: impl Fn(&GraphQuery<V>, &Pattern<V>, &[R]) -> R,
     init: R,
     view: &GraphView<Extra, V>,
-) -> HashMap<V::Id, R> { ... }
+) -> HashMap<V::Id, R>
+where
+    V::Id: Eq + Hash + Clone,
+{ ... }
 ```
 
 Both functions take `&GraphView` (shared reference) — they read the graph structure but
 do not consume it.
 
-**Processing order for `para_graph`**: for DAGs, a topological sort of `view.view_elements`
-before applying `f` gives each element access to previously computed neighbor results.
-For general graphs (with cycles), `para_graph_fixed` is the correct choice. Document this
-clearly: callers using `para_graph` on a cyclic graph will get results that depend on
-iteration order, which is insertion-history-dependent.
+### Processing order: `topo_shape_sort`
 
-**`para_graph_fixed` — convergence loop**:
+The fold order is determined by `topo_shape_sort`, a two-pass sort that mirrors
+`topoShapeSort` in the Haskell reference:
+
+**Pass 1 — Inter-bucket ordering** (fixed shape class priority):
+
+| Priority | Shape Class     | Contains              | Why this position       |
+|----------|-----------------|-----------------------|-------------------------|
+| 1st      | `GNode`         | Nothing               | Atomic — no deps        |
+| 2nd      | `GRelationship` | 2 × `GNode`           | Deps are in layer 1     |
+| 3rd      | `GWalk`         | N × `GRelationship`   | Deps are in layer 2     |
+| 4th      | `GAnnotation`   | 1 × any element       | Can reference any layer |
+| 5th      | `GOther`        | N × any element       | Unconstrained           |
+
+**Pass 2 — Within-bucket ordering** (Kahn's algorithm):
+
+Applied to `GAnnotation` and `GOther` buckets only. For each element `p` in the bucket,
+its direct sub-elements (`p.elements`) that also belong to the same bucket are treated
+as dependencies — they must appear before `p`.
+
+`GNode`, `GRelationship`, and `GWalk` require no within-bucket sort: by the definition
+of `classify_by_shape`, their sub-elements always belong to a lower-priority bucket.
+
+**Cycle handling**: If a cycle is detected within a bucket (e.g., annotation A references
+annotation B which references A), cycle members are appended after all non-cycle elements
+in encountered order. No error is raised. The element processed first in the cycle group
+cannot yet see the other cycle member's result (soft-miss: `sub_results = &[]`); the
+element processed second finds the first's result already in the accumulator.
+
+### The `sub_results` contract
+
+`sub_results` is **best-effort**: it contains one result per direct sub-element
+(`p.elements`) that has already been processed. For cycle-free graphs this is always
+complete. For cycle members within the `GAnnotation` or `GOther` buckets, some intra-cycle
+results may be absent. The fold function must handle `sub_results = &[]` as a valid,
+non-error input.
+
+### `para_graph_fixed` — convergence loop
 
 ```rust
 // Sketch of the fixpoint loop
 let mut current: HashMap<V::Id, R> = /* initialize all elements to `init` */;
 loop {
-    let next = /* one pass of `f` over all elements using `current` as neighbor results */;
-    let stable = current.iter().all(|(id, old)| {
-        next.get(id).map_or(false, |new| converged(old, new))
+    // One pass: para_graph_with_seed(f, view, current.clone())
+    // Uses topo_shape_sort order; acc starts as `current` and grows within the round
+    let next = para_graph_with_seed(&f, view, current.clone());
+    let stable = next.iter().all(|(k, new_r)| {
+        current.get(k).map_or(false, |old_r| converged(old_r, new_r))
     });
     current = next;
     if stable { break; }
@@ -481,9 +522,13 @@ loop {
 current
 ```
 
-**`R: Clone` on `para_graph_fixed`**: required because the convergence loop reads the
-previous round's values while computing the next. The current map must be cloned (or
-at minimum, individual `R` values must be cloned) to compare old and new.
+Each round uses the same `topo_shape_sort` order (the `GraphView` is immutable).
+Within each round, already-processed elements' results are available to later elements
+(Gauss-Seidel style), matching the Haskell `paraGraphWithSeed` helper.
+
+**`R: Clone` on both functions**: `para_graph` requires `R: Clone` because sub-results
+are cloned out of the accumulator. `para_graph_fixed` additionally clones the full map
+for round-to-round comparison.
 
 **Float convergence example**:
 
@@ -496,18 +541,18 @@ let pagerank = para_graph_fixed(
 );
 ```
 
-**`HashMap` key requirements**: `V::Id` must implement `Eq + Hash`. Add this bound where
-needed:
+**`HashMap` key requirements**: `V::Id: Eq + Hash + Clone` (Clone needed to insert
+results keyed by identity).
 
-```rust
-pub fn para_graph<Extra, V: GraphValue, R>(
-    f: impl Fn(&GraphQuery<V>, &Pattern<V>, &[R]) -> R,
-    view: &GraphView<Extra, V>,
-) -> HashMap<V::Id, R>
-where
-    V::Id: Eq + Hash,
-{ ... }
-```
+### Implementation notes
+
+- `topo_shape_sort` returns indices into `view.view_elements` — no element cloning
+  required, no additional bounds on `Extra`.
+- `within_bucket_topo_sort` uses a `VecDeque` for Kahn's queue and a `bool` array for
+  cycle detection; both are O(n) in the bucket size.
+- The private `para_graph_with_seed` helper corresponds directly to Haskell's
+  `paraGraphWithSeed` and is reused by both `para_graph` (empty seed) and
+  `para_graph_fixed` (previous round as seed).
 
 ---
 
