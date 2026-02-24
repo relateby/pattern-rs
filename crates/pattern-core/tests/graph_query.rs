@@ -9,8 +9,8 @@ use std::rc::Rc;
 
 use pattern_core::{
     canonical_classifier, connected_components, directed, directed_reverse, frame_query,
-    from_pattern_graph, from_patterns, is_connected, memoize_incident_rels, undirected, GraphClass,
-    GraphQuery, GraphValue, Pattern, PatternGraph, Subject, Symbol, TraversalDirection,
+    from_patterns, graph_query_from_pattern_graph, is_connected, memoize_incident_rels, undirected,
+    GraphClass, GraphQuery, GraphValue, Pattern, PatternGraph, Subject, Symbol, TraversalDirection,
 };
 
 // ============================================================================
@@ -64,7 +64,7 @@ fn triangle_query() -> (GraphQuery<Subject>, Rc<PatternGraph<(), Subject>>) {
 
     let classifier = canonical_classifier::<Subject>();
     let pg = Rc::new(from_patterns(&classifier, vec![rab, rbc, rac]));
-    let gq = from_pattern_graph(Rc::clone(&pg));
+    let gq = graph_query_from_pattern_graph(Rc::clone(&pg));
     (gq, pg)
 }
 
@@ -281,7 +281,7 @@ fn mixed_graph_query() -> GraphQuery<Subject> {
 
     let classifier = canonical_classifier::<Subject>();
     let pg = Rc::new(from_patterns(&classifier, vec![rab, rcd]));
-    from_pattern_graph(pg)
+    graph_query_from_pattern_graph(pg)
 }
 
 #[test]
@@ -402,7 +402,7 @@ fn hs_t056_query_containers_finds_relationship_for_node() {
 
     let classifier = canonical_classifier::<Subject>();
     let pg = Rc::new(from_patterns(&classifier, vec![rab]));
-    let gq = from_pattern_graph(pg);
+    let gq = graph_query_from_pattern_graph(pg);
 
     let a = (gq.query_node_by_id)(&Symbol("A".to_string())).expect("A must exist");
     let containers = (gq.query_containers)(&a);
@@ -426,7 +426,7 @@ fn hs_t056_query_containers_finds_walk_for_relationship() {
         &classifier,
         vec![rab_for_walk, rbc_for_walk, w],
     ));
-    let gq = from_pattern_graph(pg);
+    let gq = graph_query_from_pattern_graph(pg);
 
     // Find AB relationship and check its containers include W1
     let ab = (gq.query_relationship_by_id)(&Symbol("AB".to_string())).expect("AB must exist");
@@ -449,7 +449,7 @@ fn query_containers_finds_annotation() {
 
     let classifier = canonical_classifier::<Subject>();
     let pg = Rc::new(from_patterns(&classifier, vec![ann]));
-    let gq = from_pattern_graph(pg);
+    let gq = graph_query_from_pattern_graph(pg);
 
     let a = (gq.query_node_by_id)(&Symbol("A".to_string())).expect("A must exist");
     let containers = (gq.query_containers)(&a);
@@ -464,7 +464,7 @@ fn hs_t056_query_annotations_of() {
 
     let classifier = canonical_classifier::<Subject>();
     let pg = Rc::new(from_patterns(&classifier, vec![ann]));
-    let gq = from_pattern_graph(pg);
+    let gq = graph_query_from_pattern_graph(pg);
 
     let a = (gq.query_node_by_id)(&Symbol("A".to_string())).expect("A must exist");
     let annotations = pattern_core::query_annotations_of(&classifier, &gq, &a);
@@ -484,7 +484,7 @@ fn hs_t056_query_walks_containing() {
 
     let classifier = canonical_classifier::<Subject>();
     let pg = Rc::new(from_patterns(&classifier, vec![rab, rbc, w]));
-    let gq = from_pattern_graph(pg);
+    let gq = graph_query_from_pattern_graph(pg);
 
     let ab = (gq.query_relationship_by_id)(&Symbol("AB".to_string())).expect("AB must exist");
     let walks = pattern_core::query_walks_containing(&classifier, &gq, &ab);
@@ -504,7 +504,7 @@ fn hs_t056_query_co_members() {
 
     let classifier = canonical_classifier::<Subject>();
     let pg = Rc::new(from_patterns(&classifier, vec![rab, rbc, w]));
-    let gq = from_pattern_graph(pg);
+    let gq = graph_query_from_pattern_graph(pg);
 
     let ab = (gq.query_relationship_by_id)(&Symbol("AB".to_string())).expect("AB must exist");
     // W1 is a walk (pg_walks), not a node or relationship; reach it via query_containers.
@@ -597,7 +597,7 @@ fn frame_nested_composition_filters_correctly() {
             rel("BC", b.clone(), c.clone()),
         ],
     ));
-    let gq = from_pattern_graph(pg);
+    let gq = graph_query_from_pattern_graph(pg);
 
     // First frame: only Person nodes
     let person_pred: Rc<dyn Fn(&Pattern<Subject>) -> bool> =

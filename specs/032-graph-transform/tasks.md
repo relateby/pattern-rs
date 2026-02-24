@@ -23,11 +23,11 @@
 
 **Purpose**: Module layout and re-exports so GraphView and transform modules exist.
 
-- [ ] T001 Create `crates/pattern-core/src/graph/graph_view.rs` (empty or stub) and `crates/pattern-core/src/graph/transform/mod.rs` with placeholder re-exports
-- [ ] T002 Create `crates/pattern-core/src/graph/transform/types.rs` (stub) and `crates/pattern-core/src/graph/transform/map_filter_fold.rs`, `context.rs`, `para.rs`, `unfold_graph.rs` (empty stubs)
-- [ ] T003 Refactor pattern module into directory: create `crates/pattern-core/src/pattern/mod.rs` re-exporting from `pattern/core.rs`, move current `pattern.rs` content to `crates/pattern-core/src/pattern/core.rs`, add `crates/pattern-core/src/pattern/unfold.rs` (stub)
-- [ ] T004 Update `crates/pattern-core/src/graph/mod.rs` to add `pub mod graph_view` and `pub mod transform`
-- [ ] T005 Update `crates/pattern-core/src/lib.rs` to re-export `graph::graph_view::*` and `graph::transform::*` and `pattern::unfold` (once implemented)
+- [X] T001 Create `crates/pattern-core/src/graph/graph_view.rs` (empty or stub) and `crates/pattern-core/src/graph/transform/mod.rs` with placeholder re-exports
+- [X] T002 Create `crates/pattern-core/src/graph/transform/types.rs` (stub) and `crates/pattern-core/src/graph/transform/map_filter_fold.rs`, `context.rs`, `para.rs`, `unfold_graph.rs` (empty stubs)
+- [X] T003 Refactor pattern module into directory: create `crates/pattern-core/src/pattern/mod.rs` re-exporting from `pattern/core.rs`, move current `pattern.rs` content to `crates/pattern-core/src/pattern/core.rs`, add `crates/pattern-core/src/pattern/unfold.rs` (stub)
+- [X] T004 Update `crates/pattern-core/src/graph/mod.rs` to add `pub mod graph_view` and `pub mod transform`
+- [X] T005 Update `crates/pattern-core/src/lib.rs` to re-export `graph::graph_view::*` and `graph::transform::*` and `pattern::unfold` (once implemented)
 
 ---
 
@@ -37,14 +37,14 @@
 
 **Independent Test**: Build a view from a PatternGraph, materialize with a policy, assert result is equivalent to source.
 
-- [ ] T006 [P] Define `Substitution<V>` enum (NoSubstitution, ReplaceWith, RemoveContainer) in `crates/pattern-core/src/graph/transform/types.rs`
-- [ ] T007 [P] Define `CategoryMappers<Extra, V>` struct and `identity()` in `crates/pattern-core/src/graph/transform/types.rs` per contracts/public-api.md
-- [ ] T008 Define `GraphView<Extra, V>` struct with `view_query` and `view_elements` in `crates/pattern-core/src/graph/graph_view.rs`
-- [ ] T009 Implement `from_pattern_graph(classifier, graph) -> GraphView` in `crates/pattern-core/src/graph/graph_view.rs` (build query from graph, build view_elements from graph contents classified)
-- [ ] T010 Implement `materialize(classifier, policy, view) -> PatternGraph` in `crates/pattern-core/src/graph/graph_view.rs`
-- [ ] T011 Add `from_graph_lens` placeholder (unimplemented! or todo! with comment) in `crates/pattern-core/src/graph/graph_view.rs`
-- [ ] T012 Update `crates/pattern-core/src/graph/transform/mod.rs` to export Substitution, CategoryMappers, and re-export from types
-- [ ] T013 Update `crates/pattern-core/src/lib.rs` to re-export GraphView, from_pattern_graph, materialize, Substitution, CategoryMappers
+- [X] T006 [P] Define `Substitution<V>` enum (NoSubstitution, ReplaceWith, RemoveContainer) in `crates/pattern-core/src/graph/transform/types.rs`
+- [X] T007 [P] Define `CategoryMappers<Extra, V>` struct and `identity()` in `crates/pattern-core/src/graph/transform/types.rs` per contracts/public-api.md
+- [X] T008 Define `GraphView<Extra, V>` struct with `view_query` and `view_elements` in `crates/pattern-core/src/graph/graph_view.rs`
+- [X] T009 Implement `from_pattern_graph(classifier, graph) -> GraphView` in `crates/pattern-core/src/graph/graph_view.rs` (build query from graph, build view_elements from graph contents classified)
+- [X] T010 Implement `materialize(classifier, policy, view) -> PatternGraph` in `crates/pattern-core/src/graph/graph_view.rs`
+- [X] T011 Add `from_graph_lens` placeholder (unimplemented! or todo! with comment) in `crates/pattern-core/src/graph/graph_view.rs`
+- [X] T012 Update `crates/pattern-core/src/graph/transform/mod.rs` to export Substitution, CategoryMappers, and re-export from types
+- [X] T013 Update `crates/pattern-core/src/lib.rs` to re-export GraphView, from_pattern_graph, materialize, Substitution, CategoryMappers
 
 ---
 
@@ -54,9 +54,9 @@
 
 **Independent Test**: Provide N seeds and an expander that returns one pattern per seed; unfold_graph produces a graph with N patterns (after reconciliation).
 
-- [ ] T014 [US2] Implement `unfold(expand, seed) -> Pattern<V>` iteratively (work stack) in `crates/pattern-core/src/pattern/unfold.rs`
-- [ ] T015 [US2] Implement `unfold_graph(classifier, policy, expand, seeds) -> PatternGraph` in `crates/pattern-core/src/graph/transform/unfold_graph.rs`
-- [ ] T016 [US2] Export `unfold` from `crates/pattern-core/src/pattern/mod.rs` and `unfold_graph` from `crates/pattern-core/src/graph/transform/mod.rs`; add lib.rs re-exports
+- [X] T014 [US2] Implement `unfold(expand, seed) -> Pattern<V>` iteratively (work stack) in `crates/pattern-core/src/pattern/unfold.rs`
+- [X] T015 [US2] Implement `unfold_graph(classifier, policy, expand, seeds) -> PatternGraph` in `crates/pattern-core/src/graph/transform/unfold_graph.rs`
+- [X] T016 [US2] Export `unfold` from `crates/pattern-core/src/pattern/mod.rs` and `unfold_graph` from `crates/pattern-core/src/graph/transform/mod.rs`; add lib.rs re-exports
 
 ---
 
@@ -66,9 +66,9 @@
 
 **Independent Test**: Build a view, apply map_graph with nodes-only mapper (others identity), materialize; assert nodes transformed and others unchanged.
 
-- [ ] T017 [US3] Implement `map_all_graph(f, view) -> GraphView` in `crates/pattern-core/src/graph/transform/map_filter_fold.rs`
-- [ ] T018 [US3] Implement `map_graph(classifier, mappers, view) -> GraphView` in `crates/pattern-core/src/graph/transform/map_filter_fold.rs`
-- [ ] T019 [US3] Re-export map_graph and map_all_graph from `crates/pattern-core/src/graph/transform/mod.rs` and `crates/pattern-core/src/lib.rs`
+- [X] T017 [US3] Implement `map_all_graph(f, view) -> GraphView` in `crates/pattern-core/src/graph/transform/map_filter_fold.rs`
+- [X] T018 [US3] Implement `map_graph(classifier, mappers, view) -> GraphView` in `crates/pattern-core/src/graph/transform/map_filter_fold.rs`
+- [X] T019 [US3] Re-export map_graph and map_all_graph from `crates/pattern-core/src/graph/transform/mod.rs` and `crates/pattern-core/src/lib.rs`
 
 ---
 
@@ -78,8 +78,8 @@
 
 **Independent Test**: Build a view, filter with predicate keeping K elements and Substitution::NoSubstitution; materialize and assert K elements and walk gaps as specified.
 
-- [ ] T020 [US4] Implement `filter_graph(classifier, predicate, substitution, view) -> GraphView` in `crates/pattern-core/src/graph/transform/map_filter_fold.rs`
-- [ ] T021 [US4] Re-export filter_graph from `crates/pattern-core/src/graph/transform/mod.rs` and `crates/pattern-core/src/lib.rs`
+- [X] T020 [US4] Implement `filter_graph(classifier, predicate, substitution, view) -> GraphView` in `crates/pattern-core/src/graph/transform/map_filter_fold.rs`
+- [X] T021 [US4] Re-export filter_graph from `crates/pattern-core/src/graph/transform/mod.rs` and `crates/pattern-core/src/lib.rs`
 
 ---
 
@@ -89,8 +89,8 @@
 
 **Independent Test**: fold_graph with accumulator (e.g. HashMap category -> count); assert counts match view element counts per category.
 
-- [ ] T022 [US5] Implement `fold_graph(f, init, view) -> M` in `crates/pattern-core/src/graph/transform/map_filter_fold.rs`
-- [ ] T023 [US5] Re-export fold_graph from `crates/pattern-core/src/graph/transform/mod.rs` and `crates/pattern-core/src/lib.rs`
+- [X] T022 [US5] Implement `fold_graph(f, init, view) -> M` in `crates/pattern-core/src/graph/transform/map_filter_fold.rs`
+- [X] T023 [US5] Re-export fold_graph from `crates/pattern-core/src/graph/transform/mod.rs` and `crates/pattern-core/src/lib.rs`
 
 ---
 
@@ -100,8 +100,8 @@
 
 **Independent Test**: View with annotated nodes; map_with_context sets node "count" from query_annotations_of snapshot; materialize and assert counts correct.
 
-- [ ] T024 [US6] Implement `map_with_context(classifier, f, view) -> GraphView` with snapshot semantics in `crates/pattern-core/src/graph/transform/context.rs`
-- [ ] T025 [US6] Re-export map_with_context from `crates/pattern-core/src/graph/transform/mod.rs` and `crates/pattern-core/src/lib.rs`
+- [X] T024 [US6] Implement `map_with_context(classifier, f, view) -> GraphView` with snapshot semantics in `crates/pattern-core/src/graph/transform/context.rs`
+- [X] T025 [US6] Re-export map_with_context from `crates/pattern-core/src/graph/transform/mod.rs` and `crates/pattern-core/src/lib.rs`
 
 ---
 
@@ -111,9 +111,9 @@
 
 **Independent Test**: DAG view + para_graph with max-predecessors-plus-one; root nodes 1, others max(pred)+1. Cyclic view + para_graph_fixed with convergence predicate; assert stabilization.
 
-- [ ] T026 [US7] Implement `para_graph(f, view) -> HashMap<V::Id, R>` with topological order for DAGs in `crates/pattern-core/src/graph/transform/para.rs`
-- [ ] T027 [US7] Implement `para_graph_fixed(converged, f, init, view) -> HashMap<V::Id, R>` in `crates/pattern-core/src/graph/transform/para.rs`
-- [ ] T028 [US7] Re-export para_graph and para_graph_fixed from `crates/pattern-core/src/graph/transform/mod.rs` and `crates/pattern-core/src/lib.rs`
+- [X] T026 [US7] Implement `para_graph(f, view) -> HashMap<V::Id, R>` with topological order for DAGs in `crates/pattern-core/src/graph/transform/para.rs`
+- [X] T027 [US7] Implement `para_graph_fixed(converged, f, init, view) -> HashMap<V::Id, R>` in `crates/pattern-core/src/graph/transform/para.rs`
+- [X] T028 [US7] Re-export para_graph and para_graph_fixed from `crates/pattern-core/src/graph/transform/mod.rs` and `crates/pattern-core/src/lib.rs`
 
 ---
 
@@ -121,10 +121,10 @@
 
 **Purpose**: Tests, formatting, and validation.
 
-- [ ] T029 [P] Add tests for view construction and materialize round-trip in `crates/pattern-core/tests/graph_view.rs`
-- [ ] T030 [P] Add tests for transform (map, filter, fold, map_with_context, para, unfold_graph) in `crates/pattern-core/tests/transform.rs`
+- [X] T029 [P] Add tests for view construction and materialize round-trip in `crates/pattern-core/tests/graph_view.rs`
+- [X] T030 [P] Add tests for transform (map, filter, fold, map_with_context, para, unfold_graph) in `crates/pattern-core/tests/transform.rs`
 - [ ] T031 Add equivalence tests vs pattern-hs (or document how graph_view/transform tests satisfy FR-015 and SC-009) per constitution reference verification; reference `../pattern-hs/libs/pattern/tests/Spec/Pattern/Graph/TransformSpec.hs` and `GraphSpec.hs` as needed
-- [ ] T032 Run `cargo fmt --all` and `cargo clippy --workspace -- -D warnings`; fix any issues in `crates/pattern-core/`
+- [X] T032 Run `cargo fmt --all` and `cargo clippy --workspace -- -D warnings`; fix any issues in `crates/pattern-core/`
 - [ ] T033 Validate quickstart.md examples (doc tests or manual run) per `specs/032-graph-transform/quickstart.md`
 
 **Note**: Multi-target verification (WASM, Python) is assumed to be covered by existing CI or workspace-level scripts; add an explicit task here if this feature introduces new target-specific code.
