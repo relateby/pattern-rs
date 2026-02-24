@@ -77,8 +77,10 @@ pub fn map_graph<Extra: Clone, V: GraphValue>(
 ///
 /// - `NoSubstitution`: removed elements simply disappear; containers are kept as-is.
 /// - `ReplaceWith(filler)`: removed elements are replaced by `filler` in the output list.
-/// - `RemoveContainer`: not applicable at this level (containers are independent elements
-///   in the flat view_elements list); behaves the same as `NoSubstitution` for the flat list.
+/// - `RemoveContainer`: **limitation** — in the flat `GraphView` model, container
+///   relationships are not tracked; this variant behaves the same as `NoSubstitution`.
+///   Full semantics (removing container elements when contained elements are filtered out)
+///   would require container tracking or a post-materialize pass; not implemented here.
 ///
 /// Note: in the flat `GraphView` model, container relationships are not tracked structurally
 /// in `view_elements` — each element is independent. The `Substitution` policy affects

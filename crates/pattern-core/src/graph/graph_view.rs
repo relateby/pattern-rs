@@ -46,6 +46,34 @@ impl<Extra: Clone, V: GraphValue + Clone> Clone for GraphView<Extra, V> {
 // from_pattern_graph
 // ============================================================================
 
+/// Builds the flat list of classified elements from a graph (shared by Rc/Arc variants).
+fn view_elements_from_graph<Extra, V>(
+    classifier: &GraphClassifier<Extra, V>,
+    graph: &PatternGraph<Extra, V>,
+) -> Vec<(GraphClass<Extra>, Pattern<V>)>
+where
+    Extra: Clone,
+    V: GraphValue + Clone,
+{
+    let mut view_elements: Vec<(GraphClass<Extra>, Pattern<V>)> = Vec::new();
+    for p in graph.pg_nodes.values() {
+        view_elements.push(((classifier.classify)(p), p.clone()));
+    }
+    for p in graph.pg_relationships.values() {
+        view_elements.push(((classifier.classify)(p), p.clone()));
+    }
+    for p in graph.pg_walks.values() {
+        view_elements.push(((classifier.classify)(p), p.clone()));
+    }
+    for p in graph.pg_annotations.values() {
+        view_elements.push(((classifier.classify)(p), p.clone()));
+    }
+    for (_, p) in graph.pg_other.values() {
+        view_elements.push(((classifier.classify)(p), p.clone()));
+    }
+    view_elements
+}
+
 /// Builds a `GraphView` from an existing `PatternGraph` and classifier.
 ///
 /// The view's query is built from the graph (shared ownership via Rc/Arc).
@@ -71,27 +99,8 @@ where
         pg_other: graph.pg_other.clone(),
         pg_conflicts: graph.pg_conflicts.clone(),
     });
-
     let view_query = crate::pattern_graph::from_pattern_graph(rc_graph);
-
-    let mut view_elements: Vec<(GraphClass<Extra>, Pattern<V>)> = Vec::new();
-
-    for p in graph.pg_nodes.values() {
-        view_elements.push(((classifier.classify)(p), p.clone()));
-    }
-    for p in graph.pg_relationships.values() {
-        view_elements.push(((classifier.classify)(p), p.clone()));
-    }
-    for p in graph.pg_walks.values() {
-        view_elements.push(((classifier.classify)(p), p.clone()));
-    }
-    for p in graph.pg_annotations.values() {
-        view_elements.push(((classifier.classify)(p), p.clone()));
-    }
-    for (_, p) in graph.pg_other.values() {
-        view_elements.push(((classifier.classify)(p), p.clone()));
-    }
-
+    let view_elements = view_elements_from_graph(classifier, graph);
     GraphView {
         view_query,
         view_elements,
@@ -118,27 +127,8 @@ where
         pg_other: graph.pg_other.clone(),
         pg_conflicts: graph.pg_conflicts.clone(),
     });
-
     let view_query = crate::pattern_graph::from_pattern_graph(arc_graph);
-
-    let mut view_elements: Vec<(GraphClass<Extra>, Pattern<V>)> = Vec::new();
-
-    for p in graph.pg_nodes.values() {
-        view_elements.push(((classifier.classify)(p), p.clone()));
-    }
-    for p in graph.pg_relationships.values() {
-        view_elements.push(((classifier.classify)(p), p.clone()));
-    }
-    for p in graph.pg_walks.values() {
-        view_elements.push(((classifier.classify)(p), p.clone()));
-    }
-    for p in graph.pg_annotations.values() {
-        view_elements.push(((classifier.classify)(p), p.clone()));
-    }
-    for (_, p) in graph.pg_other.values() {
-        view_elements.push(((classifier.classify)(p), p.clone()));
-    }
-
+    let view_elements = view_elements_from_graph(classifier, graph);
     GraphView {
         view_query,
         view_elements,
@@ -153,8 +143,16 @@ where
 ///
 /// **Deferred**: `GraphLens` has not yet been ported to pattern-rs.
 /// This constructor will be implemented when `GraphLens` is available.
+/// The signature accepts a classifier and a lens placeholder so that callers
+/// can use the same API shape; it panics at runtime until the type is ported.
 #[allow(dead_code)]
-pub fn from_graph_lens() {
+pub fn from_graph_lens<Extra, V, L>(
+    _classifier: &GraphClassifier<Extra, V>,
+    _lens: L,
+) -> GraphView<Extra, V>
+where
+    V: GraphValue,
+{
     todo!("from_graph_lens: deferred until GraphLens is ported to pattern-rs")
 }
 
