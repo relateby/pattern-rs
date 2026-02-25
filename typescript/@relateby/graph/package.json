@@ -31,5 +31,8 @@
     "effect": {
       "optional": true
     }
+  },
+  "overrides": {
+    "why-is-node-running": "3.2.2"
   }
 }

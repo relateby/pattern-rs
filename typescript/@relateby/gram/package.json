@@ -25,5 +25,8 @@
   "devDependencies": {
     "typescript": "^5.0.0",
     "vitest": "^2.0.0"
+  },
+  "overrides": {
+    "why-is-node-running": "3.2.2"
   }
 }
