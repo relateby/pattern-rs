@@ -12,7 +12,6 @@ import {
   paraGraph,
   unfoldGraph,
   GNode,
-  GRelationship,
   GWalk,
   GAnnotation,
   DeleteContainer,
