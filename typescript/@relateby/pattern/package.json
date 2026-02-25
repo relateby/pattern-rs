@@ -18,8 +18,8 @@
     "wasm-node"
   ],
   "scripts": {
-    "build:wasm": "PATH=\"$HOME/.rustup/toolchains/stable-x86_64-apple-darwin/bin:$PATH\" wasm-pack build ../../../crates/pattern-wasm --target bundler --out-dir ../../typescript/@relateby/pattern/wasm",
-    "build:wasm:node": "PATH=\"$HOME/.rustup/toolchains/stable-x86_64-apple-darwin/bin:$PATH\" wasm-pack build ../../../crates/pattern-wasm --target nodejs --out-dir ../../typescript/@relateby/pattern/wasm-node",
+    "build:wasm": "wasm-pack build ../../../crates/pattern-wasm --target bundler --out-dir ../../typescript/@relateby/pattern/wasm",
+    "build:wasm:node": "wasm-pack build ../../../crates/pattern-wasm --target nodejs --out-dir ../../typescript/@relateby/pattern/wasm-node",
     "build:ts": "tsc",
     "build": "npm run build:wasm && npm run build:wasm:node && npm run build:ts",
     "test": "vitest run",

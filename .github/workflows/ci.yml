@@ -86,11 +86,13 @@ jobs:
       - name: Build @relateby/graph
         run: npm run build --workspace=@relateby/graph
       - name: Build @relateby/pattern WASM (bundler)
+        working-directory: crates/pattern-wasm
         run: |
-          wasm-pack build crates/pattern-wasm --target bundler --out-dir typescript/@relateby/pattern/wasm
+          wasm-pack build --target bundler --out-dir ../../typescript/@relateby/pattern/wasm
       - name: Build @relateby/pattern WASM (nodejs)
+        working-directory: crates/pattern-wasm
         run: |
-          wasm-pack build crates/pattern-wasm --target nodejs --out-dir typescript/@relateby/pattern/wasm-node
+          wasm-pack build --target nodejs --out-dir ../../typescript/@relateby/pattern/wasm-node
       - name: Build @relateby/pattern TypeScript
         run: npm run build:ts --workspace=@relateby/pattern
       - name: Build @relateby/gram

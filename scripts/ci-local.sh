@@ -55,7 +55,7 @@ if [ -d "$RUSTUP_BIN" ] && "$RUSTUP_BIN/rustup" target list --installed 2>/dev/n
     # Build the full workspace to match CI - catches type errors in all WASM crates
     # WASM is optional for now, so don't fail the script if it fails
     echo -n "Running WASM build... "
-    if PATH="$HOME/.rustup/toolchains/stable-x86_64-apple-darwin/bin:$PATH" cargo build --target wasm32-unknown-unknown --workspace > /tmp/ci-check.log 2>&1; then
+    if PATH="${RUSTUP_BIN}:$PATH" cargo build --target wasm32-unknown-unknown --workspace > /tmp/ci-check.log 2>&1; then
         echo -e "${GREEN}✓${NC}"
     else
         echo -e "${YELLOW}⚠${NC} (failed, but non-blocking)"
@@ -99,8 +99,9 @@ if command -v npm >/dev/null 2>&1 && command -v wasm-pack >/dev/null 2>&1; then
     fi
 
     echo -n "Building @relateby/pattern TypeScript... "
-    # npm's file: protocol with scoped @-prefixed directories creates a broken relative symlink.
-    # Work around by running npm install then immediately replacing the symlink with an absolute one.
+    # npm's file: protocol with scoped @-prefixed packages can create a broken
+    # relative symlink (known npm limitation). If the symlink is broken, replace
+    # it with an absolute symlink so the build can resolve @relateby/graph.
     GRAPH_DIR="$REPO_ROOT/typescript/@relateby/graph"
     PATTERN_LINK="$REPO_ROOT/typescript/@relateby/pattern/node_modules/@relateby/graph"
     (cd "$REPO_ROOT/typescript/@relateby/pattern" && npm install --silent) > /tmp/ci-check.log 2>&1

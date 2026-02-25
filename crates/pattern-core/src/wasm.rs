@@ -1103,6 +1103,9 @@ impl WasmPattern {
     /// Add a child pattern element to this pattern.
     ///
     /// This method mutates the pattern by adding a new child element.
+    /// Takes a reference so the same JS pattern can be added to multiple parents;
+    /// the inner pattern is cloned. Taking ownership would be inconsistent with
+    /// typical JS usage where the same element reference is reused.
     ///
     /// # Arguments
     /// * `element` - A WasmPattern to add as a child

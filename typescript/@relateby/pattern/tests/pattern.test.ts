@@ -10,8 +10,6 @@ import {
   NativePattern,
   NativeSubject,
   bfs,
-  dfs,
-  shortestPath,
   connectedComponents,
   hasCycle,
   isConnected,
