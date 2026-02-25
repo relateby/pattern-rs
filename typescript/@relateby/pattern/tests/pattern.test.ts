@@ -9,7 +9,6 @@ import {
   NativeGraphQuery,
   NativePattern,
   NativeSubject,
-  bfs,
   connectedComponents,
   hasCycle,
   isConnected,
