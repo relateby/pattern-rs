@@ -119,12 +119,15 @@ python3 -c "import yaml; yaml.safe_load(open('.github/workflows/ci.yml'))"
 
 ### Workflow Structure
 
-The CI workflow includes four jobs:
+The CI workflow includes these jobs:
 
-1. **build**: Compiles the workspace for multiple targets (native and WASM)
-2. **test**: Runs all workspace tests
-3. **lint**: Runs clippy with strict warnings
-4. **format**: Verifies code formatting
+1. **build**: Compiles the Rust workspace (native)
+2. **build-wasm**: Optional; builds pattern-core for wasm32-unknown-unknown
+3. **build-typescript**: Builds TypeScript/WASM packages (@relateby/graph, @relateby/pattern with wasm-pack, @relateby/gram) as a sanity check—no publishing
+4. **build-python**: Optional; builds the Python extension with maturin
+5. **test**: Runs all workspace tests
+6. **lint**: Runs clippy with strict warnings
+7. **format**: Verifies code formatting
 
-All jobs use `actions-rs/toolchain@v1` with explicit `toolchain: stable` input.
+All jobs use `actions-rs/toolchain@v1` with explicit `toolchain: stable` input where Rust is used.
 

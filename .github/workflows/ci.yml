@@ -54,6 +54,60 @@ jobs:
           key: ${{ runner.os }}-cargo-wasm-${{ hashFiles('**/Cargo.lock') }}
       - run: cargo build --target wasm32-unknown-unknown -p pattern-core
 
+  # TypeScript / WASM packages - build as sanity check (no publish)
+  build-typescript:
+    name: Build TypeScript & WASM packages
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          submodules: true
+      - uses: actions-rs/toolchain@v1
+        with:
+          toolchain: stable
+          target: wasm32-unknown-unknown
+          override: true
+      - name: Install wasm-pack
+        run: cargo install wasm-pack
+      - uses: actions/cache@v3
+        with:
+          path: |
+            ~/.cargo/registry
+            ~/.cargo/git
+            target
+          key: ${{ runner.os }}-cargo-wasm-ts-${{ hashFiles('**/Cargo.lock') }}
+      - uses: actions/setup-node@v3
+        with:
+          node-version: '20'
+          cache: 'npm'
+          cache-dependency-path: typescript/@relateby/graph/package-lock.json
+      - name: Build @relateby/graph
+        run: |
+          cd typescript/@relateby/graph
+          npm ci
+          npm run build
+      - name: Build @relateby/pattern WASM (bundler)
+        run: |
+          wasm-pack build crates/pattern-wasm --target bundler --out-dir typescript/@relateby/pattern/wasm
+      - name: Build @relateby/pattern WASM (nodejs)
+        run: |
+          wasm-pack build crates/pattern-wasm --target nodejs --out-dir typescript/@relateby/pattern/wasm-node
+      - name: Build @relateby/pattern TypeScript
+        run: |
+          cd typescript/@relateby/pattern
+          npm ci
+          PATTERN_LINK="$GITHUB_WORKSPACE/typescript/@relateby/pattern/node_modules/@relateby/graph"
+          GRAPH_DIR="$GITHUB_WORKSPACE/typescript/@relateby/graph"
+          if [ -L "$PATTERN_LINK" ] && [ ! -e "$PATTERN_LINK" ]; then
+            rm "$PATTERN_LINK" && ln -s "$GRAPH_DIR" "$PATTERN_LINK"
+          fi
+          npm run build:ts
+      - name: Build @relateby/gram
+        run: |
+          cd typescript/@relateby/gram
+          npm ci
+          npm run build
+
   # Python build - optional for now, can be made required later
   build-python:
     name: Build Python (Optional)
