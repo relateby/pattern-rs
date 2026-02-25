@@ -20,7 +20,7 @@
     "test:watch": "vitest"
   },
   "dependencies": {
-    "@relateby/pattern": "file:../@relateby/pattern"
+    "@relateby/pattern": "*"
   },
   "devDependencies": {
     "typescript": "^5.0.0",
