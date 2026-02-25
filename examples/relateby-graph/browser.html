@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>relateby-graph Browser Example</title>
+  <style>
+    body { font-family: monospace; padding: 2rem; background: #1a1a1a; color: #e0e0e0; }
+    h1 { color: #7ec8e3; }
+    pre { background: #2a2a2a; padding: 1rem; border-radius: 4px; overflow-x: auto; }
+    .success { color: #7ec87e; }
+    .error { color: #e37e7e; }
+    .info { color: #e3c87e; }
+  </style>
+</head>
+<body>
+  <h1>relateby-graph Browser Example</h1>
+  <p class="info">
+    This example uses <code>@relateby/pattern</code> with bundler auto-init
+    (wasm-pack <code>--target bundler</code> glue handles initialization automatically).
+  </p>
+  <pre id="output">Loading...</pre>
+
+  <script type="module">
+    const output = document.getElementById("output");
+    const log = (msg, cls = "") => {
+      const line = document.createElement("div");
+      line.className = cls;
+      line.textContent = msg;
+      output.appendChild(line);
+    };
+
+    output.textContent = "";
+
+    try {
+      // In bundler environments, @relateby/pattern auto-initializes via ES module top-level await.
+      // No explicit init() call needed when using a bundler (Vite, webpack, Rollup, esbuild).
+      // For CDN/direct script usage, call: await init() from @relateby/pattern
+      const {
+        init,
+        NativeSubject,
+        NativePattern,
+        NativePatternGraph,
+        NativeGraphQuery,
+        NativeReconciliationPolicy,
+        bfs,
+        degreeCentrality,
+      } = await import("../../typescript/@relateby/pattern/dist/index.js");
+
+      const {
+        toGraphView,
+        mapGraph,
+        filterGraph,
+        SpliceGap,
+      } = await import("../../typescript/@relateby/graph/dist/index.js");
+
+      // Initialize WASM (required in non-bundler environments)
+      await init();
+      log("✓ WASM initialized", "success");
+
+      // Build a graph
+      const alice = NativePattern.point(new NativeSubject("alice", ["Person"], {}));
+      const bob = NativePattern.point(new NativeSubject("bob", ["Person"], {}));
+      const rel = NativePattern.pattern(new NativeSubject("r1", ["KNOWS"], {}));
+      rel.addElement(alice);
+      rel.addElement(bob);
+
+      const graph = NativePatternGraph.fromPatterns(
+        [alice, bob, rel],
+        NativeReconciliationPolicy.lastWriteWins()
+      );
+
+      log(`✓ Graph: ${graph.nodes.length} nodes, ${graph.relationships.length} relationships`, "success");
+
+      // Query
+      const query = NativeGraphQuery.fromPatternGraph(graph);
+      const aliceNode = query.nodeById("alice");
+      if (aliceNode) {
+        const traversal = bfs(query, aliceNode);
+        log(`✓ BFS from alice: ${traversal.map(p => p.identity).join(", ")}`, "success");
+      }
+
+      // Centrality
+      const centrality = degreeCentrality(query);
+      log(`✓ Degree centrality: ${JSON.stringify(centrality)}`, "success");
+
+      // Pure TS transforms
+      const view = toGraphView(graph);
+      const filtered = filterGraph(
+        (cls) => cls.tag !== "GRelationship",
+        SpliceGap
+      )(view);
+      const nodeCount = filtered.viewElements.filter(([cls]) => cls.tag === "GNode").length;
+      log(`✓ Nodes after filtering relationships: ${nodeCount}`, "success");
+
+      log("\nAll operations completed successfully!", "success");
+
+    } catch (e) {
+      log(`Error: ${e.message}`, "error");
+      log("Make sure to build the WASM module first:", "info");
+      log("  cd typescript/@relateby/pattern && npm run build:wasm && npm run build:ts", "info");
+      console.error(e);
+    }
+  </script>
+</body>
+</html>

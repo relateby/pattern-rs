@@ -50,3 +50,14 @@ __pycache__/
 venv/
 *.egg-info/
 *.egg
+
+# TypeScript @relateby packages
+node_modules/
+typescript/@relateby/pattern/wasm/
+typescript/@relateby/pattern/dist/
+typescript/@relateby/pattern/node_modules/
+typescript/@relateby/gram/wasm/
+typescript/@relateby/gram/dist/
+typescript/@relateby/gram/node_modules/
+typescript/@relateby/graph/dist/
+typescript/@relateby/graph/node_modules/

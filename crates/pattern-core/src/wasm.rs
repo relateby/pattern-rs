@@ -79,8 +79,8 @@ use crate::subject::{RangeValue, Subject, Symbol, Value};
 /// Rules can specify limits on nesting depth, element counts, or other structural properties.
 /// All rules are optional (undefined/null means no limit).
 ///
-/// Exported to JavaScript as `ValidationRules`.
-#[wasm_bindgen(js_name = ValidationRules)]
+/// Exported to JavaScript as `WasmValidationRules`.
+#[wasm_bindgen]
 pub struct WasmValidationRules {
     /// Maximum nesting depth allowed (undefined = no limit)
     #[wasm_bindgen(skip)]
@@ -148,8 +148,8 @@ impl WasmValidationRules {
 ///
 /// Provides detailed information about pattern structural characteristics.
 ///
-/// Exported to JavaScript as `StructureAnalysis`.
-#[wasm_bindgen(js_name = StructureAnalysis)]
+/// Exported to JavaScript as `WasmStructureAnalysis`.
+#[wasm_bindgen]
 pub struct WasmStructureAnalysis {
     #[wasm_bindgen(skip)]
     inner: crate::pattern::StructureAnalysis,
@@ -763,8 +763,8 @@ impl ValueFactory {
 ///
 /// Provides constructors and accessors for Subject instances from JavaScript/TypeScript.
 ///
-/// Exported to JavaScript as `Subject` (without the Wasm prefix).
-#[wasm_bindgen(js_name = Subject)]
+/// Exported to JavaScript as `WasmSubject`.
+#[wasm_bindgen]
 pub struct WasmSubject {
     inner: Subject,
 }
@@ -820,14 +820,17 @@ impl WasmSubject {
         self.inner.identity.0.clone()
     }
 
-    /// Get the labels as a JavaScript array of strings.
+    /// Get the labels as a JavaScript Set of strings.
     ///
     /// # Returns
-    /// A JavaScript array containing all label strings
+    /// A JavaScript Set containing all label strings
     #[wasm_bindgen(getter)]
-    pub fn labels(&self) -> JsValue {
-        let labels_vec: Vec<String> = self.inner.labels.iter().cloned().collect();
-        strings_to_js_array(&labels_vec)
+    pub fn labels(&self) -> js_sys::Set {
+        let set = js_sys::Set::new(&JsValue::undefined());
+        for label in &self.inner.labels {
+            set.add(&JsValue::from_str(label));
+        }
+        set
     }
 
     /// Get the properties as a JavaScript object.
@@ -856,12 +859,12 @@ impl WasmSubject {
         )
         .expect("set identity");
 
-        // Set labels as array
-        let labels_arr = js_sys::Array::new();
+        // Set labels as Set
+        let labels_set = js_sys::Set::new(&JsValue::undefined());
         for label in &self.inner.labels {
-            labels_arr.push(&JsValue::from_str(label));
+            labels_set.add(&JsValue::from_str(label));
         }
-        js_sys::Reflect::set(&obj, &JsValue::from_str("labels"), &labels_arr).expect("set labels");
+        js_sys::Reflect::set(&obj, &JsValue::from_str("labels"), &labels_set).expect("set labels");
 
         // Set properties
         js_sys::Reflect::set(
@@ -884,6 +887,10 @@ impl WasmSubject {
 
     /// Try to convert a JsValue back to a WasmSubject.
     ///
+    /// Handles two representations:
+    /// 1. Plain JS objects with `_type: "Subject"` (from `to_js_value()`)
+    /// 2. WasmSubject WASM instances with `identity`, `labels`, `properties` getters
+    ///
     /// Returns None if the JsValue is not a valid Subject representation.
     pub fn from_js_value(value: &JsValue) -> Option<Self> {
         if !value.is_object() {
@@ -892,22 +899,46 @@ impl WasmSubject {
 
         let obj: &js_sys::Object = value.unchecked_ref();
 
-        // Check for type marker
-        let type_marker = js_sys::Reflect::get(obj, &JsValue::from_str("_type")).ok()?;
-        if type_marker.as_string()? != "Subject" {
+        // Check for type marker (plain JS object from to_js_value())
+        let type_marker = js_sys::Reflect::get(obj, &JsValue::from_str("_type")).ok();
+        let is_plain_subject = type_marker
+            .as_ref()
+            .and_then(|v| v.as_string())
+            .map(|s| s == "Subject")
+            .unwrap_or(false);
+
+        // Check if it's a WasmSubject WASM instance (has __wbg_ptr and identity getter)
+        let has_wbg_ptr = js_sys::Reflect::get(obj, &JsValue::from_str("__wbg_ptr"))
+            .ok()
+            .map(|v| !v.is_undefined() && !v.is_null())
+            .unwrap_or(false);
+
+        if !is_plain_subject && !has_wbg_ptr {
             return None;
         }
 
-        // Extract identity
+        // Extract identity (works for both plain objects and WASM instances)
         let identity_js = js_sys::Reflect::get(obj, &JsValue::from_str("identity")).ok()?;
         let identity = identity_js.as_string()?;
 
-        // Extract labels
+        // Extract labels (works for both plain objects and WASM instances)
+        // Labels may be a JS Array or a JS Set
         let labels_js = js_sys::Reflect::get(obj, &JsValue::from_str("labels")).ok()?;
-        let labels_vec = js_array_to_strings(&labels_js).ok()?;
-        let labels_set: std::collections::HashSet<String> = labels_vec.into_iter().collect();
+        let labels_set: std::collections::HashSet<String> = if js_sys::Array::is_array(&labels_js) {
+            js_array_to_strings(&labels_js).ok()?.into_iter().collect()
+        } else {
+            // Try as JS Set: iterate via forEach
+            let set: &js_sys::Set = labels_js.unchecked_ref();
+            let mut result = std::collections::HashSet::new();
+            set.for_each(&mut |v, _, _| {
+                if let Some(s) = v.as_string() {
+                    result.insert(s);
+                }
+            });
+            result
+        };
 
-        // Extract properties
+        // Extract properties (works for both plain objects and WASM instances)
         let properties_js = js_sys::Reflect::get(obj, &JsValue::from_str("properties")).ok()?;
         let properties = js_object_to_value_map(&properties_js).ok()?;
 
@@ -977,8 +1008,8 @@ impl WasmSubject {
 ///
 /// This design matches the Python binding which stores PyAny (any Python object).
 ///
-/// Exported to JavaScript as `Pattern` (without the Wasm prefix).
-#[wasm_bindgen(js_name = Pattern)]
+/// Exported to JavaScript as `WasmPattern`.
+#[wasm_bindgen]
 #[derive(Clone)]
 pub struct WasmPattern {
     inner: Pattern<JsValue>,
@@ -1083,10 +1114,10 @@ impl WasmPattern {
     /// parent.addElement(Pattern.of("child2"));
     /// ```
     #[wasm_bindgen(js_name = addElement)]
-    pub fn add_element(&mut self, element: WasmPattern) {
+    pub fn add_element(&mut self, element: &WasmPattern) {
         // Since Pattern is immutable, we need to reconstruct it
         let mut elements = self.inner.elements().to_vec();
-        elements.push(element.inner);
+        elements.push(element.inner.clone());
         self.inner = Pattern::pattern(self.inner.value().clone(), elements);
     }
 
@@ -1152,6 +1183,17 @@ impl WasmPattern {
     #[wasm_bindgen(getter)]
     pub fn value(&self) -> JsValue {
         self.inner.value().clone()
+    }
+
+    /// Get the identity of this pattern's value if it is a Subject.
+    ///
+    /// Returns the Subject's identity string, or undefined if the value is not a Subject.
+    ///
+    /// # Returns
+    /// The identity string, or undefined
+    #[wasm_bindgen(getter)]
+    pub fn identity(&self) -> Option<String> {
+        WasmSubject::from_js_value(self.inner.value()).map(|s| s.inner.identity.0.clone())
     }
 
     /// Get the nested elements (sub-patterns) of this pattern as an array.
@@ -2090,4 +2132,765 @@ impl WasmPattern {
     pub fn as_pattern(&self) -> &Pattern<JsValue> {
         &self.inner
     }
+}
+
+// ============================================================================
+// 7. Graph Bindings (T007-T013 - Feature 033)
+// ============================================================================
+//
+// WASM bindings for PatternGraph, ReconciliationPolicy, GraphQuery,
+// GraphClass/TraversalDirection constant objects, and algorithm free functions.
+//
+// All types use the `Native*` JS name prefix to distinguish WASM-backed concrete
+// classes from the pure TypeScript interfaces in @relateby/graph.
+
+use crate::graph::graph_classifier::canonical_classifier;
+use crate::graph::graph_query::{directed, directed_reverse, undirected, GraphQuery};
+use crate::pattern_graph::{from_pattern_graph, from_patterns_with_policy, PatternGraph};
+use crate::reconcile::{
+    ElementMergeStrategy, LabelMerge, PropertyMerge, ReconciliationPolicy, SubjectMergeStrategy,
+};
+
+// ---------------------------------------------------------------------------
+// Helper: convert Pattern<Subject> → WasmPattern (via JsValue encoding)
+// ---------------------------------------------------------------------------
+
+fn subject_pattern_to_wasm(p: &crate::pattern::Pattern<crate::subject::Subject>) -> WasmPattern {
+    let subject_js = WasmSubject::from_subject(p.value.clone()).to_js_value();
+    let wasm_p = WasmPattern {
+        inner: crate::pattern::Pattern {
+            value: subject_js,
+            elements: p
+                .elements
+                .iter()
+                .map(|e| subject_pattern_to_wasm(e).inner)
+                .collect(),
+        },
+    };
+    wasm_p
+}
+
+fn wasm_pattern_to_subject_pattern(
+    p: &WasmPattern,
+) -> Option<crate::pattern::Pattern<crate::subject::Subject>> {
+    let subject = WasmSubject::from_js_value(&p.inner.value)?.into_subject();
+    let elements: Vec<_> = p
+        .inner
+        .elements
+        .iter()
+        .filter_map(|e| wasm_pattern_to_subject_pattern(&WasmPattern { inner: e.clone() }))
+        .collect();
+    Some(crate::pattern::Pattern {
+        value: subject,
+        elements,
+    })
+}
+
+/// Convert a JsValue (which may be a serialized WasmPattern object) to Pattern<Subject>.
+///
+/// WasmPattern objects in JS have `value` and `elements` fields. The `value` is a
+/// Subject JsValue with `_type: 'Subject'`. This function extracts the Subject and
+/// recursively converts child elements.
+fn js_value_to_subject_pattern(
+    js: &JsValue,
+) -> Option<crate::pattern::Pattern<crate::subject::Subject>> {
+    if !js.is_object() {
+        return None;
+    }
+
+    // Extract the `value` field (Subject JsValue)
+    let value_js = js_sys::Reflect::get(js, &JsValue::from_str("value")).ok()?;
+    let subject = WasmSubject::from_js_value(&value_js)?.into_subject();
+
+    // Extract the `elements` field (array of child patterns)
+    let elements_js = js_sys::Reflect::get(js, &JsValue::from_str("elements")).ok()?;
+    let elements = if js_sys::Array::is_array(&elements_js) {
+        let arr: &js_sys::Array = elements_js.unchecked_ref();
+        (0..arr.length())
+            .filter_map(|i| js_value_to_subject_pattern(&arr.get(i)))
+            .collect()
+    } else {
+        vec![]
+    };
+
+    Some(crate::pattern::Pattern {
+        value: subject,
+        elements,
+    })
+}
+
+fn subject_pattern_to_js(p: &crate::pattern::Pattern<crate::subject::Subject>) -> JsValue {
+    JsValue::from(subject_pattern_to_wasm(p))
+}
+
+fn patterns_to_js_array(
+    patterns: &[crate::pattern::Pattern<crate::subject::Subject>],
+) -> js_sys::Array {
+    let arr = js_sys::Array::new();
+    for p in patterns {
+        arr.push(&subject_pattern_to_js(p));
+    }
+    arr
+}
+
+// ---------------------------------------------------------------------------
+// Helper: parse weight JsValue → TraversalWeight<Subject>
+// ---------------------------------------------------------------------------
+
+fn parse_weight(weight_js: &JsValue) -> crate::graph::graph_query::TraversalWeight<Subject> {
+    if let Some(s) = weight_js.as_string() {
+        match s.as_str() {
+            "directed" => directed::<Subject>(),
+            "directed_reverse" => directed_reverse::<Subject>(),
+            _ => undirected::<Subject>(), // "undirected" or unknown
+        }
+    } else if weight_js.is_function() {
+        let func = js_sys::Function::from(weight_js.clone());
+        std::rc::Rc::new(
+            move |rel: &crate::pattern::Pattern<Subject>,
+                  dir: crate::graph::graph_query::TraversalDirection| {
+                let wasm_rel = subject_pattern_to_wasm(rel);
+                let dir_str = match dir {
+                    crate::graph::graph_query::TraversalDirection::Forward => "forward",
+                    crate::graph::graph_query::TraversalDirection::Backward => "backward",
+                };
+                let result = func.call2(
+                    &JsValue::undefined(),
+                    &JsValue::from(wasm_rel),
+                    &JsValue::from_str(dir_str),
+                );
+                match result {
+                    Ok(v) => v.as_f64().unwrap_or(1.0),
+                    Err(_) => 1.0,
+                }
+            },
+        )
+    } else {
+        undirected::<Subject>()
+    }
+}
+
+// ---------------------------------------------------------------------------
+// WasmReconciliationPolicy (js_name = NativeReconciliationPolicy)
+// ---------------------------------------------------------------------------
+
+/// WASM binding for ReconciliationPolicy.
+///
+/// Governs how identity conflicts are resolved when patterns with the same
+/// identity are combined into a PatternGraph.
+///
+/// Exported to JavaScript as `WasmReconciliationPolicy`.
+#[wasm_bindgen]
+pub struct WasmReconciliationPolicy {
+    #[wasm_bindgen(skip)]
+    pub inner: ReconciliationPolicy<SubjectMergeStrategy>,
+}
+
+#[wasm_bindgen]
+impl WasmReconciliationPolicy {
+    /// Incoming pattern replaces existing on identity conflict.
+    #[wasm_bindgen(js_name = lastWriteWins)]
+    pub fn last_write_wins() -> WasmReconciliationPolicy {
+        WasmReconciliationPolicy {
+            inner: ReconciliationPolicy::LastWriteWins,
+        }
+    }
+
+    /// Existing pattern is kept; incoming is discarded on identity conflict.
+    #[wasm_bindgen(js_name = firstWriteWins)]
+    pub fn first_write_wins() -> WasmReconciliationPolicy {
+        WasmReconciliationPolicy {
+            inner: ReconciliationPolicy::FirstWriteWins,
+        }
+    }
+
+    /// Identity conflict is recorded in graph.conflicts; neither wins.
+    #[wasm_bindgen(js_name = strict)]
+    pub fn strict() -> WasmReconciliationPolicy {
+        WasmReconciliationPolicy {
+            inner: ReconciliationPolicy::Strict,
+        }
+    }
+
+    /// Merge labels and properties per strategy.
+    ///
+    /// # Arguments
+    /// * `options` - Optional JS object with `elementStrategy`, `labelMerge`, `propertyMerge`
+    #[wasm_bindgen(js_name = merge)]
+    pub fn merge_policy(options: JsValue) -> WasmReconciliationPolicy {
+        let mut element_strategy = ElementMergeStrategy::UnionElements;
+        let mut label_merge = LabelMerge::UnionLabels;
+        let mut property_merge = PropertyMerge::ShallowMerge;
+
+        if options.is_object() {
+            if let Ok(es) = js_sys::Reflect::get(&options, &JsValue::from_str("elementStrategy")) {
+                if let Some(s) = es.as_string() {
+                    element_strategy = match s.as_str() {
+                        "replace" => ElementMergeStrategy::ReplaceElements,
+                        "append" => ElementMergeStrategy::AppendElements,
+                        _ => ElementMergeStrategy::UnionElements,
+                    };
+                }
+            }
+            if let Ok(lm) = js_sys::Reflect::get(&options, &JsValue::from_str("labelMerge")) {
+                if let Some(s) = lm.as_string() {
+                    label_merge = match s.as_str() {
+                        "intersect" => LabelMerge::IntersectLabels,
+                        "left" | "right" => LabelMerge::ReplaceLabels,
+                        _ => LabelMerge::UnionLabels,
+                    };
+                }
+            }
+            if let Ok(pm) = js_sys::Reflect::get(&options, &JsValue::from_str("propertyMerge")) {
+                if let Some(s) = pm.as_string() {
+                    property_merge = match s.as_str() {
+                        "left" | "right" => PropertyMerge::ReplaceProperties,
+                        "merge" => PropertyMerge::ShallowMerge,
+                        _ => PropertyMerge::ShallowMerge,
+                    };
+                }
+            }
+        }
+
+        let strategy = SubjectMergeStrategy {
+            label_merge,
+            property_merge,
+        };
+        WasmReconciliationPolicy {
+            inner: ReconciliationPolicy::Merge(element_strategy, strategy),
+        }
+    }
+}
+
+// ---------------------------------------------------------------------------
+// WasmPatternGraph (js_name = NativePatternGraph)
+// ---------------------------------------------------------------------------
+
+/// WASM binding for PatternGraph<(), Subject>.
+///
+/// A classified, indexed collection of patterns organized by graph role.
+/// Immutable after construction; merge returns a new instance.
+///
+/// Exported to JavaScript as `WasmPatternGraph`.
+#[wasm_bindgen]
+pub struct WasmPatternGraph {
+    #[wasm_bindgen(skip)]
+    pub inner: std::rc::Rc<PatternGraph<(), Subject>>,
+}
+
+#[wasm_bindgen]
+impl WasmPatternGraph {
+    /// Construct a graph from an array of NativePattern instances.
+    ///
+    /// Patterns whose values are not Subject instances are classified as `other`.
+    /// Never throws — unrecognized patterns are silently dropped.
+    #[wasm_bindgen(js_name = fromPatterns)]
+    pub fn from_patterns(
+        patterns: &js_sys::Array,
+        policy: Option<WasmReconciliationPolicy>,
+    ) -> WasmPatternGraph {
+        let classifier = canonical_classifier::<Subject>();
+        let policy_inner = policy
+            .map(|p| p.inner)
+            .unwrap_or(ReconciliationPolicy::LastWriteWins);
+
+        let subject_patterns: Vec<crate::pattern::Pattern<Subject>> = (0..patterns.length())
+            .filter_map(|i| {
+                let item = patterns.get(i);
+                // Items are WasmPattern instances serialized as JS objects.
+                // Extract the value field (which is a Subject JsValue) and elements.
+                js_value_to_subject_pattern(&item)
+            })
+            .collect();
+
+        let graph = from_patterns_with_policy(&classifier, &policy_inner, subject_patterns);
+
+        WasmPatternGraph {
+            inner: std::rc::Rc::new(graph),
+        }
+    }
+
+    /// Construct an empty graph.
+    #[wasm_bindgen(js_name = empty)]
+    pub fn empty() -> WasmPatternGraph {
+        WasmPatternGraph {
+            inner: std::rc::Rc::new(PatternGraph::empty()),
+        }
+    }
+
+    /// All node patterns in the graph.
+    #[wasm_bindgen(getter)]
+    pub fn nodes(&self) -> js_sys::Array {
+        patterns_to_js_array(&self.inner.pg_nodes.values().cloned().collect::<Vec<_>>())
+    }
+
+    /// All relationship patterns in the graph.
+    #[wasm_bindgen(getter)]
+    pub fn relationships(&self) -> js_sys::Array {
+        patterns_to_js_array(
+            &self
+                .inner
+                .pg_relationships
+                .values()
+                .cloned()
+                .collect::<Vec<_>>(),
+        )
+    }
+
+    /// All walk patterns in the graph.
+    #[wasm_bindgen(getter)]
+    pub fn walks(&self) -> js_sys::Array {
+        patterns_to_js_array(&self.inner.pg_walks.values().cloned().collect::<Vec<_>>())
+    }
+
+    /// All annotation patterns in the graph.
+    #[wasm_bindgen(getter)]
+    pub fn annotations(&self) -> js_sys::Array {
+        patterns_to_js_array(
+            &self
+                .inner
+                .pg_annotations
+                .values()
+                .cloned()
+                .collect::<Vec<_>>(),
+        )
+    }
+
+    /// Identity conflicts recorded under the strict policy.
+    ///
+    /// Returns a JS object mapping identity strings to arrays of conflicting patterns.
+    #[wasm_bindgen(getter)]
+    pub fn conflicts(&self) -> JsValue {
+        let obj = js_sys::Object::new();
+        for (id, patterns) in &self.inner.pg_conflicts {
+            let arr = patterns_to_js_array(patterns);
+            js_sys::Reflect::set(&obj, &JsValue::from_str(&id.0), &arr).ok();
+        }
+        obj.into()
+    }
+
+    /// Total count of non-conflict elements.
+    #[wasm_bindgen(getter)]
+    pub fn size(&self) -> usize {
+        self.inner.pg_nodes.len()
+            + self.inner.pg_relationships.len()
+            + self.inner.pg_walks.len()
+            + self.inner.pg_annotations.len()
+            + self.inner.pg_other.len()
+    }
+
+    /// Merge this graph with another, returning a new graph.
+    ///
+    /// Uses LastWriteWins policy for the merge.
+    #[wasm_bindgen(js_name = merge)]
+    pub fn merge(&self, other: &WasmPatternGraph) -> WasmPatternGraph {
+        let classifier = canonical_classifier::<Subject>();
+        let policy = ReconciliationPolicy::LastWriteWins;
+
+        // Collect all patterns from both graphs and rebuild
+        let all_patterns: Vec<crate::pattern::Pattern<Subject>> = self
+            .inner
+            .pg_nodes
+            .values()
+            .chain(self.inner.pg_relationships.values())
+            .chain(self.inner.pg_walks.values())
+            .chain(self.inner.pg_annotations.values())
+            .chain(other.inner.pg_nodes.values())
+            .chain(other.inner.pg_relationships.values())
+            .chain(other.inner.pg_walks.values())
+            .chain(other.inner.pg_annotations.values())
+            .cloned()
+            .collect();
+
+        let graph = from_patterns_with_policy(&classifier, &policy, all_patterns);
+
+        WasmPatternGraph {
+            inner: std::rc::Rc::new(graph),
+        }
+    }
+
+    /// Return patterns in bottom-up shape-class topological order.
+    ///
+    /// Returns null if the graph contains a cycle.
+    /// Used by paraGraph and paraGraphFixed to determine processing order.
+    #[wasm_bindgen(js_name = topoSort)]
+    pub fn topo_sort(&self) -> JsValue {
+        let query = from_pattern_graph(std::rc::Rc::clone(&self.inner));
+        match crate::graph::algorithms::topological_sort(&query) {
+            Some(sorted) => JsValue::from(patterns_to_js_array(&sorted)),
+            None => JsValue::null(),
+        }
+    }
+}
+
+// ---------------------------------------------------------------------------
+// WasmGraphQuery (js_name = NativeGraphQuery)
+// ---------------------------------------------------------------------------
+
+/// WASM binding for GraphQuery<Subject>.
+///
+/// A read-only query handle over a PatternGraph. Provides structural navigation
+/// without exposing the underlying storage.
+///
+/// Exported to JavaScript as `WasmGraphQuery`.
+#[wasm_bindgen]
+pub struct WasmGraphQuery {
+    #[wasm_bindgen(skip)]
+    pub inner: GraphQuery<Subject>,
+}
+
+#[wasm_bindgen]
+impl WasmGraphQuery {
+    /// Create a query handle from a NativePatternGraph.
+    #[wasm_bindgen(js_name = fromPatternGraph)]
+    pub fn from_pattern_graph(graph: &WasmPatternGraph) -> WasmGraphQuery {
+        WasmGraphQuery {
+            inner: from_pattern_graph(std::rc::Rc::clone(&graph.inner)),
+        }
+    }
+
+    /// All node patterns.
+    #[wasm_bindgen(js_name = nodes)]
+    pub fn nodes(&self) -> js_sys::Array {
+        patterns_to_js_array(&(self.inner.query_nodes)())
+    }
+
+    /// All relationship patterns.
+    #[wasm_bindgen(js_name = relationships)]
+    pub fn relationships(&self) -> js_sys::Array {
+        patterns_to_js_array(&(self.inner.query_relationships)())
+    }
+
+    /// Source node of a relationship. Returns null if not found.
+    #[wasm_bindgen(js_name = source)]
+    pub fn source(&self, rel: &WasmPattern) -> JsValue {
+        let subject_rel = match wasm_pattern_to_subject_pattern(rel) {
+            Some(r) => r,
+            None => return JsValue::null(),
+        };
+        match (self.inner.query_source)(&subject_rel) {
+            Some(p) => subject_pattern_to_js(&p),
+            None => JsValue::null(),
+        }
+    }
+
+    /// Target node of a relationship. Returns null if not found.
+    #[wasm_bindgen(js_name = target)]
+    pub fn target(&self, rel: &WasmPattern) -> JsValue {
+        let subject_rel = match wasm_pattern_to_subject_pattern(rel) {
+            Some(r) => r,
+            None => return JsValue::null(),
+        };
+        match (self.inner.query_target)(&subject_rel) {
+            Some(p) => subject_pattern_to_js(&p),
+            None => JsValue::null(),
+        }
+    }
+
+    /// All relationships incident to a node.
+    #[wasm_bindgen(js_name = incidentRels)]
+    pub fn incident_rels(&self, node: &WasmPattern) -> js_sys::Array {
+        let subject_node = match wasm_pattern_to_subject_pattern(node) {
+            Some(n) => n,
+            None => return js_sys::Array::new(),
+        };
+        patterns_to_js_array(&(self.inner.query_incident_rels)(&subject_node))
+    }
+
+    /// Count of incident relationships for a node.
+    #[wasm_bindgen(js_name = degree)]
+    pub fn degree(&self, node: &WasmPattern) -> usize {
+        let subject_node = match wasm_pattern_to_subject_pattern(node) {
+            Some(n) => n,
+            None => return 0,
+        };
+        (self.inner.query_degree)(&subject_node)
+    }
+
+    /// Look up a node by its identity string. Returns null if not found.
+    #[wasm_bindgen(js_name = nodeById)]
+    pub fn node_by_id(&self, identity: &str) -> JsValue {
+        let sym = Symbol(identity.to_string());
+        match (self.inner.query_node_by_id)(&sym) {
+            Some(p) => subject_pattern_to_js(&p),
+            None => JsValue::null(),
+        }
+    }
+
+    /// Look up a relationship by its identity string. Returns null if not found.
+    #[wasm_bindgen(js_name = relationshipById)]
+    pub fn relationship_by_id(&self, identity: &str) -> JsValue {
+        let sym = Symbol(identity.to_string());
+        match (self.inner.query_relationship_by_id)(&sym) {
+            Some(p) => subject_pattern_to_js(&p),
+            None => JsValue::null(),
+        }
+    }
+}
+
+// ---------------------------------------------------------------------------
+// GraphClass constant object (T009)
+// ---------------------------------------------------------------------------
+
+/// String constants for graph element classification.
+///
+/// Exported to JavaScript as a plain object (not a class).
+/// Use these constants as discriminants in transform callbacks.
+#[wasm_bindgen]
+pub fn graph_class_constants() -> JsValue {
+    let obj = js_sys::Object::new();
+    js_sys::Reflect::set(&obj, &JsValue::from_str("NODE"), &JsValue::from_str("node")).ok();
+    js_sys::Reflect::set(
+        &obj,
+        &JsValue::from_str("RELATIONSHIP"),
+        &JsValue::from_str("relationship"),
+    )
+    .ok();
+    js_sys::Reflect::set(
+        &obj,
+        &JsValue::from_str("ANNOTATION"),
+        &JsValue::from_str("annotation"),
+    )
+    .ok();
+    js_sys::Reflect::set(&obj, &JsValue::from_str("WALK"), &JsValue::from_str("walk")).ok();
+    js_sys::Reflect::set(
+        &obj,
+        &JsValue::from_str("OTHER"),
+        &JsValue::from_str("other"),
+    )
+    .ok();
+    obj.into()
+}
+
+// ---------------------------------------------------------------------------
+// TraversalDirection constant object (T011)
+// ---------------------------------------------------------------------------
+
+/// String constants for traversal direction.
+///
+/// Exported to JavaScript as a plain object (not a class).
+#[wasm_bindgen]
+pub fn traversal_direction_constants() -> JsValue {
+    let obj = js_sys::Object::new();
+    js_sys::Reflect::set(
+        &obj,
+        &JsValue::from_str("FORWARD"),
+        &JsValue::from_str("forward"),
+    )
+    .ok();
+    js_sys::Reflect::set(
+        &obj,
+        &JsValue::from_str("BACKWARD"),
+        &JsValue::from_str("backward"),
+    )
+    .ok();
+    obj.into()
+}
+
+// ---------------------------------------------------------------------------
+// Algorithm free functions (T012)
+// ---------------------------------------------------------------------------
+
+/// Breadth-first search from a start node.
+///
+/// Returns patterns in BFS order. Weight defaults to undirected.
+#[wasm_bindgen]
+pub fn bfs(query: &WasmGraphQuery, start: &WasmPattern, weight: JsValue) -> js_sys::Array {
+    let subject_start = match wasm_pattern_to_subject_pattern(start) {
+        Some(s) => s,
+        None => return js_sys::Array::new(),
+    };
+    let w = parse_weight(&weight);
+    let result = crate::graph::algorithms::bfs(&query.inner, &w, &subject_start);
+    patterns_to_js_array(&result)
+}
+
+/// Depth-first search from a start node.
+///
+/// Returns patterns in DFS order. Weight defaults to undirected.
+#[wasm_bindgen]
+pub fn dfs(query: &WasmGraphQuery, start: &WasmPattern, weight: JsValue) -> js_sys::Array {
+    let subject_start = match wasm_pattern_to_subject_pattern(start) {
+        Some(s) => s,
+        None => return js_sys::Array::new(),
+    };
+    let w = parse_weight(&weight);
+    let result = crate::graph::algorithms::dfs(&query.inner, &w, &subject_start);
+    patterns_to_js_array(&result)
+}
+
+/// Shortest path between two nodes.
+///
+/// Returns null if no path exists. Weight defaults to undirected.
+#[wasm_bindgen(js_name = shortestPath)]
+pub fn shortest_path(
+    query: &WasmGraphQuery,
+    start: &WasmPattern,
+    end: &WasmPattern,
+    weight: JsValue,
+) -> JsValue {
+    let subject_start = match wasm_pattern_to_subject_pattern(start) {
+        Some(s) => s,
+        None => return JsValue::null(),
+    };
+    let subject_end = match wasm_pattern_to_subject_pattern(end) {
+        Some(e) => e,
+        None => return JsValue::null(),
+    };
+    let w = parse_weight(&weight);
+    match crate::graph::algorithms::shortest_path(&query.inner, &w, &subject_start, &subject_end) {
+        Some(path) => JsValue::from(patterns_to_js_array(&path)),
+        None => JsValue::null(),
+    }
+}
+
+/// All paths between two nodes.
+///
+/// Returns an array of path arrays. Weight defaults to undirected.
+#[wasm_bindgen(js_name = allPaths)]
+pub fn all_paths(
+    query: &WasmGraphQuery,
+    start: &WasmPattern,
+    end: &WasmPattern,
+    weight: JsValue,
+) -> js_sys::Array {
+    let subject_start = match wasm_pattern_to_subject_pattern(start) {
+        Some(s) => s,
+        None => return js_sys::Array::new(),
+    };
+    let subject_end = match wasm_pattern_to_subject_pattern(end) {
+        Some(e) => e,
+        None => return js_sys::Array::new(),
+    };
+    let w = parse_weight(&weight);
+    let paths = crate::graph::algorithms::all_paths(&query.inner, &w, &subject_start, &subject_end);
+    let outer = js_sys::Array::new();
+    for path in &paths {
+        outer.push(&JsValue::from(patterns_to_js_array(path)));
+    }
+    outer
+}
+
+/// Connected components of the graph.
+///
+/// Returns an array of component arrays. Weight defaults to undirected.
+#[wasm_bindgen(js_name = connectedComponents)]
+pub fn connected_components(query: &WasmGraphQuery, weight: JsValue) -> js_sys::Array {
+    let w = parse_weight(&weight);
+    let components = crate::graph::algorithms::connected_components(&query.inner, &w);
+    let outer = js_sys::Array::new();
+    for component in &components {
+        outer.push(&JsValue::from(patterns_to_js_array(component)));
+    }
+    outer
+}
+
+/// Returns true if the graph contains a directed cycle.
+#[wasm_bindgen(js_name = hasCycle)]
+pub fn has_cycle(query: &WasmGraphQuery) -> bool {
+    crate::graph::algorithms::has_cycle(&query.inner)
+}
+
+/// Returns true if the graph is connected.
+///
+/// Weight defaults to undirected.
+#[wasm_bindgen(js_name = isConnected)]
+pub fn is_connected(query: &WasmGraphQuery, weight: JsValue) -> bool {
+    let w = parse_weight(&weight);
+    crate::graph::algorithms::is_connected(&query.inner, &w)
+}
+
+/// Topological sort of the graph.
+///
+/// Returns null if the graph contains a cycle.
+#[wasm_bindgen(js_name = topologicalSort)]
+pub fn topological_sort(query: &WasmGraphQuery) -> JsValue {
+    match crate::graph::algorithms::topological_sort(&query.inner) {
+        Some(sorted) => JsValue::from(patterns_to_js_array(&sorted)),
+        None => JsValue::null(),
+    }
+}
+
+/// Degree centrality for all nodes.
+///
+/// Returns a JS object mapping identity strings to normalized scores.
+#[wasm_bindgen(js_name = degreeCentrality)]
+pub fn degree_centrality(query: &WasmGraphQuery) -> JsValue {
+    let scores = crate::graph::algorithms::degree_centrality(&query.inner);
+    let obj = js_sys::Object::new();
+    for (id, score) in &scores {
+        js_sys::Reflect::set(&obj, &JsValue::from_str(&id.0), &JsValue::from_f64(*score)).ok();
+    }
+    obj.into()
+}
+
+/// Betweenness centrality for all nodes.
+///
+/// Returns a JS object mapping identity strings to scores.
+/// Weight defaults to undirected.
+#[wasm_bindgen(js_name = betweennessCentrality)]
+pub fn betweenness_centrality(query: &WasmGraphQuery, weight: JsValue) -> JsValue {
+    let w = parse_weight(&weight);
+    let scores = crate::graph::algorithms::betweenness_centrality(&query.inner, &w);
+    let obj = js_sys::Object::new();
+    for (id, score) in &scores {
+        js_sys::Reflect::set(&obj, &JsValue::from_str(&id.0), &JsValue::from_f64(*score)).ok();
+    }
+    obj.into()
+}
+
+/// Minimum spanning tree.
+///
+/// Returns an array of relationship patterns. Weight defaults to undirected.
+#[wasm_bindgen(js_name = minimumSpanningTree)]
+pub fn minimum_spanning_tree(query: &WasmGraphQuery, weight: JsValue) -> js_sys::Array {
+    let w = parse_weight(&weight);
+    let tree = crate::graph::algorithms::minimum_spanning_tree(&query.inner, &w);
+    patterns_to_js_array(&tree)
+}
+
+/// Returns all walks containing the given node.
+#[wasm_bindgen(js_name = queryWalksContaining)]
+pub fn query_walks_containing(query: &WasmGraphQuery, node: &WasmPattern) -> js_sys::Array {
+    let subject_node = match wasm_pattern_to_subject_pattern(node) {
+        Some(n) => n,
+        None => return js_sys::Array::new(),
+    };
+    let classifier = canonical_classifier::<Subject>();
+    let walks =
+        crate::graph::algorithms::query_walks_containing(&classifier, &query.inner, &subject_node);
+    patterns_to_js_array(&walks)
+}
+
+/// Returns all elements that share a container with the given node.
+#[wasm_bindgen(js_name = queryCoMembers)]
+pub fn query_co_members(
+    query: &WasmGraphQuery,
+    node: &WasmPattern,
+    container: &WasmPattern,
+) -> js_sys::Array {
+    let subject_node = match wasm_pattern_to_subject_pattern(node) {
+        Some(n) => n,
+        None => return js_sys::Array::new(),
+    };
+    let subject_container = match wasm_pattern_to_subject_pattern(container) {
+        Some(c) => c,
+        None => return js_sys::Array::new(),
+    };
+    let members =
+        crate::graph::algorithms::query_co_members(&query.inner, &subject_node, &subject_container);
+    patterns_to_js_array(&members)
+}
+
+/// Returns all annotations of the given target element.
+#[wasm_bindgen(js_name = queryAnnotationsOf)]
+pub fn query_annotations_of(query: &WasmGraphQuery, target: &WasmPattern) -> js_sys::Array {
+    let subject_target = match wasm_pattern_to_subject_pattern(target) {
+        Some(t) => t,
+        None => return js_sys::Array::new(),
+    };
+    let classifier = canonical_classifier::<Subject>();
+    let annotations =
+        crate::graph::algorithms::query_annotations_of(&classifier, &query.inner, &subject_target);
+    patterns_to_js_array(&annotations)
 }

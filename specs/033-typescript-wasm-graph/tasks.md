@@ -17,12 +17,12 @@
 
 **Purpose**: Create the three scoped npm package directories and shared build tooling. No user story work can begin until this scaffold exists.
 
-- [ ] T001 Create `typescript/@relateby/graph/` directory with `package.json` (no runtime deps, optional `effect` peer), `tsconfig.json`, and `src/index.ts` stub
-- [ ] T002 [P] Create `typescript/@relateby/pattern/` directory with `package.json` (depends on `@relateby/graph`, optional `effect` peer), `tsconfig.json`, and `src/index.ts` stub
-- [ ] T003 [P] Create `typescript/@relateby/gram/` directory with `package.json` (depends on `@relateby/pattern`), `tsconfig.json`, and `src/index.ts` stub
-- [ ] T004 Add `.gitignore` entries for `typescript/@relateby/*/wasm/`, `typescript/@relateby/*/dist/`, and `typescript/@relateby/*/node_modules/` in repo root `.gitignore`
-- [ ] T005 Add `wasm-pack` build script to `typescript/@relateby/pattern/package.json`: `build:wasm` (wasm-pack → `wasm/`), `build:ts` (tsc), `build` (both), `test` (vitest run)
-- [ ] T006 [P] Add `vitest` dev dependency and `vitest.config.ts` to each of the three packages
+- [X] T001 Create `typescript/@relateby/graph/` directory with `package.json` (no runtime deps, optional `effect` peer), `tsconfig.json`, and `src/index.ts` stub
+- [X] T002 [P] Create `typescript/@relateby/pattern/` directory with `package.json` (depends on `@relateby/graph`, optional `effect` peer), `tsconfig.json`, and `src/index.ts` stub
+- [X] T003 [P] Create `typescript/@relateby/gram/` directory with `package.json` (depends on `@relateby/pattern`), `tsconfig.json`, and `src/index.ts` stub
+- [X] T004 Add `.gitignore` entries for `typescript/@relateby/*/wasm/`, `typescript/@relateby/*/dist/`, and `typescript/@relateby/*/node_modules/` in repo root `.gitignore`
+- [X] T005 Add `wasm-pack` build script to `typescript/@relateby/pattern/package.json`: `build:wasm` (wasm-pack → `wasm/`), `build:ts` (tsc), `build` (both), `test` (vitest run)
+- [X] T006 [P] Add `vitest` dev dependency and `vitest.config.ts` to each of the three packages
 
 **Checkpoint**: Three empty package scaffolds exist; build scripts are wired; no implementation yet.
 
@@ -34,16 +34,16 @@
 
 **⚠️ CRITICAL**: No WASM-dependent TypeScript work can be tested until this phase is complete. `@relateby/graph` (pure TS) can be developed in parallel.
 
-- [ ] T007 Add `WasmPatternGraph` struct to `crates/pattern-core/src/wasm.rs` wrapping `PatternGraph<(), Subject>` with `#[wasm_bindgen]` and `js_name = "NativePatternGraph"`: static `from_patterns`, `empty`; getters `nodes`, `relationships`, `walks`, `annotations`, `conflicts`, `size`; methods `merge`, `topo_sort`
-- [ ] T008 Add `WasmReconciliationPolicy` struct to `crates/pattern-core/src/wasm.rs` with `js_name = "NativeReconciliationPolicy"`: static constructors `last_write_wins`, `first_write_wins`, `strict`, `merge`
-- [ ] T009 [P] Add `WasmGraphClass` constant object to `crates/pattern-core/src/wasm.rs` (string constants `NODE`, `RELATIONSHIP`, `ANNOTATION`, `WALK`, `OTHER`)
-- [ ] T010 Add `WasmGraphQuery` struct to `crates/pattern-core/src/wasm.rs` wrapping `GraphQuery<Subject>` via `Rc` with `js_name = "NativeGraphQuery"`: static `from_pattern_graph`; methods `nodes`, `relationships`, `source`, `target`, `incident_rels`, `degree`, `node_by_id`, `relationship_by_id`
-- [ ] T011 [P] Add `WasmTraversalDirection` constant object to `crates/pattern-core/src/wasm.rs` (string constants `FORWARD`, `BACKWARD`)
-- [ ] T012 Add free algorithm functions to `crates/pattern-core/src/wasm.rs` with `#[wasm_bindgen]`: `bfs`, `dfs`, `shortest_path`, `all_paths`, `connected_components`, `has_cycle`, `is_connected`, `topological_sort`, `degree_centrality`, `betweenness_centrality`, `minimum_spanning_tree`, `query_walks_containing`, `query_co_members`, `query_annotations_of`
-- [ ] T013 Implement weight bridge in `crates/pattern-core/src/wasm.rs`: `JsValue` weight param → map string constants to `TraversalWeight` constructors; wrap JS `Function` in `Rc<dyn Fn(...)>` closure for custom weight callbacks
-- [ ] T014 Re-export all new WASM types from `crates/pattern-wasm/src/lib.rs` under their `Native*` JS names
-- [ ] T015 Verify `cargo build --workspace --target wasm32-unknown-unknown` passes; fix any `wasm-bindgen` constraint violations in `crates/pattern-core/src/wasm.rs`
-- [ ] T016 [P] Verify `cargo test --workspace` and `cargo clippy --workspace -- -D warnings` pass; fix any issues in `crates/pattern-core/src/`
+- [X] T007 Add `WasmPatternGraph` struct to `crates/pattern-core/src/wasm.rs` wrapping `PatternGraph<(), Subject>` with `#[wasm_bindgen]` and `js_name = "NativePatternGraph"`: static `from_patterns`, `empty`; getters `nodes`, `relationships`, `walks`, `annotations`, `conflicts`, `size`; methods `merge`, `topo_sort`
+- [X] T008 Add `WasmReconciliationPolicy` struct to `crates/pattern-core/src/wasm.rs` with `js_name = "NativeReconciliationPolicy"`: static constructors `last_write_wins`, `first_write_wins`, `strict`, `merge`
+- [X] T009 [P] Add `WasmGraphClass` constant object to `crates/pattern-core/src/wasm.rs` (string constants `NODE`, `RELATIONSHIP`, `ANNOTATION`, `WALK`, `OTHER`)
+- [X] T010 Add `WasmGraphQuery` struct to `crates/pattern-core/src/wasm.rs` wrapping `GraphQuery<Subject>` via `Rc` with `js_name = "NativeGraphQuery"`: static `from_pattern_graph`; methods `nodes`, `relationships`, `source`, `target`, `incident_rels`, `degree`, `node_by_id`, `relationship_by_id`
+- [X] T011 [P] Add `WasmTraversalDirection` constant object to `crates/pattern-core/src/wasm.rs` (string constants `FORWARD`, `BACKWARD`)
+- [X] T012 Add free algorithm functions to `crates/pattern-core/src/wasm.rs` with `#[wasm_bindgen]`: `bfs`, `dfs`, `shortest_path`, `all_paths`, `connected_components`, `has_cycle`, `is_connected`, `topological_sort`, `degree_centrality`, `betweenness_centrality`, `minimum_spanning_tree`, `query_walks_containing`, `query_co_members`, `query_annotations_of`
+- [X] T013 Implement weight bridge in `crates/pattern-core/src/wasm.rs`: `JsValue` weight param → map string constants to `TraversalWeight` constructors; wrap JS `Function` in `Rc<dyn Fn(...)>` closure for custom weight callbacks
+- [X] T014 Re-export all new WASM types from `crates/pattern-wasm/src/lib.rs` under their `Native*` JS names
+- [X] T015 Verify `cargo build --workspace --target wasm32-unknown-unknown` passes; fix any `wasm-bindgen` constraint violations in `crates/pattern-core/src/wasm.rs`
+- [X] T016 [P] Verify `cargo test --workspace` and `cargo clippy --workspace -- -D warnings` pass; fix any issues in `crates/pattern-core/src/`
 
 **Checkpoint**: `wasm-pack build crates/pattern-wasm --target bundler` produces a valid `wasm/` directory with `NativePatternGraph`, `NativeReconciliationPolicy`, `NativeGraphQuery`, and all algorithm functions exported.
 
@@ -57,12 +57,12 @@
 
 ### Implementation for User Story 4
 
-- [ ] T017 [US4] Implement `typescript/@relateby/pattern/src/index.ts`: export `init()` (wasm-pack glue), `NativePattern`, `NativeSubject`, `NativeValue`, `NativePatternGraph`, `NativeReconciliationPolicy`, `NativeGraphQuery`, `NativeValidationRules`, `NativeStructureAnalysis`, `GraphClass`, `TraversalDirection`, and all algorithm functions; return types declared against `@relateby/graph` interfaces (e.g., `NativePatternGraph.fromPatterns()` returns `PatternGraph<Subject>`)
-- [ ] T018 [US4] Add Effect detection shim to `typescript/@relateby/pattern/src/index.ts`: when `effect` is available, wrap `{ _tag: 'Right'/'Left' }` WASM returns as `Either.Either<T,E>` and nullable returns as `Option.Option<T>`; when absent, return raw shapes or `T | null`
-- [ ] T019 [P] [US4] Implement `typescript/@relateby/gram/src/index.ts`: re-export `Gram.parse` and `Gram.stringify` from WASM via `@relateby/pattern`
-- [ ] T020 [US4] Add bundler-auto-init path to `typescript/@relateby/pattern/src/index.ts`: rely on the `wasm-pack --target bundler` generated glue, which handles automatic initialization via ES module top-level await; preserve explicit `await init()` export for Node.js and other non-bundler environments (do NOT use `import.meta` or `document` detection — the bundler target handles this at build time)
-- [ ] T021 [US4] Build `@relateby/pattern` end-to-end: run `npm run build` in `typescript/@relateby/pattern/`; confirm `dist/` and `wasm/` are produced
-- [ ] T022 [P] [US4] Build `@relateby/gram` end-to-end: run `npm run build` in `typescript/@relateby/gram/`; confirm `dist/` is produced
+- [X] T017 [US4] Implement `typescript/@relateby/pattern/src/index.ts`: export `init()` (wasm-pack glue), `NativePattern`, `NativeSubject`, `NativeValue`, `NativePatternGraph`, `NativeReconciliationPolicy`, `NativeGraphQuery`, `NativeValidationRules`, `NativeStructureAnalysis`, `GraphClass`, `TraversalDirection`, and all algorithm functions; return types declared against `@relateby/graph` interfaces (e.g., `NativePatternGraph.fromPatterns()` returns `PatternGraph<Subject>`)
+- [X] T018 [US4] Add Effect detection shim to `typescript/@relateby/pattern/src/index.ts`: when `effect` is available, wrap `{ _tag: 'Right'/'Left' }` WASM returns as `Either.Either<T,E>` and nullable returns as `Option.Option<T>`; when absent, return raw shapes or `T | null`
+- [X] T019 [P] [US4] Implement `typescript/@relateby/gram/src/index.ts`: re-export `Gram.parse` and `Gram.stringify` from WASM via `@relateby/pattern`
+- [X] T020 [US4] Add bundler-auto-init path to `typescript/@relateby/pattern/src/index.ts`: rely on the `wasm-pack --target bundler` generated glue, which handles automatic initialization via ES module top-level await; preserve explicit `await init()` export for Node.js and other non-bundler environments (do NOT use `import.meta` or `document` detection — the bundler target handles this at build time)
+- [X] T021 [US4] Build `@relateby/pattern` end-to-end: run `npm run build` in `typescript/@relateby/pattern/`; confirm `dist/` and `wasm/` are produced
+- [X] T022 [P] [US4] Build `@relateby/gram` end-to-end: run `npm run build` in `typescript/@relateby/gram/`; confirm `dist/` is produced
 
 **Checkpoint**: `@relateby/pattern` and `@relateby/gram` build and initialize. `@relateby/graph` scaffold exists. US4 acceptance scenarios 1–6 are verifiable.
 
@@ -76,12 +76,12 @@
 
 ### Implementation for User Story 1
 
-- [ ] T023 [US1] Implement `NativePatternGraph` TypeScript declaration augmentation in `typescript/@relateby/pattern/src/index.ts` (extends T017's exports — do not replace): declare `fromPatterns` return type as `PatternGraph<Subject>`, `nodes`/`relationships`/`walks`/`annotations` as `readonly Pattern<Subject>[]`, `conflicts` as `Record<string, readonly Pattern<Subject>[]>`, `topoSort()` as `readonly Pattern<Subject>[]`
-- [ ] T024 [US1] Implement `NativeGraphQuery` TypeScript declaration augmentation in `typescript/@relateby/pattern/src/index.ts` (extends T017's exports): declare `fromPatternGraph` return type as `GraphQuery<Subject>`; all method signatures typed against `Pattern<Subject>` from `@relateby/graph`
-- [ ] T025 [US1] Type algorithm function signatures in `typescript/@relateby/pattern/src/index.ts` (extends T017's exports): `bfs`, `dfs`, `shortestPath`, `allPaths`, `connectedComponents`, `queryWalksContaining`, `queryCoMembers`, `queryAnnotationsOf` typed against `GraphQuery<Subject>` and `Pattern<Subject>`; `shortestPath` returns `Pattern<Subject>[] | null` (or `Option<Pattern<Subject>[]>` with Effect)
-- [ ] T026 [US1] Write vitest integration test in `typescript/@relateby/pattern/tests/pattern.test.ts`: construct graph from node + relationship patterns; verify `nodes.length`, `relationships.length`; call `bfs` and verify traversal order; call `shortestPath` and verify path; call `merge` with strict policy and verify `conflicts`
-- [ ] T027 [US1] Write vitest integration test in `typescript/@relateby/pattern/tests/pattern.test.ts` (separate `describe` block from T026): verify `NativeReconciliationPolicy.lastWriteWins()`, `firstWriteWins()`, `strict()`, and `merge()` all construct without error; verify `strict` records conflict in `graph.conflicts`
-- [ ] T028 [US1] Run `npm test` in `typescript/@relateby/pattern/`; fix any failures
+- [X] T023 [US1] Implement `NativePatternGraph` TypeScript declaration augmentation in `typescript/@relateby/pattern/src/index.ts` (extends T017's exports — do not replace): declare `fromPatterns` return type as `PatternGraph<Subject>`, `nodes`/`relationships`/`walks`/`annotations` as `readonly Pattern<Subject>[]`, `conflicts` as `Record<string, readonly Pattern<Subject>[]>`, `topoSort()` as `readonly Pattern<Subject>[]`
+- [X] T024 [US1] Implement `NativeGraphQuery` TypeScript declaration augmentation in `typescript/@relateby/pattern/src/index.ts` (extends T017's exports): declare `fromPatternGraph` return type as `GraphQuery<Subject>`; all method signatures typed against `Pattern<Subject>` from `@relateby/graph`
+- [X] T025 [US1] Type algorithm function signatures in `typescript/@relateby/pattern/src/index.ts` (extends T017's exports): `bfs`, `dfs`, `shortestPath`, `allPaths`, `connectedComponents`, `queryWalksContaining`, `queryCoMembers`, `queryAnnotationsOf` typed against `GraphQuery<Subject>` and `Pattern<Subject>`; `shortestPath` returns `Pattern<Subject>[] | null` (or `Option<Pattern<Subject>[]>` with Effect)
+- [X] T026 [US1] Write vitest integration test in `typescript/@relateby/pattern/tests/pattern.test.ts`: construct graph from node + relationship patterns; verify `nodes.length`, `relationships.length`; call `bfs` and verify traversal order; call `shortestPath` and verify path; call `merge` with strict policy and verify `conflicts`
+- [X] T027 [US1] Write vitest integration test in `typescript/@relateby/pattern/tests/pattern.test.ts` (separate `describe` block from T026): verify `NativeReconciliationPolicy.lastWriteWins()`, `firstWriteWins()`, `strict()`, and `merge()` all construct without error; verify `strict` records conflict in `graph.conflicts`
+- [X] T028 [US1] Run `npm test` in `typescript/@relateby/pattern/`; fix any failures
 
 **Checkpoint**: US1 acceptance scenarios 1–5 pass. A developer can build a graph, query it, and run traversals in under 10 lines (SC-001).
 
@@ -95,10 +95,10 @@
 
 ### Implementation for User Story 2
 
-- [ ] T029 [US2] Type analysis algorithm signatures in `typescript/@relateby/pattern/src/index.ts`: `hasCycle`, `isConnected` → `boolean`; `connectedComponents` → `Pattern<Subject>[][]`; `topologicalSort` → `Pattern<Subject>[] | null` (or `Option` with Effect); `degreeCentrality`, `betweennessCentrality` → `Record<string, number>`; `minimumSpanningTree` → `Pattern<Subject>[]`
-- [ ] T030 [US2] Write vitest tests in `typescript/@relateby/pattern/tests/pattern.test.ts` for structural analysis: cyclic graph → `hasCycle` returns `true`; acyclic → `false`; disconnected graph → `connectedComponents` returns correct groups; DAG → `topologicalSort` returns valid order; cyclic → `topologicalSort` returns `null`/`None`
-- [ ] T031 [P] [US2] Write vitest tests in `typescript/@relateby/pattern/tests/pattern.test.ts` for centrality: `degreeCentrality` returns normalized scores; `betweennessCentrality` returns scores; `minimumSpanningTree` returns correct relationship set on a weighted graph
-- [ ] T032 [US2] Run `npm test` in `typescript/@relateby/pattern/`; fix any failures
+- [X] T029 [US2] Type analysis algorithm signatures in `typescript/@relateby/pattern/src/index.ts`: `hasCycle`, `isConnected` → `boolean`; `connectedComponents` → `Pattern<Subject>[][]`; `topologicalSort` → `Pattern<Subject>[] | null` (or `Option` with Effect); `degreeCentrality`, `betweennessCentrality` → `Record<string, number>`; `minimumSpanningTree` → `Pattern<Subject>[]`
+- [X] T030 [US2] Write vitest tests in `typescript/@relateby/pattern/tests/pattern.test.ts` for structural analysis: cyclic graph → `hasCycle` returns `true`; acyclic → `false`; disconnected graph → `connectedComponents` returns correct groups; DAG → `topologicalSort` returns valid order; cyclic → `topologicalSort` returns `null`/`None`
+- [X] T031 [P] [US2] Write vitest tests in `typescript/@relateby/pattern/tests/pattern.test.ts` for centrality: `degreeCentrality` returns normalized scores; `betweennessCentrality` returns scores; `minimumSpanningTree` returns correct relationship set on a weighted graph
+- [X] T032 [US2] Run `npm test` in `typescript/@relateby/pattern/`; fix any failures
 
 **Checkpoint**: US2 acceptance scenarios 1–5 pass. All structural analysis functions produce results consistent with Haskell reference (SC-002).
 
@@ -112,20 +112,20 @@
 
 ### Implementation for User Story 3
 
-- [ ] T033 [US3] Implement core interfaces in `typescript/@relateby/graph/src/index.ts`: export `Subject`, `Pattern<V>`, `PatternGraph<V>`, `GraphQuery<V>`, `GraphView<V>` as TypeScript interfaces per `contracts/ts-api.md`
-- [ ] T034 [US3] Implement `toGraphView<V>` in `typescript/@relateby/graph/src/index.ts`: read the pre-classified arrays (`nodes`, `relationships`, `walks`, `annotations`) from `PatternGraph<V>` and map them to `[GraphClass, Pattern<V>]` pairs (no re-classification); pair with the `PatternGraph<V>` itself cast as `GraphQuery<V>` snapshot; return `GraphView<V>`
-- [ ] T035 [P] [US3] Implement `GraphClass` discriminated union and smart constructors (`GNode`, `GRelationship`, `GWalk`, `GAnnotation`, `GOther`) in `typescript/@relateby/graph/src/index.ts`
-- [ ] T036 [P] [US3] Implement `Substitution` discriminated union and smart constructors (`DeleteContainer`, `SpliceGap`, `ReplaceWithSurrogate`) in `typescript/@relateby/graph/src/index.ts`
-- [ ] T037 [US3] Implement `mapGraph<V>` and `mapAllGraph<V>` in `typescript/@relateby/graph/src/index.ts`: curried; dispatch per `GraphClass` tag using `Match.tag` + `Match.exhaustive` when Effect available, `switch` fallback otherwise
-- [ ] T038 [US3] Implement `filterGraph<V>` in `typescript/@relateby/graph/src/index.ts`: curried; apply `Substitution` strategy when removing elements from inside walks/annotations
-- [ ] T039 [P] [US3] Implement `foldGraph<V, M>` in `typescript/@relateby/graph/src/index.ts`: curried; reduce all `[GraphClass, Pattern<V>]` pairs with explicit `empty` and `combine`
-- [ ] T040 [US3] Implement `mapWithContext<V>` in `typescript/@relateby/graph/src/index.ts`: curried; pass snapshot `GraphQuery<V>` from `view.viewQuery` to each element callback
-- [ ] T041 [US3] Implement `paraGraph<V, R>` in `typescript/@relateby/graph/src/index.ts`: curried; call `view.viewQuery`'s underlying `topoSort()` once for ordering; iterate bottom-up in TypeScript; return `ReadonlyMap<string, R>`
-- [ ] T042 [US3] Implement `paraGraphFixed<V, R>` in `typescript/@relateby/graph/src/index.ts`: curried; iterate `paraGraph` until convergence predicate `conv(prev, next)` returns `true`
-- [ ] T043 [P] [US3] Implement `unfoldGraph<S, V>` in `typescript/@relateby/graph/src/index.ts`: curried; expand seeds → patterns via `expand`; construct `PatternGraph<V>` via `build`
-- [ ] T044 [US3] Write vitest tests in `typescript/@relateby/graph/tests/graph.test.ts` using plain TS stubs only (no WASM, no `init()`): verify `toGraphView` classifies correctly; `mapGraph` applies per-class mappers; `filterGraph` with `SpliceGap` removes and splices; `foldGraph` accumulates correctly; `paraGraph` returns bottom-up depths; `unfoldGraph` expands seeds
-- [ ] T045 [US3] Write vitest tests in `typescript/@relateby/graph/tests/graph.test.ts` for pipe composition: (a) SC-011 — compose three transforms with `pipe` using plain TS stubs; confirm no `@relateby/pattern` import appears in test file; (b) SC-010 — assert `pipe(view, f, g, h)` produces the same `GraphView` as `h(g(f(view)))` applied sequentially on identical input
-- [ ] T046 [US3] Run `npm test` in `typescript/@relateby/graph/`; fix any failures; confirm zero imports of `@relateby/pattern` in `src/index.ts`
+- [X] T033 [US3] Implement core interfaces in `typescript/@relateby/graph/src/index.ts`: export `Subject`, `Pattern<V>`, `PatternGraph<V>`, `GraphQuery<V>`, `GraphView<V>` as TypeScript interfaces per `contracts/ts-api.md`
+- [X] T034 [US3] Implement `toGraphView<V>` in `typescript/@relateby/graph/src/index.ts`: read the pre-classified arrays (`nodes`, `relationships`, `walks`, `annotations`) from `PatternGraph<V>` and map them to `[GraphClass, Pattern<V>]` pairs (no re-classification); pair with the `PatternGraph<V>` itself cast as `GraphQuery<V>` snapshot; return `GraphView<V>`
+- [X] T035 [P] [US3] Implement `GraphClass` discriminated union and smart constructors (`GNode`, `GRelationship`, `GWalk`, `GAnnotation`, `GOther`) in `typescript/@relateby/graph/src/index.ts`
+- [X] T036 [P] [US3] Implement `Substitution` discriminated union and smart constructors (`DeleteContainer`, `SpliceGap`, `ReplaceWithSurrogate`) in `typescript/@relateby/graph/src/index.ts`
+- [X] T037 [US3] Implement `mapGraph<V>` and `mapAllGraph<V>` in `typescript/@relateby/graph/src/index.ts`: curried; dispatch per `GraphClass` tag using `Match.tag` + `Match.exhaustive` when Effect available, `switch` fallback otherwise
+- [X] T038 [US3] Implement `filterGraph<V>` in `typescript/@relateby/graph/src/index.ts`: curried; apply `Substitution` strategy when removing elements from inside walks/annotations
+- [X] T039 [P] [US3] Implement `foldGraph<V, M>` in `typescript/@relateby/graph/src/index.ts`: curried; reduce all `[GraphClass, Pattern<V>]` pairs with explicit `empty` and `combine`
+- [X] T040 [US3] Implement `mapWithContext<V>` in `typescript/@relateby/graph/src/index.ts`: curried; pass snapshot `GraphQuery<V>` from `view.viewQuery` to each element callback
+- [X] T041 [US3] Implement `paraGraph<V, R>` in `typescript/@relateby/graph/src/index.ts`: curried; call `view.viewQuery`'s underlying `topoSort()` once for ordering; iterate bottom-up in TypeScript; return `ReadonlyMap<string, R>`
+- [X] T042 [US3] Implement `paraGraphFixed<V, R>` in `typescript/@relateby/graph/src/index.ts`: curried; iterate `paraGraph` until convergence predicate `conv(prev, next)` returns `true`
+- [X] T043 [P] [US3] Implement `unfoldGraph<S, V>` in `typescript/@relateby/graph/src/index.ts`: curried; expand seeds → patterns via `expand`; construct `PatternGraph<V>` via `build`
+- [X] T044 [US3] Write vitest tests in `typescript/@relateby/graph/tests/graph.test.ts` using plain TS stubs only (no WASM, no `init()`): verify `toGraphView` classifies correctly; `mapGraph` applies per-class mappers; `filterGraph` with `SpliceGap` removes and splices; `foldGraph` accumulates correctly; `paraGraph` returns bottom-up depths; `unfoldGraph` expands seeds
+- [X] T045 [US3] Write vitest tests in `typescript/@relateby/graph/tests/graph.test.ts` for pipe composition: (a) SC-011 — compose three transforms with `pipe` using plain TS stubs; confirm no `@relateby/pattern` import appears in test file; (b) SC-010 — assert `pipe(view, f, g, h)` produces the same `GraphView` as `h(g(f(view)))` applied sequentially on identical input
+- [X] T046 [US3] Run `npm test` in `typescript/@relateby/graph/`; fix any failures; confirm zero imports of `@relateby/pattern` in `src/index.ts`
 
 **Checkpoint**: US3 acceptance scenarios 1–7 pass. SC-003 and SC-011 verified. `@relateby/graph` tests pass without WASM initialization.
 
@@ -135,11 +135,11 @@
 
 **Purpose**: Examples, documentation, Effect integration completeness, and CI validation.
 
-- [ ] T047 [P] Create `examples/relateby-graph/package.json` and `examples/relateby-graph/README.md` with prerequisites and run instructions
-- [ ] T048 [P] Create `examples/relateby-graph/node.mjs`: build graph from `NativePattern`/`NativeSubject`, run `bfs`, compute `degreeCentrality`, apply `mapGraph` + `filterGraph` pipeline via `@relateby/graph`; verify expected console output matches quickstart.md
-- [ ] T049 [P] Create `examples/relateby-graph/browser.html`: import `@relateby/pattern` without explicit `init()` (bundler auto-init via wasm-pack `--target bundler` glue); verify `NativePatternGraph` is usable after page load; document CDN/bundler usage (US4 scenario 2, SC-005)
-- [ ] T050 Create `docs/typescript-graph.md`: package installation (`@relateby/pattern`, `@relateby/gram`, `@relateby/graph`); `init()` usage; graph construction with `NativePatternGraph` + `NativeReconciliationPolicy`; querying with `NativeGraphQuery`; algorithms; pure TS transforms via `@relateby/graph`; WASM-free stub pattern (SC-011 example); Effect integration; weight callback performance note (one WASM crossing per traversed edge)
-- [ ] T051 [P] Update `docs/wasm-usage.md`: add "Graph API" section pointing to `docs/typescript-graph.md`; update package name references to `@relateby/pattern`, `@relateby/gram`, `@relateby/graph`
+- [X] T047 [P] Create `examples/relateby-graph/package.json` and `examples/relateby-graph/README.md` with prerequisites and run instructions
+- [X] T048 [P] Create `examples/relateby-graph/node.mjs`: build graph from `NativePattern`/`NativeSubject`, run `bfs`, compute `degreeCentrality`, apply `mapGraph` + `filterGraph` pipeline via `@relateby/graph`; verify expected console output matches quickstart.md
+- [X] T049 [P] Create `examples/relateby-graph/browser.html`: import `@relateby/pattern` without explicit `init()` (bundler auto-init via wasm-pack `--target bundler` glue); verify `NativePatternGraph` is usable after page load; document CDN/bundler usage (US4 scenario 2, SC-005)
+- [X] T050 Create `docs/typescript-graph.md`: package installation (`@relateby/pattern`, `@relateby/gram`, `@relateby/graph`); `init()` usage; graph construction with `NativePatternGraph` + `NativeReconciliationPolicy`; querying with `NativeGraphQuery`; algorithms; pure TS transforms via `@relateby/graph`; WASM-free stub pattern (SC-011 example); Effect integration; weight callback performance note (one WASM crossing per traversed edge)
+- [X] T051 [P] Update `docs/wasm-usage.md`: add "Graph API" section pointing to `docs/typescript-graph.md`; update package name references to `@relateby/pattern`, `@relateby/gram`, `@relateby/graph`
 - [x] T052 ~~Update `quickstart.md` in `specs/033-typescript-wasm-graph/`~~ — completed during analysis remediation; all import strings and directory paths updated to `@relateby/*`
 - [ ] T053 [P] Verify Effect integration end-to-end: install `effect` in `typescript/@relateby/pattern/`; confirm `shortestPath` returns `Option.Option<Pattern<Subject>[]>`; confirm `topologicalSort` returns `Option.Option<Pattern<Subject>[]>`; confirm `validate` returns `Either.Either<void, ValidationError>`
 - [ ] T054 Run `node examples/relateby-graph/node.mjs` and verify output matches expected output in quickstart.md
