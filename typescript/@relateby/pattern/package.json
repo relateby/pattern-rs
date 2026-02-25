@@ -1,0 +1,47 @@
+{
+  "name": "@relateby/pattern",
+  "version": "0.1.0",
+  "description": "WASM-backed pattern and graph types for relateby",
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "import": "./dist/index.js",
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    }
+  },
+  "files": [
+    "dist",
+    "wasm",
+    "wasm-node"
+  ],
+  "scripts": {
+    "build:wasm": "wasm-pack build ../../../crates/pattern-wasm --target bundler --out-dir ../../typescript/@relateby/pattern/wasm",
+    "build:wasm:node": "wasm-pack build ../../../crates/pattern-wasm --target nodejs --out-dir ../../typescript/@relateby/pattern/wasm-node",
+    "build:ts": "tsc",
+    "build": "npm run build:wasm && npm run build:wasm:node && npm run build:ts",
+    "test": "vitest run",
+    "test:watch": "vitest"
+  },
+  "dependencies": {
+    "@relateby/graph": "*"
+  },
+  "devDependencies": {
+    "@types/node": "^25.3.0",
+    "typescript": "^5.0.0",
+    "vitest": "^2.0.0"
+  },
+  "peerDependencies": {
+    "effect": ">=3.0.0"
+  },
+  "peerDependenciesMeta": {
+    "effect": {
+      "optional": true
+    }
+  },
+  "overrides": {
+    "why-is-node-running": "3.2.2"
+  }
+}

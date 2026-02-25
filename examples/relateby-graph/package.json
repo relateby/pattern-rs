@@ -1,0 +1,13 @@
+{
+  "name": "relateby-graph-example",
+  "version": "0.1.0",
+  "description": "Example: TypeScript/WASM graph API with @relateby/pattern and @relateby/graph",
+  "type": "module",
+  "scripts": {
+    "start": "node node.mjs"
+  },
+  "dependencies": {
+    "@relateby/pattern": "file:../../typescript/@relateby/pattern",
+    "@relateby/graph": "file:../../typescript/@relateby/graph"
+  }
+}
