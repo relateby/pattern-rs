@@ -63,7 +63,6 @@ Rust (MSRV: 1.70.0, edition: 2021): Follow standard conventions
 ## Recent Changes
 - 033-typescript-wasm-graph: Added Rust 1.70.0 (MSRV, workspace), TypeScript 5.x, wasm-bindgen 0.2, wasm-pack
 - 032-graph-transform: Added Rust 1.70.0 (workspace MSRV), Edition 2021 + `std` only — `HashMap`, `HashSet`, `Vec`, `Rc`/`Arc` (no new external crates); depends on 030-graph-classifier and 031-graph-query types
-- 032-graph-transform: Added Rust 1.70.0 (workspace MSRV), Edition 2021 + `std` only — `HashMap`, `HashSet`, `Vec`, `Rc`/`Arc` (no new external crates); depends on 030-graph-classifier and 031-graph-query types
 
 
 <!-- MANUAL ADDITIONS START -->
