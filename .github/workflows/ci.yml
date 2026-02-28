@@ -52,7 +52,7 @@ jobs:
             ~/.cargo/git
             target
           key: ${{ runner.os }}-cargo-wasm-${{ hashFiles('**/Cargo.lock') }}
-      - run: cargo build --target wasm32-unknown-unknown -p pattern-core
+      - run: cargo build --target wasm32-unknown-unknown -p relateby-pattern
 
   # TypeScript / WASM packages - build as sanity check (no publish)
   build-typescript:

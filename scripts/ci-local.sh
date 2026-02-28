@@ -127,12 +127,26 @@ echo ""
 
 # 5. Python build (optional - requires maturin and Python)
 echo -n "Checking Python build setup... "
-if command -v maturin >/dev/null 2>&1 && command -v python3 >/dev/null 2>&1; then
-    echo -e "${GREEN}✓${NC}"
+# Prefer 'python' so we use the same interpreter as `python --version` (e.g. asdf 3.13);
+# 'python3' may point to a newer interpreter (e.g. Homebrew 3.14) that PyO3 does not yet support.
+# Use the interpreter's full path so maturin doesn't discover a different one.
+PYTHON_EXE=""
+for cmd in python python3; do
+    if command -v "$cmd" >/dev/null 2>&1; then
+        exe=$(command -v "$cmd")
+        if "$exe" -c "import sys; sys.exit(0 if sys.version_info >= (3, 8) and sys.version_info < (3, 14) else 1)" 2>/dev/null; then
+            PYTHON_EXE="$exe"
+            break
+        fi
+    fi
+done
+if command -v maturin >/dev/null 2>&1 && [ -n "$PYTHON_EXE" ]; then
+    echo -e "${GREEN}✓${NC} (using $PYTHON_EXE: $("$PYTHON_EXE" --version 2>&1))"
     # Python build is optional for now, so don't fail the script if it fails
     echo -n "Running Python build... "
     cd crates/pattern-core
-    if maturin build --release --features python > /tmp/ci-check.log 2>&1; then
+    # Pass interpreter explicitly and set PYO3_PYTHON so the PyO3 build script uses the same Python
+    if MATURIN_PYTHON="$PYTHON_EXE" PYO3_PYTHON="$PYTHON_EXE" maturin build --release --features python --interpreter "$PYTHON_EXE" > /tmp/ci-check.log 2>&1; then
         echo -e "${GREEN}✓${NC}"
     else
         echo -e "${YELLOW}⚠${NC} (failed, but non-blocking)"
@@ -146,8 +160,8 @@ else
         echo "  Install maturin with: pip install maturin"
         echo "  Or with uv: cd crates/pattern-core && uv pip install -e '.[dev]'"
     fi
-    if ! command -v python3 >/dev/null 2>&1; then
-        echo "  Install Python 3.8+ (python3)"
+    if [ -z "$PYTHON_EXE" ]; then
+        echo "  Need Python 3.8–3.13 (PyO3 does not support 3.14 yet). Use asdf/pyenv to install 3.13 and set as default ('python' or 'python3')."
     fi
 fi
 echo ""

@@ -11,6 +11,7 @@ This project provides comprehensive documentation for understanding the Pattern 
 - **[Introduction to Patterns](docs/introduction.md)**: Core concepts, terminology, and the "decorated sequence" model.
 - **[Gram Notation Reference](docs/gram-notation.md)**: A detailed guide to Gram syntax and how it maps to Pattern structures.
 - **[Rust Usage Guide](docs/rust-usage.md)**: Practical examples for using the library in Rust projects.
+- **[Release and publishing](docs/release.md)**: How to publish Rust crates to crates.io and the Python package to PyPI.
 
 For information on the project's testing infrastructure, see **[Testing Infrastructure](docs/testing-infrastructure.md)**.
 
