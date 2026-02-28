@@ -24,8 +24,8 @@
 
 **Purpose**: Verify workspace and prepare for publish-related changes
 
-- [ ] T001 Verify workspace builds and CI passes at repo root: run `cargo build --workspace`, `cargo test --workspace`, `cargo clippy --workspace -- -D warnings`, `cargo fmt --all -- --check` (or `./scripts/ci-local.sh`)
-- [ ] T002 [P] Ensure `docs/` directory exists at repo root (create if missing for release instructions)
+- [X] T001 Verify workspace builds and CI passes at repo root: run `cargo build --workspace`, `cargo test --workspace`, `cargo clippy --workspace -- -D warnings`, `cargo fmt --all -- --check` (or `./scripts/ci-local.sh`)
+- [X] T002 [P] Ensure `docs/` directory exists at repo root (create if missing for release instructions)
 
 ---
 
@@ -35,9 +35,9 @@
 
 **Critical**: No user story implementation until this phase is complete.
 
-- [ ] T003 [P] Set `name = "relateby-pattern"` and add `readme`, `documentation`, `repository`, and `homepage` to `crates/pattern-core/Cargo.toml` per plan and research.md (documentation = `https://docs.rs/relateby-pattern`)
-- [ ] T004 Set `name = "relateby-gram"` and add `readme`, `documentation`, `repository`, and `relateby-pattern` versioned dependency (`path` + `version = "0.1.0"`) to `crates/gram-codec/Cargo.toml`
-- [ ] T005 Create `docs/release.md` with minimal section headings: Prerequisites, Publish order, Tag format and workflow, Recovery
+- [X] T003 [P] Set `name = "relateby-pattern"` and add `readme`, `documentation`, `repository`, and `homepage` to `crates/pattern-core/Cargo.toml` per plan and research.md (documentation = `https://docs.rs/relateby-pattern`)
+- [X] T004 Set `name = "relateby-gram"` and add `readme`, `documentation`, `repository`, and `relateby-pattern` versioned dependency (`path` + `version = "0.1.0"`) to `crates/gram-codec/Cargo.toml`
+- [X] T005 Create `docs/release.md` with minimal section headings: Prerequisites, Publish order, Tag format and workflow, Recovery
 
 **Checkpoint**: Metadata and dependency ready; release doc placeholder exists.
 
@@ -51,9 +51,9 @@
 
 ### Implementation for User Story 1
 
-- [ ] T006 [US1] Run `cargo publish -p relateby-pattern --dry-run` and fix any packaging or metadata errors in `crates/pattern-core/` (e.g. missing files, invalid metadata)
-- [ ] T007 [US1] Run `cargo publish -p relateby-gram --dry-run` and fix any packaging or metadata errors in `crates/gram-codec/`
-- [ ] T008 [US1] Add publish order (relateby-pattern then relateby-gram) to `docs/release.md`
+- [X] T006 [US1] Run `cargo publish -p relateby-pattern --dry-run` and fix any packaging or metadata errors in `crates/pattern-core/` (e.g. missing files, invalid metadata)
+- [X] T007 [US1] Run `cargo publish -p relateby-gram --dry-run` and fix any packaging or metadata errors in `crates/gram-codec/`
+- [X] T008 [US1] Add publish order (relateby-pattern then relateby-gram) to `docs/release.md`
 
 **Checkpoint**: User Story 1 complete; dry-run passes for both crates.
 
@@ -67,12 +67,12 @@
 
 ### Implementation for User Story 4
 
-- [ ] T009 [US4] Create `.github/workflows/publish.yml` with `on: push: tags: ['v*']` per `specs/034-publish-crates-workflow/contracts/publish-workflow.md`
-- [ ] T010 [US4] Add checkout (with submodules if needed), Rust toolchain, and Cargo cache steps to `.github/workflows/publish.yml`
-- [ ] T011 [US4] Add build, test, clippy, and fmt-check steps to `.github/workflows/publish.yml` (fail job on failure so no publish runs)
-- [ ] T012 [US4] Add `cargo publish -p relateby-pattern --token ${{ secrets.CARGO_REGISTRY_TOKEN }}` step to `.github/workflows/publish.yml`
-- [ ] T013 [US4] Add optional delay (e.g. 30s) and `cargo publish -p relateby-gram --token ${{ secrets.CARGO_REGISTRY_TOKEN }}` step to `.github/workflows/publish.yml`
-- [ ] T014 [US4] Document `CARGO_REGISTRY_TOKEN` (create at crates.io, add under GitHub Settings → Secrets) in `docs/release.md` Prerequisites
+- [X] T009 [US4] Create `.github/workflows/publish.yml` with `on: push: tags: ['v*']` per `specs/034-publish-crates-workflow/contracts/publish-workflow.md`
+- [X] T010 [US4] Add checkout (with submodules if needed), Rust toolchain, and Cargo cache steps to `.github/workflows/publish.yml`
+- [X] T011 [US4] Add build, test, clippy, and fmt-check steps to `.github/workflows/publish.yml` (fail job on failure so no publish runs)
+- [X] T012 [US4] Add `cargo publish -p relateby-pattern --token ${{ secrets.CARGO_REGISTRY_TOKEN }}` step to `.github/workflows/publish.yml`
+- [X] T013 [US4] Add optional delay (e.g. 30s) and `cargo publish -p relateby-gram --token ${{ secrets.CARGO_REGISTRY_TOKEN }}` step to `.github/workflows/publish.yml`
+- [X] T014 [US4] Document `CARGO_REGISTRY_TOKEN` (create at crates.io, add under GitHub Settings → Secrets) in `docs/release.md` Prerequisites
 
 **Checkpoint**: User Story 4 complete; workflow file and secret documentation in place.
 
@@ -86,10 +86,10 @@
 
 ### Implementation for User Story 2
 
-- [ ] T015 [P] [US2] Set `documentation = "https://docs.rs/relateby-pattern"` in `crates/pattern-core/Cargo.toml` if not already set
-- [ ] T016 [P] [US2] Set `documentation = "https://docs.rs/relateby-gram"` in `crates/gram-codec/Cargo.toml` if not already set
-- [ ] T017 [US2] Add `cargo doc --no-deps` step for publishable crates to `.github/workflows/publish.yml` before publish (optional per research; or document that docs.rs builds docs)
-- [ ] T018 [US2] Fix doc warnings in `crates/pattern-core/src/` and `crates/gram-codec/src/` so `cargo doc --no-deps` builds without warnings (or document in `docs/release.md`)
+- [X] T015 [P] [US2] Set `documentation = "https://docs.rs/relateby-pattern"` in `crates/pattern-core/Cargo.toml` if not already set
+- [X] T016 [P] [US2] Set `documentation = "https://docs.rs/relateby-gram"` in `crates/gram-codec/Cargo.toml` if not already set
+- [X] T017 [US2] Add `cargo doc --no-deps` step for publishable crates to `.github/workflows/publish.yml` before publish (optional per research; or document that docs.rs builds docs)
+- [X] T018 [US2] Fix doc warnings in `crates/pattern-core/src/` and `crates/gram-codec/src/` so `cargo doc --no-deps` builds without warnings (or document in `docs/release.md`)
 
 **Checkpoint**: User Story 2 complete; documentation URLs set and doc build clean or documented.
 
@@ -103,10 +103,10 @@
 
 ### Implementation for User Story 3
 
-- [ ] T019 [US3] Fix or remove `[[example]]` entries in `crates/pattern-core/Cargo.toml` that reference paths outside the crate (e.g. `../../examples/`); move examples into `crates/pattern-core/examples/` or remove
-- [ ] T020 [US3] Fix or remove `[[example]]` entries in `crates/gram-codec/Cargo.toml` that reference paths outside the crate; move into `crates/gram-codec/examples/` or remove
-- [ ] T021 [US3] Document how to run examples (e.g. `cargo run --example <name>`) in `crates/pattern-core/README.md` and `crates/gram-codec/README.md` or in `docs/release.md`
-- [ ] T022 [US3] Verify `cargo run --example` for each declared example from `crates/pattern-core/` and `crates/gram-codec/` succeeds
+- [X] T019 [US3] Fix or remove `[[example]]` entries in `crates/pattern-core/Cargo.toml` that reference paths outside the crate (e.g. `../../examples/`); move examples into `crates/pattern-core/examples/` or remove
+- [X] T020 [US3] Fix or remove `[[example]]` entries in `crates/gram-codec/Cargo.toml` that reference paths outside the crate; move into `crates/gram-codec/examples/` or remove
+- [X] T021 [US3] Document how to run examples (e.g. `cargo run --example <name>`) in `crates/pattern-core/README.md` and `crates/gram-codec/README.md` or in `docs/release.md`
+- [X] T022 [US3] Verify `cargo run --example` for each declared example from `crates/pattern-core/` and `crates/gram-codec/` succeeds
 
 **Checkpoint**: User Story 3 complete; examples included or documented and runnable.
 
@@ -120,10 +120,10 @@
 
 ### Implementation for User Story 5
 
-- [ ] T023 [US5] Fill Prerequisites section in `docs/release.md` (crates.io account, token creation, `CARGO_REGISTRY_TOKEN` in GitHub Secrets)
-- [ ] T024 [US5] Fill Tag format and workflow trigger section in `docs/release.md` (e.g. `v0.1.0`, push tag to run workflow)
-- [ ] T025 [US5] Fill Recovery section in `docs/release.md` (partial publish, duplicate version, build/test/lint failure)
-- [ ] T026 [US5] Link to or embed quickstart steps from `specs/034-publish-crates-workflow/quickstart.md` in `docs/release.md`
+- [X] T023 [US5] Fill Prerequisites section in `docs/release.md` (crates.io account, token creation, `CARGO_REGISTRY_TOKEN` in GitHub Secrets)
+- [X] T024 [US5] Fill Tag format and workflow trigger section in `docs/release.md` (e.g. `v0.1.0`, push tag to run workflow)
+- [X] T025 [US5] Fill Recovery section in `docs/release.md` (partial publish, duplicate version, build/test/lint failure)
+- [X] T026 [US5] Link to or embed quickstart steps from `specs/034-publish-crates-workflow/quickstart.md` in `docs/release.md`
 
 **Checkpoint**: User Story 5 complete; full publishing instructions in `docs/release.md`.
 
@@ -133,9 +133,9 @@
 
 **Purpose**: Validate release flow and update project docs.
 
-- [ ] T027 [P] Validate release flow per `specs/034-publish-crates-workflow/quickstart.md` (dry-run both crates; optionally document tag-push test)
-- [ ] T028 Run `./scripts/ci-local.sh` (or `cargo test --workspace`, `cargo clippy --workspace -- -D warnings`, `cargo fmt --all -- --check`) and fix any failures
-- [ ] T029 [P] Update `CLAUDE.md` or root `README.md` with pointer to `docs/release.md` for publishing
+- [X] T027 [P] Validate release flow per `specs/034-publish-crates-workflow/quickstart.md` (dry-run both crates; optionally document tag-push test)
+- [X] T028 Run `./scripts/ci-local.sh` (or `cargo test --workspace`, `cargo clippy --workspace -- -D warnings`, `cargo fmt --all -- --check`) and fix any failures
+- [X] T029 [P] Update `CLAUDE.md` or root `README.md` with pointer to `docs/release.md` for publishing
 
 ---
 

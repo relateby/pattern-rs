@@ -11,7 +11,7 @@
 //!   that is generic over value type `V`. This is the foundational data structure for
 //!   representing nested, hierarchical data that may be interpreted as graphs.
 //!
-//! - **[`Subject`](subject::Subject)**: A self-descriptive value type with identity, labels,
+//! - **[`Subject`]**: A self-descriptive value type with identity, labels,
 //!   and properties. Designed to be used as the value type in `Pattern<Subject>`, which is
 //!   a common use case for replacing object-graphs with nested patterns.
 //!

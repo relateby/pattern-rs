@@ -33,8 +33,8 @@ When porting features, study the Haskell source in `../pattern-hs/libs/` as auth
 cargo build --workspace
 
 # Build specific crate
-cargo build -p pattern-core
-cargo build -p gram-codec
+cargo build -p relateby-pattern
+cargo build -p relateby-gram
 
 # Build for WebAssembly
 cargo build --workspace --target wasm32-unknown-unknown
@@ -75,7 +75,7 @@ import relateby.pattern
 import relateby.gram
 ```
 
-See `docs/python-usage.md` and `docs/release.md`. For **development** of the pattern-core or gram-codec crates (building from source, running crate-level tests):
+See `docs/python-usage.md` and `docs/release.md`. For **publishing** (PyPI or crates.io), see **`docs/release.md`** for prerequisites, tag format, workflow, and recovery. For **development** of the pattern-core or gram-codec crates (building from source, running crate-level tests):
 
 ```bash
 # Build Python extension (requires Python 3.8+, uv)
@@ -273,6 +273,7 @@ See `.github/workflows/README.md` for details.
 - **Python bindings**: `crates/pattern-core/src/python.rs`
 - **Codec**: `crates/gram-codec/src/lib.rs`
 - **Porting guide**: `docs/porting-guide.md`
+- **Release / publishing**: `docs/release.md` (PyPI and crates.io)
 - **Python usage**: `docs/python-usage.md`
 - **Testing guide**: `docs/testing-infrastructure.md`
 - **CI script**: `./scripts/ci-local.sh`

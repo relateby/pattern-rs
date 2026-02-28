@@ -8,6 +8,61 @@ This document describes how to build and publish the unified **relateby** packag
 
 ---
 
+## Publishing Rust crates (relateby-pattern, relateby-gram)
+
+The workspace publishes two crates to [crates.io](https://crates.io): **relateby-pattern** and **relateby-gram**. A tag-triggered GitHub Actions workflow builds, tests, and publishes both.
+
+### Prerequisites
+
+- Push access to the repository.
+- crates.io account with permission to publish **relateby-pattern** and **relateby-gram**.
+- A crates.io API token: create at [crates.io/settings/tokens](https://crates.io/settings/tokens).
+- GitHub secret **`CARGO_REGISTRY_TOKEN`**: add the token under repository **Settings → Secrets and variables → Actions**. The publish workflow uses this secret to run `cargo publish`.
+
+### Publish order
+
+Publish **relateby-pattern** first, then **relateby-gram**. The gram crate depends on the pattern crate; crates.io must have the pattern version before the gram package can be published.
+
+### Tag format and workflow
+
+- **Tag format**: Use semantic version tags `v<major>.<minor>.<patch>` (e.g. `v0.1.0`). The tag must match the crate versions in `Cargo.toml` (e.g. tag `v0.1.0` → crates at version `0.1.0`).
+- **Trigger**: Push the tag to the repository (e.g. `git tag v0.1.0 && git push origin v0.1.0`). The **Publish** workflow (`.github/workflows/publish.yml`) runs on any push to tags matching `v*`. It will build, test, lint, build docs, then publish **relateby-pattern**, wait ~30s for crates.io to index, then publish **relateby-gram**.
+- **Version bump**: Before tagging, ensure the `version` in the workspace root and in each publishable crate’s `Cargo.toml` matches the release (e.g. `0.1.0`), and that **relateby-gram**’s dependency on **relateby-pattern** uses that same version.
+
+### Recovery
+
+- **Build/test/lint fails**: The workflow stops before any publish. Fix the failure, commit, and push a **new** tag (you must use a new version; re-pushing the same tag does not re-run the workflow for the same version).
+- **relateby-pattern publishes, relateby-gram fails**: **relateby-pattern** is already on crates.io at that version. Do **not** re-publish **relateby-pattern** (crates.io rejects duplicate versions). Either fix the issue and re-run the workflow (if your CI supports re-run), or publish **relateby-gram** manually from a checkout at the same tag:  
+  `cargo publish -p relateby-gram --token <your-token>`
+- **Duplicate version**: crates.io does not allow re-publishing the same version. Bump to a new patch version in `Cargo.toml`, commit, and push a new tag.
+- **Doc build warnings**: The workflow runs `cargo doc --no-deps`; fix doc warnings in the crates so the job stays green, or document in this file if you choose to allow warnings.
+
+### Running examples
+
+After adding the crates as dependencies (e.g. `relateby-pattern = "0.1"`, `relateby-gram = "0.1"`), you can run the bundled examples from a local checkout:
+
+- **relateby-pattern** (from `crates/pattern-core/`):  
+  `cargo run --example comonad_usage`  
+  `cargo run --example paramorphism_usage`
+- **relateby-gram** (from `crates/gram-codec/`):  
+  `cargo run --example basic_usage`  
+  `cargo run --example advanced_usage`
+
+From the workspace root use `-p relateby-pattern` or `-p relateby-gram`, e.g.  
+`cargo run -p relateby-gram --example basic_usage`.
+
+### Quickstart (maintainer checklist)
+
+For a short step-by-step checklist, see [Quickstart: Publishing a Release](../specs/034-publish-crates-workflow/quickstart.md). Summary:
+
+1. Ensure the tree is releasable: `cargo build --workspace`, `cargo test --workspace`, `cargo clippy --workspace -- -D warnings`, `cargo fmt --all -- --check`.
+2. Optionally run `cargo publish -p relateby-pattern --dry-run` and `cargo publish -p relateby-gram --dry-run` (relateby-gram dry-run requires relateby-pattern to be published or will fail on dependency resolution).
+3. Bump versions in `Cargo.toml` if needed so they match the release (e.g. `0.1.0`).
+4. Commit and push, then create and push the tag: `git tag v0.1.0 && git push origin v0.1.0`.
+5. The publish workflow runs automatically; verify on crates.io and docs.rs.
+
+---
+
 ## Ordered release steps (per release process contract)
 
 Follow these steps in order for a repeatable release:

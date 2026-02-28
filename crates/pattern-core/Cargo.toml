@@ -1,11 +1,15 @@
 [package]
-name = "pattern-core"
+name = "relateby-pattern"
 version.workspace = true
 edition.workspace = true
 rust-version.workspace = true
 authors.workspace = true
 license.workspace = true
 description = "Core pattern data structures"
+readme = "README.md"
+documentation = "https://docs.rs/relateby-pattern"
+repository = "https://github.com/relateby/pattern-rs"
+homepage = "https://github.com/relateby/pattern-rs"
 
 [dependencies]
 serde = { workspace = true }
@@ -44,8 +48,8 @@ harness = false
 
 [[example]]
 name = "comonad_usage"
-path = "../../examples/pattern-core/comonad_usage.rs"
+path = "examples/comonad_usage.rs"
 
 [[example]]
 name = "paramorphism_usage"
-path = "../../examples/pattern-core/paramorphism_usage.rs"
+path = "examples/paramorphism_usage.rs"

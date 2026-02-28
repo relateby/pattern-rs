@@ -12,5 +12,5 @@ harness = false
 
 [dependencies]
 criterion = { workspace = true }
-pattern-core = { path = "../crates/pattern-core" }
-gram-codec = { path = "../crates/gram-codec" }
+pattern_core = { package = "relateby-pattern", path = "../crates/pattern-core" }
+gram_codec = { package = "relateby-gram", path = "../crates/gram-codec" }

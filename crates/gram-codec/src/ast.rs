@@ -1,11 +1,11 @@
 //! Abstract Syntax Tree (AST) types for gram notation
 //!
 //! The AST provides a language-agnostic, JSON-serializable representation
-//! of the Pattern<Subject> structure that gram notation describes.
+//! of the `Pattern<Subject>` structure that gram notation describes.
 //!
 //! # Design Philosophy
 //!
-//! The AST mirrors the Pattern<Subject> structure exactly:
+//! The AST mirrors the `Pattern<Subject>` structure exactly:
 //! - No graph-specific concepts (no "nodes", "edges", "relationships")
 //! - Path notation is already desugared by the parser
 //! - Just patterns and subjects - clean and conceptual
@@ -40,7 +40,7 @@ use std::collections::HashMap;
 /// Abstract Syntax Tree representation of a Pattern
 ///
 /// This is the minimal, language-agnostic output format from pattern-rs.
-/// It mirrors the Pattern<Subject> structure exactly.
+/// It mirrors the `Pattern<Subject>` structure exactly.
 ///
 /// # Structure
 ///
@@ -145,7 +145,7 @@ impl AstPattern {
 use pattern_core::{Pattern, Subject, Value};
 
 impl AstPattern {
-    /// Convert from native Pattern<Subject> to AST
+    /// Convert from native `Pattern<Subject>` to AST
     ///
     /// This is the core conversion function that transforms the Rust
     /// Pattern structure into a JSON-serializable AST.

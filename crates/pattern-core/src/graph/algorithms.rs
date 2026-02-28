@@ -9,8 +9,8 @@
 //! # Traversal weight semantics
 //!
 //! Pass a [`TraversalWeight<V>`] to control which edges are traversable and at
-//! what cost. Use the canonical functions [`undirected`], [`directed`], or
-//! [`directed_reverse`], or supply a custom `Rc<dyn Fn(...)>`.
+//! what cost. Use the canonical functions [`undirected`](crate::graph::graph_query::undirected), [`directed`](crate::graph::graph_query::directed), or
+//! [`directed_reverse`](crate::graph::graph_query::directed_reverse), or supply a custom `Rc<dyn Fn(...)>`.
 //!
 //! An edge with `INFINITY` cost in a given direction is impassable in that direction.
 
