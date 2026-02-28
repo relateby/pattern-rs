@@ -42,6 +42,8 @@ Auto-generated from all feature plans. Last updated: 2025-12-27
 - N/A (in-memory; views and transformations over PatternGraph/GraphQuery) (032-graph-transform)
 - Rust 1.70.0 (MSRV, workspace), TypeScript 5.x, wasm-bindgen 0.2, wasm-pack (033-typescript-wasm-graph)
 - N/A — all in-memory graph operations (033-typescript-wasm-graph)
+- Rust 1.70.0 (workspace MSRV), Edition 2021 + cargo, crates.io API; GitHub Actions for CI; no new runtime dependencies (034-publish-crates-workflow)
+- N/A (publish pushes to crates.io; secrets in GitHub Secrets) (034-publish-crates-workflow)
 
 - Rust (MSRV: 1.70.0, edition: 2021) (002-workspace-setup)
 
@@ -61,6 +63,7 @@ cargo test [ONLY COMMANDS FOR ACTIVE TECHNOLOGIES][ONLY COMMANDS FOR ACTIVE TECH
 Rust (MSRV: 1.70.0, edition: 2021): Follow standard conventions
 
 ## Recent Changes
+- 034-publish-crates-workflow: Added Rust 1.70.0 (workspace MSRV), Edition 2021 + cargo, crates.io API; GitHub Actions for CI; no new runtime dependencies
 - 033-typescript-wasm-graph: Added Rust 1.70.0 (MSRV, workspace), TypeScript 5.x, wasm-bindgen 0.2, wasm-pack
 - 032-graph-transform: Added Rust 1.70.0 (workspace MSRV), Edition 2021 + `std` only — `HashMap`, `HashSet`, `Vec`, `Rc`/`Arc` (no new external crates); depends on 030-graph-classifier and 031-graph-query types
 
