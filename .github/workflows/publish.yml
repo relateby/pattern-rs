@@ -49,7 +49,7 @@ jobs:
       - name: Publish relateby-pattern
         env:
           CARGO_REGISTRY_TOKEN: ${{ secrets.CARGO_REGISTRY_TOKEN }}
-        run: cargo publish -p relateby-pattern --token $CARGO_REGISTRY_TOKEN
+        run: cargo publish -p relateby-pattern
 
       - name: Wait for crates.io to index
         run: sleep 30
@@ -57,4 +57,4 @@ jobs:
       - name: Publish relateby-gram
         env:
           CARGO_REGISTRY_TOKEN: ${{ secrets.CARGO_REGISTRY_TOKEN }}
-        run: cargo publish -p relateby-gram --token $CARGO_REGISTRY_TOKEN
+        run: cargo publish -p relateby-gram
