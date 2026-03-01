@@ -37,6 +37,18 @@ Publish **relateby-pattern** first, then **relateby-gram**. The gram crate depen
 - **Duplicate version**: crates.io does not allow re-publishing the same version. Bump to a new patch version in `Cargo.toml`, commit, and push a new tag.
 - **Doc build warnings**: The workflow runs `cargo doc --no-deps`; fix doc warnings in the crates so the job stays green, or document in this file if you choose to allow warnings.
 
+### Docs.rs (API documentation)
+
+There is **no separate step to "publish" to docs.rs**. docs.rs builds documentation automatically from crates.io: when a crate is published, crates.io notifies docs.rs, which queues a build and serves the result at `https://docs.rs/<crate-name>`.
+
+- **After publishing**: Verify docs within a few minutes to an hour at [docs.rs/relateby-pattern](https://docs.rs/relateby-pattern) and [docs.rs/relateby-gram](https://docs.rs/relateby-gram).
+- **If you see 404**:
+  1. **Wait and retry** — New crates can take several minutes (or longer under load) to be built and appear.
+  2. **Check build status** — Open the crate page on docs.rs (e.g. `https://docs.rs/relateby-gram`). If the crate exists but the build failed, the page will show "Build failed" with a link to the build log. Fix any errors (e.g. doc or compile failures under default features), then either publish a new version or use docs.rs's "Request build" / rebuild option if available.
+  3. **Request a build** — If the crate is on crates.io but docs.rs has not built it yet, some docs.rs UIs offer a "Build" or "Request build" button on the crate page to trigger a build manually.
+
+Both crates set `[package.metadata.docs.rs]` so docs.rs builds with default features only (no `python` or `wasm`), which avoids platform-specific build issues on docs.rs.
+
 ### Running examples
 
 After adding the crates as dependencies (e.g. `relateby-pattern = "0.1"`, `relateby-gram = "0.1"`), you can run the bundled examples from a local checkout:
@@ -59,7 +71,7 @@ For a short step-by-step checklist, see [Quickstart: Publishing a Release](../sp
 2. Optionally run `cargo publish -p relateby-pattern --dry-run` and `cargo publish -p relateby-gram --dry-run` (relateby-gram dry-run requires relateby-pattern to be published or will fail on dependency resolution).
 3. Bump versions in `Cargo.toml` if needed so they match the release (e.g. `0.1.0`).
 4. Commit and push, then create and push the tag: `git tag v0.1.0 && git push origin v0.1.0`.
-5. The publish workflow runs automatically; verify on crates.io and docs.rs.
+5. The publish workflow runs automatically; verify on [crates.io](https://crates.io) and [docs.rs](https://docs.rs) (see [Docs.rs (API documentation)](#docsrs-api-documentation)).
 
 ---
 

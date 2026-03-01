@@ -11,6 +11,10 @@ documentation = "https://docs.rs/relateby-pattern"
 repository = "https://github.com/relateby/pattern-rs"
 homepage = "https://github.com/relateby/pattern-rs"
 
+[package.metadata.docs.rs]
+all-features = false
+features = []
+
 [dependencies]
 serde = { workspace = true }
 serde_json = { workspace = true }

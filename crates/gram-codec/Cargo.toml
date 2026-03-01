@@ -10,6 +10,10 @@ readme = "README.md"
 documentation = "https://docs.rs/relateby-gram"
 repository = "https://github.com/relateby/pattern-rs"
 
+[package.metadata.docs.rs]
+all-features = false
+features = []
+
 [dependencies]
 # Version must match workspace [workspace.package] version when publishing to crates.io.
 pattern_core = { package = "relateby-pattern", path = "../pattern-core", version = "0.1.0" }
