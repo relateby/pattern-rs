@@ -14,6 +14,14 @@ The pre-installed Rust 1.83.0 is too old for some transitive dependencies (e.g. 
 
 The `external/tree-sitter-gram` submodule must be initialized for the corpus integration tests in `gram-codec` to pass. The update script handles this via `git submodule update --init`.
 
+### gram-lint CLI
+
+The `gram-lint` tool (for validating gram notation syntax) is installed from the submodule by the update script. Usage examples:
+
+- `gram-lint -e '(a)-->(b)'` — lint an expression (exit 0 = valid)
+- `gram-lint -t -e '(a)-->(b)'` — show the parse tree
+- `gram-lint path/to/file.gram` — lint a file
+
 ### Running checks
 
 All CI checks are documented in `CLAUDE.md` and `scripts/ci-local.sh`. The key commands:
