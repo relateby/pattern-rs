@@ -293,6 +293,7 @@ Key cursor rule highlights:
 - N/A (in-memory data structures only) (030-graph-classifier)
 - Rust 1.70.0 (workspace MSRV), Edition 2021 + `std` only — `HashMap`, `HashSet`, `VecDeque`, `BTreeMap`, `Rc`, `Arc` (no new external crates) (031-graph-query)
 - N/A (in-memory only; all state is in `PatternGraph<V>` via `Rc`) (031-graph-query)
+- Rust 1.70.0 (workspace MSRV), Edition 2021 + pattern-core (PatternGraph, GraphClassifier, GraphQuery, GraphValue, Subject, Symbol, reconcile), gram-codec (parse_gram) — no new external crates (035-standard-graph)
 
 ## Recent Changes
 - 030-graph-classifier: Added Rust 1.70.0 (MSRV), Edition 2021 + std (HashMap, Vec, HashSet) — no new external crates required
