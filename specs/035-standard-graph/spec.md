@@ -136,7 +136,7 @@ A library user who has built a graph using the simple interface needs to use it 
 - **FR-020**: The system MUST support converting the graph to a read-only query interface and a snapshot for use with advanced algorithms.
 - **FR-021**: The system MUST provide a fluent builder for constructing values with identity, labels, and properties, usable independently of the graph.
 - **FR-022**: The fluent builder MUST support adding multiple labels and properties of different types (text, integer, decimal, boolean).
-- **FR-023**: When an element with a duplicate identity is added, the system MUST apply a last-write-wins policy, replacing the prior element.
+- **FR-023**: When an element with a duplicate identity is added via atomic methods (`add_node`, `add_relationship`, `add_walk`, `add_annotation`), the system MUST apply a last-write-wins policy, replacing the prior element silently. When a duplicate identity is encountered during pattern ingestion (`add_pattern`, `add_patterns`, `from_gram`), the system MUST attempt reconciliation; if reconciliation fails, the conflict MUST be stored in the conflicts collection per FR-011.
 - **FR-024**: The system MUST support creating a graph from an existing abstract graph type (re-wrapping without reclassification).
 
 ### Key Entities

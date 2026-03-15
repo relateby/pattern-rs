@@ -13,9 +13,9 @@
 
 **Purpose**: Create module scaffolding and wire up re-exports
 
-- [ ] T001 Create `crates/pattern-core/src/graph/standard.rs` with `pub struct StandardGraph` wrapping `inner: PatternGraph<(), Subject>` (private field) and `pub fn new() -> Self` returning `StandardGraph { inner: PatternGraph::empty() }`
-- [ ] T002 [P] Register `mod standard;` in `crates/pattern-core/src/graph/mod.rs` and add `pub use standard::StandardGraph;` to the existing re-exports
-- [ ] T003 [P] Add `StandardGraph` to the top-level re-exports in `crates/pattern-core/src/lib.rs` alongside existing `graph::` re-exports
+- [X] T001 Create `crates/pattern-core/src/graph/standard.rs` with `pub struct StandardGraph` wrapping `inner: PatternGraph<(), Subject>` (private field) and `pub fn new() -> Self` returning `StandardGraph { inner: PatternGraph::empty() }`
+- [X] T002 [P] Register `mod standard;` in `crates/pattern-core/src/graph/mod.rs` and add `pub use standard::StandardGraph;` to the existing re-exports
+- [X] T003 [P] Add `StandardGraph` to the top-level re-exports in `crates/pattern-core/src/lib.rs` alongside existing `graph::` re-exports
 
 ---
 
@@ -27,8 +27,8 @@
 
 **Note**: Implemented before US1 because SubjectBuilder is a shared utility used by all subsequent stories. It modifies `subject.rs` only — no graph module dependency.
 
-- [ ] T004 [US2] Implement `SubjectBuilder` struct (fields: `identity: Symbol`, `labels: HashSet<String>`, `properties: HashMap<String, Value>`) and `Subject::build(identity: impl Into<String>) -> SubjectBuilder` associated function in `crates/pattern-core/src/subject.rs`
-- [ ] T005 [US2] Implement chaining methods on `SubjectBuilder` in `crates/pattern-core/src/subject.rs`: `pub fn label(mut self, label: impl Into<String>) -> Self`, `pub fn property(mut self, key: impl Into<String>, value: impl Into<Value>) -> Self`, `pub fn done(self) -> Subject`, and `impl From<SubjectBuilder> for Subject`
+- [X] T004 [US2] Implement `SubjectBuilder` struct (fields: `identity: Symbol`, `labels: HashSet<String>`, `properties: HashMap<String, Value>`) and `Subject::build(identity: impl Into<String>) -> SubjectBuilder` associated function in `crates/pattern-core/src/subject.rs`
+- [X] T005 [US2] Implement chaining methods on `SubjectBuilder` in `crates/pattern-core/src/subject.rs`: `pub fn label(mut self, label: impl Into<String>) -> Self`, `pub fn property(mut self, key: impl Into<String>, value: impl Into<Value>) -> Self`, `pub fn done(self) -> Subject`, and `impl From<SubjectBuilder> for Subject`
 
 **Checkpoint**: SubjectBuilder is usable standalone. Test: `Subject::build("alice").label("Person").property("name", "Alice").done()` produces correct Subject.
 
@@ -40,11 +40,11 @@
 
 **Independent Test**: Create graph, add nodes and relationships, verify element counts and retrieval by identity.
 
-- [ ] T006 [US1] Implement `pub fn add_node(&mut self, subject: Subject) -> &mut Self` in `crates/pattern-core/src/graph/standard.rs` — construct `Pattern::point(subject)`, extract identity via `GraphValue::identify()`, insert into `self.inner.pg_nodes` using last-write-wins (direct HashMap insert)
-- [ ] T007 [US1] Implement `pub fn add_relationship(&mut self, subject: Subject, source: &Symbol, target: &Symbol) -> &mut Self` in `crates/pattern-core/src/graph/standard.rs` — look up source/target in `pg_nodes` or create minimal placeholder nodes (`Pattern::point(Subject { identity: id.clone(), labels: HashSet::new(), properties: HashMap::new() })`), construct 2-element pattern `Pattern::pattern(subject, vec![source_pattern, target_pattern])`, insert into `pg_relationships`
-- [ ] T008 [US1] Implement `pub fn add_walk(&mut self, subject: Subject, relationships: &[Symbol]) -> &mut Self` in `crates/pattern-core/src/graph/standard.rs` — look up each relationship id in `pg_relationships` (or create minimal placeholder relationship patterns), construct N-element walk pattern, insert into `pg_walks`
-- [ ] T009 [US1] Implement `pub fn add_annotation(&mut self, subject: Subject, element: &Symbol) -> &mut Self` in `crates/pattern-core/src/graph/standard.rs` — look up element across all buckets (nodes, relationships, walks, annotations) or create minimal placeholder, construct 1-element annotation pattern, insert into `pg_annotations`
-- [ ] T010 [US1] Implement element access and count/health methods in `crates/pattern-core/src/graph/standard.rs`: `node(&Symbol) -> Option<&Pattern<Subject>>`, `relationship(&Symbol)`, `walk(&Symbol)`, `annotation(&Symbol)` (delegate to inner HashMap `.get()`); `node_count()`, `relationship_count()`, `walk_count()`, `annotation_count()` (delegate to `.len()`); `is_empty()` (all counts zero); `has_conflicts() -> bool`, `conflicts() -> &HashMap<Symbol, Vec<Pattern<Subject>>>`, `other() -> &HashMap<Symbol, ((), Pattern<Subject>)>` (delegate to inner fields)
+- [X] T006 [US1] Implement `pub fn add_node(&mut self, subject: Subject) -> &mut Self` in `crates/pattern-core/src/graph/standard.rs` — construct `Pattern::point(subject)`, extract identity via `GraphValue::identify()`, insert into `self.inner.pg_nodes` using last-write-wins (direct HashMap insert)
+- [X] T007 [US1] Implement `pub fn add_relationship(&mut self, subject: Subject, source: &Symbol, target: &Symbol) -> &mut Self` in `crates/pattern-core/src/graph/standard.rs` — look up source/target in `pg_nodes` or create minimal placeholder nodes (`Pattern::point(Subject { identity: id.clone(), labels: HashSet::new(), properties: HashMap::new() })`), construct 2-element pattern `Pattern::pattern(subject, vec![source_pattern, target_pattern])`, insert into `pg_relationships`
+- [X] T008 [US1] Implement `pub fn add_walk(&mut self, subject: Subject, relationships: &[Symbol]) -> &mut Self` in `crates/pattern-core/src/graph/standard.rs` — look up each relationship id in `pg_relationships` (or create minimal placeholder relationship patterns), construct N-element walk pattern, insert into `pg_walks`
+- [X] T009 [US1] Implement `pub fn add_annotation(&mut self, subject: Subject, element: &Symbol) -> &mut Self` in `crates/pattern-core/src/graph/standard.rs` — look up element across all buckets (nodes, relationships, walks, annotations) or create minimal placeholder, construct 1-element annotation pattern, insert into `pg_annotations`
+- [X] T010 [US1] Implement element access and count/health methods in `crates/pattern-core/src/graph/standard.rs`: `node(&Symbol) -> Option<&Pattern<Subject>>`, `relationship(&Symbol)`, `walk(&Symbol)`, `annotation(&Symbol)` (delegate to inner HashMap `.get()`); `node_count()`, `relationship_count()`, `walk_count()`, `annotation_count()` (delegate to `.len()`); `is_empty()` (all counts zero); `has_conflicts() -> bool`, `conflicts() -> &HashMap<Symbol, Vec<Pattern<Subject>>>`, `other() -> &HashMap<Symbol, ((), Pattern<Subject>)>` (delegate to inner fields)
 
 **Checkpoint**: US1 complete. Can build a graph element by element, retrieve elements by identity, check counts. Placeholder nodes auto-created for missing references.
 
@@ -58,9 +58,9 @@
 
 **Note**: `from_gram` lives in gram-codec (not pattern-core) due to circular dependency constraint. gram-codec depends on pattern-core, so pattern-core cannot depend on gram-codec. An extension trait in gram-codec provides `StandardGraph::from_gram()` syntax.
 
-- [ ] T011 [US3] Implement `pub fn add_pattern(&mut self, pattern: Pattern<Subject>) -> &mut Self` and `pub fn add_patterns(&mut self, patterns: impl IntoIterator<Item = Pattern<Subject>>) -> &mut Self` in `crates/pattern-core/src/graph/standard.rs` — use `classify_by_shape(&pattern)` to determine `GraphClass`, then insert into appropriate bucket (`GNode` → `pg_nodes`, `GRelationship` → `pg_relationships`, `GWalk` → `pg_walks`, `GAnnotation` → `pg_annotations`, `GOther` → `pg_other`); handle reconciliation conflicts by storing in `pg_conflicts`
-- [ ] T012 [US3] Implement `pub fn from_patterns(patterns: impl IntoIterator<Item = Pattern<Subject>>) -> Self` and `pub fn from_pattern_graph(graph: PatternGraph<(), Subject>) -> Self` constructors in `crates/pattern-core/src/graph/standard.rs` — `from_patterns` creates empty graph then calls `add_patterns`; `from_pattern_graph` wraps the graph directly as `StandardGraph { inner: graph }`
-- [ ] T013 [US3] Implement `FromGram` extension trait in `crates/gram-codec/src/lib.rs` (or new file `crates/gram-codec/src/standard_graph.rs`): define `pub trait FromGram: Sized { fn from_gram(input: &str) -> Result<Self, ParseError>; }`, implement for `StandardGraph` by calling `parse_gram(input)?` then `StandardGraph::from_patterns(patterns)`, and re-export `FromGram` from gram-codec's public API
+- [X] T011 [US3] Implement `pub fn add_pattern(&mut self, pattern: Pattern<Subject>) -> &mut Self` and `pub fn add_patterns(&mut self, patterns: impl IntoIterator<Item = Pattern<Subject>>) -> &mut Self` in `crates/pattern-core/src/graph/standard.rs` — use `classify_by_shape(&pattern)` to determine `GraphClass`, then insert into appropriate bucket (`GNode` → `pg_nodes`, `GRelationship` → `pg_relationships`, `GWalk` → `pg_walks`, `GAnnotation` → `pg_annotations`, `GOther` → `pg_other`); handle reconciliation conflicts by storing in `pg_conflicts`
+- [X] T012 [US3] Implement `pub fn from_patterns(patterns: impl IntoIterator<Item = Pattern<Subject>>) -> Self` and `pub fn from_pattern_graph(graph: PatternGraph<(), Subject>) -> Self` constructors in `crates/pattern-core/src/graph/standard.rs` — `from_patterns` creates empty graph then calls `add_patterns`; `from_pattern_graph` wraps the graph directly as `StandardGraph { inner: graph }`
+- [X] T013 [US3] Implement `FromGram` extension trait in `crates/gram-codec/src/lib.rs` (or new file `crates/gram-codec/src/standard_graph.rs`): define `pub trait FromGram: Sized { fn from_gram(input: &str) -> Result<Self, ParseError>; }`, implement for `StandardGraph` by calling `parse_gram(input)?` then `StandardGraph::from_patterns(patterns)`, and re-export `FromGram` from gram-codec's public API
 
 **Checkpoint**: US3 complete. Graphs can be built from gram notation, individual patterns, pattern collections, or existing PatternGraph. Unclassifiable patterns go to "other" bucket.
 
@@ -72,8 +72,8 @@
 
 **Independent Test**: Build a known graph, verify iteration visits all elements, source/target return correct nodes, neighbors/degree are correct for bidirectional view.
 
-- [ ] T014 [US4] Implement iterator methods in `crates/pattern-core/src/graph/standard.rs`: `pub fn nodes(&self) -> impl Iterator<Item = (&Symbol, &Pattern<Subject>)>` (delegates to `self.inner.pg_nodes.iter()`), and analogous `relationships()`, `walks()`, `annotations()`
-- [ ] T015 [US4] Implement graph-native query methods in `crates/pattern-core/src/graph/standard.rs`: `pub fn source(&self, rel_id: &Symbol) -> Option<&Pattern<Subject>>` (get relationship, return first element), `pub fn target(&self, rel_id: &Symbol) -> Option<&Pattern<Subject>>` (get relationship, return second element), `pub fn neighbors(&self, node_id: &Symbol) -> Vec<&Pattern<Subject>>` (scan all relationships, collect opposite endpoint for any relationship where source or target matches node_id), `pub fn degree(&self, node_id: &Symbol) -> usize` (count relationships where source or target matches node_id — undirected/both directions)
+- [X] T014 [US4] Implement iterator methods in `crates/pattern-core/src/graph/standard.rs`: `pub fn nodes(&self) -> impl Iterator<Item = (&Symbol, &Pattern<Subject>)>` (delegates to `self.inner.pg_nodes.iter()`), and analogous `relationships()`, `walks()`, `annotations()`
+- [X] T015 [US4] Implement graph-native query methods in `crates/pattern-core/src/graph/standard.rs`: `pub fn source(&self, rel_id: &Symbol) -> Option<&Pattern<Subject>>` (get relationship, return first element), `pub fn target(&self, rel_id: &Symbol) -> Option<&Pattern<Subject>>` (get relationship, return second element), `pub fn neighbors(&self, node_id: &Symbol) -> Vec<&Pattern<Subject>>` (scan all relationships, collect opposite endpoint for any relationship where source or target matches node_id), `pub fn degree(&self, node_id: &Symbol) -> usize` (count relationships where source or target matches node_id — undirected/both directions)
 
 **Checkpoint**: US4 complete. Full read access to graph elements via iteration and graph-native queries.
 
@@ -85,8 +85,8 @@
 
 **Independent Test**: Build graph, convert to each abstract type, verify all elements preserved.
 
-- [ ] T016 [US5] Implement `pub fn as_pattern_graph(&self) -> &PatternGraph<(), Subject>` and `pub fn into_pattern_graph(self) -> PatternGraph<(), Subject>` in `crates/pattern-core/src/graph/standard.rs` — trivial delegates to `&self.inner` and `self.inner`
-- [ ] T017 [US5] Implement `pub fn as_query(&self) -> GraphQuery<Subject>` and `pub fn as_snapshot(&self) -> GraphView<(), Subject>` in `crates/pattern-core/src/graph/standard.rs` — `as_query` wraps `self.inner` in `Rc` (or `Arc` with thread-safe feature) and calls `graph_query::from_pattern_graph()`; `as_snapshot` calls `graph_view::from_pattern_graph(&canonical_classifier(), &self.inner)`
+- [X] T016 [US5] Implement `pub fn as_pattern_graph(&self) -> &PatternGraph<(), Subject>` and `pub fn into_pattern_graph(self) -> PatternGraph<(), Subject>` in `crates/pattern-core/src/graph/standard.rs` — trivial delegates to `&self.inner` and `self.inner`
+- [X] T017 [US5] Implement `pub fn as_query(&self) -> GraphQuery<Subject>` and `pub fn as_snapshot(&self) -> GraphView<(), Subject>` in `crates/pattern-core/src/graph/standard.rs` — `as_query` wraps `self.inner` in `Rc` (or `Arc` with thread-safe feature) and calls `graph_query::from_pattern_graph()`; `as_snapshot` calls `graph_view::from_pattern_graph(&canonical_classifier(), &self.inner)`
 
 **Checkpoint**: US5 complete. StandardGraph is fully interoperable with the abstract graph layer.
 
@@ -96,9 +96,11 @@
 
 **Purpose**: Integration tests, code quality, WASM validation
 
-- [ ] T018 Write integration tests in `crates/pattern-core/tests/standard_graph_tests.rs` covering all acceptance scenarios: SubjectBuilder fluent construction, element-by-element construction (nodes, relationships, walks, annotations), placeholder node auto-creation, duplicate identity last-write-wins, gram notation ingestion (in gram-codec test), element access by identity, iterator completeness, source/target/neighbors/degree queries (bidirectional), escape hatches (as_pattern_graph, as_query, as_snapshot), and edge cases (empty graph, missing identity returns None, unclassifiable patterns in "other", conflict accumulation)
-- [ ] T019 Run code quality checks: `cargo fmt --all`, `cargo clippy --workspace -- -D warnings`, `cargo test --workspace` and fix all warnings/failures
-- [ ] T020 Verify WASM compilation with `cargo build --target wasm32-unknown-unknown -p pattern-core` and run full CI validation with `./scripts/ci-local.sh`
+- [X] T018 Write integration tests in `crates/pattern-core/tests/standard_graph_tests.rs` covering all acceptance scenarios: SubjectBuilder fluent construction, element-by-element construction (nodes, relationships, walks, annotations), placeholder node auto-creation, duplicate identity last-write-wins, gram notation ingestion (in gram-codec test), element access by identity, iterator completeness, source/target/neighbors/degree queries (bidirectional), escape hatches (as_pattern_graph, as_query, as_snapshot), and edge cases (empty graph, missing identity returns None, unclassifiable patterns in "other", conflict accumulation)
+- [X] T018a [US1] Verify SC-003 by identifying existing `PatternGraph` test scenarios in `crates/pattern-core/tests/` and replicating each using `StandardGraph` with equivalent or fewer lines of code
+- [X] T018b Write a scale validation test in `crates/pattern-core/tests/standard_graph_tests.rs` that constructs a graph with 1,000 nodes and 5,000 relationships, then verifies all query methods (`node`, `nodes`, `source`, `target`, `neighbors`, `degree`, counts) return correct results
+- [X] T019 Run code quality checks: `cargo fmt --all`, `cargo clippy --workspace -- -D warnings`, `cargo test --workspace` and fix all warnings/failures
+- [X] T020 Verify WASM compilation with `cargo build --target wasm32-unknown-unknown -p pattern-core` and run full CI validation with `./scripts/ci-local.sh`
 
 ---
 

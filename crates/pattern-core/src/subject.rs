@@ -352,3 +352,106 @@ impl fmt::Display for Subject {
         Ok(())
     }
 }
+
+impl Subject {
+    /// Creates a SubjectBuilder with the given identity.
+    ///
+    /// # Examples
+    ///
+    /// ```rust
+    /// use pattern_core::Subject;
+    ///
+    /// let subject = Subject::build("alice")
+    ///     .label("Person")
+    ///     .property("name", "Alice")
+    ///     .done();
+    /// assert_eq!(subject.identity.0, "alice");
+    /// assert!(subject.labels.contains("Person"));
+    /// ```
+    pub fn build(identity: impl Into<String>) -> SubjectBuilder {
+        SubjectBuilder {
+            identity: Symbol(identity.into()),
+            labels: std::collections::HashSet::new(),
+            properties: PropertyRecord::new(),
+        }
+    }
+}
+
+/// Fluent builder for constructing Subject values.
+///
+/// Created via `Subject::build(identity)`. Chain `.label()` and `.property()`
+/// calls, then finalize with `.done()` or use `Into<Subject>`.
+pub struct SubjectBuilder {
+    identity: Symbol,
+    labels: std::collections::HashSet<String>,
+    properties: PropertyRecord,
+}
+
+impl SubjectBuilder {
+    /// Adds a label to the subject being built.
+    pub fn label(mut self, label: impl Into<String>) -> Self {
+        self.labels.insert(label.into());
+        self
+    }
+
+    /// Adds a property to the subject being built.
+    pub fn property(mut self, key: impl Into<String>, value: impl Into<Value>) -> Self {
+        self.properties.insert(key.into(), value.into());
+        self
+    }
+
+    /// Finalizes the builder and returns the constructed Subject.
+    pub fn done(self) -> Subject {
+        Subject {
+            identity: self.identity,
+            labels: self.labels,
+            properties: self.properties,
+        }
+    }
+}
+
+impl From<SubjectBuilder> for Subject {
+    fn from(builder: SubjectBuilder) -> Self {
+        builder.done()
+    }
+}
+
+// ============================================================================
+// Value conversion implementations
+// ============================================================================
+
+impl From<i64> for Value {
+    fn from(v: i64) -> Self {
+        Value::VInteger(v)
+    }
+}
+
+impl From<i32> for Value {
+    fn from(v: i32) -> Self {
+        Value::VInteger(v as i64)
+    }
+}
+
+impl From<f64> for Value {
+    fn from(v: f64) -> Self {
+        Value::VDecimal(v)
+    }
+}
+
+impl From<bool> for Value {
+    fn from(v: bool) -> Self {
+        Value::VBoolean(v)
+    }
+}
+
+impl From<String> for Value {
+    fn from(v: String) -> Self {
+        Value::VString(v)
+    }
+}
+
+impl From<&str> for Value {
+    fn from(v: &str) -> Self {
+        Value::VString(v.to_string())
+    }
+}
