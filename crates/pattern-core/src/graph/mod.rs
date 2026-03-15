@@ -2,6 +2,7 @@ pub mod algorithms;
 pub mod graph_classifier;
 pub mod graph_query;
 pub mod graph_view;
+pub mod standard;
 pub mod transform;
 
 pub use algorithms::{
@@ -18,6 +19,7 @@ pub use graph_query::{
     TraversalDirection, TraversalWeight,
 };
 pub use graph_view::{from_graph_lens, from_pattern_graph, materialize, GraphView};
+pub use standard::StandardGraph;
 pub use transform::{
     filter_graph, fold_graph, map_all_graph, map_graph, map_with_context, para_graph,
     para_graph_fixed, unfold_graph, CategoryMappers, Substitution,

@@ -5,17 +5,53 @@
 //!
 //! # Overview
 //!
-//! The `pattern-core` crate defines two main types:
+//! The `pattern-core` crate defines these main types:
+//!
+//! - **[`StandardGraph`]**: An ergonomic, zero-configuration graph
+//!   for building and querying graph structures. This is the recommended starting point
+//!   for most users.
+//!
+//! - **[`Subject`]**: A self-descriptive value type with identity, labels,
+//!   and properties. Use [`Subject::build`] for fluent construction.
 //!
 //! - **[`Pattern<V>`](pattern::Pattern)**: A recursive, nested structure (s-expression-like)
 //!   that is generic over value type `V`. This is the foundational data structure for
 //!   representing nested, hierarchical data that may be interpreted as graphs.
 //!
-//! - **[`Subject`]**: A self-descriptive value type with identity, labels,
-//!   and properties. Designed to be used as the value type in `Pattern<Subject>`, which is
-//!   a common use case for replacing object-graphs with nested patterns.
-//!
 //! # Quick Start
+//!
+//! Build a graph with [`StandardGraph`]:
+//!
+//! ```rust
+//! use pattern_core::graph::StandardGraph;
+//! use pattern_core::subject::Subject;
+//!
+//! let mut g = StandardGraph::new();
+//!
+//! // Add nodes using the fluent SubjectBuilder
+//! g.add_node(Subject::build("alice").label("Person").property("name", "Alice").done());
+//! g.add_node(Subject::build("bob").label("Person").property("name", "Bob").done());
+//!
+//! // Add a relationship (missing endpoint nodes are auto-created as placeholders)
+//! g.add_relationship(
+//!     Subject::build("r1").label("KNOWS").done(),
+//!     &"alice".into(),
+//!     &"bob".into(),
+//! );
+//!
+//! assert_eq!(g.node_count(), 2);
+//! assert_eq!(g.relationship_count(), 1);
+//!
+//! // Query the graph
+//! let source = g.source(&"r1".into()).unwrap();
+//! assert_eq!(source.value.identity.0, "alice");
+//! let neighbors = g.neighbors(&"bob".into());
+//! assert_eq!(neighbors.len(), 1);
+//! ```
+//!
+//! # Low-Level Pattern Construction
+//!
+//! For direct pattern manipulation without the graph layer:
 //!
 //! ```rust
 //! use pattern_core::{Pattern, Subject, Symbol, Value};
@@ -191,7 +227,8 @@ pub use graph::{
     memoize_incident_rels, minimum_spanning_tree, para_graph, para_graph_fixed,
     query_annotations_of, query_co_members, query_walks_containing, shortest_path,
     topological_sort, undirected, unfold_graph, CategoryMappers, GraphClass, GraphClassifier,
-    GraphQuery, GraphValue, GraphView, Substitution, TraversalDirection, TraversalWeight,
+    GraphQuery, GraphValue, GraphView, StandardGraph, Substitution, TraversalDirection,
+    TraversalWeight,
 };
 pub use pattern::{unfold, Pattern, StructureAnalysis, ValidationError, ValidationRules};
 pub use pattern_graph::{
@@ -202,7 +239,7 @@ pub use reconcile::{
     ElementMergeStrategy, HasIdentity, LabelMerge, Mergeable, PropertyMerge, ReconciliationPolicy,
     Refinable, SubjectMergeStrategy,
 };
-pub use subject::{PropertyRecord, RangeValue, Subject, Symbol, Value};
+pub use subject::{PropertyRecord, RangeValue, Subject, SubjectBuilder, Symbol, Value};
 
 // Re-export comonad operations for convenient access
 // These are defined in pattern::comonad and pattern::comonad_helpers modules

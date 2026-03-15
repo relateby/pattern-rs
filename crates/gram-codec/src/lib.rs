@@ -40,6 +40,7 @@
 pub mod ast;
 mod error;
 mod serializer;
+pub mod standard_graph;
 mod value;
 
 // TODO: Temporarily commented out during migration to nom parser
@@ -239,3 +240,4 @@ pub fn parse_single_pattern(input: &str) -> Result<Pattern<Subject>, ParseError>
 
 // Backward compatibility aliases
 pub use parse_gram as parse_gram_notation;
+pub use standard_graph::FromGram;

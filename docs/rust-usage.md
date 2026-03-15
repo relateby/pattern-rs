@@ -12,9 +12,119 @@ pattern-core = { path = "crates/pattern-core" }
 gram-codec = { path = "crates/gram-codec" }
 ```
 
-## Programmatic Construction
+## StandardGraph (Recommended)
 
-The `pattern-core` crate provides the `Pattern` type and its core constructors. Most patterns in `pattern-rs` use `Subject` as their value type, which includes an identity, labels, and properties.
+`StandardGraph` is the easiest way to build and query graphs. It wraps the lower-level `PatternGraph` with zero-configuration defaults.
+
+### Building a Graph
+
+```rust
+use pattern_core::graph::StandardGraph;
+use pattern_core::subject::Subject;
+
+let mut g = StandardGraph::new();
+
+// Add nodes using the fluent SubjectBuilder
+g.add_node(Subject::build("alice").label("Person").property("name", "Alice").done());
+g.add_node(Subject::build("bob").label("Person").property("name", "Bob").done());
+
+// Add a relationship (placeholder nodes auto-created if missing)
+g.add_relationship(
+    Subject::build("r1").label("KNOWS").property("since", 2020i64).done(),
+    &"alice".into(),
+    &"bob".into(),
+);
+
+assert_eq!(g.node_count(), 2);
+assert_eq!(g.relationship_count(), 1);
+```
+
+### Querying a Graph
+
+```rust
+// Retrieve elements by identity
+let alice = g.node(&"alice".into()).unwrap();
+
+// Navigate relationships
+let source = g.source(&"r1".into()).unwrap();  // alice
+let target = g.target(&"r1".into()).unwrap();  // bob
+
+// Neighbors and degree (both directions)
+let neighbors = g.neighbors(&"alice".into());
+let degree = g.degree(&"alice".into());
+```
+
+### Iterating Over Elements
+
+```rust
+for (id, node) in g.nodes() {
+    println!("{}: {:?}", id, node.value.labels);
+}
+
+for (id, rel) in g.relationships() {
+    let src = &rel.elements[0].value.identity;
+    let tgt = &rel.elements[1].value.identity;
+    println!("{}: {} -> {}", id, src, tgt);
+}
+```
+
+### Building from Gram Notation
+
+The `FromGram` trait (in gram-codec) parses gram notation directly into a StandardGraph:
+
+```rust
+use pattern_core::graph::StandardGraph;
+use gram_codec::FromGram;
+
+let g = StandardGraph::from_gram(
+    "(alice:Person {name:'Alice'})-[:KNOWS]->(bob:Person {name:'Bob'})"
+).unwrap();
+
+assert_eq!(g.node_count(), 2);
+assert_eq!(g.relationship_count(), 1);
+```
+
+### Interop with Advanced APIs
+
+StandardGraph converts to the abstract types used by graph algorithms:
+
+```rust
+// Access the underlying PatternGraph
+let pg = g.as_pattern_graph();
+
+// Create a GraphQuery for algorithms (BFS, shortest path, etc.)
+let query = g.as_query();
+
+// Create a GraphView snapshot for transformations
+let snapshot = g.as_snapshot();
+
+// Or consume the graph entirely
+let pg = g.into_pattern_graph();
+```
+
+### SubjectBuilder (Standalone)
+
+`SubjectBuilder` works independently of `StandardGraph` — use it anywhere you need a `Subject`:
+
+```rust
+use pattern_core::subject::Subject;
+
+let subject = Subject::build("alice")
+    .label("Person")
+    .label("Employee")
+    .property("name", "Alice Smith")
+    .property("age", 30i64)
+    .property("active", true)
+    .done();
+```
+
+For a complete runnable example: `cargo run --package relateby-pattern --example standard_graph_usage`
+
+---
+
+## Low-Level Programmatic Construction
+
+The `pattern-core` crate also provides the `Pattern` type and its core constructors for direct use. Most patterns in `pattern-rs` use `Subject` as their value type, which includes an identity, labels, and properties.
 
 ### Creating an Atomic Pattern (Node)
 Use `Pattern::point` to create a pattern with no elements.
