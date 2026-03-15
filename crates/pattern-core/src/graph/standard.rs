@@ -104,9 +104,16 @@ impl StandardGraph {
     /// Creates a 1-element pattern wrapping the referenced element.
     /// If the referenced element doesn't exist, a minimal placeholder node is created.
     pub fn add_annotation(&mut self, subject: Subject, element: &Symbol) -> &mut Self {
-        let element_pattern = self
-            .find_element(element)
-            .unwrap_or_else(|| Self::make_placeholder_node(element));
+        let element_pattern = if let Some(existing) = self.find_element(element) {
+            existing
+        } else {
+            // Insert placeholder into pg_nodes for consistency with add_relationship
+            let placeholder = Self::make_placeholder_node(element);
+            self.inner
+                .pg_nodes
+                .insert(element.clone(), placeholder.clone());
+            placeholder
+        };
 
         let id = subject.identity.clone();
         let pattern = Pattern::pattern(subject, vec![element_pattern]);
@@ -211,6 +218,7 @@ impl StandardGraph {
             && self.inner.pg_walks.is_empty()
             && self.inner.pg_annotations.is_empty()
             && self.inner.pg_other.is_empty()
+            && self.inner.pg_conflicts.is_empty()
     }
 
     /// Returns true if any reconciliation conflicts have been recorded.
@@ -401,17 +409,5 @@ impl StandardGraph {
 impl Default for StandardGraph {
     fn default() -> Self {
         Self::new()
-    }
-}
-
-impl From<&str> for Symbol {
-    fn from(s: &str) -> Self {
-        Symbol(s.to_string())
-    }
-}
-
-impl From<String> for Symbol {
-    fn from(s: String) -> Self {
-        Symbol(s)
     }
 }

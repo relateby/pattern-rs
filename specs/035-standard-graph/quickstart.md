@@ -51,6 +51,7 @@ assert_eq!(g.relationship_count(), 1);
 
 ```rust
 use pattern_core::graph::StandardGraph;
+use gram_codec::FromGram;
 
 let g = StandardGraph::from_gram(
     "(alice:Person {name:'Alice'})-[:KNOWS {since:2020}]->(bob:Person {name:'Bob'})"

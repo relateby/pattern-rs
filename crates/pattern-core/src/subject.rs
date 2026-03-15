@@ -33,6 +33,18 @@ impl fmt::Display for Symbol {
     }
 }
 
+impl From<&str> for Symbol {
+    fn from(s: &str) -> Self {
+        Symbol(s.to_string())
+    }
+}
+
+impl From<String> for Symbol {
+    fn from(s: String) -> Self {
+        Symbol(s)
+    }
+}
+
 /// Range value for numeric ranges (lower and upper bounds, both optional).
 ///
 /// Used in `Value::VRange` to represent numeric ranges with optional bounds.
