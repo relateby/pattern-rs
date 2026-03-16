@@ -3297,12 +3297,6 @@ impl WasmSubjectBuilder {
 /// Add `build` static method to Subject (T031).
 #[wasm_bindgen]
 impl WasmSubject {
-    /// Create a SubjectBuilder for fluent subject construction.
-    ///
-    /// # Example (JavaScript)
-    /// ```javascript
-    /// const subject = Subject.build("alice").label("Person").done();
-    /// ```
     /// Create an identity-only Subject with no labels or properties.
     ///
     /// Use as a lightweight reference when calling methods that accept a `Subject`
@@ -3317,6 +3311,12 @@ impl WasmSubject {
         WasmSubject::from_subject(Subject::from_id(identity))
     }
 
+    /// Create a SubjectBuilder for fluent subject construction.
+    ///
+    /// # Example (JavaScript)
+    /// ```javascript
+    /// const subject = Subject.build("alice").label("Person").done();
+    /// ```
     #[wasm_bindgen(js_name = build)]
     pub fn build(identity: &str) -> WasmSubjectBuilder {
         WasmSubjectBuilder {

@@ -12,7 +12,7 @@ const require = createRequire(import.meta.url);
 const wasm = require("../../typescript/@relateby/pattern/wasm-node/pattern_wasm.js");
 // The wasm-node package exposes Wasm-prefixed names for core types
 // and the re-exported StandardGraph wrapper from pattern-wasm.
-const { StandardGraph, WasmSubject: Subject, WasmSubjectBuilder } = wasm;
+const { StandardGraph, WasmSubject: Subject } = wasm;
 
 let passed = 0;
 let failed = 0;

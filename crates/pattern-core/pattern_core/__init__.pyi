@@ -5,7 +5,7 @@ This module provides Python-friendly bindings for pattern-core, enabling
 Python developers to programmatically construct and operate on Pattern and Subject instances.
 """
 
-from typing import Any, Callable, Dict, Generic, List, Optional, Set, TypeVar, Union, overload
+from typing import Any, Callable, Dict, Generic, List, Optional, Set, Tuple, TypeVar, Union, overload
 
 # Type variables for generic pattern operations
 T = TypeVar('T')
@@ -815,28 +815,12 @@ class StandardGraph:
 
     Example::
 
-        g = StandardGraph.from_gram("(alice:Person) (bob:Person)")
-        print(g.node_count)  # 2
+        g = StandardGraph()
+        print(g.node_count)  # 0
     """
 
     def __init__(self) -> None:
         """Create an empty StandardGraph."""
-        ...
-
-    @classmethod
-    def from_gram(cls, input: str) -> 'StandardGraph':
-        """
-        Parse gram notation into a StandardGraph.
-
-        Args:
-            input: Gram notation string
-
-        Returns:
-            StandardGraph populated with the parsed patterns.
-
-        Raises:
-            ValueError: If the gram notation is invalid.
-        """
         ...
 
     @staticmethod
@@ -921,19 +905,19 @@ class StandardGraph:
 
     # --- Iteration ---
 
-    def nodes(self) -> List[tuple[str, PatternSubject]]:
+    def nodes(self) -> List[Tuple[str, PatternSubject]]:
         """All nodes as list of (id, PatternSubject) tuples."""
         ...
 
-    def relationships(self) -> List[tuple[str, PatternSubject]]:
+    def relationships(self) -> List[Tuple[str, PatternSubject]]:
         """All relationships as list of (id, PatternSubject) tuples."""
         ...
 
-    def walks(self) -> List[tuple[str, PatternSubject]]:
+    def walks(self) -> List[Tuple[str, PatternSubject]]:
         """All walks as list of (id, PatternSubject) tuples."""
         ...
 
-    def annotations(self) -> List[tuple[str, PatternSubject]]:
+    def annotations(self) -> List[Tuple[str, PatternSubject]]:
         """All annotations as list of (id, PatternSubject) tuples."""
         ...
 

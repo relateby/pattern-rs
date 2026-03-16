@@ -1,7 +1,6 @@
 """Tests for StandardGraph Python bindings (T040)."""
 
-import pytest
-from pattern_core import StandardGraph, Subject, Pattern, SubjectBuilder
+from pattern_core import StandardGraph, Subject, Pattern
 
 
 def make_person(identity: str, name: str) -> Subject:

@@ -1,6 +1,6 @@
 """StandardGraph Python example (T043).
 
-Demonstrates using StandardGraph, SubjectBuilder, and from_gram via the
+Demonstrates using StandardGraph and Subject via the
 relateby.pattern public API.
 
 Run after installing the relateby wheel:
@@ -8,7 +8,7 @@ Run after installing the relateby wheel:
     python examples/pattern-core-python/standard_graph.py
 """
 
-from pattern_core import StandardGraph, Subject, SubjectBuilder
+from relateby.pattern import StandardGraph, Subject
 
 
 def main():
@@ -33,12 +33,7 @@ def main():
     print(repr(g))
 
     # --- SubjectBuilder fluent API ---
-    carol = (
-        SubjectBuilder("carol")
-        .label("Person")
-        .property("name", "Carol")
-        .done()
-    )
+    carol = Subject.build("carol").label("Person").property("name", "Carol").done()
     g.add_node(carol)
     print(f"After adding Carol: {g.node_count} nodes")
 

@@ -533,12 +533,6 @@ impl PySubject {
         format!("Subject(identity={:?})", self.subject.identity.0)
     }
 
-    /// Create a SubjectBuilder for fluent subject construction (T032).
-    ///
-    /// # Example (Python)
-    /// ```python
-    /// subject = Subject.build("alice").label("Person").property("name", "Alice").done()
-    /// ```
     /// Create an identity-only Subject with no labels or properties.
     ///
     /// Use as a lightweight reference when calling methods that accept a `Subject`
@@ -555,6 +549,12 @@ impl PySubject {
         }
     }
 
+    /// Create a SubjectBuilder for fluent subject construction (T032).
+    ///
+    /// # Example (Python)
+    /// ```python
+    /// subject = Subject.build("alice").label("Person").property("name", "Alice").done()
+    /// ```
     #[staticmethod]
     fn build(identity: String) -> PySubjectBuilder {
         PySubjectBuilder {
