@@ -10,6 +10,11 @@ async function loadGram(): Promise<GramModule> {
 
   const { init } = await import("./index.js");
   await init();
+  const nodeModulePath = "./wasm-node/pattern_wasm.js";
+  const browserModulePath = "./wasm/pattern_wasm.js";
+  const unavailableMessage =
+    "Gram bindings are unavailable after init(); expected a Gram export from " +
+    `${nodeModulePath} (Node) or ${browserModulePath} (browser/bundler).`;
 
   try {
     const isNode = typeof process !== "undefined" &&
@@ -23,15 +28,14 @@ async function loadGram(): Promise<GramModule> {
       const __filename = fileURLToPath(import.meta.url);
       const __dirname = dirname(__filename);
       const require = createRequire(import.meta.url);
-      const wasmNodePath = resolve(__dirname, "./wasm-node/pattern_wasm.js");
+      const wasmNodePath = resolve(__dirname, nodeModulePath);
       const mod = require(wasmNodePath) as { Gram?: GramModule };
       if (mod.Gram) {
         gramModule = mod.Gram;
         return gramModule;
       }
     } else {
-      const wasmPath = "./wasm/pattern_wasm.js";
-      const mod = await import(/* @vite-ignore */ wasmPath) as { Gram?: GramModule };
+      const mod = await import(/* @vite-ignore */ browserModulePath) as { Gram?: GramModule };
       if (mod.Gram) {
         gramModule = mod.Gram;
         return gramModule;
@@ -43,10 +47,10 @@ async function loadGram(): Promise<GramModule> {
 
   gramModule = {
     parse: () => {
-      throw new Error("Gram.parse: WASM module not loaded. Call await init() first.");
+      throw new Error(`Gram.parse: ${unavailableMessage}`);
     },
     stringify: () => {
-      throw new Error("Gram.stringify: WASM module not loaded. Call await init() first.");
+      throw new Error(`Gram.stringify: ${unavailableMessage}`);
     },
   };
   return gramModule;

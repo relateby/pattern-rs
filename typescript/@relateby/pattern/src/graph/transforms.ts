@@ -38,20 +38,21 @@ export const mapAllGraph =
 
 function applySubstitution<V>(
   elements: ReadonlyArray<readonly [GraphClass, Pattern<V>]>,
-  removedIdentities: Set<string | undefined>,
+  removedIdentities: Set<string>,
   subst: Substitution
 ): Array<readonly [GraphClass, Pattern<V>]> {
   const result: Array<readonly [GraphClass, Pattern<V>]> = [];
 
+  const isRemoved = (identity: string | undefined): identity is string =>
+    identity !== undefined && removedIdentities.has(identity);
+
   for (const [cls, p] of elements) {
-    if (removedIdentities.has(p.identity)) {
+    if (isRemoved(p.identity)) {
       continue;
     }
 
     if (cls.tag === "GWalk" || cls.tag === "GAnnotation") {
-      const removedChildren = p.elements.filter((e) =>
-        removedIdentities.has(e.identity)
-      );
+      const removedChildren = p.elements.filter((e) => isRemoved(e.identity));
 
       if (removedChildren.length > 0) {
         switch (subst.tag) {
@@ -59,7 +60,7 @@ function applySubstitution<V>(
             continue;
           case "SpliceGap": {
             const remaining = p.elements.filter(
-              (e) => !removedIdentities.has(e.identity)
+              (e) => !isRemoved(e.identity)
             );
             const spliced: Pattern<V> = { ...p, elements: remaining };
             result.push([cls, spliced] as const);
@@ -67,7 +68,7 @@ function applySubstitution<V>(
           }
           case "ReplaceWithSurrogate": {
             const replaced = p.elements.map((e) =>
-              removedIdentities.has(e.identity)
+              isRemoved(e.identity)
                 ? (subst.surrogate as Pattern<V>)
                 : e
             );
@@ -93,9 +94,9 @@ export const filterGraph =
     subst: Substitution
   ) =>
   (view: GraphView<V>): GraphView<V> => {
-    const removedIdentities = new Set<string | undefined>();
+    const removedIdentities = new Set<string>();
     for (const [cls, p] of view.viewElements) {
-      if (!keep(cls, p)) {
+      if (!keep(cls, p) && p.identity !== undefined) {
         removedIdentities.add(p.identity);
       }
     }

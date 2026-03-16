@@ -70,6 +70,8 @@ npm_pack_smoke() {
     local smoke_dir="$REPO_ROOT/scripts/release/npm-smoke"
     local pack_dir="$REPO_ROOT/target/npm-packages"
     local tarball
+    local tmp_dir
+    local status
 
     mkdir -p "$pack_dir"
     rm -f "$pack_dir"/*.tgz
@@ -80,12 +82,16 @@ npm_pack_smoke() {
         return 1
     fi
 
-    rm -rf "$smoke_dir/node_modules" "$smoke_dir/package-lock.json"
+    tmp_dir="$(mktemp -d "${TMPDIR:-/tmp}/pattern-npm-smoke.XXXXXX")"
+    cp "$smoke_dir/package.json" "$smoke_dir/smoke.mjs" "$tmp_dir/"
     (
-        cd "$smoke_dir" &&
-        npm install --silent "$tarball" &&
+        cd "$tmp_dir" &&
+        npm install --silent --no-save --package-lock=false "$tarball" &&
         npm run smoke
     )
+    status=$?
+    rm -rf "$tmp_dir"
+    return $status
 }
 
 python_release_build() {
@@ -114,7 +120,11 @@ python_release_smoke() {
 crate_version_exists_on_crates_io() {
     local crate_name=$1
     local crate_version=$2
-    python - "$crate_name" "$crate_version" <<'PY'
+    if [[ -z "$PYTHON_EXE" ]]; then
+        echo "Need Python 3.8-3.13 to query crates.io" >&2
+        return 1
+    fi
+    "$PYTHON_EXE" - "$crate_name" "$crate_version" <<'PY'
 import json
 import sys
 import urllib.error

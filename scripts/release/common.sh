@@ -151,7 +151,12 @@ if f'version = "{version}"' not in cargo:
     errors.append("workspace Cargo version mismatch")
 
 gram = (repo / "crates" / "gram-codec" / "Cargo.toml").read_text(encoding="utf-8")
-if f'version = "{version}"' not in gram:
+gram_dep = re.search(
+    r'^pattern_core = \{[^}]*version = "([^"]+)"[^}]*\}$',
+    gram,
+    re.M,
+)
+if not gram_dep or gram_dep.group(1) != version:
     errors.append("gram-codec dependency version mismatch")
 
 pkg = json.loads((repo / "typescript" / "@relateby" / "pattern" / "package.json").read_text(encoding="utf-8"))
