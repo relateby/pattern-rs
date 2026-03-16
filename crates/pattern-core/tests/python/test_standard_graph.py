@@ -63,7 +63,7 @@ class TestAddRelationship:
         rel = Subject(identity="r1", labels={"KNOWS"}, properties={})
         g.add_node(alice)
         g.add_node(bob)
-        g.add_relationship(rel, "alice", "bob")
+        g.add_relationship(rel, alice, bob)
         assert g.relationship_count == 1
 
     def test_relationships_iteration(self):
@@ -73,7 +73,7 @@ class TestAddRelationship:
         rel = Subject(identity="r1", labels={"KNOWS"}, properties={})
         g.add_node(alice)
         g.add_node(bob)
-        g.add_relationship(rel, "alice", "bob")
+        g.add_relationship(rel, alice, bob)
         rels = g.relationships()
         assert len(rels) == 1
         rel_id, pattern = rels[0]
@@ -86,7 +86,7 @@ class TestAddRelationship:
         rel = Subject(identity="r1", labels={"KNOWS"}, properties={})
         g.add_node(alice)
         g.add_node(bob)
-        g.add_relationship(rel, "alice", "bob")
+        g.add_relationship(rel, alice, bob)
         # source/target return Pattern objects
         assert g.source("r1").value.identity == "alice"
         assert g.target("r1").value.identity == "bob"
@@ -144,7 +144,7 @@ class TestGraphQueries:
         rel = Subject(identity="r1", labels={"KNOWS"}, properties={})
         g.add_node(alice)
         g.add_node(bob)
-        g.add_relationship(rel, "alice", "bob")
+        g.add_relationship(rel, alice, bob)
         # neighbors() returns list of Pattern objects
         neighbors = g.neighbors("alice")
         neighbor_ids = [p.value.identity for p in neighbors]
@@ -157,7 +157,7 @@ class TestGraphQueries:
         rel = Subject(identity="r1", labels={"KNOWS"}, properties={})
         g.add_node(alice)
         g.add_node(bob)
-        g.add_relationship(rel, "alice", "bob")
+        g.add_relationship(rel, alice, bob)
         assert g.degree("alice") >= 1
 
     def test_source_none_for_node(self):

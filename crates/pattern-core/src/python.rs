@@ -539,6 +539,22 @@ impl PySubject {
     /// ```python
     /// subject = Subject.build("alice").label("Person").property("name", "Alice").done()
     /// ```
+    /// Create an identity-only Subject with no labels or properties.
+    ///
+    /// Use as a lightweight reference when calling methods that accept a `Subject`
+    /// but only need the identity (e.g., `add_relationship` source/target args).
+    ///
+    /// # Example (Python)
+    /// ```python
+    /// g.add_relationship(rel, Subject.from_id("alice"), Subject.from_id("bob"))
+    /// ```
+    #[staticmethod]
+    fn from_id(identity: String) -> PySubject {
+        PySubject {
+            subject: Subject::from_id(identity),
+        }
+    }
+
     #[staticmethod]
     fn build(identity: String) -> PySubjectBuilder {
         PySubjectBuilder {
@@ -1359,39 +1375,51 @@ impl PyStandardGraph {
     }
 
     /// Add a relationship to the graph. Returns self for chaining.
+    ///
+    /// Pass the actual `Subject` objects for source and target. When you only
+    /// have an identity string, use `Subject.from_id("id")`.
     fn add_relationship<'a>(
         mut slf: PyRefMut<'a, Self>,
         subject: &PySubject,
-        source_id: &str,
-        target_id: &str,
+        source: &PySubject,
+        target: &PySubject,
     ) -> PyRefMut<'a, Self> {
-        slf.inner.add_relationship(
-            subject.subject.clone(),
-            &Symbol(source_id.to_string()),
-            &Symbol(target_id.to_string()),
-        );
+        slf.inner
+            .add_relationship(subject.subject.clone(), &source.subject, &target.subject);
         slf
     }
 
     /// Add a walk to the graph. Returns self for chaining.
+    ///
+    /// Pass a list of `Subject` objects for the relationships. When you only
+    /// have identity strings, use `Subject.from_id("id")` for each element.
     fn add_walk<'a>(
         mut slf: PyRefMut<'a, Self>,
         subject: &PySubject,
-        relationship_ids: Vec<String>,
-    ) -> PyRefMut<'a, Self> {
-        let symbols: Vec<Symbol> = relationship_ids.into_iter().map(Symbol).collect();
-        slf.inner.add_walk(subject.subject.clone(), &symbols);
-        slf
+        relationships: &Bound<'_, PyList>,
+    ) -> PyResult<PyRefMut<'a, Self>> {
+        let subjects: Vec<Subject> = relationships
+            .iter()
+            .map(|item| {
+                let py_subj: PyRef<'_, PySubject> = item.extract()?;
+                Ok(py_subj.subject.clone())
+            })
+            .collect::<PyResult<Vec<_>>>()?;
+        slf.inner.add_walk(subject.subject.clone(), &subjects);
+        Ok(slf)
     }
 
     /// Add an annotation to the graph. Returns self for chaining.
+    ///
+    /// Pass the actual `Subject` for the annotated element. When you only have
+    /// an identity string, use `Subject.from_id("id")`.
     fn add_annotation<'a>(
         mut slf: PyRefMut<'a, Self>,
         subject: &PySubject,
-        element_id: &str,
+        element: &PySubject,
     ) -> PyRefMut<'a, Self> {
         slf.inner
-            .add_annotation(subject.subject.clone(), &Symbol(element_id.to_string()));
+            .add_annotation(subject.subject.clone(), &element.subject);
         slf
     }
 

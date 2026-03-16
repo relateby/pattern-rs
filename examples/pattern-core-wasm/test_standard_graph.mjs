@@ -59,7 +59,8 @@ console.log("\naddRelationship:");
   const rel = new Subject("r1", ["KNOWS"], {});
   g.addNode(alice);
   g.addNode(bob);
-  g.addRelationship(rel, "alice", "bob");
+  // Pass Subject objects directly
+  g.addRelationship(rel, alice, bob);
   assertEqual(g.relationshipCount, 1, "relationshipCount after addRelationship");
 }
 
@@ -67,9 +68,11 @@ console.log("\naddRelationship:");
 console.log("\nsource / target:");
 {
   const g = new StandardGraph();
-  g.addNode(new Subject("alice", ["Person"], {}));
-  g.addNode(new Subject("bob", ["Person"], {}));
-  g.addRelationship(new Subject("r1", ["KNOWS"], {}), "alice", "bob");
+  const alice = new Subject("alice", ["Person"], {});
+  const bob = new Subject("bob", ["Person"], {});
+  g.addNode(alice);
+  g.addNode(bob);
+  g.addRelationship(new Subject("r1", ["KNOWS"], {}), alice, bob);
   const src = g.source("r1");
   const tgt = g.target("r1");
   assert(src !== null && src !== undefined, "source(r1) returns a value");

@@ -366,6 +366,38 @@ impl fmt::Display for Subject {
 }
 
 impl Subject {
+    /// Creates an identity-only Subject with no labels or properties.
+    ///
+    /// Useful as a reference handle when passing to methods that accept `&Subject`
+    /// and only need the identity (e.g., `add_relationship` source/target args).
+    ///
+    /// # Examples
+    ///
+    /// ```rust
+    /// use pattern_core::Subject;
+    ///
+    /// let mut g = pattern_core::graph::StandardGraph::new();
+    /// let alice = Subject::build("alice").label("Person").done();
+    /// let bob   = Subject::build("bob").label("Person").done();
+    /// g.add_node(alice.clone());
+    /// g.add_node(bob.clone());
+    /// g.add_relationship(Subject::build("r1").label("KNOWS").done(), &alice, &bob);
+    ///
+    /// // When you only have an ID string, use from_id as a lightweight reference:
+    /// g.add_relationship(
+    ///     Subject::build("r2").label("KNOWS").done(),
+    ///     &Subject::from_id("alice"),
+    ///     &Subject::from_id("bob"),
+    /// );
+    /// ```
+    pub fn from_id(identity: impl Into<String>) -> Subject {
+        Subject {
+            identity: Symbol(identity.into()),
+            labels: std::collections::HashSet::new(),
+            properties: std::collections::HashMap::new(),
+        }
+    }
+
     /// Creates a SubjectBuilder with the given identity.
     ///
     /// # Examples

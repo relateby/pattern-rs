@@ -22,7 +22,8 @@ const rel = new Subject("r1", ["KNOWS"], {});
 
 g.addNode(alice);
 g.addNode(bob);
-g.addRelationship(rel, "alice", "bob");
+// Pass Subject objects directly — no need to spell out identity strings
+g.addRelationship(rel, alice, bob);
 
 console.log(`Node count: ${g.nodeCount}`);                        // 2
 console.log(`Relationship count: ${g.relationshipCount}`);        // 1

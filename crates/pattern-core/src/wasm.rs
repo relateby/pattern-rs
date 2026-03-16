@@ -2970,32 +2970,50 @@ impl WasmStandardGraph {
     }
 
     /// Add a relationship to the graph.
+    ///
+    /// Pass the actual `Subject` objects for source and target. When you only
+    /// have an identity string, use `Subject.fromId("id")`.
     #[wasm_bindgen(js_name = addRelationship)]
-    pub fn add_relationship(&mut self, subject: &WasmSubject, source_id: &str, target_id: &str) {
+    pub fn add_relationship(
+        &mut self,
+        subject: &WasmSubject,
+        source: &WasmSubject,
+        target: &WasmSubject,
+    ) {
         self.inner.add_relationship(
             subject.as_subject().clone(),
-            &Symbol(source_id.to_string()),
-            &Symbol(target_id.to_string()),
+            source.as_subject(),
+            target.as_subject(),
         );
     }
 
     /// Add a walk to the graph.
+    ///
+    /// Pass a JS Array of `Subject` objects for the relationships. When you only
+    /// have identity strings, use `Subject.fromId("id")` for each element.
     #[wasm_bindgen(js_name = addWalk)]
-    pub fn add_walk(&mut self, subject: &WasmSubject, relationship_ids: &js_sys::Array) {
-        let symbols: Vec<Symbol> = (0..relationship_ids.length())
-            .filter_map(|i| relationship_ids.get(i).as_string())
-            .map(Symbol)
+    pub fn add_walk(&mut self, subject: &WasmSubject, relationships: &js_sys::Array) {
+        let subjects: Vec<Subject> = (0..relationships.length())
+            .filter_map(|i| {
+                let item = relationships.get(i);
+                // Extract identity from a Subject JS object via its identity property
+                let id = js_sys::Reflect::get(&item, &wasm_bindgen::JsValue::from_str("identity"))
+                    .ok()?
+                    .as_string()?;
+                Some(Subject::from_id(id))
+            })
             .collect();
-        self.inner.add_walk(subject.as_subject().clone(), &symbols);
+        self.inner.add_walk(subject.as_subject().clone(), &subjects);
     }
 
     /// Add an annotation to the graph.
+    ///
+    /// Pass the actual `Subject` for the annotated element. When you only have
+    /// an identity string, use `Subject.fromId("id")`.
     #[wasm_bindgen(js_name = addAnnotation)]
-    pub fn add_annotation(&mut self, subject: &WasmSubject, element_id: &str) {
-        self.inner.add_annotation(
-            subject.as_subject().clone(),
-            &Symbol(element_id.to_string()),
-        );
+    pub fn add_annotation(&mut self, subject: &WasmSubject, element: &WasmSubject) {
+        self.inner
+            .add_annotation(subject.as_subject().clone(), element.as_subject());
     }
 
     /// Add a single pattern (classified by shape).
@@ -3285,6 +3303,20 @@ impl WasmSubject {
     /// ```javascript
     /// const subject = Subject.build("alice").label("Person").done();
     /// ```
+    /// Create an identity-only Subject with no labels or properties.
+    ///
+    /// Use as a lightweight reference when calling methods that accept a `Subject`
+    /// but only need the identity (e.g., `addRelationship` source/target args).
+    ///
+    /// # Example (JavaScript)
+    /// ```javascript
+    /// g.addRelationship(rel, Subject.fromId("alice"), Subject.fromId("bob"));
+    /// ```
+    #[wasm_bindgen(js_name = fromId)]
+    pub fn from_id(identity: &str) -> WasmSubject {
+        WasmSubject::from_subject(Subject::from_id(identity))
+    }
+
     #[wasm_bindgen(js_name = build)]
     pub fn build(identity: &str) -> WasmSubjectBuilder {
         WasmSubjectBuilder {

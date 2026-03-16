@@ -263,6 +263,20 @@ class Subject:
         ...
 
     @staticmethod
+    def from_id(identity: str) -> 'Subject':
+        """
+        Create an identity-only Subject with no labels or properties.
+
+        Use as a lightweight reference for add_relationship source/target args
+        when you only have an identity string.
+
+        Example::
+
+            g.add_relationship(rel, Subject.from_id("alice"), Subject.from_id("bob"))
+        """
+        ...
+
+    @staticmethod
     def build(identity: str) -> 'SubjectBuilder':
         """
         Create a SubjectBuilder for fluent subject construction.
@@ -836,16 +850,19 @@ class StandardGraph:
         """Add a node to the graph. Returns self for chaining."""
         ...
 
-    def add_relationship(self, subject: Subject, source_id: str, target_id: str) -> 'StandardGraph':
-        """Add a relationship to the graph. Returns self for chaining."""
+    def add_relationship(self, subject: Subject, source: Subject, target: Subject) -> 'StandardGraph':
+        """Add a relationship to the graph. Returns self for chaining.
+        Pass Subject objects for source and target; use Subject.from_id("id") when you only have a string."""
         ...
 
-    def add_walk(self, subject: Subject, relationship_ids: List[str]) -> 'StandardGraph':
-        """Add a walk to the graph. Returns self for chaining."""
+    def add_walk(self, subject: Subject, relationships: List[Subject]) -> 'StandardGraph':
+        """Add a walk to the graph. Returns self for chaining.
+        Pass a list of Subject objects; use Subject.from_id("id") for string-only references."""
         ...
 
-    def add_annotation(self, subject: Subject, element_id: str) -> 'StandardGraph':
-        """Add an annotation to the graph. Returns self for chaining."""
+    def add_annotation(self, subject: Subject, element: Subject) -> 'StandardGraph':
+        """Add an annotation to the graph. Returns self for chaining.
+        Pass the Subject for the annotated element; use Subject.from_id("id") for string-only references."""
         ...
 
     def add_pattern(self, pattern: PatternSubject) -> 'StandardGraph':

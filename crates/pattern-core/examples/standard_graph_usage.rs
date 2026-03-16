@@ -38,40 +38,33 @@ fn main() {
 
     let mut g = StandardGraph::new();
 
-    // Add nodes
-    g.add_node(
-        Subject::build("alice")
-            .label("Person")
-            .property("name", "Alice")
-            .done(),
-    );
-    g.add_node(
-        Subject::build("bob")
-            .label("Person")
-            .property("name", "Bob")
-            .done(),
-    );
-    g.add_node(
-        Subject::build("carol")
-            .label("Person")
-            .property("name", "Carol")
-            .done(),
-    );
+    // Add nodes — keep subjects in scope to use as endpoint references
+    let alice = Subject::build("alice")
+        .label("Person")
+        .property("name", "Alice")
+        .done();
+    let bob = Subject::build("bob")
+        .label("Person")
+        .property("name", "Bob")
+        .done();
+    let carol = Subject::build("carol")
+        .label("Person")
+        .property("name", "Carol")
+        .done();
+    g.add_node(alice.clone());
+    g.add_node(bob.clone());
+    g.add_node(carol.clone());
 
-    // Add relationships (chaining works too)
+    // Add relationships — pass Subject objects directly (chaining works too)
     g.add_relationship(
         Subject::build("r1")
             .label("KNOWS")
             .property("since", 2020i64)
             .done(),
-        &"alice".into(),
-        &"bob".into(),
+        &alice,
+        &bob,
     )
-    .add_relationship(
-        Subject::build("r2").label("KNOWS").done(),
-        &"bob".into(),
-        &"carol".into(),
-    );
+    .add_relationship(Subject::build("r2").label("KNOWS").done(), &bob, &carol);
 
     println!("Nodes:         {}", g.node_count());
     println!("Relationships: {}", g.relationship_count());
@@ -171,11 +164,12 @@ fn main() {
     println!("--- 7. Placeholder auto-creation ---");
 
     let mut g3 = StandardGraph::new();
-    // Add a relationship without pre-creating nodes — placeholders are created
+    // Add a relationship without pre-creating nodes — placeholders are created.
+    // Use Subject::from_id when you only have identity strings.
     g3.add_relationship(
         Subject::build("r1").label("LINKS").done(),
-        &"foo".into(),
-        &"bar".into(),
+        &Subject::from_id("foo"),
+        &Subject::from_id("bar"),
     );
 
     println!("Nodes auto-created: {}", g3.node_count());

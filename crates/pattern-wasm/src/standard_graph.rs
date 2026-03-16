@@ -84,21 +84,35 @@ impl StandardGraph {
     }
 
     /// Add a relationship to the graph.
+    ///
+    /// Pass the actual `Subject` objects for source and target. When you only
+    /// have an identity string, use `Subject.fromId("id")`.
     #[wasm_bindgen(js_name = addRelationship)]
-    pub fn add_relationship(&mut self, subject: &WasmSubject, source_id: &str, target_id: &str) {
-        self.inner.add_relationship(subject, source_id, target_id);
+    pub fn add_relationship(
+        &mut self,
+        subject: &WasmSubject,
+        source: &WasmSubject,
+        target: &WasmSubject,
+    ) {
+        self.inner.add_relationship(subject, source, target);
     }
 
     /// Add a walk to the graph.
+    ///
+    /// Pass a JS Array of `Subject` objects for the relationships. When you only
+    /// have identity strings, use `Subject.fromId("id")` for each element.
     #[wasm_bindgen(js_name = addWalk)]
-    pub fn add_walk(&mut self, subject: &WasmSubject, relationship_ids: &js_sys::Array) {
-        self.inner.add_walk(subject, relationship_ids);
+    pub fn add_walk(&mut self, subject: &WasmSubject, relationships: &js_sys::Array) {
+        self.inner.add_walk(subject, relationships);
     }
 
     /// Add an annotation to the graph.
+    ///
+    /// Pass the actual `Subject` for the annotated element. When you only have
+    /// an identity string, use `Subject.fromId("id")`.
     #[wasm_bindgen(js_name = addAnnotation)]
-    pub fn add_annotation(&mut self, subject: &WasmSubject, element_id: &str) {
-        self.inner.add_annotation(subject, element_id);
+    pub fn add_annotation(&mut self, subject: &WasmSubject, element: &WasmSubject) {
+        self.inner.add_annotation(subject, element);
     }
 
     /// Add a single pattern.

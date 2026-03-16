@@ -240,6 +240,10 @@ export class Subject {
    *   .done();
    * ```
    */
+  /** Create an identity-only Subject with no labels or properties.
+   * Use as a lightweight reference for `addRelationship` source/target args. */
+  static fromId(identity: string): Subject;
+
   static build(identity: string): SubjectBuilder;
 }
 
@@ -896,14 +900,17 @@ export class StandardGraph {
   /** Add a node to the graph. */
   addNode(subject: Subject): void;
 
-  /** Add a relationship to the graph. */
-  addRelationship(subject: Subject, sourceId: string, targetId: string): void;
+  /** Add a relationship to the graph.
+   * Pass Subject objects for source and target; use `Subject.fromId("id")` when you only have a string. */
+  addRelationship(subject: Subject, source: Subject, target: Subject): void;
 
-  /** Add a walk to the graph. */
-  addWalk(subject: Subject, relationshipIds: string[]): void;
+  /** Add a walk to the graph.
+   * Pass an array of Subject objects; use `Subject.fromId("id")` for string-only references. */
+  addWalk(subject: Subject, relationships: Subject[]): void;
 
-  /** Add an annotation to the graph. */
-  addAnnotation(subject: Subject, elementId: string): void;
+  /** Add an annotation to the graph.
+   * Pass the Subject for the annotated element; use `Subject.fromId("id")` for string-only references. */
+  addAnnotation(subject: Subject, element: Subject): void;
 
   /** Add a single pattern (classified by shape). */
   addPattern(pattern: Pattern): void;

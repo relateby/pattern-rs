@@ -26,13 +26,11 @@ use crate::subject::{Subject, Symbol};
 /// use pattern_core::subject::Subject;
 ///
 /// let mut g = StandardGraph::new();
-/// g.add_node(Subject::build("alice").label("Person").done());
-/// g.add_node(Subject::build("bob").label("Person").done());
-/// g.add_relationship(
-///     Subject::build("r1").label("KNOWS").done(),
-///     &"alice".into(),
-///     &"bob".into(),
-/// );
+/// let alice = Subject::build("alice").label("Person").done();
+/// let bob   = Subject::build("bob").label("Person").done();
+/// g.add_node(alice.clone());
+/// g.add_node(bob.clone());
+/// g.add_relationship(Subject::build("r1").label("KNOWS").done(), &alice, &bob);
 /// assert_eq!(g.node_count(), 2);
 /// assert_eq!(g.relationship_count(), 1);
 /// ```
@@ -68,14 +66,18 @@ impl StandardGraph {
     /// Creates a 2-element pattern with the source and target nodes as elements.
     /// If the source or target nodes don't exist yet, minimal placeholder nodes
     /// are created automatically.
+    ///
+    /// Pass the actual `Subject` objects for source and target when you have them;
+    /// use `Subject::from_id("id")` as a lightweight reference when you only have
+    /// an identity string.
     pub fn add_relationship(
         &mut self,
         subject: Subject,
-        source: &Symbol,
-        target: &Symbol,
+        source: &Subject,
+        target: &Subject,
     ) -> &mut Self {
-        let source_pattern = self.get_or_create_placeholder_node(source);
-        let target_pattern = self.get_or_create_placeholder_node(target);
+        let source_pattern = self.get_or_create_placeholder_node(&source.identity);
+        let target_pattern = self.get_or_create_placeholder_node(&target.identity);
 
         let id = subject.identity.clone();
         let pattern = Pattern::pattern(subject, vec![source_pattern, target_pattern]);
@@ -87,10 +89,14 @@ impl StandardGraph {
     ///
     /// Creates an N-element pattern where each element is a relationship pattern.
     /// If referenced relationships don't exist, minimal placeholders are created.
-    pub fn add_walk(&mut self, subject: Subject, relationships: &[Symbol]) -> &mut Self {
+    ///
+    /// Pass the actual `Subject` objects for relationships when you have them;
+    /// use `Subject::from_id("id")` as a lightweight reference when you only have
+    /// an identity string.
+    pub fn add_walk(&mut self, subject: Subject, relationships: &[Subject]) -> &mut Self {
         let rel_patterns: Vec<Pattern<Subject>> = relationships
             .iter()
-            .map(|rel_id| self.get_or_create_placeholder_relationship(rel_id))
+            .map(|rel| self.get_or_create_placeholder_relationship(&rel.identity))
             .collect();
 
         let id = subject.identity.clone();
@@ -103,15 +109,19 @@ impl StandardGraph {
     ///
     /// Creates a 1-element pattern wrapping the referenced element.
     /// If the referenced element doesn't exist, a minimal placeholder node is created.
-    pub fn add_annotation(&mut self, subject: Subject, element: &Symbol) -> &mut Self {
-        let element_pattern = if let Some(existing) = self.find_element(element) {
+    ///
+    /// Pass the actual `Subject` when you have it; use `Subject::from_id("id")` as
+    /// a lightweight reference when you only have an identity string.
+    pub fn add_annotation(&mut self, subject: Subject, element: &Subject) -> &mut Self {
+        let element_id = &element.identity;
+        let element_pattern = if let Some(existing) = self.find_element(element_id) {
             existing
         } else {
             // Insert placeholder into pg_nodes for consistency with add_relationship
-            let placeholder = Self::make_placeholder_node(element);
+            let placeholder = Self::make_placeholder_node(element_id);
             self.inner
                 .pg_nodes
-                .insert(element.clone(), placeholder.clone());
+                .insert(element_id.clone(), placeholder.clone());
             placeholder
         };
 

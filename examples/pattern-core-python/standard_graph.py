@@ -22,7 +22,8 @@ def main():
 
     g.add_node(alice)
     g.add_node(bob)
-    g.add_relationship(rel, "alice", "bob")
+    # Pass Subject objects directly — no need to spell out identity strings
+    g.add_relationship(rel, alice, bob)
 
     print(f"Nodes: {g.node_count}")           # 2
     print(f"Relationships: {g.relationship_count}")  # 1
