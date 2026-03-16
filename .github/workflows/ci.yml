@@ -41,8 +41,40 @@ jobs:
         run: cargo doc --no-deps -p relateby-pattern -p relateby-gram
       - name: Cargo publish dry-run
         run: |
+          VERSION="$(python - <<'PY'
+          import re
+          from pathlib import Path
+
+          cargo_toml = Path("Cargo.toml").read_text(encoding="utf-8")
+          match = re.search(r'^\[workspace\.package\]\n(?:.*\n)*?version = "([^"]+)"', cargo_toml, re.M)
+          if not match:
+              raise SystemExit("workspace version not found")
+          print(match.group(1))
+          PY
+          )"
           cargo publish -p relateby-pattern --dry-run
-          cargo publish -p relateby-gram --dry-run
+          if python - "$VERSION" <<'PY'
+          import json
+          import sys
+          import urllib.error
+          import urllib.request
+
+          version = sys.argv[1]
+          try:
+              with urllib.request.urlopen("https://crates.io/api/v1/crates/relateby-pattern") as response:
+                  payload = json.load(response)
+          except urllib.error.URLError:
+              raise SystemExit(1)
+
+          versions = {item["num"] for item in payload.get("versions", [])}
+          raise SystemExit(0 if version in versions else 1)
+          PY
+          then
+            echo "relateby-pattern ${VERSION} already exists on crates.io; using cargo package fallback for relateby-gram"
+            cargo package -p relateby-gram --allow-dirty --no-verify
+          else
+            cargo publish -p relateby-gram --dry-run
+          fi
 
   wasm-validation:
     name: WASM Validation
@@ -98,7 +130,9 @@ jobs:
       - name: Test @relateby/pattern
         run: npm run test --workspace=@relateby/pattern
       - name: Pack @relateby/pattern
-        run: npm run pack:release --workspace=@relateby/pattern
+        run: |
+          mkdir -p target/npm-packages
+          npm run pack:release --workspace=@relateby/pattern
       - name: Smoke-test packed npm artifact
         working-directory: scripts/release/npm-smoke
         run: |
@@ -134,5 +168,5 @@ jobs:
       - name: Check wheel metadata
         run: twine check python/relateby/dist/*
       - name: Smoke-test combined wheel
-        run: bash scripts/release/smoke-python.sh --wheel python/relateby/dist/*.whl
+        run: bash ./scripts/release/smoke-python.sh --wheel ./python/relateby/dist/*.whl
 
