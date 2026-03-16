@@ -2149,6 +2149,7 @@ impl WasmPattern {
 
 use crate::graph::graph_classifier::canonical_classifier;
 use crate::graph::graph_query::{directed, directed_reverse, undirected, GraphQuery};
+use crate::graph::StandardGraph;
 use crate::pattern_graph::{from_pattern_graph, from_patterns_with_policy, PatternGraph};
 use crate::reconcile::{
     ElementMergeStrategy, LabelMerge, PropertyMerge, ReconciliationPolicy, SubjectMergeStrategy,
@@ -2896,4 +2897,400 @@ pub fn query_annotations_of(query: &WasmGraphQuery, target: &WasmPattern) -> js_
     let annotations =
         crate::graph::algorithms::query_annotations_of(&classifier, &query.inner, &subject_target);
     patterns_to_js_array(&annotations)
+}
+
+// ============================================================================
+// StandardGraph WASM Bindings (T004-T013, T037-T038)
+// ============================================================================
+
+/// WASM binding for StandardGraph.
+///
+/// Ergonomic graph builder and query interface. Zero configuration — create,
+/// add elements, and query without managing classifiers or policies.
+///
+/// Exported to JavaScript as `WasmStandardGraph`. Re-exported as `StandardGraph`
+/// from `pattern-wasm`.
+#[wasm_bindgen]
+pub struct WasmStandardGraph {
+    #[wasm_bindgen(skip)]
+    pub inner: StandardGraph,
+}
+
+impl Default for WasmStandardGraph {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
+#[wasm_bindgen]
+impl WasmStandardGraph {
+    /// Create an empty StandardGraph.
+    #[wasm_bindgen(constructor)]
+    pub fn new() -> WasmStandardGraph {
+        WasmStandardGraph {
+            inner: StandardGraph::new(),
+        }
+    }
+
+    /// Create from an array of Pattern<Subject> instances.
+    #[wasm_bindgen(js_name = fromPatterns)]
+    pub fn from_patterns(patterns: &js_sys::Array) -> WasmStandardGraph {
+        let subject_patterns: Vec<crate::pattern::Pattern<Subject>> = (0..patterns.length())
+            .filter_map(|i| js_value_to_subject_pattern(&patterns.get(i)))
+            .collect();
+        WasmStandardGraph {
+            inner: StandardGraph::from_patterns(subject_patterns),
+        }
+    }
+
+    /// Wrap an existing NativePatternGraph.
+    #[wasm_bindgen(js_name = fromPatternGraph)]
+    pub fn from_pattern_graph(graph: &WasmPatternGraph) -> WasmStandardGraph {
+        // PatternGraph doesn't implement Clone, so collect all patterns and rebuild.
+        let all_patterns: Vec<crate::pattern::Pattern<Subject>> = graph
+            .inner
+            .pg_nodes
+            .values()
+            .chain(graph.inner.pg_relationships.values())
+            .chain(graph.inner.pg_walks.values())
+            .chain(graph.inner.pg_annotations.values())
+            .cloned()
+            .collect();
+        WasmStandardGraph {
+            inner: StandardGraph::from_patterns(all_patterns),
+        }
+    }
+
+    // --- Element addition ---
+
+    /// Add a node to the graph.
+    #[wasm_bindgen(js_name = addNode)]
+    pub fn add_node(&mut self, subject: &WasmSubject) {
+        self.inner.add_node(subject.as_subject().clone());
+    }
+
+    /// Add a relationship to the graph.
+    #[wasm_bindgen(js_name = addRelationship)]
+    pub fn add_relationship(&mut self, subject: &WasmSubject, source_id: &str, target_id: &str) {
+        self.inner.add_relationship(
+            subject.as_subject().clone(),
+            &Symbol(source_id.to_string()),
+            &Symbol(target_id.to_string()),
+        );
+    }
+
+    /// Add a walk to the graph.
+    #[wasm_bindgen(js_name = addWalk)]
+    pub fn add_walk(&mut self, subject: &WasmSubject, relationship_ids: &js_sys::Array) {
+        let symbols: Vec<Symbol> = (0..relationship_ids.length())
+            .filter_map(|i| relationship_ids.get(i).as_string())
+            .map(Symbol)
+            .collect();
+        self.inner.add_walk(subject.as_subject().clone(), &symbols);
+    }
+
+    /// Add an annotation to the graph.
+    #[wasm_bindgen(js_name = addAnnotation)]
+    pub fn add_annotation(&mut self, subject: &WasmSubject, element_id: &str) {
+        self.inner.add_annotation(
+            subject.as_subject().clone(),
+            &Symbol(element_id.to_string()),
+        );
+    }
+
+    /// Add a single pattern (classified by shape).
+    #[wasm_bindgen(js_name = addPattern)]
+    pub fn add_pattern(&mut self, pattern: &WasmPattern) {
+        if let Some(subject_pattern) = wasm_pattern_to_subject_pattern(pattern) {
+            self.inner.add_pattern(subject_pattern);
+        }
+    }
+
+    /// Add multiple patterns (classified by shape).
+    #[wasm_bindgen(js_name = addPatterns)]
+    pub fn add_patterns(&mut self, patterns: &js_sys::Array) {
+        let subject_patterns: Vec<crate::pattern::Pattern<Subject>> = (0..patterns.length())
+            .filter_map(|i| js_value_to_subject_pattern(&patterns.get(i)))
+            .collect();
+        self.inner.add_patterns(subject_patterns);
+    }
+
+    // --- Element access ---
+
+    /// Get a node by identity. Returns undefined if not found.
+    #[wasm_bindgen(js_name = node)]
+    pub fn node(&self, id: &str) -> Option<WasmPattern> {
+        self.inner
+            .node(&Symbol(id.to_string()))
+            .map(subject_pattern_to_wasm)
+    }
+
+    /// Get a relationship by identity. Returns undefined if not found.
+    #[wasm_bindgen(js_name = relationship)]
+    pub fn relationship(&self, id: &str) -> Option<WasmPattern> {
+        self.inner
+            .relationship(&Symbol(id.to_string()))
+            .map(subject_pattern_to_wasm)
+    }
+
+    /// Get a walk by identity. Returns undefined if not found.
+    #[wasm_bindgen(js_name = walk)]
+    pub fn walk(&self, id: &str) -> Option<WasmPattern> {
+        self.inner
+            .walk(&Symbol(id.to_string()))
+            .map(subject_pattern_to_wasm)
+    }
+
+    /// Get an annotation by identity. Returns undefined if not found.
+    #[wasm_bindgen(js_name = annotation)]
+    pub fn annotation(&self, id: &str) -> Option<WasmPattern> {
+        self.inner
+            .annotation(&Symbol(id.to_string()))
+            .map(subject_pattern_to_wasm)
+    }
+
+    // --- Count getters ---
+
+    /// Number of nodes.
+    #[wasm_bindgen(getter, js_name = nodeCount)]
+    pub fn node_count(&self) -> usize {
+        self.inner.node_count()
+    }
+
+    /// Number of relationships.
+    #[wasm_bindgen(getter, js_name = relationshipCount)]
+    pub fn relationship_count(&self) -> usize {
+        self.inner.relationship_count()
+    }
+
+    /// Number of walks.
+    #[wasm_bindgen(getter, js_name = walkCount)]
+    pub fn walk_count(&self) -> usize {
+        self.inner.walk_count()
+    }
+
+    /// Number of annotations.
+    #[wasm_bindgen(getter, js_name = annotationCount)]
+    pub fn annotation_count(&self) -> usize {
+        self.inner.annotation_count()
+    }
+
+    /// True if the graph has no elements.
+    #[wasm_bindgen(getter, js_name = isEmpty)]
+    pub fn is_empty(&self) -> bool {
+        self.inner.is_empty()
+    }
+
+    /// True if any reconciliation conflicts exist.
+    #[wasm_bindgen(getter, js_name = hasConflicts)]
+    pub fn has_conflicts(&self) -> bool {
+        self.inner.has_conflicts()
+    }
+
+    // --- Iteration getters ---
+
+    /// All nodes as array of `{id: string, pattern: Pattern}`.
+    #[wasm_bindgen(getter, js_name = nodes)]
+    pub fn nodes(&self) -> js_sys::Array {
+        let arr = js_sys::Array::new();
+        for (id, pattern) in self.inner.nodes() {
+            let obj = js_sys::Object::new();
+            js_sys::Reflect::set(&obj, &JsValue::from_str("id"), &JsValue::from_str(&id.0))
+                .unwrap_or_default();
+            js_sys::Reflect::set(
+                &obj,
+                &JsValue::from_str("pattern"),
+                &JsValue::from(subject_pattern_to_wasm(pattern)),
+            )
+            .unwrap_or_default();
+            arr.push(&obj);
+        }
+        arr
+    }
+
+    /// All relationships as array of `{id: string, pattern: Pattern}`.
+    #[wasm_bindgen(getter, js_name = relationships)]
+    pub fn relationships(&self) -> js_sys::Array {
+        let arr = js_sys::Array::new();
+        for (id, pattern) in self.inner.relationships() {
+            let obj = js_sys::Object::new();
+            js_sys::Reflect::set(&obj, &JsValue::from_str("id"), &JsValue::from_str(&id.0))
+                .unwrap_or_default();
+            js_sys::Reflect::set(
+                &obj,
+                &JsValue::from_str("pattern"),
+                &JsValue::from(subject_pattern_to_wasm(pattern)),
+            )
+            .unwrap_or_default();
+            arr.push(&obj);
+        }
+        arr
+    }
+
+    /// All walks as array of `{id: string, pattern: Pattern}`.
+    #[wasm_bindgen(getter, js_name = walks)]
+    pub fn walks(&self) -> js_sys::Array {
+        let arr = js_sys::Array::new();
+        for (id, pattern) in self.inner.walks() {
+            let obj = js_sys::Object::new();
+            js_sys::Reflect::set(&obj, &JsValue::from_str("id"), &JsValue::from_str(&id.0))
+                .unwrap_or_default();
+            js_sys::Reflect::set(
+                &obj,
+                &JsValue::from_str("pattern"),
+                &JsValue::from(subject_pattern_to_wasm(pattern)),
+            )
+            .unwrap_or_default();
+            arr.push(&obj);
+        }
+        arr
+    }
+
+    /// All annotations as array of `{id: string, pattern: Pattern}`.
+    #[wasm_bindgen(getter, js_name = annotations)]
+    pub fn annotations(&self) -> js_sys::Array {
+        let arr = js_sys::Array::new();
+        for (id, pattern) in self.inner.annotations() {
+            let obj = js_sys::Object::new();
+            js_sys::Reflect::set(&obj, &JsValue::from_str("id"), &JsValue::from_str(&id.0))
+                .unwrap_or_default();
+            js_sys::Reflect::set(
+                &obj,
+                &JsValue::from_str("pattern"),
+                &JsValue::from(subject_pattern_to_wasm(pattern)),
+            )
+            .unwrap_or_default();
+            arr.push(&obj);
+        }
+        arr
+    }
+
+    // --- Graph-native queries ---
+
+    /// Get the source node of a relationship. Returns undefined if not found.
+    #[wasm_bindgen(js_name = source)]
+    pub fn source(&self, rel_id: &str) -> Option<WasmPattern> {
+        self.inner
+            .source(&Symbol(rel_id.to_string()))
+            .map(subject_pattern_to_wasm)
+    }
+
+    /// Get the target node of a relationship. Returns undefined if not found.
+    #[wasm_bindgen(js_name = target)]
+    pub fn target(&self, rel_id: &str) -> Option<WasmPattern> {
+        self.inner
+            .target(&Symbol(rel_id.to_string()))
+            .map(subject_pattern_to_wasm)
+    }
+
+    /// Get all neighbor nodes of a node (both directions).
+    #[wasm_bindgen(js_name = neighbors)]
+    pub fn neighbors(&self, node_id: &str) -> js_sys::Array {
+        let neighbors = self.inner.neighbors(&Symbol(node_id.to_string()));
+        patterns_to_js_array(&neighbors.into_iter().cloned().collect::<Vec<_>>())
+    }
+
+    /// Get the degree of a node (number of incident relationships, both directions).
+    #[wasm_bindgen(js_name = degree)]
+    pub fn degree(&self, node_id: &str) -> usize {
+        self.inner.degree(&Symbol(node_id.to_string()))
+    }
+
+    // --- Escape hatches (T037-T038) ---
+
+    /// Convert to NativePatternGraph.
+    #[wasm_bindgen(js_name = asPatternGraph)]
+    pub fn as_pattern_graph(&self) -> WasmPatternGraph {
+        let pg = self.inner.as_pattern_graph();
+        WasmPatternGraph {
+            inner: std::rc::Rc::new(PatternGraph {
+                pg_nodes: pg.pg_nodes.clone(),
+                pg_relationships: pg.pg_relationships.clone(),
+                pg_walks: pg.pg_walks.clone(),
+                pg_annotations: pg.pg_annotations.clone(),
+                pg_other: pg.pg_other.clone(),
+                pg_conflicts: pg.pg_conflicts.clone(),
+            }),
+        }
+    }
+
+    /// Convert to NativeGraphQuery.
+    #[wasm_bindgen(js_name = asQuery)]
+    pub fn as_query(&self) -> WasmGraphQuery {
+        WasmGraphQuery {
+            inner: self.inner.as_query(),
+        }
+    }
+}
+
+// ============================================================================
+// SubjectBuilder WASM Bindings (T029, T031)
+// ============================================================================
+
+/// Fluent Subject builder for WASM/TypeScript.
+///
+/// Created via `Subject.build(identity)`. Chain `.label()` and `.property()` calls,
+/// then finalize with `.done()`.
+///
+/// # Example (JavaScript)
+/// ```javascript
+/// const subject = Subject.build("alice")
+///   .label("Person")
+///   .property("name", "Alice")
+///   .done();
+/// ```
+#[wasm_bindgen]
+pub struct WasmSubjectBuilder {
+    #[wasm_bindgen(skip)]
+    identity: String,
+    #[wasm_bindgen(skip)]
+    labels: Vec<String>,
+    #[wasm_bindgen(skip)]
+    properties: HashMap<String, Value>,
+}
+
+#[wasm_bindgen]
+impl WasmSubjectBuilder {
+    /// Add a label. Returns `this` for chaining.
+    #[wasm_bindgen(js_name = label)]
+    pub fn label(&mut self, label: &str) {
+        self.labels.push(label.to_string());
+    }
+
+    /// Add a property. Returns `this` for chaining.
+    #[wasm_bindgen(js_name = property)]
+    pub fn property(&mut self, key: &str, value: JsValue) -> Result<(), JsValue> {
+        let rust_value = js_to_value(&value).map_err(|e| JsValue::from_str(&e))?;
+        self.properties.insert(key.to_string(), rust_value);
+        Ok(())
+    }
+
+    /// Finalize the builder and return a Subject.
+    #[wasm_bindgen(js_name = done)]
+    pub fn done(&self) -> WasmSubject {
+        WasmSubject::from_subject(Subject {
+            identity: Symbol(self.identity.clone()),
+            labels: self.labels.iter().cloned().collect(),
+            properties: self.properties.clone(),
+        })
+    }
+}
+
+/// Add `build` static method to Subject (T031).
+#[wasm_bindgen]
+impl WasmSubject {
+    /// Create a SubjectBuilder for fluent subject construction.
+    ///
+    /// # Example (JavaScript)
+    /// ```javascript
+    /// const subject = Subject.build("alice").label("Person").done();
+    /// ```
+    #[wasm_bindgen(js_name = build)]
+    pub fn build(identity: &str) -> WasmSubjectBuilder {
+        WasmSubjectBuilder {
+            identity: identity.to_string(),
+            labels: Vec::new(),
+            properties: HashMap::new(),
+        }
+    }
 }

@@ -225,6 +225,22 @@ export class Subject {
 
   /** Map of property names to Value instances */
   readonly properties: Record<string, Value>;
+
+  /**
+   * Create a SubjectBuilder for fluent subject construction.
+   *
+   * @param identity - The identity string for the subject
+   * @returns A SubjectBuilder instance for chaining
+   *
+   * @example
+   * ```typescript
+   * const subject = Subject.build("alice")
+   *   .label("Person")
+   *   .property("name", "Alice")
+   *   .done();
+   * ```
+   */
+  static build(identity: string): SubjectBuilder;
 }
 
 // ============================================================================
@@ -776,4 +792,181 @@ export class Pattern<V = any> {
    * ```
    */
   analyzeStructure(): StructureAnalysis;
+}
+
+// ============================================================================
+// NativePatternGraph and NativeGraphQuery (re-exported from graph bindings)
+// ============================================================================
+
+/** Classified, indexed collection of patterns organized by graph role. */
+export class NativePatternGraph {
+  static fromPatterns(patterns: Pattern[], policy?: NativeReconciliationPolicy): NativePatternGraph;
+  static empty(): NativePatternGraph;
+  readonly nodes: Pattern[];
+  readonly relationships: Pattern[];
+  readonly walks: Pattern[];
+  readonly annotations: Pattern[];
+  readonly conflicts: Record<string, Pattern[]>;
+  readonly size: number;
+  merge(other: NativePatternGraph): NativePatternGraph;
+}
+
+/** Read-only query handle over a NativePatternGraph. */
+export class NativeGraphQuery {
+  static fromPatternGraph(graph: NativePatternGraph): NativeGraphQuery;
+  nodes(): Pattern[];
+  relationships(): Pattern[];
+}
+
+/** Reconciliation policy for merging graphs. */
+export class NativeReconciliationPolicy {}
+
+// ============================================================================
+// SubjectBuilder (T035)
+// ============================================================================
+
+/**
+ * Fluent Subject builder.
+ *
+ * Created via `Subject.build(identity)`. Chain `.label()` and `.property()` calls,
+ * then finalize with `.done()`.
+ *
+ * @example
+ * ```typescript
+ * const subject = Subject.build("alice")
+ *   .label("Person")
+ *   .property("name", Value.string("Alice"))
+ *   .done();
+ * ```
+ */
+export class SubjectBuilder {
+  /** Add a label. Returns `this` for chaining. */
+  label(label: string): SubjectBuilder;
+
+  /**
+   * Add a property. Returns `this` for chaining.
+   *
+   * @param key - Property name
+   * @param value - Property value (use Value factories or native JS types)
+   */
+  property(key: string, value: Value): SubjectBuilder;
+
+  /** Finalize the builder and return the constructed Subject. */
+  done(): Subject;
+}
+
+// ============================================================================
+// StandardGraph (T016, T039)
+// ============================================================================
+
+/**
+ * Ergonomic graph builder and query interface.
+ *
+ * Zero configuration — create, add elements, and query without managing
+ * classifiers or policies.
+ *
+ * @example
+ * ```typescript
+ * const g = StandardGraph.fromGram("(alice:Person) -[r1:KNOWS]-> (bob:Person)");
+ * console.log(g.nodeCount);        // 2
+ * console.log(g.relationshipCount); // 1
+ * console.log(g.neighbors("alice")); // [Pattern for bob]
+ * ```
+ */
+export class StandardGraph {
+  /** Create an empty StandardGraph. */
+  constructor();
+
+  /**
+   * Parse gram notation into a StandardGraph.
+   *
+   * @param input - Gram notation string
+   * @throws Error on invalid gram syntax
+   */
+  static fromGram(input: string): StandardGraph;
+
+  /** Create from an array of Pattern instances. */
+  static fromPatterns(patterns: Pattern[]): StandardGraph;
+
+  /** Wrap an existing NativePatternGraph. */
+  static fromPatternGraph(graph: NativePatternGraph): StandardGraph;
+
+  // --- Element addition ---
+
+  /** Add a node to the graph. */
+  addNode(subject: Subject): void;
+
+  /** Add a relationship to the graph. */
+  addRelationship(subject: Subject, sourceId: string, targetId: string): void;
+
+  /** Add a walk to the graph. */
+  addWalk(subject: Subject, relationshipIds: string[]): void;
+
+  /** Add an annotation to the graph. */
+  addAnnotation(subject: Subject, elementId: string): void;
+
+  /** Add a single pattern (classified by shape). */
+  addPattern(pattern: Pattern): void;
+
+  /** Add multiple patterns (classified by shape). */
+  addPatterns(patterns: Pattern[]): void;
+
+  // --- Element access ---
+
+  /** Get a node by identity. Returns undefined if not found. */
+  node(id: string): Pattern | undefined;
+
+  /** Get a relationship by identity. Returns undefined if not found. */
+  relationship(id: string): Pattern | undefined;
+
+  /** Get a walk by identity. Returns undefined if not found. */
+  walk(id: string): Pattern | undefined;
+
+  /** Get an annotation by identity. Returns undefined if not found. */
+  annotation(id: string): Pattern | undefined;
+
+  // --- Counts ---
+
+  readonly nodeCount: number;
+  readonly relationshipCount: number;
+  readonly walkCount: number;
+  readonly annotationCount: number;
+  readonly isEmpty: boolean;
+  readonly hasConflicts: boolean;
+
+  // --- Iteration ---
+
+  /** All nodes as `{id, pattern}` pairs. */
+  readonly nodes: Array<{ id: string; pattern: Pattern }>;
+
+  /** All relationships as `{id, pattern}` pairs. */
+  readonly relationships: Array<{ id: string; pattern: Pattern }>;
+
+  /** All walks as `{id, pattern}` pairs. */
+  readonly walks: Array<{ id: string; pattern: Pattern }>;
+
+  /** All annotations as `{id, pattern}` pairs. */
+  readonly annotations: Array<{ id: string; pattern: Pattern }>;
+
+  // --- Graph-native queries ---
+
+  /** Source node of a relationship. Returns undefined if not found. */
+  source(relId: string): Pattern | undefined;
+
+  /** Target node of a relationship. Returns undefined if not found. */
+  target(relId: string): Pattern | undefined;
+
+  /** All neighbor nodes of a node (both directions). */
+  neighbors(nodeId: string): Pattern[];
+
+  /** Number of incident relationships for a node. */
+  degree(nodeId: string): number;
+
+  // --- Escape hatches (T039) ---
+
+  /** Convert to NativePatternGraph for use with algorithm functions. */
+  asPatternGraph(): NativePatternGraph;
+
+  /** Convert to NativeGraphQuery for advanced queries. */
+  asQuery(): NativeGraphQuery;
 }

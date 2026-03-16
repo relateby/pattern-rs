@@ -163,6 +163,8 @@ class Value:
         """Extract map value. Raises TypeError if not a map."""
         ...
 
+PatternSubject = Pattern  # type alias: Pattern whose value is a Subject
+
 class Subject:
     """
     Self-descriptive value type with identity, labels, and properties.
@@ -257,6 +259,22 @@ class Subject:
 
         Args:
             name: Property name to remove
+        """
+        ...
+
+    @staticmethod
+    def build(identity: str) -> 'SubjectBuilder':
+        """
+        Create a SubjectBuilder for fluent subject construction.
+
+        Args:
+            identity: The identity string for the subject
+
+        Returns:
+            SubjectBuilder for chaining
+
+        Example:
+            >>> subject = Subject.build("alice").label("Person").property("name", "Alice").done()
         """
         ...
 
@@ -749,11 +767,189 @@ class StructureAnalysis:
         """Get description of nesting patterns."""
         ...
 
+class SubjectBuilder:
+    """
+    Fluent Subject builder.
+
+    Created via ``Subject.build(identity)``. Chain ``.label()`` and ``.property()``
+    calls, then finalize with ``.done()``.
+
+    Example::
+
+        subject = Subject.build("alice").label("Person").property("name", "Alice").done()
+    """
+
+    def label(self, label: str) -> 'SubjectBuilder':
+        """Add a label. Returns self for chaining."""
+        ...
+
+    def property(self, key: str, value: Union[str, int, float, bool, list, dict]) -> 'SubjectBuilder':
+        """Add a property. Accepts native Python types. Returns self for chaining."""
+        ...
+
+    def done(self) -> Subject:
+        """Finalize the builder and return the constructed Subject."""
+        ...
+
+
+class StandardGraph:
+    """
+    Ergonomic graph builder and query interface.
+
+    Zero configuration — create, add elements, and query without managing
+    classifiers or policies.
+
+    Example::
+
+        g = StandardGraph.from_gram("(alice:Person) (bob:Person)")
+        print(g.node_count)  # 2
+    """
+
+    def __init__(self) -> None:
+        """Create an empty StandardGraph."""
+        ...
+
+    @classmethod
+    def from_gram(cls, input: str) -> 'StandardGraph':
+        """
+        Parse gram notation into a StandardGraph.
+
+        Args:
+            input: Gram notation string
+
+        Returns:
+            StandardGraph populated with the parsed patterns.
+
+        Raises:
+            ValueError: If the gram notation is invalid.
+        """
+        ...
+
+    @staticmethod
+    def from_patterns(patterns: List[PatternSubject]) -> 'StandardGraph':
+        """Create from a list of PatternSubject instances."""
+        ...
+
+    # --- Element addition ---
+
+    def add_node(self, subject: Subject) -> 'StandardGraph':
+        """Add a node to the graph. Returns self for chaining."""
+        ...
+
+    def add_relationship(self, subject: Subject, source_id: str, target_id: str) -> 'StandardGraph':
+        """Add a relationship to the graph. Returns self for chaining."""
+        ...
+
+    def add_walk(self, subject: Subject, relationship_ids: List[str]) -> 'StandardGraph':
+        """Add a walk to the graph. Returns self for chaining."""
+        ...
+
+    def add_annotation(self, subject: Subject, element_id: str) -> 'StandardGraph':
+        """Add an annotation to the graph. Returns self for chaining."""
+        ...
+
+    def add_pattern(self, pattern: PatternSubject) -> 'StandardGraph':
+        """Add a single pattern (classified by shape). Returns self for chaining."""
+        ...
+
+    # --- Element access ---
+
+    def node(self, id: str) -> Optional[PatternSubject]:
+        """Get a node by identity. Returns None if not found."""
+        ...
+
+    def relationship(self, id: str) -> Optional[PatternSubject]:
+        """Get a relationship by identity. Returns None if not found."""
+        ...
+
+    def walk(self, id: str) -> Optional[PatternSubject]:
+        """Get a walk by identity. Returns None if not found."""
+        ...
+
+    def annotation(self, id: str) -> Optional[PatternSubject]:
+        """Get an annotation by identity. Returns None if not found."""
+        ...
+
+    # --- Counts ---
+
+    @property
+    def node_count(self) -> int:
+        """Number of nodes."""
+        ...
+
+    @property
+    def relationship_count(self) -> int:
+        """Number of relationships."""
+        ...
+
+    @property
+    def walk_count(self) -> int:
+        """Number of walks."""
+        ...
+
+    @property
+    def annotation_count(self) -> int:
+        """Number of annotations."""
+        ...
+
+    @property
+    def is_empty(self) -> bool:
+        """True if the graph has no elements."""
+        ...
+
+    @property
+    def has_conflicts(self) -> bool:
+        """True if any reconciliation conflicts exist."""
+        ...
+
+    # --- Iteration ---
+
+    def nodes(self) -> List[tuple[str, PatternSubject]]:
+        """All nodes as list of (id, PatternSubject) tuples."""
+        ...
+
+    def relationships(self) -> List[tuple[str, PatternSubject]]:
+        """All relationships as list of (id, PatternSubject) tuples."""
+        ...
+
+    def walks(self) -> List[tuple[str, PatternSubject]]:
+        """All walks as list of (id, PatternSubject) tuples."""
+        ...
+
+    def annotations(self) -> List[tuple[str, PatternSubject]]:
+        """All annotations as list of (id, PatternSubject) tuples."""
+        ...
+
+    # --- Graph-native queries ---
+
+    def source(self, rel_id: str) -> Optional[PatternSubject]:
+        """Source node of a relationship. Returns None if not found."""
+        ...
+
+    def target(self, rel_id: str) -> Optional[PatternSubject]:
+        """Target node of a relationship. Returns None if not found."""
+        ...
+
+    def neighbors(self, node_id: str) -> List[PatternSubject]:
+        """All neighbor nodes of a node (both directions)."""
+        ...
+
+    def degree(self, node_id: str) -> int:
+        """Number of incident relationships for a node."""
+        ...
+
+    def __repr__(self) -> str: ...
+    def __len__(self) -> int: ...
+
+
 __all__ = [
     'Value',
     'Subject',
+    'SubjectBuilder',
     'Pattern',
+    'PatternSubject',
     'ValidationRules',
     'ValidationError',
     'StructureAnalysis',
+    'StandardGraph',
 ]

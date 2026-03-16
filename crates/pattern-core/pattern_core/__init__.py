@@ -13,6 +13,8 @@ from .pattern_core import (
     ValidationRules,
     ValidationError,
     StructureAnalysis,
+    StandardGraph,
+    SubjectBuilder,
 )
 
 __all__ = [
@@ -22,4 +24,6 @@ __all__ = [
     "ValidationRules",
     "ValidationError",
     "StructureAnalysis",
+    "StandardGraph",
+    "SubjectBuilder",
 ]

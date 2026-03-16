@@ -532,6 +532,21 @@ impl PySubject {
     fn __repr__(&self) -> String {
         format!("Subject(identity={:?})", self.subject.identity.0)
     }
+
+    /// Create a SubjectBuilder for fluent subject construction (T032).
+    ///
+    /// # Example (Python)
+    /// ```python
+    /// subject = Subject.build("alice").label("Person").property("name", "Alice").done()
+    /// ```
+    #[staticmethod]
+    fn build(identity: String) -> PySubjectBuilder {
+        PySubjectBuilder {
+            identity,
+            labels: Vec::new(),
+            properties: HashMap::new(),
+        }
+    }
 }
 
 // ============================================================================
@@ -1265,6 +1280,336 @@ impl PyStructureAnalysis {
 }
 
 // ============================================================================
+// StandardGraph + SubjectBuilder Python Bindings (T017-T027, T029-T030, T032, T034)
+// ============================================================================
+
+#[cfg(feature = "python")]
+use crate::graph::StandardGraph;
+
+/// Helper: convert Pattern<Subject> to PyPattern.
+#[cfg(feature = "python")]
+fn subject_pattern_to_py(py: Python, p: &Pattern<Subject>) -> PyResult<PyPattern> {
+    let py_subject = PySubject {
+        subject: p.value.clone(),
+    };
+    let value: Py<PyAny> = py_subject.into_py(py);
+    let elements: Vec<PyPattern> = p
+        .elements
+        .iter()
+        .map(|e| subject_pattern_to_py(py, e))
+        .collect::<PyResult<Vec<_>>>()?;
+    Ok(PyPattern { value, elements })
+}
+
+/// Helper: convert PyPattern to Pattern<Subject>.
+#[cfg(feature = "python")]
+fn py_pattern_to_subject_pattern(py: Python, p: &PyPattern) -> PyResult<Pattern<Subject>> {
+    let subject: PySubject = p.value.extract(py)?;
+    let elements: Vec<Pattern<Subject>> = p
+        .elements
+        .iter()
+        .map(|e| py_pattern_to_subject_pattern(py, e))
+        .collect::<PyResult<Vec<_>>>()?;
+    Ok(Pattern {
+        value: subject.subject,
+        elements,
+    })
+}
+
+/// Python binding for StandardGraph (T017-T027).
+///
+/// Ergonomic graph builder and query interface with snake_case API.
+#[cfg(feature = "python")]
+#[pyclass(name = "StandardGraph")]
+pub struct PyStandardGraph {
+    inner: StandardGraph,
+}
+
+#[cfg(feature = "python")]
+#[pymethods]
+impl PyStandardGraph {
+    /// Create an empty StandardGraph.
+    #[new]
+    fn new() -> Self {
+        PyStandardGraph {
+            inner: StandardGraph::new(),
+        }
+    }
+
+    /// Create from a list of PatternSubject instances (T018).
+    #[staticmethod]
+    fn from_patterns(py: Python, patterns: &Bound<'_, PyList>) -> PyResult<Self> {
+        let mut subject_patterns = Vec::new();
+        for item in patterns.iter() {
+            let py_pattern: PyPattern = item.extract()?;
+            let subject_pattern = py_pattern_to_subject_pattern(py, &py_pattern)?;
+            subject_patterns.push(subject_pattern);
+        }
+        Ok(PyStandardGraph {
+            inner: StandardGraph::from_patterns(subject_patterns),
+        })
+    }
+
+    // --- Element addition (T020, T025) ---
+
+    /// Add a node to the graph. Returns self for chaining.
+    fn add_node<'a>(mut slf: PyRefMut<'a, Self>, subject: &PySubject) -> PyRefMut<'a, Self> {
+        slf.inner.add_node(subject.subject.clone());
+        slf
+    }
+
+    /// Add a relationship to the graph. Returns self for chaining.
+    fn add_relationship<'a>(
+        mut slf: PyRefMut<'a, Self>,
+        subject: &PySubject,
+        source_id: &str,
+        target_id: &str,
+    ) -> PyRefMut<'a, Self> {
+        slf.inner.add_relationship(
+            subject.subject.clone(),
+            &Symbol(source_id.to_string()),
+            &Symbol(target_id.to_string()),
+        );
+        slf
+    }
+
+    /// Add a walk to the graph. Returns self for chaining.
+    fn add_walk<'a>(
+        mut slf: PyRefMut<'a, Self>,
+        subject: &PySubject,
+        relationship_ids: Vec<String>,
+    ) -> PyRefMut<'a, Self> {
+        let symbols: Vec<Symbol> = relationship_ids.into_iter().map(Symbol).collect();
+        slf.inner.add_walk(subject.subject.clone(), &symbols);
+        slf
+    }
+
+    /// Add an annotation to the graph. Returns self for chaining.
+    fn add_annotation<'a>(
+        mut slf: PyRefMut<'a, Self>,
+        subject: &PySubject,
+        element_id: &str,
+    ) -> PyRefMut<'a, Self> {
+        slf.inner
+            .add_annotation(subject.subject.clone(), &Symbol(element_id.to_string()));
+        slf
+    }
+
+    /// Add a single pattern (classified by shape). Returns self for chaining.
+    fn add_pattern<'a>(
+        mut slf: PyRefMut<'a, Self>,
+        py: Python,
+        pattern: &PyPattern,
+    ) -> PyResult<PyRefMut<'a, Self>> {
+        let subject_pattern = py_pattern_to_subject_pattern(py, pattern)?;
+        slf.inner.add_pattern(subject_pattern);
+        Ok(slf)
+    }
+
+    // --- Element access (T021) ---
+
+    /// Get a node by identity. Returns None if not found.
+    fn node(&self, py: Python, id: &str) -> PyResult<Option<PyPattern>> {
+        self.inner
+            .node(&Symbol(id.to_string()))
+            .map(|p| subject_pattern_to_py(py, p))
+            .transpose()
+    }
+
+    /// Get a relationship by identity. Returns None if not found.
+    fn relationship(&self, py: Python, id: &str) -> PyResult<Option<PyPattern>> {
+        self.inner
+            .relationship(&Symbol(id.to_string()))
+            .map(|p| subject_pattern_to_py(py, p))
+            .transpose()
+    }
+
+    /// Get a walk by identity. Returns None if not found.
+    fn walk(&self, py: Python, id: &str) -> PyResult<Option<PyPattern>> {
+        self.inner
+            .walk(&Symbol(id.to_string()))
+            .map(|p| subject_pattern_to_py(py, p))
+            .transpose()
+    }
+
+    /// Get an annotation by identity. Returns None if not found.
+    fn annotation(&self, py: Python, id: &str) -> PyResult<Option<PyPattern>> {
+        self.inner
+            .annotation(&Symbol(id.to_string()))
+            .map(|p| subject_pattern_to_py(py, p))
+            .transpose()
+    }
+
+    // --- Count properties (T022) ---
+
+    /// Number of nodes.
+    #[getter]
+    fn node_count(&self) -> usize {
+        self.inner.node_count()
+    }
+
+    /// Number of relationships.
+    #[getter]
+    fn relationship_count(&self) -> usize {
+        self.inner.relationship_count()
+    }
+
+    /// Number of walks.
+    #[getter]
+    fn walk_count(&self) -> usize {
+        self.inner.walk_count()
+    }
+
+    /// Number of annotations.
+    #[getter]
+    fn annotation_count(&self) -> usize {
+        self.inner.annotation_count()
+    }
+
+    /// True if the graph has no elements.
+    #[getter]
+    fn is_empty(&self) -> bool {
+        self.inner.is_empty()
+    }
+
+    /// True if any reconciliation conflicts exist.
+    #[getter]
+    fn has_conflicts(&self) -> bool {
+        self.inner.has_conflicts()
+    }
+
+    // --- Graph-native queries (T023) ---
+
+    /// Get the source node of a relationship. Returns None if not found.
+    fn source(&self, py: Python, rel_id: &str) -> PyResult<Option<PyPattern>> {
+        self.inner
+            .source(&Symbol(rel_id.to_string()))
+            .map(|p| subject_pattern_to_py(py, p))
+            .transpose()
+    }
+
+    /// Get the target node of a relationship. Returns None if not found.
+    fn target(&self, py: Python, rel_id: &str) -> PyResult<Option<PyPattern>> {
+        self.inner
+            .target(&Symbol(rel_id.to_string()))
+            .map(|p| subject_pattern_to_py(py, p))
+            .transpose()
+    }
+
+    /// Get all neighbor nodes of a node (both directions).
+    fn neighbors(&self, py: Python, node_id: &str) -> PyResult<Vec<PyPattern>> {
+        self.inner
+            .neighbors(&Symbol(node_id.to_string()))
+            .into_iter()
+            .map(|p| subject_pattern_to_py(py, p))
+            .collect()
+    }
+
+    /// Get the degree of a node (number of incident relationships, both directions).
+    fn degree(&self, node_id: &str) -> usize {
+        self.inner.degree(&Symbol(node_id.to_string()))
+    }
+
+    // --- Iteration methods (T024) ---
+
+    /// All nodes as list of (id, PatternSubject) tuples.
+    fn nodes(&self, py: Python) -> PyResult<Vec<(String, PyPattern)>> {
+        self.inner
+            .nodes()
+            .map(|(id, p)| subject_pattern_to_py(py, p).map(|pp| (id.0.clone(), pp)))
+            .collect()
+    }
+
+    /// All relationships as list of (id, PatternSubject) tuples.
+    fn relationships(&self, py: Python) -> PyResult<Vec<(String, PyPattern)>> {
+        self.inner
+            .relationships()
+            .map(|(id, p)| subject_pattern_to_py(py, p).map(|pp| (id.0.clone(), pp)))
+            .collect()
+    }
+
+    /// All walks as list of (id, PatternSubject) tuples.
+    fn walks(&self, py: Python) -> PyResult<Vec<(String, PyPattern)>> {
+        self.inner
+            .walks()
+            .map(|(id, p)| subject_pattern_to_py(py, p).map(|pp| (id.0.clone(), pp)))
+            .collect()
+    }
+
+    /// All annotations as list of (id, PatternSubject) tuples.
+    fn annotations(&self, py: Python) -> PyResult<Vec<(String, PyPattern)>> {
+        self.inner
+            .annotations()
+            .map(|(id, p)| subject_pattern_to_py(py, p).map(|pp| (id.0.clone(), pp)))
+            .collect()
+    }
+
+    // --- Representation (T026) ---
+
+    fn __repr__(&self) -> String {
+        format!(
+            "StandardGraph(nodes={}, relationships={}, walks={}, annotations={})",
+            self.inner.node_count(),
+            self.inner.relationship_count(),
+            self.inner.walk_count(),
+            self.inner.annotation_count(),
+        )
+    }
+
+    fn __len__(&self) -> usize {
+        self.inner.node_count()
+            + self.inner.relationship_count()
+            + self.inner.walk_count()
+            + self.inner.annotation_count()
+    }
+}
+
+/// Python binding for SubjectBuilder (T030, T032).
+///
+/// Fluent builder for constructing Subject values.
+/// Created via `Subject.build(identity)`.
+#[cfg(feature = "python")]
+#[pyclass(name = "SubjectBuilder")]
+pub struct PySubjectBuilder {
+    identity: String,
+    labels: Vec<String>,
+    properties: HashMap<String, Value>,
+}
+
+#[cfg(feature = "python")]
+#[pymethods]
+impl PySubjectBuilder {
+    /// Add a label. Returns self for chaining.
+    fn label<'a>(mut slf: PyRefMut<'a, Self>, label: String) -> PyRefMut<'a, Self> {
+        slf.labels.push(label);
+        slf
+    }
+
+    /// Add a property. Accepts native Python types. Returns self for chaining.
+    fn property<'a>(
+        mut slf: PyRefMut<'a, Self>,
+        py: Python,
+        key: String,
+        value: &Bound<'_, PyAny>,
+    ) -> PyResult<PyRefMut<'a, Self>> {
+        let rust_value = python_to_value(py, value)?;
+        slf.properties.insert(key, rust_value);
+        Ok(slf)
+    }
+
+    /// Finalize the builder and return a Subject.
+    fn done(&self) -> PySubject {
+        PySubject {
+            subject: Subject {
+                identity: Symbol(self.identity.clone()),
+                labels: self.labels.iter().cloned().collect(),
+                properties: self.properties.clone(),
+            },
+        }
+    }
+}
+
+// ============================================================================
 // Python Module Initialization
 // ============================================================================
 
@@ -1278,5 +1623,7 @@ fn pattern_core(_py: Python, m: &Bound<'_, PyModule>) -> PyResult<()> {
     m.add_class::<PyValidationRules>()?;
     m.add_class::<PyStructureAnalysis>()?;
     m.add_class::<PyValidationError>()?;
+    m.add_class::<PyStandardGraph>()?;
+    m.add_class::<PySubjectBuilder>()?;
     Ok(())
 }

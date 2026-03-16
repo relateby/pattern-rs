@@ -215,11 +215,48 @@ fn version() -> &'static str {
     env!("CARGO_PKG_VERSION")
 }
 
+/// Parse gram notation and return each top-level pattern as a Python dict.
+///
+/// Returns a list of dicts suitable for reconstructing Pattern<Subject> objects
+/// in the relateby.pattern package. Each dict has the structure:
+///   `{'subject': {'identity': str, 'labels': [str], 'properties': dict}, 'elements': [...]}`
+///
+/// Args:
+///     input (str): Gram notation string
+///
+/// Returns:
+///     list[dict]: One dict per top-level pattern
+///
+/// Raises:
+///     ValueError: If parsing fails
+#[pyfunction]
+fn parse_patterns_as_dicts(py: Python, input: &str) -> PyResult<PyObject> {
+    use crate::ast::AstPattern;
+    let patterns = crate::parse_gram(input)
+        .map_err(|e| pyo3::exceptions::PyValueError::new_err(format!("Parse error: {}", e)))?;
+
+    let dicts: Vec<String> = patterns
+        .iter()
+        .map(|p| {
+            let ast = AstPattern::from_pattern(p);
+            serde_json::to_string(&ast).map_err(|e| {
+                pyo3::exceptions::PyValueError::new_err(format!("Serialization error: {}", e))
+            })
+        })
+        .collect::<PyResult<Vec<_>>>()?;
+
+    let json_array = format!("[{}]", dicts.join(","));
+    let json_module = py.import("json")?;
+    let loads = json_module.getattr("loads")?;
+    loads.call1((json_array,)).map(|obj| obj.into())
+}
+
 /// Python module initialization
 #[pymodule]
 fn gram_codec(m: &Bound<'_, PyModule>) -> PyResult<()> {
     m.add_function(wrap_pyfunction!(parse_gram, m)?)?;
     m.add_function(wrap_pyfunction!(parse_to_ast, m)?)?;
+    m.add_function(wrap_pyfunction!(parse_patterns_as_dicts, m)?)?;
     m.add_function(wrap_pyfunction!(validate_gram, m)?)?;
     m.add_function(wrap_pyfunction!(round_trip, m)?)?;
     m.add_function(wrap_pyfunction!(version, m)?)?;
