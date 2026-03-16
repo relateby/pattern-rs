@@ -134,8 +134,8 @@ jobs:
           mkdir -p target/npm-packages
           npm run pack:release --workspace=@relateby/pattern
       - name: Smoke-test packed npm artifact
-        working-directory: scripts/release/npm-smoke
         run: |
+          cd ./scripts/release/npm-smoke
           npm install --silent ../../../target/npm-packages/*.tgz
           npm run smoke
 

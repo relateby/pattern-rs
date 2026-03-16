@@ -1,0 +1,11 @@
+{
+  "name": "relateby-pattern-smoke",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "smoke": "node smoke.mjs"
+  },
+  "dependencies": {
+    "@relateby/pattern": "file:../../../target/npm-packages/relateby-pattern-0.1.0.tgz"
+  }
+}

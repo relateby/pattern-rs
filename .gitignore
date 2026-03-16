@@ -1,7 +1,7 @@
 # Rust
 target/
 debug/
-release/
+/release/
 *.rs.bk
 *.rlib
 *.prof*
@@ -65,4 +65,5 @@ typescript/@relateby/gram/node_modules/
 typescript/@relateby/graph/dist/
 typescript/@relateby/graph/node_modules/
 scripts/release/npm-smoke/node_modules/
+scripts/release/npm-smoke/package-lock.json
 *.tgz
