@@ -23,8 +23,8 @@ fi
 
 VERSION="${BASH_REMATCH[1]}"
 
-if ! git -C "$REPO_ROOT" fetch origin main --tags; then
-    release_error "Failed to fetch origin/main and tags"
+if ! git -C "$REPO_ROOT" fetch --no-tags origin main; then
+    release_error "Failed to fetch origin/main"
     exit 1
 fi
 

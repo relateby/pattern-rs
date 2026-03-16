@@ -94,6 +94,9 @@ pip wheel . -w dist
 ### Code Quality
 
 ```bash
+# Validate GitHub workflows and related shell helpers
+./scripts/check-workflows.sh
+
 # Format all code
 cargo fmt --all
 
@@ -101,6 +104,7 @@ cargo fmt --all
 cargo clippy --workspace
 
 # Run all CI checks locally (fastest validation before push)
+# Includes workflow validation when actionlint is installed.
 ./scripts/ci-local.sh
 ```
 
@@ -236,10 +240,11 @@ cargo build --target wasm32-unknown-unknown
 Before pushing, run all CI checks locally:
 
 ```bash
+./scripts/check-workflows.sh
 ./scripts/ci-local.sh
 ```
 
-This runs format check, clippy, build (native + WASM), and tests - identical to GitHub Actions.
+`./scripts/check-workflows.sh` catches GitHub Actions YAML/expression issues early with `actionlint` and shell helper linting. `./scripts/ci-local.sh` runs the main project checks and now includes workflow validation automatically when `actionlint` is available.
 
 For full workflow simulation with Docker:
 ```bash

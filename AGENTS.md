@@ -26,12 +26,13 @@ The `gram-lint` tool (for validating gram notation syntax) is installed from the
 
 All CI checks are documented in `CLAUDE.md` and `scripts/ci-local.sh`. The key commands:
 
+- `./scripts/check-workflows.sh` — validate GitHub Actions workflows with `actionlint` and shell helper linting
 - `cargo fmt --all -- --check` — format check
 - `cargo clippy --workspace -- -D warnings` — lint
 - `cargo build --workspace` — native build
 - `cargo test --workspace` — all tests
 - `cargo build --workspace --target wasm32-unknown-unknown` — WASM build (optional, non-blocking in CI)
-- `./scripts/ci-local.sh` — runs all of the above plus optional Python/TypeScript checks
+- `./scripts/ci-local.sh` — runs all of the above plus optional Python/TypeScript checks, and includes workflow validation when `actionlint` is installed
 
 ### Python and TypeScript bindings
 

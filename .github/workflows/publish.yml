@@ -16,22 +16,20 @@ jobs:
       version: ${{ steps.verify.outputs.version }}
       tag: ${{ steps.verify.outputs.tag }}
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v6
         with:
           submodules: true
           fetch-depth: 0
-      - uses: actions-rs/toolchain@v1
+      - uses: dtolnay/rust-toolchain@stable
         with:
-          toolchain: stable
           components: clippy, rustfmt
-          target: wasm32-unknown-unknown
-          override: true
-      - uses: actions/setup-node@v3
+          targets: wasm32-unknown-unknown
+      - uses: actions/setup-node@v6
         with:
           node-version: '20'
           cache: 'npm'
           cache-dependency-path: package-lock.json
-      - uses: actions/setup-python@v4
+      - uses: actions/setup-python@v6
         with:
           python-version: '3.12'
       - name: Install release tooling
@@ -49,13 +47,10 @@ jobs:
     runs-on: ubuntu-latest
     needs: validate
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v6
         with:
           submodules: true
-      - uses: actions-rs/toolchain@v1
-        with:
-          toolchain: stable
-          override: true
+      - uses: dtolnay/rust-toolchain@stable
       - name: Publish relateby-pattern
         env:
           CARGO_REGISTRY_TOKEN: ${{ secrets.CARGO_REGISTRY_TOKEN }}
@@ -72,15 +67,13 @@ jobs:
     runs-on: ubuntu-latest
     needs: validate
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v6
         with:
           submodules: true
-      - uses: actions-rs/toolchain@v1
+      - uses: dtolnay/rust-toolchain@stable
         with:
-          toolchain: stable
-          target: wasm32-unknown-unknown
-          override: true
-      - uses: actions/setup-node@v3
+          targets: wasm32-unknown-unknown
+      - uses: actions/setup-node@v6
         with:
           node-version: '20'
           cache: 'npm'
@@ -102,14 +95,11 @@ jobs:
     runs-on: ubuntu-latest
     needs: validate
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v6
         with:
           submodules: true
-      - uses: actions-rs/toolchain@v1
-        with:
-          toolchain: stable
-          override: true
-      - uses: actions/setup-python@v4
+      - uses: dtolnay/rust-toolchain@stable
+      - uses: actions/setup-python@v6
         with:
           python-version: '3.12'
       - name: Install build tooling
@@ -128,14 +118,14 @@ jobs:
     runs-on: ubuntu-latest
     needs: [validate, publish-crates, publish-npm, publish-python]
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v6
         with:
           submodules: true
-      - uses: actions/setup-node@v3
+      - uses: actions/setup-node@v6
         with:
           node-version: '20'
           registry-url: 'https://registry.npmjs.org'
-      - uses: actions/setup-python@v4
+      - uses: actions/setup-python@v6
         with:
           python-version: '3.12'
       - name: Verify crates.io versions
@@ -159,7 +149,7 @@ jobs:
         env:
           RELEASE_VERSION: ${{ needs.validate.outputs.version }}
         run: |
-          test "$(npm view @relateby/pattern@${RELEASE_VERSION} version)" = "${RELEASE_VERSION}"
+          test "$(npm view "@relateby/pattern@${RELEASE_VERSION}" version)" = "${RELEASE_VERSION}"
       - name: Verify PyPI install smoke test
         env:
           RELEASE_VERSION: ${{ needs.validate.outputs.version }}

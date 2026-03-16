@@ -10,20 +10,27 @@ permissions:
   contents: read
 
 jobs:
+  workflow-validation:
+    name: Workflow Validation
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          submodules: true
+      - uses: rhysd/actionlint@v1
+
   rust-validation:
     name: Rust Validation
     runs-on: ubuntu-latest
     if: "${{ github.event_name != 'push' || !startsWith(github.event.head_commit.message, 'release: prepare v') }}"
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v6
         with:
           submodules: true
-      - uses: actions-rs/toolchain@v1
+      - uses: dtolnay/rust-toolchain@stable
         with:
-          toolchain: stable
           components: clippy, rustfmt
-          override: true
-      - uses: actions/cache@v3
+      - uses: actions/cache@v5
         with:
           path: |
             ~/.cargo/registry
@@ -82,15 +89,13 @@ jobs:
     runs-on: ubuntu-latest
     if: "${{ github.event_name != 'push' || !startsWith(github.event.head_commit.message, 'release: prepare v') }}"
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v6
         with:
           submodules: true
-      - uses: actions-rs/toolchain@v1
+      - uses: dtolnay/rust-toolchain@stable
         with:
-          toolchain: stable
-          target: wasm32-unknown-unknown
-          override: true
-      - uses: actions/cache@v3
+          targets: wasm32-unknown-unknown
+      - uses: actions/cache@v5
         with:
           path: |
             ~/.cargo/registry
@@ -104,24 +109,22 @@ jobs:
     runs-on: ubuntu-latest
     if: "${{ github.event_name != 'push' || !startsWith(github.event.head_commit.message, 'release: prepare v') }}"
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v6
         with:
           submodules: true
-      - uses: actions-rs/toolchain@v1
+      - uses: dtolnay/rust-toolchain@stable
         with:
-          toolchain: stable
-          target: wasm32-unknown-unknown
-          override: true
+          targets: wasm32-unknown-unknown
       - name: Install wasm-pack
         run: cargo install wasm-pack
-      - uses: actions/cache@v3
+      - uses: actions/cache@v5
         with:
           path: |
             ~/.cargo/registry
             ~/.cargo/git
             target
           key: ${{ runner.os }}-cargo-wasm-ts-${{ hashFiles('**/Cargo.lock') }}
-      - uses: actions/setup-node@v3
+      - uses: actions/setup-node@v6
         with:
           node-version: '20'
           cache: 'npm'
@@ -147,19 +150,16 @@ jobs:
     runs-on: ubuntu-latest
     if: "${{ github.event_name != 'push' || !startsWith(github.event.head_commit.message, 'release: prepare v') }}"
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v6
         with:
           submodules: true
-      - uses: actions-rs/toolchain@v1
-        with:
-          toolchain: stable
-          override: true
-      - uses: actions/setup-python@v4
+      - uses: dtolnay/rust-toolchain@stable
+      - uses: actions/setup-python@v6
         with:
           python-version: '3.12'
       - name: Install build tooling
         run: pip install maturin twine
-      - uses: actions/cache@v3
+      - uses: actions/cache@v5
         with:
           path: |
             ~/.cargo/registry

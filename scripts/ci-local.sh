@@ -69,6 +69,7 @@ run_optional_check() {
 npm_pack_smoke() {
     local smoke_dir="$REPO_ROOT/scripts/release/npm-smoke"
     local pack_dir="$REPO_ROOT/target/npm-packages"
+    local -a tarballs=()
     local tarball
     local tmp_dir
     local status
@@ -76,7 +77,10 @@ npm_pack_smoke() {
     mkdir -p "$pack_dir"
     rm -f "$pack_dir"/*.tgz
     npm run pack:release --workspace=@relateby/pattern >/dev/null
-    tarball="$(ls "$pack_dir"/*.tgz 2>/dev/null | head -n 1)"
+    shopt -s nullglob
+    tarballs=("$pack_dir"/*.tgz)
+    shopt -u nullglob
+    tarball="${tarballs[0]:-}"
     if [[ -z "$tarball" ]]; then
         echo "No npm tarball found in $pack_dir" >&2
         return 1
@@ -91,7 +95,7 @@ npm_pack_smoke() {
     )
     status=$?
     rm -rf "$tmp_dir"
-    return $status
+    return "$status"
 }
 
 python_release_build() {
@@ -108,8 +112,12 @@ python_release_build() {
 }
 
 python_release_smoke() {
+    local -a wheels=()
     local wheel
-    wheel="$(ls "$REPO_ROOT/python/relateby/dist/"*.whl 2>/dev/null | head -n 1)"
+    shopt -s nullglob
+    wheels=("$REPO_ROOT/python/relateby/dist/"*.whl)
+    shopt -u nullglob
+    wheel="${wheels[0]:-}"
     if [[ -z "$wheel" ]]; then
         echo "No Python wheel found in python/relateby/dist" >&2
         return 1
@@ -159,6 +167,12 @@ cargo_publish_dry_run_all() {
 }
 
 run_check "Format check" cargo fmt --all -- --check || true
+echo ""
+if command -v actionlint >/dev/null 2>&1; then
+    run_check "Workflow lint" bash "$REPO_ROOT/scripts/check-workflows.sh" || true
+else
+    echo -e "${YELLOW}⚠${NC} actionlint unavailable"
+fi
 echo ""
 run_check "Clippy lint" cargo clippy --workspace --exclude pattern-wasm -- -D warnings || true
 echo ""
