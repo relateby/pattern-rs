@@ -3,8 +3,9 @@
 Demonstrates using StandardGraph and Subject via the
 relateby.pattern public API.
 
-Run after installing the relateby wheel:
-    cd python/relateby && pip install -e .
+Run after installing the combined package from the repo:
+    cd python/relateby && python -m pip install .
+    cd ../..
     python examples/pattern-core-python/standard_graph.py
 """
 

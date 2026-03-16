@@ -1,6 +1,6 @@
 [project]
 name = "relateby-pattern"
-version = "0.1.0"
+version = "0.2.0"
 description = "Combined Python distribution for relateby.pattern and relateby.gram"
 readme = "README.md"
 license = { text = "Apache-2.0" }
@@ -35,6 +35,7 @@ dev = [
     "maturin>=1.0,<2.0",
     "pytest>=7.0",
     "pytest-cov>=4.0",
+    "twine>=5.0",
 ]
 # All optional dependencies (add new extras above and reference them here)
 # Install with: pip install relateby-pattern[all]

@@ -146,14 +146,15 @@ PY
 cargo_publish_dry_run_all() {
     local version
     version="$(read_release_version "$REPO_ROOT")"
-    cargo publish -p relateby-pattern --dry-run
+    cargo publish -p relateby-pattern --dry-run --allow-dirty
     if crate_version_exists_on_crates_io "relateby-pattern" "$version"; then
-        # When validating an already-published version, crates.io resolution for the
-        # gram crate can point at the published pattern crate instead of the local tree.
-        echo "relateby-pattern $version already exists on crates.io; using cargo package --no-verify fallback for relateby-gram" >&2
-        cargo package -p relateby-gram --allow-dirty --no-verify
+        cargo publish -p relateby-gram --dry-run --allow-dirty
     else
-        cargo publish -p relateby-gram --dry-run
+        # Before relateby-pattern is published, cargo publish/package for relateby-gram
+        # resolves the dependency against crates.io and fails. Fall back to listing the
+        # packaged contents after the normal workspace build/test validation above.
+        echo "relateby-pattern $version is not yet on crates.io; using cargo package --list fallback for relateby-gram" >&2
+        cargo package -p relateby-gram --allow-dirty --list >/dev/null
     fi
 }
 
@@ -205,7 +206,7 @@ if [[ -n "$PYTHON_EXE" ]]; then
             run_check "Combined Python metadata check" "$PYTHON_EXE" -m twine check "$REPO_ROOT"/python/relateby/dist/* || true
             echo ""
         else
-            echo -e "${YELLOW}⚠${NC} twine unavailable"
+            echo -e "${RED}✗${NC} twine unavailable (install with: $PYTHON_EXE -m pip install twine)"
             FAILED=1
         fi
         run_check "Combined Python smoke test" python_release_smoke || true

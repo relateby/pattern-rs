@@ -61,7 +61,7 @@ Release mode checks:
 Maintainer notes:
 
 - Native Rust validation excludes `pattern-wasm`; that crate is validated in the dedicated WASM build because it is a wasm-target package.
-- If you run release validation against a version that is already published on crates.io, `scripts/ci-local.sh --release` falls back to `cargo package --no-verify` for `relateby-gram` packaging after the `relateby-pattern` dry-run. Fresh release versions still use the normal publish dry-run path.
+- `relateby-gram` depends on `relateby-pattern`, so `cargo publish --dry-run` for the gram crate only works once the matching pattern version exists on crates.io. Before that, `scripts/ci-local.sh --release` falls back to `cargo package --list` for `relateby-gram` after the `relateby-pattern` dry-run.
 
 ## Stable tags only
 

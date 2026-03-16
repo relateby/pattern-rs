@@ -18,6 +18,16 @@ pip install relateby-pattern[dev]      # maturin, pytest, pytest-cov
 pip install relateby-pattern[all]      # all optional extras
 ```
 
+For a local source checkout of the combined package, use a normal install:
+
+```bash
+cd python/relateby && python -m pip install '.[dev]'
+```
+
+`python/relateby` does not currently support editable installs (`pip install -e .`) because the custom build backend only implements wheel and sdist builds.
+
+After installation, run import checks and examples from outside `python/relateby` so the source tree does not shadow the installed package.
+
 ## Use
 
 ```python

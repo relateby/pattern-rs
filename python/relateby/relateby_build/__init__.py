@@ -55,8 +55,9 @@ def _run_maturin(manifest_path: Path, cwd: Path) -> None:
 
     env = os.environ.copy()
     env["PYO3_PYTHON"] = sys.executable
-    subprocess.run(
-        [
+    maturin = shutil.which("maturin")
+    if maturin is None:
+        command = [
             sys.executable,
             "-m",
             "maturin",
@@ -66,7 +67,19 @@ def _run_maturin(manifest_path: Path, cwd: Path) -> None:
             str(manifest_path),
             "--features",
             "python",
-        ],
+        ]
+    else:
+        command = [
+            maturin,
+            "build",
+            "--release",
+            "--manifest-path",
+            str(manifest_path),
+            "--features",
+            "python",
+        ]
+    subprocess.run(
+        command,
         check=True,
         cwd=cwd,
         env=env,
