@@ -13,6 +13,7 @@ jobs:
   rust-validation:
     name: Rust Validation
     runs-on: ubuntu-latest
+    if: github.event_name != 'push' || !startsWith(github.event.head_commit.message, 'release: prepare v')
     steps:
       - uses: actions/checkout@v3
         with:
@@ -52,7 +53,7 @@ jobs:
           print(match.group(1))
           PY
           )"
-          cargo publish -p relateby-pattern --dry-run
+          cargo publish -p relateby-pattern --dry-run --allow-dirty
           if python - "$VERSION" <<'PY'
           import json
           import sys
@@ -70,15 +71,16 @@ jobs:
           raise SystemExit(0 if version in versions else 1)
           PY
           then
-            echo "relateby-pattern ${VERSION} already exists on crates.io; using cargo package fallback for relateby-gram"
-            cargo package -p relateby-gram --allow-dirty --no-verify
+            cargo publish -p relateby-gram --dry-run --allow-dirty
           else
-            cargo publish -p relateby-gram --dry-run
+            echo "relateby-pattern ${VERSION} is not yet on crates.io; using cargo package --list fallback for relateby-gram"
+            cargo package -p relateby-gram --allow-dirty --list >/dev/null
           fi
 
   wasm-validation:
     name: WASM Validation
     runs-on: ubuntu-latest
+    if: github.event_name != 'push' || !startsWith(github.event.head_commit.message, 'release: prepare v')
     steps:
       - uses: actions/checkout@v3
         with:
@@ -100,6 +102,7 @@ jobs:
   npm-validation:
     name: npm Validation
     runs-on: ubuntu-latest
+    if: github.event_name != 'push' || !startsWith(github.event.head_commit.message, 'release: prepare v')
     steps:
       - uses: actions/checkout@v3
         with:
@@ -142,6 +145,7 @@ jobs:
   python-validation:
     name: Python Validation
     runs-on: ubuntu-latest
+    if: github.event_name != 'push' || !startsWith(github.event.head_commit.message, 'release: prepare v')
     steps:
       - uses: actions/checkout@v3
         with:

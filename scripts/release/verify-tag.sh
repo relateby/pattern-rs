@@ -23,7 +23,15 @@ fi
 
 VERSION="${BASH_REMATCH[1]}"
 
-git -C "$REPO_ROOT" fetch origin main --tags >/dev/null 2>&1
+if ! git -C "$REPO_ROOT" fetch origin main --tags; then
+    release_error "Failed to fetch origin/main and tags"
+    exit 1
+fi
+
+if ! COMMIT_SHA="$(git -C "$REPO_ROOT" rev-parse "${COMMIT_SHA}^{commit}" 2>/dev/null)"; then
+    release_error "Could not resolve $COMMIT_SHA to a commit"
+    exit 1
+fi
 
 if ! git -C "$REPO_ROOT" merge-base --is-ancestor "$COMMIT_SHA" "refs/remotes/origin/main"; then
     release_error "Tag commit $COMMIT_SHA is not contained in origin/main"
