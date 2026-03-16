@@ -13,7 +13,7 @@ jobs:
   rust-validation:
     name: Rust Validation
     runs-on: ubuntu-latest
-    if: github.event_name != 'push' || !startsWith(github.event.head_commit.message, 'release: prepare v')
+    if: "${{ github.event_name != 'push' || !startsWith(github.event.head_commit.message, 'release: prepare v') }}"
     steps:
       - uses: actions/checkout@v3
         with:
@@ -80,7 +80,7 @@ jobs:
   wasm-validation:
     name: WASM Validation
     runs-on: ubuntu-latest
-    if: github.event_name != 'push' || !startsWith(github.event.head_commit.message, 'release: prepare v')
+    if: "${{ github.event_name != 'push' || !startsWith(github.event.head_commit.message, 'release: prepare v') }}"
     steps:
       - uses: actions/checkout@v3
         with:
@@ -102,7 +102,7 @@ jobs:
   npm-validation:
     name: npm Validation
     runs-on: ubuntu-latest
-    if: github.event_name != 'push' || !startsWith(github.event.head_commit.message, 'release: prepare v')
+    if: "${{ github.event_name != 'push' || !startsWith(github.event.head_commit.message, 'release: prepare v') }}"
     steps:
       - uses: actions/checkout@v3
         with:
@@ -145,7 +145,7 @@ jobs:
   python-validation:
     name: Python Validation
     runs-on: ubuntu-latest
-    if: github.event_name != 'push' || !startsWith(github.event.head_commit.message, 'release: prepare v')
+    if: "${{ github.event_name != 'push' || !startsWith(github.event.head_commit.message, 'release: prepare v') }}"
     steps:
       - uses: actions/checkout@v3
         with:
@@ -173,4 +173,3 @@ jobs:
         run: twine check python/relateby/dist/*
       - name: Smoke-test combined wheel
         run: bash ./scripts/release/smoke-python.sh --wheel ./python/relateby/dist/*.whl
-
