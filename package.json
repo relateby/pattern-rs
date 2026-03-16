@@ -1,5 +1,9 @@
 {
   "private": true,
+  "scripts": {
+    "build:release:npm": "npm run build --workspace=@relateby/pattern",
+    "test:release:npm": "npm run test --workspace=@relateby/pattern"
+  },
   "workspaces": [
     "typescript/@relateby/*"
   ]

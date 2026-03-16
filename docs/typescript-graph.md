@@ -1,15 +1,13 @@
 # TypeScript Graph API Reference
 
-This document describes the TypeScript/WASM graph API exposed via three scoped npm packages:
+This document describes the TypeScript/WASM graph API exposed from the single supported npm package:
 
-- **`@relateby/pattern`**: WASM-backed types and algorithms (`NativePattern`, `NativePatternGraph`, `NativeGraphQuery`, etc.)
-- **`@relateby/gram`**: Gram notation codec (`Gram.parse`, `Gram.stringify`)
-- **`@relateby/graph`**: Pure TypeScript interfaces and transforms (no WASM dependency)
+- **`@relateby/pattern`**: WASM-backed types, Gram codec exports, and pure TypeScript graph transforms
 
 ## Package Installation
 
 ```bash
-npm install @relateby/pattern @relateby/gram @relateby/graph
+npm install @relateby/pattern
 ```
 
 After installing, build the WASM module:

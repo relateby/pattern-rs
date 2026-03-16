@@ -8,9 +8,9 @@
 // - GraphClass, TraversalDirection: constant objects
 // - Algorithm free functions: bfs, dfs, shortestPath, etc.
 //
-// Return types are declared against @relateby/graph interfaces for structural compatibility.
+// Return types are declared against local graph interfaces so this package
+// can publish as a single self-contained artifact.
 
-// Re-export @relateby/graph interfaces so users can import from one place
 export type {
   Subject,
   Pattern,
@@ -18,9 +18,12 @@ export type {
   GraphQuery,
   GraphView,
   CategoryMappers,
+} from "./graph/interfaces.js";
+
+export type {
   GraphClass as GraphClassType,
   Substitution,
-} from "@relateby/graph";
+} from "./graph/adts.js";
 
 export {
   toGraphView,
@@ -40,13 +43,15 @@ export {
   paraGraph,
   paraGraphFixed,
   unfoldGraph,
-} from "@relateby/graph";
+} from "./graph/index.js";
 
 import type {
   Subject,
   Pattern,
   PatternGraph,
-} from "@relateby/graph";
+} from "./graph/interfaces.js";
+
+export { Gram } from "./gram.js";
 
 // ---------------------------------------------------------------------------
 // WASM module types (declared; actual types come from wasm-pack generated glue)
@@ -212,12 +217,12 @@ export async function init(): Promise<void> {
       const __filename = fileURLToPath(import.meta.url);
       const __dirname = dirname(__filename);
       const require = createRequire(import.meta.url);
-      const wasmNodePath = resolve(__dirname, "../wasm-node/pattern_wasm.js");
+      const wasmNodePath = resolve(__dirname, "./wasm-node/pattern_wasm.js");
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       wasmModule = require(wasmNodePath) as WasmExports;
     } else {
       // Bundler environment: use the ESM bundler-target wasm module
-      const wasmPath = "../wasm/pattern_wasm.js";
+      const wasmPath = "./wasm/pattern_wasm.js";
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const mod = await import(/* @vite-ignore */ wasmPath) as WasmExports;
       if (typeof mod.default === "function") {

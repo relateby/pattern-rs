@@ -59,16 +59,16 @@ cargo run --package gram-codec --example basic_usage
 cargo run --package gram-codec --example advanced_usage
 ```
 
-### Python (relateby)
+### Python (`relateby-pattern`)
 
 One package provides both `relateby.pattern` and `relateby.gram`:
 
 ```bash
 # Install from PyPI
-pip install relateby
+pip install relateby-pattern
 
 # Or from TestPyPI (pre-release)
-pip install --index-url https://test.pypi.org/simple/ relateby
+pip install --index-url https://test.pypi.org/simple/ relateby-pattern
 
 # Run examples
 python examples/gram-codec-python/demo.py
@@ -170,7 +170,7 @@ To add a new example:
 - Source is in `examples/<crate>/`
 
 ### Python
-- Install the unified package: `pip install relateby` (or from TestPyPI for pre-release)
+- Install the combined package: `pip install relateby-pattern` (or from TestPyPI for pre-release)
 - Examples use `relateby.pattern` and `relateby.gram`; see `docs/python-usage.md`
 - To build from source: see `docs/release.md`
 

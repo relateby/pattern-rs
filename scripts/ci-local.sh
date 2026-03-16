@@ -1,22 +1,43 @@
 #!/bin/bash
-# Local CI script - Run all CI checks locally
-# This reproduces what GitHub Actions does
+# Local CI / release validation script
 
-set -e  # Exit on error
+set -euo pipefail
+
+SCRIPT_DIR="$(CDPATH="" cd "$(dirname "$0")" && pwd)"
+REPO_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
+RELEASE_MODE=0
+
+if [[ "${1:-}" == "--release" ]]; then
+    RELEASE_MODE=1
+fi
+
+# shellcheck source=./release/common.sh
+source "$REPO_ROOT/scripts/release/common.sh"
 
 echo "🔨 Running local CI checks..."
+if [[ $RELEASE_MODE -eq 1 ]]; then
+    echo "Mode: release"
+else
+    echo "Mode: standard"
+fi
 echo ""
 
-# Colors for output
 RED='\033[0;31m'
 GREEN='\033[0;32m'
 YELLOW='\033[1;33m'
-NC='\033[0m' # No Color
-
-# Track failures
+NC='\033[0m'
 FAILED=0
 
-# Function to run a check
+PYTHON_EXE=""
+for candidate in python python3; do
+    if command -v "$candidate" >/dev/null 2>&1; then
+        if "$candidate" -c "import sys; raise SystemExit(0 if (3, 8) <= sys.version_info[:2] < (3, 14) else 1)" 2>/dev/null; then
+            PYTHON_EXE="$candidate"
+            break
+        fi
+    fi
+done
+
 run_check() {
     local name=$1
     shift
@@ -26,157 +47,189 @@ run_check() {
         return 0
     else
         echo -e "${RED}✗${NC}"
-        echo "Error output:"
         tail -20 /tmp/ci-check.log
         FAILED=1
         return 1
     fi
 }
 
-# 1. Format check
-run_check "Format check" cargo fmt --all -- --check
-echo ""
-
-# 2. Lint check
-run_check "Clippy lint" cargo clippy --workspace -- -D warnings
-echo ""
-
-# 3. Native build
-run_check "Native build" cargo build --workspace
-echo ""
-
-# 4. WASM build (optional - matches GitHub Actions: cargo build --workspace)
-echo -n "Checking WASM target... "
-# Prefer rustup toolchain for WASM builds (Homebrew Rust lacks wasm32 target)
-RUSTUP_BIN="$HOME/.rustup/toolchains/stable-$(rustup show active-toolchain 2>/dev/null | awk '{print $1}' | sed 's/stable-//')/bin"
-if [ -d "$RUSTUP_BIN" ] && "$RUSTUP_BIN/rustup" target list --installed 2>/dev/null | grep -q wasm32-unknown-unknown 2>/dev/null || \
-   rustup target list --installed 2>/dev/null | grep -q wasm32-unknown-unknown; then
-    echo -e "${GREEN}✓${NC}"
-    # Build the full workspace to match CI - catches type errors in all WASM crates
-    # WASM is optional for now, so don't fail the script if it fails
-    echo -n "Running WASM build... "
-    if PATH="${RUSTUP_BIN}:$PATH" cargo build --target wasm32-unknown-unknown --workspace > /tmp/ci-check.log 2>&1; then
+run_optional_check() {
+    local name=$1
+    shift
+    echo -n "Running $name... "
+    if "$@" > /tmp/ci-check.log 2>&1; then
         echo -e "${GREEN}✓${NC}"
+        return 0
+    fi
+    echo -e "${YELLOW}⚠${NC} (non-blocking)"
+    tail -20 /tmp/ci-check.log
+    return 0
+}
+
+npm_pack_smoke() {
+    local smoke_dir="$REPO_ROOT/scripts/release/npm-smoke"
+    local pack_dir="$REPO_ROOT/target/npm-packages"
+    local tarball
+    local tmp_dir
+    local status
+
+    mkdir -p "$pack_dir"
+    rm -f "$pack_dir"/*.tgz
+    npm run pack:release --workspace=@relateby/pattern >/dev/null
+    tarball="$(ls "$pack_dir"/*.tgz 2>/dev/null | head -n 1)"
+    if [[ -z "$tarball" ]]; then
+        echo "No npm tarball found in $pack_dir" >&2
+        return 1
+    fi
+
+    tmp_dir="$(mktemp -d "${TMPDIR:-/tmp}/pattern-npm-smoke.XXXXXX")"
+    cp "$smoke_dir/package.json" "$smoke_dir/smoke.mjs" "$tmp_dir/"
+    (
+        cd "$tmp_dir" &&
+        npm install --silent --no-save --package-lock=false "$tarball" &&
+        npm run smoke
+    )
+    status=$?
+    rm -rf "$tmp_dir"
+    return $status
+}
+
+python_release_build() {
+    local pyproject_dir="$REPO_ROOT/python/relateby"
+    if [[ -z "$PYTHON_EXE" ]]; then
+        echo "Need Python 3.8-3.13 to build the combined wheel" >&2
+        return 1
+    fi
+    rm -rf "$pyproject_dir/dist"
+    (
+        cd "$pyproject_dir" &&
+        "$PYTHON_EXE" -m pip wheel . -w dist --no-deps
+    )
+}
+
+python_release_smoke() {
+    local wheel
+    wheel="$(ls "$REPO_ROOT/python/relateby/dist/"*.whl 2>/dev/null | head -n 1)"
+    if [[ -z "$wheel" ]]; then
+        echo "No Python wheel found in python/relateby/dist" >&2
+        return 1
+    fi
+    bash "$REPO_ROOT/scripts/release/smoke-python.sh" --wheel "$wheel"
+}
+
+crate_version_exists_on_crates_io() {
+    local crate_name=$1
+    local crate_version=$2
+    if [[ -z "$PYTHON_EXE" ]]; then
+        echo "Need Python 3.8-3.13 to query crates.io" >&2
+        return 1
+    fi
+    "$PYTHON_EXE" - "$crate_name" "$crate_version" <<'PY'
+import json
+import sys
+import urllib.error
+import urllib.request
+
+crate_name = sys.argv[1]
+crate_version = sys.argv[2]
+try:
+    with urllib.request.urlopen(f"https://crates.io/api/v1/crates/{crate_name}") as response:
+        payload = json.load(response)
+except urllib.error.URLError:
+    raise SystemExit(1)
+
+versions = {item["num"] for item in payload.get("versions", [])}
+raise SystemExit(0 if crate_version in versions else 1)
+PY
+}
+
+cargo_publish_dry_run_all() {
+    local version
+    version="$(read_release_version "$REPO_ROOT")"
+    cargo publish -p relateby-pattern --dry-run
+    if crate_version_exists_on_crates_io "relateby-pattern" "$version"; then
+        # When validating an already-published version, crates.io resolution for the
+        # gram crate can point at the published pattern crate instead of the local tree.
+        echo "relateby-pattern $version already exists on crates.io; using cargo package --no-verify fallback for relateby-gram" >&2
+        cargo package -p relateby-gram --allow-dirty --no-verify
     else
-        echo -e "${YELLOW}⚠${NC} (failed, but non-blocking)"
-        echo "  WASM build failed - this is optional for now"
-        tail -20 /tmp/ci-check.log
+        cargo publish -p relateby-gram --dry-run
+    fi
+}
+
+run_check "Format check" cargo fmt --all -- --check || true
+echo ""
+run_check "Clippy lint" cargo clippy --workspace --exclude pattern-wasm -- -D warnings || true
+echo ""
+# pattern-wasm is validated separately in the dedicated wasm build.
+run_check "Native build" cargo build --workspace --exclude pattern-wasm || true
+echo ""
+run_check "Tests" cargo test --workspace --exclude pattern-wasm || true
+echo ""
+run_check "Docs build" cargo doc --no-deps -p relateby-pattern -p relateby-gram || true
+echo ""
+
+if rustup target list --installed 2>/dev/null | grep -q wasm32-unknown-unknown; then
+    if [[ $RELEASE_MODE -eq 1 ]]; then
+        run_check "WASM build" cargo build --target wasm32-unknown-unknown --workspace || true
+    else
+        run_optional_check "WASM build" cargo build --target wasm32-unknown-unknown --workspace
     fi
 else
-    echo -e "${YELLOW}⚠${NC} (not installed, skipping)"
-    echo "  Install with: rustup target add wasm32-unknown-unknown"
+    echo -e "${YELLOW}⚠${NC} wasm32-unknown-unknown target not installed"
+    [[ $RELEASE_MODE -eq 1 ]] && FAILED=1
 fi
 echo ""
 
-# 4b. TypeScript package builds (optional - requires npm and wasm-pack)
-echo -n "Checking TypeScript build setup... "
 if command -v npm >/dev/null 2>&1 && command -v wasm-pack >/dev/null 2>&1; then
-    echo -e "${GREEN}✓${NC}"
-    REPO_ROOT="$(cd "$(dirname "$0")/.." && pwd)"
-
-    echo -n "Building @relateby/graph... "
-    if (cd "$REPO_ROOT/typescript/@relateby/graph" && npm install --silent && npm run build) > /tmp/ci-check.log 2>&1; then
-        echo -e "${GREEN}✓${NC}"
-    else
-        echo -e "${YELLOW}⚠${NC} (failed, but non-blocking)"
-        tail -10 /tmp/ci-check.log
-    fi
-
-    echo -n "Building @relateby/pattern WASM (bundler)... "
-    if (cd "$REPO_ROOT/typescript/@relateby/pattern" && npm run build:wasm) > /tmp/ci-check.log 2>&1; then
-        echo -e "${GREEN}✓${NC}"
-    else
-        echo -e "${YELLOW}⚠${NC} (failed, but non-blocking)"
-        tail -10 /tmp/ci-check.log
-    fi
-
-    echo -n "Building @relateby/pattern WASM (nodejs)... "
-    if (cd "$REPO_ROOT/typescript/@relateby/pattern" && npm run build:wasm:node) > /tmp/ci-check.log 2>&1; then
-        echo -e "${GREEN}✓${NC}"
-    else
-        echo -e "${YELLOW}⚠${NC} (failed, but non-blocking)"
-        tail -10 /tmp/ci-check.log
-    fi
-
-    echo -n "Building @relateby/pattern TypeScript... "
-    # npm's file: protocol with scoped @-prefixed packages can create a broken
-    # relative symlink (known npm limitation). If the symlink is broken, replace
-    # it with an absolute symlink so the build can resolve @relateby/graph.
-    GRAPH_DIR="$REPO_ROOT/typescript/@relateby/graph"
-    PATTERN_LINK="$REPO_ROOT/typescript/@relateby/pattern/node_modules/@relateby/graph"
-    (cd "$REPO_ROOT/typescript/@relateby/pattern" && npm install --silent) > /tmp/ci-check.log 2>&1
-    if [ -L "$PATTERN_LINK" ] && [ ! -e "$PATTERN_LINK" ]; then
-        rm "$PATTERN_LINK" && ln -s "$GRAPH_DIR" "$PATTERN_LINK"
-    fi
-    if (cd "$REPO_ROOT/typescript/@relateby/pattern" && npm run build:ts) > /tmp/ci-check.log 2>&1; then
-        echo -e "${GREEN}✓${NC}"
-    else
-        echo -e "${YELLOW}⚠${NC} (failed, but non-blocking)"
-        tail -10 /tmp/ci-check.log
+    run_check "npm install" npm ci || true
+    echo ""
+    run_check "Pattern package build" npm run build --workspace=@relateby/pattern || true
+    echo ""
+    run_check "Pattern package tests" npm run test --workspace=@relateby/pattern || true
+    echo ""
+    if [[ $RELEASE_MODE -eq 1 ]]; then
+        run_check "npm packed artifact smoke test" npm_pack_smoke || true
+        echo ""
     fi
 else
-    echo -e "${YELLOW}⚠${NC} (not available, skipping)"
-    if ! command -v npm >/dev/null 2>&1; then
-        echo "  Install Node.js/npm"
-    fi
-    if ! command -v wasm-pack >/dev/null 2>&1; then
-        echo "  Install wasm-pack: cargo install wasm-pack"
-    fi
+    echo -e "${YELLOW}⚠${NC} npm or wasm-pack unavailable"
+    [[ $RELEASE_MODE -eq 1 ]] && FAILED=1
 fi
-echo ""
 
-# 5. Python build (optional - requires maturin and Python)
-echo -n "Checking Python build setup... "
-# Prefer 'python' so we use the same interpreter as `python --version` (e.g. asdf 3.13);
-# 'python3' may point to a newer interpreter (e.g. Homebrew 3.14) that PyO3 does not yet support.
-# Use the interpreter's full path so maturin doesn't discover a different one.
-PYTHON_EXE=""
-for cmd in python python3; do
-    if command -v "$cmd" >/dev/null 2>&1; then
-        exe=$(command -v "$cmd")
-        if "$exe" -c "import sys; sys.exit(0 if sys.version_info >= (3, 8) and sys.version_info < (3, 14) else 1)" 2>/dev/null; then
-            PYTHON_EXE="$exe"
-            break
+if [[ -n "$PYTHON_EXE" ]]; then
+    if [[ $RELEASE_MODE -eq 1 ]]; then
+        run_check "Combined Python wheel build" python_release_build || true
+        echo ""
+        if "$PYTHON_EXE" -m twine --version >/dev/null 2>&1; then
+            run_check "Combined Python metadata check" "$PYTHON_EXE" -m twine check "$REPO_ROOT"/python/relateby/dist/* || true
+            echo ""
+        else
+            echo -e "${YELLOW}⚠${NC} twine unavailable"
+            FAILED=1
         fi
-    fi
-done
-if command -v maturin >/dev/null 2>&1 && [ -n "$PYTHON_EXE" ]; then
-    echo -e "${GREEN}✓${NC} (using $PYTHON_EXE: $("$PYTHON_EXE" --version 2>&1))"
-    # Python build is optional for now, so don't fail the script if it fails
-    echo -n "Running Python build... "
-    cd crates/pattern-core
-    # Pass interpreter explicitly and set PYO3_PYTHON so the PyO3 build script uses the same Python
-    if MATURIN_PYTHON="$PYTHON_EXE" PYO3_PYTHON="$PYTHON_EXE" maturin build --release --features python --interpreter "$PYTHON_EXE" > /tmp/ci-check.log 2>&1; then
-        echo -e "${GREEN}✓${NC}"
+        run_check "Combined Python smoke test" python_release_smoke || true
+        echo ""
     else
-        echo -e "${YELLOW}⚠${NC} (failed, but non-blocking)"
-        echo "  Python build failed - this is optional for now"
-        tail -10 /tmp/ci-check.log
+        run_optional_check "Combined Python wheel build" python_release_build
+        echo ""
     fi
-    cd ../..
 else
-    echo -e "${YELLOW}⚠${NC} (not available, skipping)"
-    if ! command -v maturin >/dev/null 2>&1; then
-        echo "  Install maturin with: pip install maturin"
-        echo "  Or with uv: cd crates/pattern-core && uv pip install -e '.[dev]'"
-    fi
-    if [ -z "$PYTHON_EXE" ]; then
-        echo "  Need Python 3.8–3.13 (PyO3 does not support 3.14 yet). Use asdf/pyenv to install 3.13 and set as default ('python' or 'python3')."
-    fi
+    echo -e "${YELLOW}⚠${NC} Python 3.8-3.13 unavailable"
+    [[ $RELEASE_MODE -eq 1 ]] && FAILED=1
 fi
-echo ""
 
-# 6. Tests
-run_check "Tests" cargo test --workspace
-echo ""
+if [[ $RELEASE_MODE -eq 1 ]]; then
+    run_check "Cargo publish dry-run" cargo_publish_dry_run_all || true
+    echo ""
+fi
 
-# Summary
 echo "=========================================="
-if [ $FAILED -eq 0 ]; then
+if [[ $FAILED -eq 0 ]]; then
     echo -e "${GREEN}All checks passed!${NC}"
     exit 0
-else
-    echo -e "${RED}Some checks failed. See output above.${NC}"
-    exit 1
 fi
+
+echo -e "${RED}Some checks failed. See output above.${NC}"
+exit 1
 

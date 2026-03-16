@@ -35,6 +35,21 @@ def _read_version() -> str:
     return m.group(1)
 
 
+def _read_project_name() -> str:
+    """Read distribution name from pyproject.toml."""
+    pyproject = _project_dir() / "pyproject.toml"
+    text = pyproject.read_text()
+    m = re.search(r'name\s*=\s*["\']([^"\']+)["\']', text)
+    if not m:
+        return "relateby-pattern"
+    return m.group(1)
+
+
+def _wheel_distribution_name(name: str) -> str:
+    """Normalize distribution name for wheel filenames and dist-info directories."""
+    return re.sub(r"[-.]+", "_", name)
+
+
 def _run_maturin(manifest_path: Path, cwd: Path) -> None:
     import os
 
@@ -59,11 +74,11 @@ def _run_maturin(manifest_path: Path, cwd: Path) -> None:
 
 
 def _extract_so_from_wheel(whl_path: Path, out_dir: Path) -> list[Path]:
-    """Extract .so from wheel into out_dir; return list of extracted paths."""
+    """Extract compiled extension modules from wheel into out_dir."""
     extracted: list[Path] = []
     with zipfile.ZipFile(whl_path, "r") as zf:
         for name in zf.namelist():
-            if not name.endswith(".so"):
+            if not (name.endswith(".so") or name.endswith(".pyd")):
                 continue
             base = name.split("/")[-1]
             zf.extract(name, out_dir)
@@ -126,6 +141,8 @@ def build_wheel(
     repo = _repo_root()
     project_dir = _project_dir()
     version = _read_version()
+    project_name = _read_project_name()
+    wheel_dist_name = _wheel_distribution_name(project_name)
 
     pattern_manifest = repo / "crates" / "pattern-core" / "Cargo.toml"
     gram_manifest = repo / "crates" / "gram-codec" / "Cargo.toml"
@@ -135,10 +152,14 @@ def build_wheel(
         )
 
     # Build both crates (maturin puts wheels in workspace target/wheels)
+    wheels_dir = repo / "target" / "wheels"
+    wheels_dir.mkdir(parents=True, exist_ok=True)
+    for old_wheel in wheels_dir.glob("*.whl"):
+        old_wheel.unlink()
+
     _run_maturin(pattern_manifest, repo)
     _run_maturin(gram_manifest, repo)
 
-    wheels_dir = repo / "target" / "wheels"
     pattern_whl, gram_whl = _find_wheels(wheels_dir)
     if not pattern_whl or not gram_whl:
         raise RuntimeError(
@@ -147,7 +168,7 @@ def build_wheel(
 
     # Use tag from one of the wheels (same platform)
     tag = _wheel_tag_from_whl(pattern_whl)
-    wheel_basename = f"relateby-{version}-{tag}.whl"
+    wheel_basename = f"{wheel_dist_name}-{version}-{tag}.whl"
     wheel_path = Path(wheel_directory) / wheel_basename
 
     # Staging for wheel contents
@@ -158,13 +179,14 @@ def build_wheel(
         native_dir = stage_p / "relateby" / "_native"
         native_dir.mkdir(parents=True)
 
-        # Extract .so from each wheel into _native
+        # Extract compiled extension modules from each wheel into staging
         _extract_so_from_wheel(pattern_whl, stage_p)
         _extract_so_from_wheel(gram_whl, stage_p)
-        # Move .so files into relateby/_native/
-        for so in stage_p.glob("**/*.so"):
-            if so.parent != native_dir:
-                shutil.move(str(so), str(native_dir / so.name))
+        # Move compiled extension modules into relateby/_native/
+        for extension in (".so", ".pyd"):
+            for module_path in stage_p.glob(f"**/*{extension}"):
+                if module_path.parent != native_dir:
+                    shutil.move(str(module_path), str(native_dir / module_path.name))
 
         # Copy relateby package tree (__init__.py files)
         relateby_src = project_dir / "relateby"
@@ -179,7 +201,7 @@ def build_wheel(
 
         # Build METADATA from pyproject
         metadata_content = _generate_metadata(project_dir, version)
-        dist_info = stage_p / f"relateby-{version}.dist-info"
+        dist_info = stage_p / f"{wheel_dist_name}-{version}.dist-info"
         dist_info.mkdir()
         (dist_info / "METADATA").write_text(metadata_content, encoding="utf-8")
 
@@ -198,11 +220,11 @@ def build_wheel(
                 size = f.stat().st_size
                 record_lines.append(f"{rel},{algo}={h},{size}\n")
         for f in sorted(dist_info.iterdir()):
-            rel = f"relateby-{version}.dist-info/" + f.name
+            rel = f"{wheel_dist_name}-{version}.dist-info/" + f.name
             algo, h = _hash_file(f)
             size = f.stat().st_size
             record_lines.append(f"{rel},{algo}={h},{size}\n")
-        record_lines.append(f"relateby-{version}.dist-info/RECORD,,\n")
+        record_lines.append(f"{wheel_dist_name}-{version}.dist-info/RECORD,,\n")
         (dist_info / "RECORD").write_text("".join(record_lines), encoding="utf-8")
 
         # Zip into wheel
@@ -212,7 +234,7 @@ def build_wheel(
                     arc = "relateby/" + str(f.relative_to(stage_p / "relateby")).replace("\\", "/")
                     zf.write(f, arc)
             for f in dist_info.iterdir():
-                zf.write(f, f"relateby-{version}.dist-info/" + f.name)
+                zf.write(f, f"{wheel_dist_name}-{version}.dist-info/" + f.name)
 
     return wheel_basename
 
@@ -232,8 +254,8 @@ def _generate_metadata(project_dir: Path, version: str) -> str:
     """METADATA content from pyproject.toml, including optional-dependencies."""
     data = _load_pyproject(project_dir)
     project = data.get("project", {})
-    name = project.get("name", "relateby")
-    desc = project.get("description", "Unified Python package for Pattern data structures and Gram notation (relateby.pattern and relateby.gram)")
+    name = project.get("name", "relateby-pattern")
+    desc = project.get("description", "Combined Python distribution for relateby.pattern and relateby.gram")
     requires_python = project.get("requires-python", ">=3.8")
 
     lines = [
@@ -245,7 +267,7 @@ def _generate_metadata(project_dir: Path, version: str) -> str:
         f"Requires-Python: {requires_python}",
     ]
 
-    # Optional dependencies (extras) for pip install relateby[dev], etc.
+    # Optional dependencies (extras) for pip install relateby-pattern[dev], etc.
     optional = project.get("optional-dependencies", {})
     for extra, deps in optional.items():
         lines.append(f"Provides-Extra: {extra}")
@@ -265,11 +287,13 @@ def build_sdist(
 
     project_dir = _project_dir()
     version = _read_version()
-    tarball_name = f"relateby-{version}.tar.gz"
+    project_name = _read_project_name()
+    wheel_dist_name = _wheel_distribution_name(project_name)
+    tarball_name = f"{wheel_dist_name}-{version}.tar.gz"
     tarball_path = Path(sdist_directory) / tarball_name
 
     with tarfile.open(tarball_path, "w:gz", format=tarfile.PAX_FORMAT) as tf:
-        root = f"relateby-{version}"
+        root = f"{wheel_dist_name}-{version}"
         for path in [project_dir / "pyproject.toml", project_dir / "README.md"]:
             if path.exists():
                 tf.add(path, f"{root}/{path.name}")

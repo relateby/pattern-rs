@@ -2,9 +2,17 @@
   "name": "@relateby/pattern",
   "version": "0.1.0",
   "description": "WASM-backed pattern and graph types for relateby",
+  "license": "BSD-3-Clause",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/relateby/pattern-rs.git"
+  },
   "type": "module",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
+  "publishConfig": {
+    "access": "public"
+  },
   "exports": {
     ".": {
       "import": "./dist/index.js",
@@ -13,23 +21,21 @@
     }
   },
   "files": [
-    "dist",
-    "wasm",
-    "wasm-node"
+    "dist"
   ],
   "scripts": {
     "build:wasm": "wasm-pack build ../../../crates/pattern-wasm --target bundler --out-dir ../../typescript/@relateby/pattern/wasm",
     "build:wasm:node": "wasm-pack build ../../../crates/pattern-wasm --target nodejs --out-dir ../../typescript/@relateby/pattern/wasm-node",
     "build:ts": "tsc",
-    "build": "npm run build:wasm && npm run build:wasm:node && npm run build:ts",
+    "build:assets": "rm -rf dist/wasm dist/wasm-node && cp -R wasm dist/wasm && cp -R wasm-node dist/wasm-node && rm -f dist/wasm/.gitignore dist/wasm-node/.gitignore",
+    "build": "npm run build:wasm && npm run build:wasm:node && npm run build:ts && npm run build:assets",
     "test": "vitest run",
-    "test:watch": "vitest"
-  },
-  "dependencies": {
-    "@relateby/graph": "*"
+    "test:watch": "vitest",
+    "pack:release": "npm pack --pack-destination ../../../target/npm-packages"
   },
   "devDependencies": {
     "@types/node": "^25.3.0",
+    "rollup": "^4.59.0",
     "typescript": "^5.0.0",
     "vitest": "^2.0.0"
   },

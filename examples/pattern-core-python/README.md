@@ -11,15 +11,15 @@ See [Release process](../../docs/release.md). Build from `python/relateby/` with
 ### From PyPI or TestPyPI
 
 ```bash
-pip install relateby
-# Or from TestPyPI: pip install --index-url https://test.pypi.org/simple/ relateby
+pip install relateby-pattern
+# Or from TestPyPI: pip install --index-url https://test.pypi.org/simple/ relateby-pattern
 ```
 
 ### From wheel (local build)
 
 ```bash
 # From repo: cd python/relateby && pip wheel . -w dist
-pip install python/relateby/dist/relateby-*.whl
+pip install python/relateby/dist/relateby_pattern-*.whl
 ```
 
 ## Quick Start

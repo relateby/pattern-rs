@@ -22,31 +22,17 @@ def _pattern_from_dict(d):
     return p
 
 
-class StandardGraph(_NativeStandardGraph):
-    """StandardGraph with gram parsing support (T019).
+def _standard_graph_from_gram(cls, input: str):
+    """Parse gram notation into a StandardGraph."""
+    from relateby._native import gram_codec as _gram  # lazy import
 
-    Extends the native StandardGraph with a ``from_gram`` classmethod that
-    bridges the gram-codec parser with the pattern-core graph builder.
-    """
+    pattern_dicts = _gram.parse_patterns_as_dicts(input)
+    patterns = [_pattern_from_dict(d) for d in pattern_dicts]
+    instance = cls()
+    for pattern in patterns:
+        instance.add_pattern(pattern)
+    return instance
 
-    @classmethod
-    def from_gram(cls, input: str) -> "StandardGraph":
-        """Parse gram notation into a StandardGraph.
 
-        Args:
-            input: Gram notation string (e.g. ``"(alice:Person) (bob:Person)"``)
-
-        Returns:
-            StandardGraph populated with the parsed patterns.
-
-        Raises:
-            ValueError: If the gram notation is invalid.
-        """
-        from relateby._native import gram_codec as _gram  # lazy import
-
-        pattern_dicts = _gram.parse_patterns_as_dicts(input)
-        patterns = [_pattern_from_dict(d) for d in pattern_dicts]
-        instance = cls()  # creates empty graph via PyO3 __init__
-        for pattern in patterns:
-            instance.add_pattern(pattern)
-        return instance
+StandardGraph = _NativeStandardGraph
+StandardGraph.from_gram = classmethod(_standard_graph_from_gram)

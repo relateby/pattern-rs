@@ -1,19 +1,12 @@
-# Python Packaging (relateby)
+# Python Packaging
 
-This document describes how the **relateby** packages are packaged and how to extend them with optional dependencies using [extras](https://peps.python.org/pep-0508/#extras) (square-bracket notation).
+Python release packaging is now intentionally simple:
 
-## Package layout (three publishable artifacts)
+- **Published distribution**: `relateby-pattern`
+- **Import namespace**: `relateby.pattern`, `relateby.gram`
+- **Build source**: `python/relateby/`
 
-| Package | PyPI name | Installs | Use case |
-|---------|-----------|----------|----------|
-| **relateby** | `relateby` | `relateby.pattern` + `relateby.gram` | Default: one install for both. |
-| **relateby-pattern** | `relateby-pattern` | `relateby.pattern` only | Minimal install; combine with `relateby-gram` if needed. |
-| **relateby-gram** | `relateby-gram` | `relateby.gram` only | Minimal install; combine with `relateby-pattern` if needed. |
-
-All three install into the **same** `relateby` namespace. Installing `relateby-pattern` and `relateby-gram` (e.g. `pip install relateby-pattern relateby-gram`) merges into one `relateby` with both subpackages, equivalent to `pip install relateby`.
-
-- **Unified wheel** (`relateby`): Built from `python/relateby/`. One wheel with both native extensions under `relateby._native`.
-- **Single-crate wheels** (`relateby-pattern`, `relateby-gram`): Built from `python/relateby-pattern/` and `python/relateby-gram/`. Each wheel contains one native extension and the corresponding subpackage. Same namespace so they can be combined.
+`relateby` itself is not a PyPI artifact.
 
 ## Extras (optional dependencies)
 
@@ -21,13 +14,13 @@ Extras let users install optional dependencies with square-bracket notation:
 
 ```bash
 # Base install (pattern + gram)
-pip install relateby
+pip install relateby-pattern
 
 # With development tools (testing, building from source)
-pip install relateby[dev]
+pip install relateby-pattern[dev]
 
 # All optional dependencies (currently same as [dev]; extend as you add extras)
-pip install relateby[all]
+pip install relateby-pattern[all]
 ```
 
 Defined in `python/relateby/pyproject.toml` under `[project.optional-dependencies]`. The build backend copies these into the wheel METADATA as `Provides-Extra` and `Requires-Dist`, so pip resolves them when a user requests an extra.
@@ -50,9 +43,9 @@ When you add an optional library (e.g. a visualization or export helper), add a 
        "pyyaml>=6.0",
    ]
    all = [
-       "relateby[dev]",
-       "relateby[viz]",
-       "relateby[export]",
+       "relateby-pattern[dev]",
+       "relateby-pattern[viz]",
+       "relateby-pattern[export]",
    ]
    ```
 
@@ -64,18 +57,19 @@ When you add an optional library (e.g. a visualization or export helper), add a 
 
 - Use short, lowercase names: `dev`, `viz`, `export`, `docs`.
 - `dev`: development and testing (maturin, pytest, etc.).
-- `all`: include every other extra (list `relateby[extra1]`, `relateby[extra2]`, …).
-- You can combine extras: `pip install relateby[dev,viz]`.
+- `all`: include every other extra (list `relateby-pattern[extra1]`, `relateby-pattern[extra2]`, …).
+- You can combine extras: `pip install relateby-pattern[dev,viz]`.
 
-## Building and publishing the three packages
+## Building and publishing
 
-- **Unified** (`relateby`): From repo root, `cd python/relateby && pip wheel . -w dist`. See [Release process](release.md).
-- **Single-crate** (`relateby-pattern`, `relateby-gram`): From repo root:
-  ```bash
-  cd python/relateby-pattern && pip wheel . -w dist
-  cd python/relateby-gram   && pip wheel . -w dist
-  ```
-  Each package has its own version in its `pyproject.toml`. Publish with `twine upload dist/*` from each directory. Keep versions in sync (e.g. all 0.1.0). When users install both single-crate packages, both must be built for the same Python and platform.
+Build the published wheel from repo root:
+
+```bash
+cd python/relateby
+pip wheel . -w dist
+```
+
+The legacy split package directories remain in the repository for migration/reference only and are not part of the supported publish path.
 
 ## Alternative: optional native subpackages (historical)
 
@@ -90,7 +84,7 @@ For most use cases, one wheel with both pattern and gram and extras for **option
 
 | Goal | Approach |
 |------|----------|
-| Optional **dependencies** (dev, viz, export, etc.) | Add entries under `[project.optional-dependencies]` in `pyproject.toml`. Use `pip install relateby[extra]`. |
-| Publish **unified** package | Build from `python/relateby/`, upload with twine. |
-| Publish **single-crate** packages | Build from `python/relateby-pattern/` and `python/relateby-gram/`, upload each with twine. |
+| Optional **dependencies** (dev, viz, export, etc.) | Add entries under `[project.optional-dependencies]` in `pyproject.toml`. Use `pip install relateby-pattern[extra]`. |
+| Publish combined package | Build from `python/relateby/`, upload with twine. |
+| Legacy split package directories | Keep out of the supported release flow. |
 | Adding a new extra | Edit that package's `pyproject.toml`; rebuild; document. |

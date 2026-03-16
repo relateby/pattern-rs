@@ -23,8 +23,8 @@ Comprehensive API reference and usage guide for the **relateby** Python package.
 ### From PyPI (recommended)
 
 ```bash
-pip install relateby
-# Or with optional dependencies: pip install relateby[dev] or relateby[all]
+pip install relateby-pattern
+# Or with optional dependencies: pip install relateby-pattern[dev] or relateby-pattern[all]
 ```
 
 One install provides both subpackages. See [Python packaging](python-packaging.md) for extras and adding optional libraries. Use them as:
@@ -46,7 +46,7 @@ result = relateby.gram.parse_gram("(alice)-[:KNOWS]->(bob)")
 To try a version published to TestPyPI before it is on production PyPI:
 
 ```bash
-pip install --index-url https://test.pypi.org/simple/ relateby
+pip install --index-url https://test.pypi.org/simple/ relateby-pattern
 ```
 
 Then use `import relateby.pattern` and `import relateby.gram` as above. Note: TestPyPI may have older or pre-release versions; for stable use, install from PyPI.
@@ -58,7 +58,7 @@ To build and install the unified package from the repository:
 ```bash
 cd python/relateby
 pip wheel . -w dist
-pip install dist/relateby-*.whl
+pip install dist/relateby_pattern-*.whl
 ```
 
 See [Release process](release.md) for build prerequisites (Rust, maturin).

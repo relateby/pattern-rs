@@ -9,13 +9,13 @@ Python bindings for the gram-codec Rust library, enabling parsing, validation, a
 ### From PyPI (when published)
 
 ```bash
-pip install relateby
+pip install relateby-pattern
 ```
 
 ### From TestPyPI (pre-release)
 
 ```bash
-pip install --index-url https://test.pypi.org/simple/ relateby
+pip install --index-url https://test.pypi.org/simple/ relateby-pattern
 ```
 
 ### From Wheel (Local Development)
@@ -26,12 +26,12 @@ cd python/relateby
 pip wheel . -w dist
 
 # Install the wheel
-pip install dist/relateby-*.whl
+pip install dist/relateby_pattern-*.whl
 ```
 
 ### From Source
 
-See [Release process](../../docs/release.md) for build prerequisites. From `python/relateby/` run `pip wheel . -w dist` then `pip install dist/relateby-*.whl`.
+See [Release process](../../docs/release.md) for build prerequisites. From `python/relateby/` run `pip wheel . -w dist` then `pip install dist/relateby_pattern-*.whl`.
 
 ## Quick Start
 
@@ -439,9 +439,9 @@ This separation keeps the native extension focused on parsing while enabling ful
 
 If you get `ModuleNotFoundError: No module named 'relateby.gram'`:
 
-1. Make sure the package is installed: `pip list | grep relateby`
+1. Make sure the package is installed: `pip list | grep relateby-pattern`
 2. Check Python version compatibility: `python --version` (requires >= 3.8)
-3. Reinstall: `pip install --force-reinstall relateby`
+3. Reinstall: `pip install --force-reinstall relateby-pattern`
 
 ### Build Errors
 

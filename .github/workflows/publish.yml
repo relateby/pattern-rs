@@ -9,52 +9,159 @@ permissions:
   contents: read
 
 jobs:
-  publish:
-    name: Build, test, and publish crates
+  validate:
+    name: Validate Release
     runs-on: ubuntu-latest
+    outputs:
+      version: ${{ steps.verify.outputs.version }}
+      tag: ${{ steps.verify.outputs.tag }}
     steps:
       - uses: actions/checkout@v3
         with:
           submodules: true
-
       - uses: actions-rs/toolchain@v1
         with:
           toolchain: stable
           components: clippy, rustfmt
+          target: wasm32-unknown-unknown
           override: true
-
-      - uses: actions/cache@v3
+      - uses: actions/setup-node@v3
         with:
-          path: |
-            ~/.cargo/registry
-            ~/.cargo/git
-            target
-          key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
+          node-version: '20'
+          cache: 'npm'
+          cache-dependency-path: package-lock.json
+      - uses: actions/setup-python@v4
+        with:
+          python-version: '3.12'
+      - name: Install release tooling
+        run: |
+          cargo install wasm-pack
+          pip install maturin twine
+      - name: Verify stable tag on main
+        id: verify
+        run: bash scripts/release/verify-tag.sh "${GITHUB_REF_NAME}" "${GITHUB_SHA}"
+      - name: Run release validation
+        run: bash scripts/ci-local.sh --release
 
-      - name: Build
-        run: cargo build --workspace
-
-      - name: Test
-        run: cargo test --workspace
-
-      - name: Lint
-        run: cargo clippy --workspace -- -D warnings
-
-      - name: Format check
-        run: cargo fmt --all -- --check
-
-      - name: Build docs
-        run: cargo doc --no-deps -p relateby-pattern -p relateby-gram
-
+  publish-crates:
+    name: Publish crates.io artifacts
+    runs-on: ubuntu-latest
+    needs: validate
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          submodules: true
+      - uses: actions-rs/toolchain@v1
+        with:
+          toolchain: stable
+          override: true
       - name: Publish relateby-pattern
         env:
           CARGO_REGISTRY_TOKEN: ${{ secrets.CARGO_REGISTRY_TOKEN }}
         run: cargo publish -p relateby-pattern
-
-      - name: Wait for crates.io to index
+      - name: Wait for crates.io indexing
         run: sleep 30
-
       - name: Publish relateby-gram
         env:
           CARGO_REGISTRY_TOKEN: ${{ secrets.CARGO_REGISTRY_TOKEN }}
         run: cargo publish -p relateby-gram
+
+  publish-npm:
+    name: Publish npm artifact
+    runs-on: ubuntu-latest
+    needs: validate
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          submodules: true
+      - uses: actions-rs/toolchain@v1
+        with:
+          toolchain: stable
+          target: wasm32-unknown-unknown
+          override: true
+      - uses: actions/setup-node@v3
+        with:
+          node-version: '20'
+          cache: 'npm'
+          cache-dependency-path: package-lock.json
+          registry-url: 'https://registry.npmjs.org'
+      - name: Install wasm-pack
+        run: cargo install wasm-pack
+      - name: Install dependencies
+        run: npm ci
+      - name: Build npm artifact
+        run: npm run build --workspace=@relateby/pattern
+      - name: Publish @relateby/pattern
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+        run: npm publish --workspace=@relateby/pattern --access public
+
+  publish-python:
+    name: Publish combined Python artifact
+    runs-on: ubuntu-latest
+    needs: validate
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          submodules: true
+      - uses: actions-rs/toolchain@v1
+        with:
+          toolchain: stable
+          override: true
+      - uses: actions/setup-python@v4
+        with:
+          python-version: '3.12'
+      - name: Install build tooling
+        run: pip install maturin twine
+      - name: Build combined wheel
+        working-directory: python/relateby
+        run: python -m pip wheel . -w dist --no-deps
+      - name: Publish relateby-pattern wheel
+        env:
+          TWINE_USERNAME: __token__
+          TWINE_PASSWORD: ${{ secrets.PYPI_API_TOKEN }}
+        run: twine upload python/relateby/dist/*
+
+  verify-release:
+    name: Verify published artifacts
+    runs-on: ubuntu-latest
+    needs: [validate, publish-crates, publish-npm, publish-python]
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          submodules: true
+      - uses: actions/setup-node@v3
+        with:
+          node-version: '20'
+          registry-url: 'https://registry.npmjs.org'
+      - uses: actions/setup-python@v4
+        with:
+          python-version: '3.12'
+      - name: Verify crates.io versions
+        env:
+          RELEASE_VERSION: ${{ needs.validate.outputs.version }}
+        run: |
+          python - <<'PY'
+          import json
+          import os
+          import urllib.request
+
+          version = os.environ["RELEASE_VERSION"]
+          for crate in ("relateby-pattern", "relateby-gram"):
+              with urllib.request.urlopen(f"https://crates.io/api/v1/crates/{crate}") as response:
+                  payload = json.load(response)
+              versions = {item["num"] for item in payload.get("versions", [])}
+              if version not in versions:
+                  raise SystemExit(f"{crate} version {version} not found on crates.io")
+          PY
+      - name: Verify npm version
+        env:
+          RELEASE_VERSION: ${{ needs.validate.outputs.version }}
+        run: |
+          test "$(npm view @relateby/pattern@${RELEASE_VERSION} version)" = "${RELEASE_VERSION}"
+      - name: Verify PyPI install smoke test
+        env:
+          RELEASE_VERSION: ${{ needs.validate.outputs.version }}
+        run: |
+          python -m pip install "relateby-pattern==${RELEASE_VERSION}"
+          python scripts/release/python-smoke.py --expect-distribution relateby-pattern

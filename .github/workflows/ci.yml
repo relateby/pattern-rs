@@ -10,8 +10,8 @@ permissions:
   contents: read
 
 jobs:
-  build:
-    name: Build Workspace
+  rust-validation:
+    name: Rust Validation
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
@@ -20,6 +20,7 @@ jobs:
       - uses: actions-rs/toolchain@v1
         with:
           toolchain: stable
+          components: clippy, rustfmt
           override: true
       - uses: actions/cache@v3
         with:
@@ -28,14 +29,56 @@ jobs:
             ~/.cargo/git
             target
           key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
-      - run: cargo build --workspace
+      - name: Format
+        run: cargo fmt --all -- --check
+      - name: Lint
+        run: cargo clippy --workspace --exclude pattern-wasm -- -D warnings
+      - name: Build
+        run: cargo build --workspace --exclude pattern-wasm
+      - name: Test
+        run: cargo test --workspace --exclude pattern-wasm
+      - name: Docs
+        run: cargo doc --no-deps -p relateby-pattern -p relateby-gram
+      - name: Cargo publish dry-run
+        run: |
+          VERSION="$(python - <<'PY'
+          import re
+          from pathlib import Path
 
-  # WASM build - optional for now, can be made required later
-  # Only builds crates that are actually implemented
-  build-wasm:
-    name: Build WASM (Optional)
+          cargo_toml = Path("Cargo.toml").read_text(encoding="utf-8")
+          match = re.search(r'^\[workspace\.package\]\n(?:.*\n)*?version = "([^"]+)"', cargo_toml, re.M)
+          if not match:
+              raise SystemExit("workspace version not found")
+          print(match.group(1))
+          PY
+          )"
+          cargo publish -p relateby-pattern --dry-run
+          if python - "$VERSION" <<'PY'
+          import json
+          import sys
+          import urllib.error
+          import urllib.request
+
+          version = sys.argv[1]
+          try:
+              with urllib.request.urlopen("https://crates.io/api/v1/crates/relateby-pattern") as response:
+                  payload = json.load(response)
+          except urllib.error.URLError:
+              raise SystemExit(1)
+
+          versions = {item["num"] for item in payload.get("versions", [])}
+          raise SystemExit(0 if version in versions else 1)
+          PY
+          then
+            echo "relateby-pattern ${VERSION} already exists on crates.io; using cargo package fallback for relateby-gram"
+            cargo package -p relateby-gram --allow-dirty --no-verify
+          else
+            cargo publish -p relateby-gram --dry-run
+          fi
+
+  wasm-validation:
+    name: WASM Validation
     runs-on: ubuntu-latest
-    continue-on-error: true  # Allow this to fail without blocking CI
     steps:
       - uses: actions/checkout@v3
         with:
@@ -52,11 +95,10 @@ jobs:
             ~/.cargo/git
             target
           key: ${{ runner.os }}-cargo-wasm-${{ hashFiles('**/Cargo.lock') }}
-      - run: cargo build --target wasm32-unknown-unknown -p relateby-pattern
+      - run: cargo build --target wasm32-unknown-unknown --workspace
 
-  # TypeScript / WASM packages - build as sanity check (no publish)
-  build-typescript:
-    name: Build TypeScript & WASM packages
+  npm-validation:
+    name: npm Validation
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
@@ -81,28 +123,25 @@ jobs:
           node-version: '20'
           cache: 'npm'
           cache-dependency-path: package-lock.json
-      - name: Install dependencies (workspace root)
+      - name: Install dependencies
         run: npm ci
-      - name: Build @relateby/graph
-        run: npm run build --workspace=@relateby/graph
-      - name: Build @relateby/pattern WASM (bundler)
-        working-directory: crates/pattern-wasm
+      - name: Build @relateby/pattern
+        run: npm run build --workspace=@relateby/pattern
+      - name: Test @relateby/pattern
+        run: npm run test --workspace=@relateby/pattern
+      - name: Pack @relateby/pattern
         run: |
-          wasm-pack build --target bundler --out-dir ../../typescript/@relateby/pattern/wasm
-      - name: Build @relateby/pattern WASM (nodejs)
-        working-directory: crates/pattern-wasm
+          mkdir -p target/npm-packages
+          npm run pack:release --workspace=@relateby/pattern
+      - name: Smoke-test packed npm artifact
         run: |
-          wasm-pack build --target nodejs --out-dir ../../typescript/@relateby/pattern/wasm-node
-      - name: Build @relateby/pattern TypeScript
-        run: npm run build:ts --workspace=@relateby/pattern
-      - name: Build @relateby/gram
-        run: npm run build --workspace=@relateby/gram
+          cd ./scripts/release/npm-smoke
+          npm install --silent ../../../target/npm-packages/*.tgz
+          npm run smoke
 
-  # Python build - optional for now, can be made required later
-  build-python:
-    name: Build Python (Optional)
+  python-validation:
+    name: Python Validation
     runs-on: ubuntu-latest
-    continue-on-error: true  # Allow this to fail without blocking CI
     steps:
       - uses: actions/checkout@v3
         with:
@@ -114,8 +153,8 @@ jobs:
       - uses: actions/setup-python@v4
         with:
           python-version: '3.12'
-      - name: Install maturin
-        run: pip install maturin
+      - name: Install build tooling
+        run: pip install maturin twine
       - uses: actions/cache@v3
         with:
           path: |
@@ -123,62 +162,11 @@ jobs:
             ~/.cargo/git
             target
           key: ${{ runner.os }}-cargo-python-${{ hashFiles('**/Cargo.lock') }}
-      - name: Build Python extension
-        working-directory: crates/pattern-core
-        run: maturin build --release --features python
-
-  test:
-    name: Test Workspace
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v3
-        with:
-          submodules: true
-      - uses: actions-rs/toolchain@v1
-        with:
-          toolchain: stable
-          override: true
-      - uses: actions/cache@v3
-        with:
-          path: |
-            ~/.cargo/registry
-            ~/.cargo/git
-            target
-          key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
-      - run: cargo test --workspace
-
-  lint:
-    name: Lint Workspace
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v3
-        with:
-          submodules: true
-      - uses: actions-rs/toolchain@v1
-        with:
-          toolchain: stable
-          components: clippy
-          override: true
-      - uses: actions/cache@v3
-        with:
-          path: |
-            ~/.cargo/registry
-            ~/.cargo/git
-            target
-          key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
-      - run: cargo clippy --workspace -- -D warnings
-
-  format:
-    name: Check Formatting
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v3
-        with:
-          submodules: true
-      - uses: actions-rs/toolchain@v1
-        with:
-          toolchain: stable
-          components: rustfmt
-          override: true
-      - run: cargo fmt --all -- --check
+      - name: Build combined wheel
+        working-directory: python/relateby
+        run: python -m pip wheel . -w dist --no-deps
+      - name: Check wheel metadata
+        run: twine check python/relateby/dist/*
+      - name: Smoke-test combined wheel
+        run: bash ./scripts/release/smoke-python.sh --wheel ./python/relateby/dist/*.whl
 

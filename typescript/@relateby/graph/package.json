@@ -1,5 +1,6 @@
 {
   "name": "@relateby/graph",
+  "private": true,
   "version": "0.1.0",
   "description": "Pure TypeScript graph interfaces and transforms for relateby",
   "type": "module",
