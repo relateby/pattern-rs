@@ -29,15 +29,13 @@
 //! let mut g = StandardGraph::new();
 //!
 //! // Add nodes using the fluent SubjectBuilder
-//! g.add_node(Subject::build("alice").label("Person").property("name", "Alice").done());
-//! g.add_node(Subject::build("bob").label("Person").property("name", "Bob").done());
+//! let alice = Subject::build("alice").label("Person").property("name", "Alice").done();
+//! let bob   = Subject::build("bob").label("Person").property("name", "Bob").done();
+//! g.add_node(alice.clone());
+//! g.add_node(bob.clone());
 //!
-//! // Add a relationship (missing endpoint nodes are auto-created as placeholders)
-//! g.add_relationship(
-//!     Subject::build("r1").label("KNOWS").done(),
-//!     &"alice".into(),
-//!     &"bob".into(),
-//! );
+//! // Add a relationship — pass the Subject objects directly
+//! g.add_relationship(Subject::build("r1").label("KNOWS").done(), &alice, &bob);
 //!
 //! assert_eq!(g.node_count(), 2);
 //! assert_eq!(g.relationship_count(), 1);

@@ -1,10 +1,12 @@
 mod convert;
 mod gram;
+mod standard_graph;
 
 // Re-export WASM-compatible types from pattern-core
 pub use pattern_core::wasm::{
     ValueFactory as Value, WasmPattern as Pattern, WasmStructureAnalysis as StructureAnalysis,
-    WasmSubject as Subject, WasmValidationRules as ValidationRules,
+    WasmSubject as Subject, WasmSubjectBuilder as SubjectBuilder,
+    WasmValidationRules as ValidationRules,
 };
 
 // Re-export graph types under Native* names
@@ -28,3 +30,6 @@ pub use pattern_core::wasm::{
 
 // Re-export Gram namespace
 pub use gram::Gram;
+
+// StandardGraph is defined in standard_graph.rs (adds fromGram via gram-codec)
+pub use standard_graph::StandardGraph;

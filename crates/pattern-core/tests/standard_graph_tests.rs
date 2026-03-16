@@ -104,8 +104,8 @@ fn add_relationship_creates_placeholder_nodes() {
     let mut g = StandardGraph::new();
     g.add_relationship(
         Subject::build("r1").label("KNOWS").done(),
-        &"alice".into(),
-        &"bob".into(),
+        &Subject::from_id("alice"),
+        &Subject::from_id("bob"),
     );
 
     assert_eq!(g.relationship_count(), 1);
@@ -118,18 +118,14 @@ fn add_relationship_creates_placeholder_nodes() {
 #[test]
 fn add_relationship_uses_existing_nodes() {
     let mut g = StandardGraph::new();
-    g.add_node(
-        Subject::build("alice")
-            .label("Person")
-            .property("name", "Alice")
-            .done(),
-    );
-    g.add_node(Subject::build("bob").label("Person").done());
-    g.add_relationship(
-        Subject::build("r1").label("KNOWS").done(),
-        &"alice".into(),
-        &"bob".into(),
-    );
+    let alice = Subject::build("alice")
+        .label("Person")
+        .property("name", "Alice")
+        .done();
+    let bob = Subject::build("bob").label("Person").done();
+    g.add_node(alice.clone());
+    g.add_node(bob.clone());
+    g.add_relationship(Subject::build("r1").label("KNOWS").done(), &alice, &bob);
 
     assert_eq!(g.node_count(), 2);
     assert_eq!(g.relationship_count(), 1);
@@ -162,11 +158,19 @@ fn add_walk() {
     g.add_node(Subject::build("a").done());
     g.add_node(Subject::build("b").done());
     g.add_node(Subject::build("c").done());
-    g.add_relationship(Subject::build("r1").done(), &"a".into(), &"b".into());
-    g.add_relationship(Subject::build("r2").done(), &"b".into(), &"c".into());
+    g.add_relationship(
+        Subject::build("r1").done(),
+        &Subject::from_id("a"),
+        &Subject::from_id("b"),
+    );
+    g.add_relationship(
+        Subject::build("r2").done(),
+        &Subject::from_id("b"),
+        &Subject::from_id("c"),
+    );
     g.add_walk(
         Subject::build("w1").label("Path").done(),
-        &["r1".into(), "r2".into()],
+        &[Subject::from_id("r1"), Subject::from_id("r2")],
     );
 
     assert_eq!(g.walk_count(), 1);
@@ -178,7 +182,10 @@ fn add_walk() {
 fn add_annotation() {
     let mut g = StandardGraph::new();
     g.add_node(Subject::build("alice").label("Person").done());
-    g.add_annotation(Subject::build("a1").label("Note").done(), &"alice".into());
+    g.add_annotation(
+        Subject::build("a1").label("Note").done(),
+        &Subject::from_id("alice"),
+    );
 
     assert_eq!(g.annotation_count(), 1);
     let ann = g.annotation(&"a1".into()).unwrap();
@@ -259,8 +266,16 @@ fn iterators_visit_all_elements() {
     g.add_node(Subject::build("a").done());
     g.add_node(Subject::build("b").done());
     g.add_node(Subject::build("c").done());
-    g.add_relationship(Subject::build("r1").done(), &"a".into(), &"b".into());
-    g.add_relationship(Subject::build("r2").done(), &"b".into(), &"c".into());
+    g.add_relationship(
+        Subject::build("r1").done(),
+        &Subject::from_id("a"),
+        &Subject::from_id("b"),
+    );
+    g.add_relationship(
+        Subject::build("r2").done(),
+        &Subject::from_id("b"),
+        &Subject::from_id("c"),
+    );
 
     assert_eq!(g.nodes().count(), 3);
     assert_eq!(g.relationships().count(), 2);
@@ -275,7 +290,11 @@ fn source_and_target() {
     let mut g = StandardGraph::new();
     g.add_node(Subject::build("alice").done());
     g.add_node(Subject::build("bob").done());
-    g.add_relationship(Subject::build("r1").done(), &"alice".into(), &"bob".into());
+    g.add_relationship(
+        Subject::build("r1").done(),
+        &Subject::from_id("alice"),
+        &Subject::from_id("bob"),
+    );
 
     let src = g.source(&"r1".into()).unwrap();
     assert_eq!(src.value.identity.0, "alice");
@@ -297,8 +316,16 @@ fn neighbors_bidirectional() {
     g.add_node(Subject::build("a").done());
     g.add_node(Subject::build("b").done());
     g.add_node(Subject::build("c").done());
-    g.add_relationship(Subject::build("r1").done(), &"a".into(), &"b".into());
-    g.add_relationship(Subject::build("r2").done(), &"c".into(), &"b".into());
+    g.add_relationship(
+        Subject::build("r1").done(),
+        &Subject::from_id("a"),
+        &Subject::from_id("b"),
+    );
+    g.add_relationship(
+        Subject::build("r2").done(),
+        &Subject::from_id("c"),
+        &Subject::from_id("b"),
+    );
 
     // b has neighbors: a (via r1 where b is target) and c (via r2 where b is target)
     let neighbors = g.neighbors(&"b".into());
@@ -318,8 +345,16 @@ fn degree() {
     g.add_node(Subject::build("a").done());
     g.add_node(Subject::build("b").done());
     g.add_node(Subject::build("c").done());
-    g.add_relationship(Subject::build("r1").done(), &"a".into(), &"b".into());
-    g.add_relationship(Subject::build("r2").done(), &"b".into(), &"c".into());
+    g.add_relationship(
+        Subject::build("r1").done(),
+        &Subject::from_id("a"),
+        &Subject::from_id("b"),
+    );
+    g.add_relationship(
+        Subject::build("r2").done(),
+        &Subject::from_id("b"),
+        &Subject::from_id("c"),
+    );
 
     assert_eq!(g.degree(&"a".into()), 1);
     assert_eq!(g.degree(&"b".into()), 2);
@@ -355,7 +390,11 @@ fn as_query() {
     let mut g = StandardGraph::new();
     g.add_node(Subject::build("alice").done());
     g.add_node(Subject::build("bob").done());
-    g.add_relationship(Subject::build("r1").done(), &"alice".into(), &"bob".into());
+    g.add_relationship(
+        Subject::build("r1").done(),
+        &Subject::from_id("alice"),
+        &Subject::from_id("bob"),
+    );
 
     let query = g.as_query();
     let nodes = (query.query_nodes)();
@@ -369,7 +408,11 @@ fn as_snapshot() {
     let mut g = StandardGraph::new();
     g.add_node(Subject::build("alice").done());
     g.add_node(Subject::build("bob").done());
-    g.add_relationship(Subject::build("r1").done(), &"alice".into(), &"bob".into());
+    g.add_relationship(
+        Subject::build("r1").done(),
+        &Subject::from_id("alice"),
+        &Subject::from_id("bob"),
+    );
 
     let snapshot = g.as_snapshot();
     // 2 nodes + 1 relationship = 3 elements
@@ -391,7 +434,11 @@ fn chaining_add_methods() {
     let mut g = StandardGraph::new();
     g.add_node(Subject::build("a").done())
         .add_node(Subject::build("b").done())
-        .add_relationship(Subject::build("r1").done(), &"a".into(), &"b".into());
+        .add_relationship(
+            Subject::build("r1").done(),
+            &Subject::from_id("a"),
+            &Subject::from_id("b"),
+        );
 
     assert_eq!(g.node_count(), 2);
     assert_eq!(g.relationship_count(), 1);
@@ -413,12 +460,12 @@ fn scale_1000_nodes_5000_relationships() {
 
     // Add 5000 relationships (cycling through nodes)
     for i in 0..5000 {
-        let src = format!("n{}", i % 1000);
-        let tgt = format!("n{}", (i + 1) % 1000);
+        let src = Subject::from_id(format!("n{}", i % 1000));
+        let tgt = Subject::from_id(format!("n{}", (i + 1) % 1000));
         g.add_relationship(
             Subject::build(format!("r{}", i)).label("REL").done(),
-            &src.into(),
-            &tgt.into(),
+            &src,
+            &tgt,
         );
     }
     assert_eq!(g.relationship_count(), 5000);
