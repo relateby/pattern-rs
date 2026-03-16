@@ -1,6 +1,6 @@
 [project]
 name = "relateby-pattern"
-version = "0.2.4"
+version = "0.2.5"
 description = "Combined Python distribution for relateby.pattern and relateby.gram"
 readme = "README.md"
 license = { text = "Apache-2.0" }
