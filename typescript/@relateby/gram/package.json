@@ -1,5 +1,6 @@
 {
   "name": "@relateby/gram",
+  "private": true,
   "version": "0.1.0",
   "description": "Gram notation codec for relateby",
   "type": "module",
@@ -18,9 +19,6 @@
     "build": "tsc",
     "test": "vitest run",
     "test:watch": "vitest"
-  },
-  "dependencies": {
-    "@relateby/pattern": "*"
   },
   "devDependencies": {
     "typescript": "^5.0.0",

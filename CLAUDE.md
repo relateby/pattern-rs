@@ -60,12 +60,12 @@ cargo test <test_name>
 cargo test -- --nocapture
 ```
 
-### Python Bindings (unified package: relateby)
+### Python Bindings (published package: relateby-pattern)
 
-End users install the single PyPI project **relateby**; one install provides both subpackages:
+End users install the single PyPI project **relateby-pattern**; one install provides both subpackages:
 
 ```bash
-pip install relateby
+pip install relateby-pattern
 ```
 
 Use only the public imports (no legacy `pattern_core` or `gram_codec`):

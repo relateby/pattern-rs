@@ -1,7 +1,7 @@
 [project]
 name = "relateby-gram"
 version = "0.1.0"
-description = "Gram notation for relateby (relateby.gram only). Install relateby for pattern+gram."
+description = "Legacy split-package configuration kept for migration only; releases publish the combined python/relateby artifact instead."
 readme = "README.md"
 license = { text = "Apache-2.0" }
 requires-python = ">=3.8"

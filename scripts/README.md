@@ -12,13 +12,21 @@ Run all CI checks locally before pushing to catch issues early.
 ./scripts/ci-local.sh
 ```
 
+Release-grade validation:
+
+```bash
+./scripts/ci-local.sh --release
+```
+
 ### What it checks
 
 1. **Format check**: Verifies code formatting with `cargo fmt`
 2. **Clippy lint**: Runs `cargo clippy` with strict warnings (`-D warnings`)
-3. **Native build**: Builds all workspace crates for native target
-4. **WASM build**: Builds pattern-core, pattern-ops, and gram-codec for WASM (if target is installed)
-5. **Tests**: Runs all workspace tests
+3. **Native build / tests / docs**: Validates the Rust workspace
+4. **WASM build**: Builds the workspace for `wasm32-unknown-unknown`
+5. **npm package validation**: Builds, tests, packs, and smoke-installs `@relateby/pattern`
+6. **Python package validation**: Builds, checks, and smoke-installs the combined `relateby-pattern` wheel
+7. **Cargo dry-runs**: Included in `--release` mode
 
 ### Exit codes
 
@@ -28,7 +36,7 @@ Run all CI checks locally before pushing to catch issues early.
 ### Tips
 
 - Run this before every commit to avoid CI failures
-- If WASM target is not installed, that check is skipped (with a warning)
+- Use `--release` before cutting a tag
 - All output is logged to `/tmp/ci-check.log` for debugging
 
 ### Alternatives
@@ -56,4 +64,15 @@ Running Tests... ✓
 ==========================================
 All checks passed!
 ```
+
+## new-release.sh
+
+Prepare a stable release from `main`:
+
+```bash
+./scripts/new-release.sh 0.2.0
+./scripts/new-release.sh --push 0.2.0
+```
+
+This script updates the release-managed versions, runs release validation, creates the release commit, and creates annotated tag `v0.2.0`.
 

@@ -2,15 +2,15 @@
 
 This guide covers using pattern-rs from JavaScript/TypeScript via WebAssembly.
 
-## Packages
+## Package
 
-Three scoped npm packages expose the Rust functionality:
+The supported npm artifact is `@relateby/pattern`.
 
-| Package | Description | WASM? |
-|---------|-------------|-------|
-| `@relateby/pattern` | WASM-backed types and graph algorithms | Yes |
-| `@relateby/gram` | Gram notation codec | Via `@relateby/pattern` |
-| `@relateby/graph` | Pure TypeScript interfaces and transforms | No |
+It includes:
+
+- WASM-backed pattern and graph APIs
+- Gram codec exports via `Gram`
+- pure TypeScript graph interfaces and transforms
 
 ## Graph API
 
@@ -45,8 +45,7 @@ wasm-pack build ../../../crates/pattern-wasm --target bundler --out-dir ../../..
 ## Quick Start
 
 ```typescript
-import { init, NativeSubject, NativePattern, NativePatternGraph, NativeGraphQuery, bfs } from "@relateby/pattern";
-import { toGraphView, mapGraph } from "@relateby/graph";
+import { init, NativeSubject, NativePattern, NativePatternGraph, NativeGraphQuery, bfs, toGraphView, mapGraph } from "@relateby/pattern";
 
 // Initialize WASM (Node.js; bundlers auto-initialize)
 await init();
@@ -122,9 +121,8 @@ Before pushing, run all CI checks:
 ./scripts/ci-local.sh
 ```
 
-This validates:
-1. `cargo fmt --all -- --check`
-2. `cargo clippy --workspace -- -D warnings`
-3. `cargo build --workspace` (native)
-4. `cargo build --workspace --target wasm32-unknown-unknown` (WASM)
-5. `cargo test --workspace`
+For release-grade package validation, run:
+
+```bash
+./scripts/ci-local.sh --release
+```

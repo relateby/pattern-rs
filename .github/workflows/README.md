@@ -12,12 +12,11 @@ The simplest way to run all CI checks locally is using the provided script:
 ./scripts/ci-local.sh
 ```
 
-This script runs all the same checks that GitHub Actions runs:
-- Format check
-- Clippy lint
-- Native build
-- WASM build (if target is installed)
-- Tests
+This script runs the same release-validation surface used by GitHub Actions:
+- Rust fmt, clippy, build, tests, docs
+- WASM build
+- npm package build, test, pack, and smoke install
+- combined Python wheel build, metadata check, and smoke install
 
 **No Docker required!** This is the fastest way to verify your changes before pushing.
 
@@ -121,13 +120,10 @@ python3 -c "import yaml; yaml.safe_load(open('.github/workflows/ci.yml'))"
 
 The CI workflow includes these jobs:
 
-1. **build**: Compiles the Rust workspace (native)
-2. **build-wasm**: Optional; builds pattern-core for wasm32-unknown-unknown
-3. **build-typescript**: Builds TypeScript/WASM packages (@relateby/graph, @relateby/pattern with wasm-pack, @relateby/gram) as a sanity check—no publishing
-4. **build-python**: Optional; builds the Python extension with maturin
-5. **test**: Runs all workspace tests
-6. **lint**: Runs clippy with strict warnings
-7. **format**: Verifies code formatting
+1. **rust-validation**: fmt, clippy, build, tests, docs, and cargo publish dry-runs
+2. **wasm-validation**: workspace wasm32 build
+3. **npm-validation**: build/test/pack/smoke for `@relateby/pattern`
+4. **python-validation**: build/check/smoke for the combined `relateby-pattern` wheel
 
-All jobs use `actions-rs/toolchain@v1` with explicit `toolchain: stable` input where Rust is used.
+The publish workflow validates tagged releases first, then publishes crates.io, npm, and PyPI artifacts in separate jobs.
 

@@ -17,6 +17,7 @@ import {
   betweennessCentrality,
   minimumSpanningTree,
   init,
+  Gram,
   GraphClass,
   TraversalDirection,
   toGraphView,
@@ -232,5 +233,10 @@ describe("Pure TypeScript exports (no WASM)", () => {
     expect(typeof foldGraph).toBe("function");
     expect(typeof paraGraph).toBe("function");
     expect(typeof unfoldGraph).toBe("function");
+  });
+
+  it("Gram codec is exported from @relateby/pattern", () => {
+    expect(typeof Gram.parse).toBe("function");
+    expect(typeof Gram.stringify).toBe("function");
   });
 });

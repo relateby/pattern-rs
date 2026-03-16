@@ -1,0 +1,208 @@
+openapi: 3.1.0
+info:
+  title: pattern-rs Release Management Contract
+  version: 0.1.0
+  description: >
+    Design-time contract for release preparation and tag-triggered publishing.
+    These endpoints model the expected behavior of the local release script and
+    CI/CD workflow; they are not a commitment to implement a network service.
+servers:
+  - url: https://release-control.invalid
+paths:
+  /release-preparations:
+    post:
+      summary: Prepare a stable release from main
+      operationId: createReleasePreparation
+      description: >
+        Models the behavior of `scripts/new-release.sh`. The preparation flow
+        verifies preconditions, synchronizes release-managed versions, runs the
+        full validation matrix, and creates the release commit and annotated tag.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ReleasePreparationRequest'
+      responses:
+        '201':
+          description: Release preparation completed successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ReleasePreparationResult'
+        '409':
+          description: Preconditions failed or version mismatch detected
+        '422':
+          description: Validation failed; no tag created
+  /publish-runs:
+    post:
+      summary: Validate and publish a tagged stable release
+      operationId: triggerPublishRun
+      description: >
+        Models the tag-triggered GitHub Actions workflow. The run validates that
+        the tag is stable and points to main, reruns release validation, and
+        publishes all supported artifacts when validation succeeds.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PublishRunRequest'
+      responses:
+        '202':
+          description: Publish workflow accepted
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PublishRun'
+        '409':
+          description: Tag is not publishable
+        '422':
+          description: Validation failed; no publish performed
+  /publish-runs/{tag}:
+    get:
+      summary: Inspect publish workflow state
+      operationId: getPublishRun
+      parameters:
+        - $ref: '#/components/parameters/Tag'
+      responses:
+        '200':
+          description: Current publish workflow state
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PublishRun'
+        '404':
+          description: Unknown tag
+  /artifacts/{version}:
+    get:
+      summary: List expected public release artifacts for a version
+      operationId: listReleaseArtifacts
+      parameters:
+        - $ref: '#/components/parameters/Version'
+      responses:
+        '200':
+          description: Artifacts and verification status
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [version, artifacts]
+                properties:
+                  version:
+                    type: string
+                  artifacts:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/ReleaseArtifact'
+components:
+  parameters:
+    Tag:
+      name: tag
+      in: path
+      required: true
+      schema:
+        type: string
+        pattern: '^v[0-9]+\.[0-9]+\.[0-9]+$'
+    Version:
+      name: version
+      in: path
+      required: true
+      schema:
+        type: string
+        pattern: '^[0-9]+\.[0-9]+\.[0-9]+$'
+  schemas:
+    ReleasePreparationRequest:
+      type: object
+      required: [version]
+      properties:
+        version:
+          type: string
+          pattern: '^[0-9]+\.[0-9]+\.[0-9]+$'
+        push:
+          type: boolean
+          default: false
+        expectedBranch:
+          type: string
+          default: main
+    ReleasePreparationResult:
+      type: object
+      required:
+        - version
+        - branch
+        - updatedManifests
+        - validationPassed
+        - releaseCommit
+        - releaseTag
+      properties:
+        version:
+          type: string
+        branch:
+          type: string
+        updatedManifests:
+          type: array
+          items:
+            type: string
+        validationPassed:
+          type: boolean
+        releaseCommit:
+          type: string
+        releaseTag:
+          type: string
+        pushed:
+          type: boolean
+    PublishRunRequest:
+      type: object
+      required: [tag, commitSha]
+      properties:
+        tag:
+          type: string
+          pattern: '^v[0-9]+\.[0-9]+\.[0-9]+$'
+        commitSha:
+          type: string
+        expectedBranch:
+          type: string
+          default: main
+    PublishRun:
+      type: object
+      required:
+        - tag
+        - commitSha
+        - isOnMain
+        - validationPassed
+        - publishedArtifacts
+        - status
+      properties:
+        tag:
+          type: string
+        commitSha:
+          type: string
+        isOnMain:
+          type: boolean
+        validationPassed:
+          type: boolean
+        status:
+          type: string
+          enum: [triggered, validating, failed, published, published_partially]
+        publishedArtifacts:
+          type: array
+          items:
+            type: string
+        failedStep:
+          type: string
+    ReleaseArtifact:
+      type: object
+      required: [ecosystem, name, version, combinedArtifact]
+      properties:
+        ecosystem:
+          type: string
+          enum: [cargo, npm, pypi]
+        name:
+          type: string
+        version:
+          type: string
+        combinedArtifact:
+          type: boolean
+        verificationStatus:
+          type: string
+          enum: [pending, verified, failed]
