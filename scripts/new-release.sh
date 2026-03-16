@@ -72,7 +72,10 @@ release_log "Running release validation"
 run_release_validation "$REPO_ROOT"
 
 release_log "Creating release commit"
-mapfile -t MANIFESTS < <(release_manifests "$REPO_ROOT")
+MANIFESTS=()
+while IFS= read -r manifest; do
+    MANIFESTS+=("$manifest")
+done < <(release_manifests "$REPO_ROOT")
 git -C "$REPO_ROOT" add "${MANIFESTS[@]}"
 git -C "$REPO_ROOT" commit -m "release: prepare $TAG"
 
