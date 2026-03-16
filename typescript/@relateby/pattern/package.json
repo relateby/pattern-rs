@@ -1,6 +1,6 @@
 {
   "name": "@relateby/pattern",
-  "version": "0.2.2",
+  "version": "0.2.3",
   "description": "WASM-backed pattern and graph types for relateby",
   "license": "BSD-3-Clause",
   "repository": {
