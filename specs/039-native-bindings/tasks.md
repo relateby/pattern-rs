@@ -90,11 +90,11 @@
 
 ### Implementation
 
-- [ ] T028 [US3] Implement `GramParseError` exception class in `python/relateby/relateby/gram/__init__.py` with `input: str` and `cause: str` attributes; update `parse_gram` to catch PyO3 errors and re-raise as `GramParseError` (depends on T026)
-- [ ] T029 [P] [US3] Add error scenario tests in `typescript/@relateby/pattern/tests/gram-errors.test.ts`: invalid input produces `Effect` failure with `GramParseError` instance; valid input produces `Effect` success; `GramParseError` carries original `input` string (depends on T015)
-- [ ] T030 [P] [US3] Add error scenario tests in `python/relateby/tests/test_gram_errors.py`: invalid input raises `GramParseError`; valid input returns `list[Pattern[Subject]]`; error has `.input` attribute matching the original string (depends on T028)
-- [ ] T031 [US3] Implement `Gram.validate(input): Effect.Effect<void, GramParseError>` in `typescript/@relateby/pattern/src/gram.ts` using `Effect.tryPromise` wrapping the WASM `gram_validate` function (depends on T015)
-- [ ] T032 [US3] Implement `gram_validate(input: str) -> list[str]` in `python/relateby/relateby/gram/__init__.py` returning a list of error strings (empty = valid); update `python/relateby/relateby/gram/__init__.pyi` stubs (depends on T026)
+- [X] T028 [US3] Implement `GramParseError` exception class in `python/relateby/relateby/gram/__init__.py` with `input: str` and `cause: str` attributes; update `parse_gram` to catch PyO3 errors and re-raise as `GramParseError` (depends on T026)
+- [X] T029 [P] [US3] Add error scenario tests in `typescript/@relateby/pattern/tests/gram-errors.test.ts`: invalid input produces `Effect` failure with `GramParseError` instance; valid input produces `Effect` success; `GramParseError` carries original `input` string (depends on T015)
+- [X] T030 [P] [US3] Add error scenario tests in `python/relateby/tests/test_gram_errors.py`: invalid input raises `GramParseError`; valid input returns `list[Pattern[Subject]]`; error has `.input` attribute matching the original string (depends on T028)
+- [X] T031 [US3] Implement `Gram.validate(input): Effect.Effect<void, GramParseError>` in `typescript/@relateby/pattern/src/gram.ts` using `Effect.tryPromise` wrapping the WASM `gram_validate` function (depends on T015)
+- [X] T032 [US3] Implement `gram_validate(input: str) -> list[str]` in `python/relateby/relateby/gram/__init__.py` returning a list of error strings (empty = valid); update `python/relateby/relateby/gram/__init__.pyi` stubs (depends on T026)
 
 **Checkpoint**: `Gram.parse("bad input")` returns an `Effect` failure — no `throw`. Python `parse_gram("bad input")` raises `GramParseError` with structured fields.
 
@@ -108,9 +108,9 @@
 
 ### Implementation
 
-- [ ] T033 [P] [US4] Add `values<V>(p: Pattern<V>): ReadonlyArray<V>` to `typescript/@relateby/pattern/src/ops.ts` (implemented as `pipe(p, fold([] as V[], (acc, v) => [...acc, v]))`); export from `typescript/@relateby/pattern/src/index.ts` — verify no Rust file was touched (depends on T012, T016)
-- [ ] T034 [P] [US4] Add `def values(self) -> list[V]` method to `python/relateby/relateby/pattern/_pattern.py` (implemented using `self.fold([], lambda acc, v: acc + [v])`); update `python/relateby/relateby/pattern/__init__.pyi` — verify no Rust file was touched (depends on T021, T025)
-- [ ] T035 [US4] Add tests in `typescript/@relateby/pattern/tests/pattern-ops.test.ts` and `python/relateby/tests/test_pattern_ops.py` verifying `values()` returns the correct pre-order sequence (depends on T033, T034)
+- [X] T033 [P] [US4] Add `values<V>(p: Pattern<V>): ReadonlyArray<V>` to `typescript/@relateby/pattern/src/ops.ts` (implemented as `pipe(p, fold([] as V[], (acc, v) => [...acc, v]))`); export from `typescript/@relateby/pattern/src/index.ts` — verify no Rust file was touched (depends on T012, T016)
+- [X] T034 [P] [US4] Add `def values(self) -> list[V]` method to `python/relateby/relateby/pattern/_pattern.py` (implemented using `self.fold([], lambda acc, v: acc + [v])`); update `python/relateby/relateby/pattern/__init__.pyi` — verify no Rust file was touched (depends on T021, T025)
+- [X] T035 [US4] Add tests in `typescript/@relateby/pattern/tests/pattern-ops.test.ts` and `python/relateby/tests/test_pattern_ops.py` verifying `values()` returns the correct pre-order sequence (depends on T033, T034)
 
 **Checkpoint**: `values()` works in both languages. No `cargo build`, `wasm-pack`, or `maturin` commands were needed.
 

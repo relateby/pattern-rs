@@ -28,5 +28,6 @@ describe("@relateby/pattern public export inventory", () => {
     expect(PublicApi.Gram).toBeDefined();
     expect(typeof PublicApi.Gram.parse).toBe("function");
     expect(typeof PublicApi.Gram.stringify).toBe("function");
+    expect(typeof PublicApi.Gram.validate).toBe("function");
   });
 });

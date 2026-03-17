@@ -1,3 +1,4 @@
+import { Effect } from "effect";
 import {
   Gram,
   GraphClass,
@@ -28,9 +29,9 @@ export async function exercisePublicSurface(): Promise<void> {
   const nativeGraph = NativePatternGraph.fromPatterns([alicePattern, bobPattern], policy);
   const query = NativeGraphQuery.fromPatternGraph(nativeGraph);
   const standardGraph = StandardGraph.fromPatterns([alicePattern, bobPattern]);
-  const parsed = await Gram.parse("(alice:Person)");
-  const first = await Gram.parseOne("(alice:Person)");
-  const serialized: string = await Gram.stringify(first);
+  const parsed = await Effect.runPromise(Gram.parse("(alice:Person)"));
+  const serialized: string = await Effect.runPromise(Gram.stringify(parsed));
+  await Effect.runPromise(Gram.validate("(alice:Person)"));
   const nodeCount: number = standardGraph.nodeCount;
   const maybeAlice = standardGraph.node("alice");
 

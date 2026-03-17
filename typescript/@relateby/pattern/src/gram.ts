@@ -15,6 +15,7 @@ import { decodePayload, patternFromRaw } from "./schema.js"
 interface WasmGram {
   parseToJson(input: string): string
   stringifyFromJson(input: string): string
+  validate(input: string): string[]
 }
 
 let wasmGram: WasmGram | null = null
@@ -35,11 +36,20 @@ async function loadWasm(): Promise<WasmGram> {
       const __filename = fileURLToPath(import.meta.url)
       const __dirname = dirname(__filename)
       const require = createRequire(import.meta.url)
-      const wasmPath = resolve(__dirname, "./wasm-node/pattern_wasm.js")
-      const mod = require(wasmPath) as { Gram?: WasmGram }
-      if (mod.Gram) {
-        wasmGram = mod.Gram as WasmGram
-        return wasmGram
+      const candidatePaths = [
+        resolve(__dirname, "./wasm-node/pattern_wasm.js"),
+        resolve(__dirname, "../wasm-node/pattern_wasm.js"),
+      ]
+      for (const wasmPath of candidatePaths) {
+        try {
+          const mod = require(wasmPath) as { Gram?: WasmGram }
+          if (mod.Gram) {
+            wasmGram = mod.Gram as WasmGram
+            return wasmGram
+          }
+        } catch {
+          // try the next candidate path
+        }
       }
     } else {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -59,7 +69,11 @@ async function loadWasm(): Promise<WasmGram> {
       "Ensure wasm/ or wasm-node/ is present (run build:wasm first)."
     )
   }
-  wasmGram = { parseToJson: unavailable, stringifyFromJson: unavailable }
+  wasmGram = {
+    parseToJson: unavailable,
+    stringifyFromJson: unavailable,
+    validate: () => unavailable(),
+  }
   return wasmGram
 }
 
@@ -119,8 +133,18 @@ export const Gram = {
    */
   validate(input: string): Effect.Effect<void, GramParseError> {
     return pipe(
-      Gram.parse(input),
-      Effect.map(() => undefined)
+      Effect.tryPromise({
+        try:   async () => {
+          const wasm = await loadWasm()
+          return wasm.validate(input)
+        },
+        catch: (cause) => new GramParseError({ input, cause }),
+      }),
+      Effect.flatMap((errors) =>
+        errors.length === 0
+          ? Effect.succeed(undefined)
+          : Effect.fail(new GramParseError({ input, cause: errors.join("; ") }))
+      )
     )
   },
 }

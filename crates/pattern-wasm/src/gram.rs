@@ -138,6 +138,22 @@ impl Gram {
         gram_codec::gram_stringify_from_json(json)
     }
 
+    /// Validate gram notation and return a JavaScript array of error strings.
+    ///
+    /// Empty array means the input is valid.
+    #[wasm_bindgen(js_name = validate)]
+    pub fn validate(gram: &str) -> js_sys::Array {
+        let errors_json = gram_codec::gram_validate_to_json(gram);
+        match js_sys::JSON::parse(&errors_json) {
+            Ok(value) => js_sys::Array::from(&value),
+            Err(_) => {
+                let errors = js_sys::Array::new();
+                errors.push(&JsValue::from_str("Failed to decode validation errors"));
+                errors
+            }
+        }
+    }
+
     #[wasm_bindgen(js_name = parseOne)]
     pub fn parse_one(gram: &str) -> Result<JsValue, String> {
         // Parse gram notation

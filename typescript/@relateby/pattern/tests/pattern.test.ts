@@ -2,6 +2,7 @@
 // Tests that require WASM are skipped when WASM is not built.
 // Pure TypeScript tests run without WASM.
 
+import { Effect } from "effect";
 import { describe, it, expect, beforeAll } from "vitest";
 import {
   NativePatternGraph,
@@ -115,13 +116,12 @@ describe("Public package workflows (US1)", () => {
   }));
 
   it("Gram workflows are callable from the top-level package", skipIfNoWasm(async () => {
-    const patterns = await Gram.parse("(alice:Person) (bob:Person)") as unknown[];
-    const first = await Gram.parseOne("(alice:Person)");
-    const serialized = await Gram.stringify(first);
+    const patterns = await Effect.runPromise(Gram.parse("(alice:Person) (bob:Person)"));
+    const serialized = await Effect.runPromise(Gram.stringify(patterns));
+    await Effect.runPromise(Gram.validate("(alice:Person)"));
 
     expect(Array.isArray(patterns)).toBe(true);
     expect(patterns).toHaveLength(2);
-    expect(first).toBeTruthy();
     expect(serialized).toContain("alice");
   }));
 });

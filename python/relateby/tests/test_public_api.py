@@ -20,10 +20,12 @@ def test_public_stub_files_describe_supported_symbols():
     gram_stub = (_PACKAGE_ROOT / "gram" / "__init__.pyi").read_text(encoding="utf-8")
 
     assert "class StandardGraph" in pattern_stub
+    assert "def values" in pattern_stub
     assert "def from_gram" in pattern_stub
-    assert "class ParseResult" in gram_stub
+    assert "class GramParseError" in gram_stub
     assert "def parse_gram" in gram_stub
-    assert "def validate_gram" in gram_stub
+    assert "def gram_validate" in gram_stub
+    assert "def gram_stringify" in gram_stub
     assert "def round_trip" in gram_stub
 
 if _NATIVE_IMPORT_ERROR is not None:
@@ -40,27 +42,31 @@ else:
         assert hasattr(pattern, "Pattern")
         assert hasattr(pattern, "Subject")
         assert hasattr(pattern, "Value")
-        assert hasattr(pattern, "ValidationRules")
         assert hasattr(pattern, "StandardGraph")
+        assert hasattr(pattern, "StringVal")
 
         assert hasattr(gram, "parse_gram")
-        assert hasattr(gram, "validate_gram")
+        assert hasattr(gram, "gram_validate")
+        assert hasattr(gram, "GramParseError")
         assert hasattr(gram, "round_trip")
 
 
     @pytest.mark.public_api
     def test_public_workflows_use_supported_imports_only():
-        alice = pattern.Subject("alice", {"Person"}, {
-            "name": pattern.Value.string("Alice"),
-            "active": True,
-        })
+        alice = (
+            pattern.Subject.from_id("alice")
+            .with_label("Person")
+            .with_property("name", pattern.StringVal("Alice"))
+        )
         alice_pattern = pattern.Pattern.point(alice)
-        graph = pattern.StandardGraph.from_patterns([alice_pattern])
+        graph = pattern.StandardGraph.from_gram("(alice:Person)")
 
+        assert alice_pattern.values()[0].identity == "alice"
         assert graph.node_count == 1
-        assert alice.get_property("active").as_boolean() is True
-        assert gram.parse_gram("(alice:Person)").pattern_count == 1
-        assert gram.validate_gram("(alice:Person)") is True
+        parsed = gram.parse_gram("(alice:Person)")
+        assert len(parsed) == 1
+        assert parsed[0].value.identity == "alice"
+        assert gram.gram_validate("(alice:Person)") == []
         assert gram.round_trip("(alice:Person)") == "(alice:Person)"
 
 
@@ -74,13 +80,9 @@ else:
 
     @pytest.mark.public_api
     def test_invalid_public_workflow_raises_documented_exception_shape():
-        with pytest.raises(ValueError, match="relateby.pattern"):
+        with pytest.raises(ValueError):
             pattern.StandardGraph.from_gram("(alice")
 
-        with pytest.raises(Exception):
-            pattern.Pattern.pattern("root", [pattern.Pattern.point("child")]).validate(
-                pattern.ValidationRules(max_depth=0)
-            )
-
-        with pytest.raises(ValueError, match="relateby.gram.parse_gram"):
+        with pytest.raises(gram.GramParseError) as exc_info:
             gram.parse_gram("(alice")
+        assert exc_info.value.input == "(alice"

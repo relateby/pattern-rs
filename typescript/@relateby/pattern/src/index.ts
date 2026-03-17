@@ -296,9 +296,22 @@ export async function init(): Promise<void> {
       const __filename = fileURLToPath(import.meta.url);
       const __dirname = dirname(__filename);
       const require = createRequire(import.meta.url);
-      const wasmNodePath = resolve(__dirname, "./wasm-node/pattern_wasm.js");
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      wasmModule = require(wasmNodePath) as WasmExports;
+      const candidatePaths = [
+        resolve(__dirname, "./wasm-node/pattern_wasm.js"),
+        resolve(__dirname, "../wasm-node/pattern_wasm.js"),
+      ];
+      for (const wasmNodePath of candidatePaths) {
+        try {
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          wasmModule = require(wasmNodePath) as WasmExports;
+          break;
+        } catch {
+          // try the next candidate path
+        }
+      }
+      if (wasmModule === null) {
+        throw new Error("Unable to locate wasm-node/pattern_wasm.js");
+      }
     } else {
       // Bundler environment: use the ESM bundler-target wasm module
       const wasmPath = "./wasm/pattern_wasm.js";
