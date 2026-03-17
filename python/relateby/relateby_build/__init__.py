@@ -201,13 +201,17 @@ def build_wheel(
                 if module_path.parent != native_dir:
                     shutil.move(str(module_path), str(native_dir / module_path.name))
 
-        # Copy relateby package tree (__init__.py files)
+        # Copy relateby package tree, including shipped type information.
         relateby_src = project_dir / "relateby"
-        for py in relateby_src.rglob("*.py"):
-            rel = py.relative_to(relateby_src)
+        for source in relateby_src.rglob("*"):
+            if not source.is_file():
+                continue
+            if source.suffix not in {".py", ".pyi"} and source.name != "py.typed":
+                continue
+            rel = source.relative_to(relateby_src)
             dest = stage_p / "relateby" / rel
             dest.parent.mkdir(parents=True, exist_ok=True)
-            shutil.copy2(py, dest)
+            shutil.copy2(source, dest)
 
         # Ensure _native has __init__.py
         (native_dir / "__init__.py").write_text("# Native extensions: pattern_core, gram_codec\n")
@@ -312,6 +316,8 @@ def build_sdist(
                 tf.add(path, f"{root}/{path.name}")
         for path in (project_dir / "relateby").rglob("*"):
             if path.is_file():
+                if path.suffix not in {".py", ".pyi"} and path.name != "py.typed":
+                    continue
                 arc = f"{root}/relateby/{path.relative_to(project_dir / 'relateby')}"
                 tf.add(path, arc.replace("\\", "/"))
         # Include build backend so sdist can build

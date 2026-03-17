@@ -1,263 +1,46 @@
-# Gram Codec - Python Bindings
+# relateby.gram Examples
 
-Python bindings for the gram-codec Rust library, enabling parsing, validation, and serialization of gram notation in Python.
-
-> **Note**: This module currently shows the basic validation API. For full data access, see the **AST Output** section below (coming in Phase 7).
-
-## Installation
-
-### From PyPI (when published)
+These examples use the supported public package boundary from the combined Python distribution:
 
 ```bash
 pip install relateby-pattern
 ```
 
-### From TestPyPI (pre-release)
+Use:
 
-```bash
-pip install --index-url https://test.pypi.org/simple/ relateby-pattern
+```python
+from relateby.gram import parse_gram, round_trip, validate_gram
 ```
 
-### From Wheel (Local Development)
-
-```bash
-# Build the unified wheel from repo root
-cd python/relateby
-pip wheel . -w dist
-
-# Install the wheel
-pip install dist/relateby_pattern-*.whl
-```
-
-### From Source
-
-See [Release process](../../docs/release.md) for build prerequisites. From `python/relateby/` run `pip wheel . -w dist` then `pip install dist/relateby_pattern-*.whl`.
+`parse_gram()` returns a `ParseResult` object with attributes, not a dictionary.
 
 ## Quick Start
 
 ```python
-import relateby.gram
+from relateby.gram import parse_gram, round_trip, validate_gram
 
-# Parse gram notation
-result = relateby.gram.parse_gram("(alice)-[:KNOWS]->(bob)")
-print(f"Parsed {result.pattern_count} patterns")
+result = parse_gram("(alice)-[:KNOWS]->(bob)")
+print(result.pattern_count)
+print(result.identifiers)
 
-# Validate gram notation
-is_valid = relateby.gram.validate_gram("(hello)")  # True
-
-# Round-trip (parse and serialize)
-serialized = relateby.gram.round_trip("(a)-->(b)")  # "(a)-->(b)"
-
-# Get version
-print(relateby.gram.version())  # "0.1.0"
+print(validate_gram("(alice:Person)"))
+print(round_trip("(alice:Person)"))
 ```
 
-## Current API (Validation Only)
+## Public API
 
-### `parse_gram(input: str) -> ParseResult`
+- `parse_gram(input: str) -> ParseResult`
+- `validate_gram(input: str) -> bool`
+- `round_trip(input: str) -> str`
 
-Parse gram notation and return information about the parsed patterns.
-
-**Parameters:**
-- `input` (str): Gram notation string to parse
-
-**Returns:**
-- `ParseResult`: Object containing:
-  - `pattern_count` (int): Number of top-level patterns
-  - `identifiers` (list[str]): List of root identifiers
-
-**Raises:**
-- `ValueError`: If the gram notation is invalid
-
-**Example:**
-```python
-result = relateby.gram.parse_gram("(alice)-[:KNOWS]->(bob)")
-print(result.pattern_count)  # 1
-print(result.identifiers)  # []
-```
-
-### `validate_gram(input: str) -> bool`
-
-Validate gram notation without parsing.
-
-**Parameters:**
-- `input` (str): Gram notation string to validate
-
-**Returns:**
-- `bool`: True if valid, False otherwise
-
-**Example:**
-```python
-relateby.gram.validate_gram("(hello)")  # True
-relateby.gram.validate_gram("(unclosed")  # False
-```
-
-### `round_trip(input: str) -> str`
-
-Parse gram notation, serialize it back, and return the serialized form.
-
-**Parameters:**
-- `input` (str): Gram notation string
-
-**Returns:**
-- `str`: Serialized gram notation
-
-**Raises:**
-- `ValueError`: If parsing or serialization fails
-
-**Example:**
-```python
-serialized = relateby.gram.round_trip("(alice)-->(bob)")
-print(serialized)  # "(alice)-->(bob)"
-```
-
-### `version() -> str`
-
-Get the version of gram-codec.
-
-**Returns:**
-- `str`: Version string (e.g., "0.1.0")
-
-**Example:**
-```python
-print(relateby.gram.version())  # "0.1.0"
-```
-
-### `ParseResult` Class
-
-Result object from `parse_gram()`.
-
-**Attributes:**
-- `pattern_count` (int): Number of patterns parsed
-- `identifiers` (list[str]): List of root pattern identifiers
-
-**Methods:**
-- `to_dict() -> dict`: Convert to dictionary
-- `__str__() -> str`: String representation
-- `__repr__() -> str`: Repr representation
-
-**Example:**
-```python
-result = relateby.gram.parse_gram("(hello)")
-print(result.pattern_count)  # 1
-print(result.to_dict())  # {'pattern_count': 1, 'identifiers': []}
-```
-
-## Examples
-
-See `example.py` for comprehensive examples demonstrating:
-
-1. Parse gram notation
-2. Validate syntax
-3. Round-trip testing
-4. Complex patterns
-5. Error handling
-6. Version information
-7. Batch validation
-8. Working with ParseResult
-9. Data processing integration
-10. Validation pipelines
-
-### Running the Examples
+## Running the examples
 
 ```bash
-# Make sure relateby.gram is installed
-pip install ../../python/relateby/dist/relateby-*.whl
-
-# Run the examples
-python example.py
+python examples/gram-codec-python/quickstart.py
+python examples/gram-codec-python/demo.py
 ```
 
-## Common Use Cases
-
-### File Validation
-
-```python
-import relateby.gram
-
-def validate_gram_file(filepath):
-    """Validate a gram file"""
-    with open(filepath) as f:
-        content = f.read()
-    
-    return relateby.gram.validate_gram(content)
-
-# Usage
-is_valid = validate_gram_file("data.gram")
-print(f"File is {'valid' if is_valid else 'invalid'}")
-```
-
-### Batch Processing
-
-```python
-import relateby.gram
-import glob
-
-def process_gram_files(pattern="**/*.gram"):
-    """Process all gram files matching a pattern"""
-    results = []
-    
-    for filepath in glob.glob(pattern, recursive=True):
-        with open(filepath) as f:
-            content = f.read()
-        
-        try:
-            result = relateby.gram.parse_gram(content)
-            results.append({
-                "file": filepath,
-                "valid": True,
-                "pattern_count": result.pattern_count
-            })
-        except ValueError as e:
-            results.append({
-                "file": filepath,
-                "valid": False,
-                "error": str(e)
-            })
-    
-    return results
-
-# Usage
-results = process_gram_files()
-for r in results:
-    print(f"{r['file']}: {r}")
-```
-
-### Data Pipeline Integration
-
-```python
-import relateby.gram
-import pandas as pd
-
-def parse_gram_column(df, column_name):
-    """Parse gram notation in a DataFrame column"""
-    def parse_safe(gram):
-        try:
-            result = relateby.gram.parse_gram(gram)
-            return result.pattern_count
-        except ValueError:
-            return None
-    
-    df['pattern_count'] = df[column_name].apply(parse_safe)
-    return df
-
-# Usage
-df = pd.DataFrame({
-    'gram': ['(alice)', '(bob)', '(invalid']
-})
-df = parse_gram_column(df, 'gram')
-print(df)
-```
-
-### CLI Tool
-
-```python
-#!/usr/bin/env python3
-import sys
-import relateby.gram
-
-def main():
-    if len(sys.argv) < 3:
+Both examples expect `relateby-pattern` to be installed and use only `relateby.gram`.
         print("Usage: gram-tool <parse|validate> <input>")
         sys.exit(1)
     

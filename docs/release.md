@@ -55,8 +55,8 @@ Release mode checks:
 - Rust fmt, clippy, build, tests, docs
 - WASM workspace build
 - `cargo publish --dry-run` for both crates
-- `@relateby/pattern` build, tests, pack, and packed-artifact smoke install
-- combined Python wheel build, metadata check, and smoke install
+- `@relateby/pattern` build, runtime tests, public export inventory, public consumer typecheck, pack, and packed-artifact smoke install
+- combined Python wheel build, public stub validation, metadata check, packaged-stub verification, and wheel smoke install
 
 Maintainer notes:
 
@@ -102,6 +102,17 @@ After publish:
   pip install relateby-pattern==0.2.0
   python -c "import relateby.pattern; import relateby.gram; print('OK')"
   ```
+- Verify the published Python wheel includes `relateby/pattern/__init__.pyi`, `relateby/gram/__init__.pyi`, and `relateby/py.typed`
+
+## Public Package Boundary
+
+The release gate for this feature treats these as the supported developer surfaces:
+
+- `@relateby/pattern`
+- `relateby.pattern`
+- `relateby.gram`
+
+Release validation is expected to fail if docs, stubs, runtime exports, or smoke-install workflows require internal modules such as `wasm/`, `wasm-node/`, `pattern_core`, or `gram_codec`.
 
 ## Recovery
 

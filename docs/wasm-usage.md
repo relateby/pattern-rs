@@ -45,7 +45,19 @@ wasm-pack build ../../../crates/pattern-wasm --target bundler --out-dir ../../..
 ## Quick Start
 
 ```typescript
-import { init, NativeSubject, NativePattern, NativePatternGraph, NativeGraphQuery, bfs, toGraphView, mapGraph } from "@relateby/pattern";
+import {
+  Gram,
+  StandardGraph,
+  bfs,
+  init,
+  mapGraph,
+  NativeGraphQuery,
+  NativePattern,
+  NativePatternGraph,
+  NativeSubject,
+  NativeValue,
+  toGraphView,
+} from "@relateby/pattern";
 
 // Initialize WASM (Node.js; bundlers auto-initialize)
 await init();
@@ -63,6 +75,10 @@ const traversal = bfs(query, aliceNode!);
 // Transform (pure TypeScript, no WASM)
 const view = toGraphView(graph);
 const mapped = mapGraph({ mapNode: (p) => p })(view);
+
+// Public Gram and StandardGraph helpers
+const parsed = await Gram.parse("(alice:Person)");
+const standardGraph = StandardGraph.fromPatterns(parsed as never[]);
 ```
 
 ## Pattern Types
@@ -85,7 +101,7 @@ A self-descriptive value with identity, labels, and properties.
 const subject = new NativeSubject(
   "alice",                    // identity
   ["Person", "User"],         // labels
-  { name: Value.string("Alice"), age: Value.int(30) }  // properties
+  { name: NativeValue.string("Alice"), age: NativeValue.int(30) }  // properties
 );
 ```
 
@@ -108,9 +124,8 @@ NativeValue.null()
 ```typescript
 import { NativeValidationRules } from "@relateby/pattern";
 
-const rules = NativeValidationRules.new(10, 100); // maxDepth=10, maxElements=100
+const rules = new NativeValidationRules(10, 100); // maxDepth=10, maxElements=100
 const result = pattern.validate(rules);
-// result: { _tag: 'Right', right: void } | { _tag: 'Left', left: ValidationError }
 ```
 
 ## CI/CD

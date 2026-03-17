@@ -1,9 +1,15 @@
 interface GramModule {
   parse(input: string): unknown;
+  parseOne(input: string): unknown;
   stringify(value: unknown): string;
 }
 
 let gramModule: GramModule | null = null;
+
+function gramOperationError(operation: string, error: unknown): Error {
+  const message = error instanceof Error ? error.message : String(error);
+  return new Error(`@relateby/pattern ${operation} failed: ${message}`);
+}
 
 async function loadGram(): Promise<GramModule> {
   if (gramModule !== null) return gramModule;
@@ -49,6 +55,9 @@ async function loadGram(): Promise<GramModule> {
     parse: () => {
       throw new Error(`Gram.parse: ${unavailableMessage}`);
     },
+    parseOne: () => {
+      throw new Error(`Gram.parseOne: ${unavailableMessage}`);
+    },
     stringify: () => {
       throw new Error(`Gram.stringify: ${unavailableMessage}`);
     },
@@ -58,12 +67,29 @@ async function loadGram(): Promise<GramModule> {
 
 export const Gram = {
   async parse(input: string): Promise<unknown> {
-    const g = await loadGram();
-    return g.parse(input);
+    try {
+      const g = await loadGram();
+      return g.parse(input);
+    } catch (error) {
+      throw gramOperationError("Gram.parse", error);
+    }
+  },
+
+  async parseOne(input: string): Promise<unknown> {
+    try {
+      const g = await loadGram();
+      return g.parseOne(input);
+    } catch (error) {
+      throw gramOperationError("Gram.parseOne", error);
+    }
   },
 
   async stringify(value: unknown): Promise<string> {
-    const g = await loadGram();
-    return g.stringify(value);
+    try {
+      const g = await loadGram();
+      return g.stringify(value);
+    } catch (error) {
+      throw gramOperationError("Gram.stringify", error);
+    }
   },
 };

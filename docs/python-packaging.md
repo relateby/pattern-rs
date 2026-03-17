@@ -71,6 +71,33 @@ pip wheel . -w dist
 
 The legacy split package directories remain in the repository for migration/reference only and are not part of the supported publish path.
 
+## Public Surface Verification
+
+The combined wheel is expected to ship:
+
+- `relateby.pattern`
+- `relateby.gram`
+- wrapper `.pyi` files for both public subpackages
+- `relateby/py.typed`
+
+Before release, verify all of the following:
+
+1. `python -m pytest python/relateby/tests/test_public_api.py`
+2. `python -m pip wheel python/relateby -w python/relateby/dist --no-deps`
+3. `bash ./scripts/release/smoke-python.sh --wheel ./python/relateby/dist/*.whl`
+
+The supported public imports are:
+
+```python
+import relateby.pattern
+import relateby.gram
+
+from relateby.pattern import Pattern, StandardGraph, Subject, ValidationRules, Value
+from relateby.gram import parse_gram, round_trip, validate_gram
+```
+
+`pattern_core` and `gram_codec` remain internal build artifacts, not supported public imports.
+
 ## Alternative: optional native subpackages (historical)
 
 If you ever need **optional native components** (e.g. install only `relateby.pattern` and not `relateby.gram`), the current single-wheel design does not support that. Options would be:

@@ -125,6 +125,17 @@ python_release_smoke() {
     bash "$REPO_ROOT/scripts/release/smoke-python.sh" --wheel "$wheel"
 }
 
+python_public_api_tests() {
+    if [[ -z "$PYTHON_EXE" ]]; then
+        echo "Need Python 3.8-3.13 to run public API tests" >&2
+        return 1
+    fi
+    (
+        cd "$REPO_ROOT/python/relateby" &&
+        "$PYTHON_EXE" -m pytest tests/test_public_api.py
+    )
+}
+
 crate_version_exists_on_crates_io() {
     local crate_name=$1
     local crate_version=$2
@@ -203,6 +214,10 @@ if command -v npm >/dev/null 2>&1 && command -v wasm-pack >/dev/null 2>&1; then
     echo ""
     run_check "Pattern package tests" npm run test --workspace=@relateby/pattern || true
     echo ""
+    run_check "Pattern package public export test" npm run test:public-api --workspace=@relateby/pattern || true
+    echo ""
+    run_check "Pattern package public typecheck" npm run test:public-api:types --workspace=@relateby/pattern || true
+    echo ""
     if [[ $RELEASE_MODE -eq 1 ]]; then
         run_check "npm packed artifact smoke test" npm_pack_smoke || true
         echo ""
@@ -232,6 +247,11 @@ if [[ -n "$PYTHON_EXE" ]]; then
 else
     echo -e "${YELLOW}⚠${NC} Python 3.8-3.13 unavailable"
     [[ $RELEASE_MODE -eq 1 ]] && FAILED=1
+fi
+
+if [[ -n "$PYTHON_EXE" ]]; then
+    run_check "Combined Python public API tests" python_public_api_tests || true
+    echo ""
 fi
 
 if [[ $RELEASE_MODE -eq 1 ]]; then

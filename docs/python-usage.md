@@ -1,223 +1,113 @@
-# Python Usage Guide (relateby)
+# Python Usage Guide
 
-Comprehensive API reference and usage guide for the **relateby** Python package. One install provides `relateby.pattern` (Pattern data structures) and `relateby.gram` (Gram notation). This guide focuses on the pattern API; use `relateby.gram` for parsing and serializing gram notation.
-
-## Table of Contents
-
-- [Installation](#installation)
-- [Core Concepts](#core-concepts)
-- [Value Types](#value-types)
-- [Subject API](#subject-api)
-- [Pattern API](#pattern-api)
-- [PatternSubject API](#patternsubject-api)
-- [Pattern Operations](#pattern-operations)
-- [Comonad Operations](#comonad-operations)
-- [Validation](#validation)
-- [Structure Analysis](#structure-analysis)
-- [Type Safety](#type-safety)
-- [Best Practices](#best-practices)
-- [Examples](#examples)
-
-## Installation
-
-### From PyPI (recommended)
+Install the single distribution:
 
 ```bash
 pip install relateby-pattern
-# Or with optional dependencies: pip install relateby-pattern[dev] or relateby-pattern[all]
 ```
 
-One install provides both subpackages. See [Python packaging](python-packaging.md) for extras and adding optional libraries. Use them as:
+Use only the public package boundaries:
 
 ```python
 import relateby.pattern
 import relateby.gram
-
-# Minimal example
-p = relateby.pattern.Pattern.point(42)
-print(p.value)  # 42
-
-# Gram notation
-result = relateby.gram.parse_gram("(alice)-[:KNOWS]->(bob)")
 ```
 
-### From TestPyPI (pre-release testing)
+`pattern_core` and `gram_codec` are implementation details, not supported imports.
 
-To try a version published to TestPyPI before it is on production PyPI:
+## Core Types
 
-```bash
-pip install --index-url https://test.pypi.org/simple/ relateby-pattern
+`relateby.pattern` exposes the main pattern and graph workflow types:
+
+```python
+from relateby.pattern import Pattern, StandardGraph, Subject, ValidationRules, Value
 ```
 
-Then use `import relateby.pattern` and `import relateby.gram` as above. Note: TestPyPI may have older or pre-release versions; for stable use, install from PyPI.
+Create subjects and patterns:
 
-### From source (development)
+```python
+alice = Subject(
+    identity="alice",
+    labels={"Person"},
+    properties={
+        "name": Value.string("Alice"),
+        "active": True,
+    },
+)
 
-To build and install the unified package from the repository:
+alice_pattern = Pattern.point(alice)
+assert alice_pattern.value.identity == "alice"
+assert alice.get_property("active").as_boolean() is True
+```
+
+`Subject` accepts either `Value` instances or native Python values in properties. `get_property()` returns a `Value`, while `get_properties()` returns ordinary Python objects.
+
+## StandardGraph
+
+`StandardGraph` is the supported graph-oriented workflow from `relateby.pattern`:
+
+```python
+from relateby.pattern import StandardGraph, Subject
+
+graph = StandardGraph()
+alice = Subject("alice", {"Person"}, {"name": "Alice"})
+bob = Subject("bob", {"Person"}, {"name": "Bob"})
+knows = Subject("r1", {"KNOWS"}, {})
+
+graph.add_node(alice).add_node(bob)
+graph.add_relationship(knows, alice, bob)
+
+assert graph.node_count == 2
+assert graph.relationship_count == 1
+assert graph.source("r1").value.identity == "alice"
+assert graph.target("r1").value.identity == "bob"
+```
+
+You can also build a graph directly from Gram notation through the public wrapper:
+
+```python
+graph = StandardGraph.from_gram("(alice:Person)-[:KNOWS]->(bob:Person)")
+assert graph.node("alice") is not None
+```
+
+## Gram Helpers
+
+`relateby.gram` exposes the supported parsing and validation helpers:
+
+```python
+from relateby.gram import parse_gram, round_trip, validate_gram
+
+result = parse_gram("(alice:Person)")
+assert result.pattern_count == 1
+assert validate_gram("(alice:Person)") is True
+assert round_trip("(alice:Person)") == "(alice:Person)"
+```
+
+`parse_gram()` returns a `ParseResult` object with attributes like `pattern_count` and `identifiers`.
+
+## Validation
+
+```python
+pattern = Pattern.pattern("root", [Pattern.point("child")])
+
+try:
+    pattern.validate(ValidationRules(max_depth=0))
+except Exception as exc:
+    print(f"Validation failed: {exc}")
+```
+
+Validation failures surface from `relateby.pattern`; callers should not reach into internal native modules to interpret them.
+
+## Building From Source
+
+Build the combined wheel from the repo:
 
 ```bash
 cd python/relateby
-pip wheel . -w dist
-pip install dist/relateby_pattern-*.whl
+python -m pip wheel . -w dist
 ```
 
-See [Release process](release.md) for build prerequisites (Rust, maturin).
-
-## Core Concepts
-
-relateby.pattern provides three main types:
-
-1. **Value**: Property value types (string, int, array, map, etc.)
-2. **Subject**: Self-descriptive value with identity, labels, and properties
-3. **Pattern**: Recursive tree structure that can hold any value
-
-## Value Types
-
-### Creating Values
-
-```python
-import relateby.pattern
-
-# Standard types
-str_val = relateby.pattern.Value.string("hello")
-int_val = relateby.pattern.Value.int(42)
-decimal_val = relateby.pattern.Value.decimal(3.14)
-bool_val = relateby.pattern.Value.boolean(True)
-symbol_val = relateby.pattern.Value.symbol("alice")
-
-# Extended types
-array_val = relateby.pattern.Value.array([
-    relateby.pattern.Value.int(1),
-    relateby.pattern.Value.int(2),
-    relateby.pattern.Value.int(3)
-])
-
-map_val = relateby.pattern.Value.map({
-    "name": relateby.pattern.Value.string("Alice"),
-    "age": relateby.pattern.Value.int(30),
-    "active": relateby.pattern.Value.boolean(True)
-})
-
-range_val = relateby.pattern.Value.range(lower=0.0, upper=100.0)
-measurement_val = relateby.pattern.Value.measurement(42.5, "meters")
-```
-
-### Extracting Values
-
-```python
-# Extract typed values
-string = str_val.as_string()  # Returns str
-integer = int_val.as_int()    # Returns int
-decimal = decimal_val.as_decimal()  # Returns float
-boolean = bool_val.as_boolean()  # Returns bool
-array = array_val.as_array()  # Returns List[Value]
-map_dict = map_val.as_map()   # Returns Dict[str, Value]
-```
-
-### Automatic Conversion
-
-Python native types automatically convert to Value:
-
-```python
-subject = relateby.pattern.Subject(
-    identity="alice",
-    properties={
-        "name": "Alice",  # Auto-converts to Value.string
-        "age": 30,        # Auto-converts to Value.int
-        "scores": [95, 87, 92],  # Auto-converts to Value.array
-        "metadata": {"key": "value"}  # Auto-converts to Value.map
-    }
-)
-```
-
-## Subject API
-
-### Creating Subjects
-
-```python
-# Basic subject with identity only
-subject = relateby.pattern.Subject(identity="alice")
-
-# Subject with labels
-subject = relateby.pattern.Subject(
-    identity="alice",
-    labels={"Person", "Employee", "Developer"}
-)
-
-# Subject with properties
-subject = relateby.pattern.Subject(
-    identity="alice",
-    properties={
-        "name": relateby.pattern.Value.string("Alice"),
-        "age": relateby.pattern.Value.int(30),
-        "email": relateby.pattern.Value.string("alice@example.com")
-    }
-)
-
-# Subject with everything
-subject = relateby.pattern.Subject(
-    identity="alice",
-    labels={"Person", "Employee"},
-    properties={
-        "name": relateby.pattern.Value.string("Alice"),
-        "department": relateby.pattern.Value.string("Engineering")
-    }
-)
-```
-
-### Working with Labels
-
-```python
-# Add labels
-subject.add_label("Manager")
-subject.add_label("TeamLead")
-
-# Check labels
-if subject.has_label("Manager"):
-    print("Subject is a manager")
-
-# Remove labels
-subject.remove_label("Manager")
-
-# Get all labels
-labels = subject.get_labels()  # Returns Set[str]
-print(f"Labels: {labels}")
-```
-
-### Working with Properties
-
-```python
-# Set properties
-subject.set_property("name", relateby.pattern.Value.string("Alice"))
-subject.set_property("age", 30)  # Auto-converts to Value.int
-
-# Get properties
-name_value = subject.get_property("name")  # Returns Optional[Value]
-if name_value:
-    name = name_value.as_string()
-    print(f"Name: {name}")
-
-# Remove properties
-subject.remove_property("age")
-
-# Get all properties
-properties = subject.get_properties()  # Returns Dict[str, Value]
-```
-
-## Pattern API
-
-### Creating Patterns
-
-```python
-# Atomic pattern (no elements)
-atomic = relateby.pattern.Pattern.point("hello")
-
-# Pattern with elements
-child1 = relateby.pattern.Pattern.point("a")
-child2 = relateby.pattern.Pattern.point("b")
-parent = relateby.pattern.Pattern.pattern("root", [child1, child2])
-
-# Pattern from list (convenience method)
+Then install the wheel and run examples from outside `python/relateby` so the source tree does not shadow the installed package.
 pattern = relateby.pattern.Pattern.from_list("root", ["a", "b", "c", "d"])
 ```
 

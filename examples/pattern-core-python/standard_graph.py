@@ -1,4 +1,4 @@
-"""StandardGraph Python example (T043).
+"""StandardGraph Python example.
 
 Demonstrates using StandardGraph and Subject via the
 relateby.pattern public API.
@@ -13,6 +13,9 @@ from relateby.pattern import StandardGraph, Subject
 
 
 def main():
+    parsed = StandardGraph.from_gram("(eve:Person)-[:KNOWS]->(frank:Person)")
+    print(f"Parsed graph nodes: {parsed.node_count}")
+
     # --- Basic graph construction ---
     g = StandardGraph()
     assert g.is_empty, "new graph is empty"

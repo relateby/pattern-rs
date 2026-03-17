@@ -41,7 +41,7 @@ use crate::subject::{RangeValue, Subject, Symbol, Value};
 /// Convert Rust ValidationError to Python ValueError
 #[cfg(feature = "python")]
 pub(crate) fn validation_error_to_python(err: &ValidationError) -> PyErr {
-    PyValueError::new_err(format!("Validation error: {:?}", err))
+    PyValueError::new_err(err.message.clone())
 }
 
 /// Convert type conversion errors to Python TypeError
@@ -75,14 +75,14 @@ fn python_to_value(py: Python, obj: &Bound<'_, PyAny>) -> PyResult<Value> {
     if let Ok(s) = obj.extract::<String>() {
         return Ok(Value::VString(s));
     }
+    if let Ok(b) = obj.extract::<bool>() {
+        return Ok(Value::VBoolean(b));
+    }
     if let Ok(i) = obj.extract::<i64>() {
         return Ok(Value::VInteger(i));
     }
     if let Ok(f) = obj.extract::<f64>() {
         return Ok(Value::VDecimal(f));
-    }
-    if let Ok(b) = obj.extract::<bool>() {
-        return Ok(Value::VBoolean(b));
     }
     if let Ok(list) = obj.downcast::<PyList>() {
         let mut vec = Vec::new();

@@ -9,6 +9,7 @@ import {
   NativeGraphQuery,
   NativePattern,
   NativeSubject,
+  NativeValue,
   connectedComponents,
   hasCycle,
   isConnected,
@@ -18,6 +19,7 @@ import {
   minimumSpanningTree,
   init,
   Gram,
+  StandardGraph,
   GraphClass,
   TraversalDirection,
   toGraphView,
@@ -90,6 +92,37 @@ describe("NativePatternGraph (US1)", () => {
     const graph = NativePatternGraph.empty();
     const sorted = graph.topoSort();
     expect(Array.isArray(sorted)).toBe(true);
+  }));
+});
+
+describe("Public package workflows (US1)", () => {
+  it("NativeValue factories are available from @relateby/pattern", skipIfNoWasm(async () => {
+    expect(typeof NativeValue.string).toBe("function");
+    expect(typeof NativeValue.int).toBe("function");
+    expect(NativeValue.string("Alice")).toBeDefined();
+  }));
+
+  it("StandardGraph is available from the top-level package", skipIfNoWasm(async () => {
+    const alice = new (NativeSubject as unknown as { new(...args: unknown[]): unknown })(
+      "alice", ["Person"], {}
+    );
+    const graph = StandardGraph.fromPatterns([
+      NativePattern.point(alice),
+    ] as never[]);
+
+    expect(graph.nodeCount).toBe(1);
+    expect(graph.node("alice")).toBeDefined();
+  }));
+
+  it("Gram workflows are callable from the top-level package", skipIfNoWasm(async () => {
+    const patterns = await Gram.parse("(alice:Person) (bob:Person)") as unknown[];
+    const first = await Gram.parseOne("(alice:Person)");
+    const serialized = await Gram.stringify(first);
+
+    expect(Array.isArray(patterns)).toBe(true);
+    expect(patterns).toHaveLength(2);
+    expect(first).toBeTruthy();
+    expect(serialized).toContain("alice");
   }));
 });
 

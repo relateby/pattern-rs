@@ -30,6 +30,8 @@
     "build:assets": "rm -rf dist/wasm dist/wasm-node && cp -R wasm dist/wasm && cp -R wasm-node dist/wasm-node && rm -f dist/wasm/.gitignore dist/wasm-node/.gitignore",
     "build": "npm run build:wasm && npm run build:wasm:node && npm run build:ts && npm run build:assets",
     "test": "vitest run",
+    "test:public-api": "vitest run tests/public-api/export_inventory.test.ts",
+    "test:public-api:types": "tsc -p tests/public-api/tsconfig.json",
     "test:watch": "vitest",
     "pack:release": "npm pack --pack-destination ../../../target/npm-packages"
   },

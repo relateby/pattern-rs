@@ -135,6 +135,10 @@ jobs:
         run: npm run build --workspace=@relateby/pattern
       - name: Test @relateby/pattern
         run: npm run test --workspace=@relateby/pattern
+      - name: Verify @relateby/pattern public exports
+        run: npm run test:public-api --workspace=@relateby/pattern
+      - name: Typecheck @relateby/pattern public consumer
+        run: npm run test:public-api:types --workspace=@relateby/pattern
       - name: Pack @relateby/pattern
         run: |
           mkdir -p target/npm-packages
@@ -158,7 +162,7 @@ jobs:
         with:
           python-version: '3.12'
       - name: Install build tooling
-        run: pip install maturin twine
+        run: pip install maturin pytest twine
       - uses: actions/cache@v5
         with:
           path: |
@@ -166,6 +170,8 @@ jobs:
             ~/.cargo/git
             target
           key: ${{ runner.os }}-cargo-python-${{ hashFiles('**/Cargo.lock') }}
+      - name: Validate Python public API stubs
+        run: python -m pytest python/relateby/tests/test_public_api.py
       - name: Build combined wheel
         working-directory: python/relateby
         run: python -m pip wheel . -w dist --no-deps

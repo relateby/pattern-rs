@@ -1,21 +1,18 @@
 #!/usr/bin/env python3
 """
-Quick start example for gram-codec Python bindings
+Quick start example for the public relateby.gram package.
 
-Install: pip install relateby
-Or from TestPyPI: pip install --index-url https://test.pypi.org/simple/ relateby
+Install:
+    pip install relateby-pattern
 """
 
-from relateby.gram import parse_gram, validate_gram, round_trip, version
-
-# Print version
-print(f"Gram Codec version: {version()}\n")
+from relateby.gram import parse_gram, round_trip, validate_gram
 
 # Example 1: Parse a simple relationship
 print("1. Parse a relationship:")
 result = parse_gram("(alice)-[:KNOWS]->(bob)")
-print(f"   Patterns: {result['pattern_count']}")
-print(f"   Identifiers: {result['identifiers']}\n")
+print(f"   Patterns: {result.pattern_count}")
+print(f"   Identifiers: {result.identifiers}\n")
 
 # Example 2: Validate gram notation
 print("2. Validate gram notation:")
@@ -34,8 +31,8 @@ print("4. Parse complex pattern:")
 gram = '[team:Team {name: "DevRel"} | (alice), (bob), (charlie)]'
 result = parse_gram(gram)
 print(f"   Input: {gram}")
-print(f"   Patterns: {result['pattern_count']}")
-print(f"   Root identifier: {result['identifiers'][0]}\n")
+print(f"   Patterns: {result.pattern_count}")
+print(f"   Root identifiers: {result.identifiers}\n")
 
 # Example 5: Error handling
 print("5. Error handling:")
