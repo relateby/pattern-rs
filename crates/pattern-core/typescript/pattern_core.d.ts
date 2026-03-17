@@ -853,7 +853,7 @@ export class SubjectBuilder {
    * @param key - Property name
    * @param value - Property value (use Value factories or native JS types)
    */
-  property(key: string, value: Value): SubjectBuilder;
+  property(key: string, value: Value | string | number | boolean | null | Record<string, unknown> | unknown[]): SubjectBuilder;
 
   /** Finalize the builder and return the constructed Subject. */
   done(): Subject;
@@ -943,17 +943,17 @@ export class StandardGraph {
 
   // --- Iteration ---
 
-  /** All nodes as `{id, pattern}` pairs. */
-  readonly nodes: Array<{ id: string; pattern: Pattern }>;
+  /** All node patterns. */
+  readonly nodes: Array<any>;
 
-  /** All relationships as `{id, pattern}` pairs. */
-  readonly relationships: Array<{ id: string; pattern: Pattern }>;
+  /** All relationship patterns. */
+  readonly relationships: Array<any>;
 
-  /** All walks as `{id, pattern}` pairs. */
-  readonly walks: Array<{ id: string; pattern: Pattern }>;
+  /** All walk patterns. */
+  readonly walks: Array<any>;
 
-  /** All annotations as `{id, pattern}` pairs. */
-  readonly annotations: Array<{ id: string; pattern: Pattern }>;
+  /** All annotation patterns. */
+  readonly annotations: Array<any>;
 
   // --- Graph-native queries ---
 

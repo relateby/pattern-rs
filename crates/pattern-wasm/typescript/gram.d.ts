@@ -12,7 +12,7 @@
  * conversion strategies. A future `pattern-io` module will provide standardized
  * conversion utilities for common formats (JSON, CSV, etc.).
  *
- * @module gram
+ * Generated-facing gram declarations used by `@relateby/pattern`.
  */
 
 // ============================================================================
@@ -54,11 +54,11 @@ import { Subject } from "./pattern_core";
  *
  * **Usage**:
  * ```typescript
- * import { Pattern, Subject, Value, Gram } from 'gram';
+ * import { Pattern, Subject, NativeValue, Gram } from "@relateby/pattern";
  *
  * // Build a pattern using constructors
  * const subject = new Subject("alice", ["Person"], {
- *   name: Value.string("Alice")
+ *   name: NativeValue.string("Alice")
  * });
  * const pattern = Pattern.point(subject);
  *

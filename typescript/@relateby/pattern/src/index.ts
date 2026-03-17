@@ -66,12 +66,32 @@ export interface NativeSubjectInterface {
   readonly properties: unknown;
 }
 
+export interface NativeStructureAnalysisInterface {
+  readonly summary: string;
+  readonly depthDistribution: ReadonlyArray<number>;
+  readonly elementCounts: ReadonlyArray<number>;
+  readonly nestingPatterns: ReadonlyArray<string>;
+}
+
 export interface NativePatternInterface {
   readonly value: unknown;
   readonly elements: unknown; // js_sys::Array in WASM
   readonly identity: string | undefined;
   readonly length: number;
+  addElement(element: NativePatternInterface): void;
+  allValues(predicate: (value: unknown) => boolean): boolean;
+  analyzeStructure(): NativeStructureAnalysisInterface;
+  anyValue(predicate: (value: unknown) => boolean): boolean;
+  depth(): number;
+  extract(): unknown;
+  findFirst(predicate: (pattern: NativePatternInterface) => boolean): NativePatternInterface | null;
+  fold(initial: unknown, reducer: (accumulator: unknown, value: unknown) => unknown): unknown;
+  getElement(index: number): NativePatternInterface | undefined;
   isAtomic(): boolean;
+  map(mapper: (value: unknown) => unknown): NativePatternInterface;
+  size(): number;
+  validate(rules: unknown): unknown;
+  values(): unknown[];
 }
 
 export interface NativePatternGraphInterface extends PatternGraph<Subject> {
@@ -100,6 +120,39 @@ export interface NativeReconciliationPolicyInterface {
   // opaque handle
 }
 
+export interface StandardGraphInterface {
+  readonly annotationCount: number;
+  readonly annotations: ReadonlyArray<Pattern<Subject>>;
+  readonly hasConflicts: boolean;
+  readonly isEmpty: boolean;
+  readonly nodeCount: number;
+  readonly nodes: ReadonlyArray<Pattern<Subject>>;
+  readonly relationshipCount: number;
+  readonly relationships: ReadonlyArray<Pattern<Subject>>;
+  readonly walkCount: number;
+  readonly walks: ReadonlyArray<Pattern<Subject>>;
+  addAnnotation(subject: NativeSubjectInterface, element: NativeSubjectInterface): void;
+  addNode(subject: NativeSubjectInterface): void;
+  addPattern(pattern: NativePatternInterface): void;
+  addPatterns(patterns: NativePatternInterface[]): void;
+  addRelationship(
+    subject: NativeSubjectInterface,
+    source: NativeSubjectInterface,
+    target: NativeSubjectInterface
+  ): void;
+  addWalk(subject: NativeSubjectInterface, relationships: NativeSubjectInterface[]): void;
+  annotation(id: string): Pattern<Subject> | undefined;
+  asPatternGraph(): NativePatternGraphInterface;
+  asQuery(): NativeGraphQueryInterface;
+  degree(nodeId: string): number;
+  neighbors(nodeId: string): Pattern<Subject>[];
+  node(id: string): Pattern<Subject> | undefined;
+  relationship(id: string): Pattern<Subject> | undefined;
+  source(id: string): Pattern<Subject> | undefined;
+  target(id: string): Pattern<Subject> | undefined;
+  walk(id: string): Pattern<Subject> | undefined;
+}
+
 // ---------------------------------------------------------------------------
 // Weight type
 // ---------------------------------------------------------------------------
@@ -122,17 +175,26 @@ let wasmModule: WasmExports | null = null;
 // WasmExports uses the nodejs naming; the getters in makeProxy handle both via aliasing.
 interface WasmExports {
   // Core types (nodejs target: WasmSubject, WasmPattern; bundler target: Subject, Pattern)
-  WasmSubject?: { new(identity: string, labels: unknown, properties: unknown): NativeSubjectInterface };
-  Subject?: { new(identity: string, labels: unknown, properties: unknown): NativeSubjectInterface };
+  WasmSubject?: NativeSubjectConstructor;
+  Subject?: NativeSubjectConstructor;
   WasmPattern?: {
     point(value: unknown): NativePatternInterface;
     of(value: unknown): NativePatternInterface;
     pattern(value: unknown): NativePatternInterface;
+    fromValues(values: unknown[]): NativePatternInterface[];
   };
   Pattern?: {
     point(value: unknown): NativePatternInterface;
     of(value: unknown): NativePatternInterface;
     pattern(value: unknown): NativePatternInterface;
+    fromValues(values: unknown[]): NativePatternInterface[];
+  };
+  ValueFactory?: {
+    string(s: string): unknown;
+    int(n: number): unknown;
+    float(n: number): unknown;
+    bool(b: boolean): unknown;
+    null(): unknown;
   };
   Value?: {
     string(s: string): unknown;
@@ -170,6 +232,7 @@ interface WasmExports {
   NativeGraphQuery?: {
     fromPatternGraph(graph: NativePatternGraphInterface): NativeGraphQueryInterface;
   };
+  StandardGraph?: StandardGraphConstructor;
   // Constant objects
   graph_class_constants?: () => { NODE: string; RELATIONSHIP: string; ANNOTATION: string; WALK: string; OTHER: string };
   traversal_direction_constants?: () => { FORWARD: string; BACKWARD: string };
@@ -242,7 +305,7 @@ export async function init(): Promise<void> {
 function requireWasm(name: string): WasmExports {
   if (wasmModule === null) {
     throw new Error(
-      `@relateby/pattern WASM not initialized. Call 'await init()' before using ${name}.`
+      `@relateby/pattern is not initialized. Call 'await init()' before using ${name}.`
     );
   }
   return wasmModule;
@@ -255,16 +318,21 @@ function requireWasm(name: string): WasmExports {
 // These are typed as constructors/namespaces but delegate to the WASM module at runtime.
 // They are initialized lazily after init() is called.
 
-type NativeSubjectConstructor = new (
-  identity: string,
-  labels: string[],
-  properties: Record<string, unknown>
-) => NativeSubjectInterface;
+type NativeSubjectConstructor = {
+  new (
+    identity: string,
+    labels: string[],
+    properties: Record<string, unknown>
+  ): NativeSubjectInterface;
+  fromId?(identity: string): NativeSubjectInterface;
+  build?(identity: string): unknown;
+};
 
 type NativePatternNamespace = {
   point(value: unknown): NativePatternInterface;
   of(value: unknown): NativePatternInterface;
   pattern(value: unknown): NativePatternInterface;
+  fromValues(values: unknown[]): NativePatternInterface[];
 };
 
 type NativeValueNamespace = {
@@ -297,6 +365,13 @@ type NativeGraphQueryNamespace = {
   fromPatternGraph(graph: NativePatternGraphInterface): NativeGraphQueryInterface;
 };
 
+type StandardGraphConstructor = {
+  new(): StandardGraphInterface;
+  fromGram(input: string): StandardGraphInterface;
+  fromPatternGraph(graph: NativePatternGraphInterface): StandardGraphInterface;
+  fromPatterns(patterns: NativePatternInterface[]): StandardGraphInterface;
+};
+
 function makeProxy<T extends object>(name: string, getter: (wasm: WasmExports) => T): T {
   // Use a function as the proxy target so the `construct` trap fires for `new`.
   // eslint-disable-next-line @typescript-eslint/no-empty-function
@@ -322,11 +397,12 @@ function makeProxy<T extends object>(name: string, getter: (wasm: WasmExports) =
 // bundler target uses Rust names (Subject, Pattern, NativePatternGraph, etc.)
 function resolveSubject(wasm: WasmExports) { return (wasm.WasmSubject ?? wasm.Subject)!; }
 function resolvePattern(wasm: WasmExports) { return (wasm.WasmPattern ?? wasm.Pattern)!; }
-function resolveValue(wasm: WasmExports) { return wasm.Value!; }
+function resolveValue(wasm: WasmExports) { return (wasm.ValueFactory ?? wasm.Value)!; }
 function resolveValidationRules(wasm: WasmExports) { return (wasm.WasmValidationRules ?? wasm.ValidationRules)!; }
 function resolvePatternGraph(wasm: WasmExports) { return (wasm.WasmPatternGraph ?? wasm.NativePatternGraph)!; }
 function resolveReconciliationPolicy(wasm: WasmExports) { return (wasm.WasmReconciliationPolicy ?? wasm.NativeReconciliationPolicy)!; }
 function resolveGraphQuery(wasm: WasmExports) { return (wasm.WasmGraphQuery ?? wasm.NativeGraphQuery)!; }
+function resolveStandardGraph(wasm: WasmExports) { return wasm.StandardGraph!; }
 
 /** WASM-backed Subject constructor. Use as: `new NativeSubject(id, labels, props)` */
 export const NativeSubject = makeProxy<NativeSubjectConstructor>(
@@ -368,6 +444,12 @@ export const NativeReconciliationPolicy = makeProxy<NativeReconciliationPolicyNa
 export const NativeGraphQuery = makeProxy<NativeGraphQueryNamespace>(
   "NativeGraphQuery",
   (wasm) => resolveGraphQuery(wasm) as unknown as NativeGraphQueryNamespace
+);
+
+/** WASM-backed StandardGraph class from the package entry point. */
+export const StandardGraph = makeProxy<StandardGraphConstructor>(
+  "StandardGraph",
+  (wasm) => resolveStandardGraph(wasm) as unknown as StandardGraphConstructor
 );
 
 // ---------------------------------------------------------------------------

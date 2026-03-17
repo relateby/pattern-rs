@@ -86,7 +86,7 @@ class Value:
         ...
 
     @staticmethod
-    def array(items: List['Value']) -> 'Value':
+    def array(items: List[Any]) -> 'Value':
         """
         Create an array value.
 
@@ -99,7 +99,7 @@ class Value:
         ...
 
     @staticmethod
-    def map(items: Dict[str, 'Value']) -> 'Value':
+    def map(items: Dict[str, Any]) -> 'Value':
         """
         Create a map value.
 
@@ -155,15 +155,13 @@ class Value:
         """Extract boolean value. Raises TypeError if not a boolean."""
         ...
 
-    def as_array(self) -> List['Value']:
+    def as_array(self) -> List[Any]:
         """Extract array value. Raises TypeError if not an array."""
         ...
 
-    def as_map(self) -> Dict[str, 'Value']:
+    def as_map(self) -> Dict[str, Any]:
         """Extract map value. Raises TypeError if not a map."""
         ...
-
-PatternSubject = Pattern  # type alias: Pattern whose value is a Subject
 
 class Subject:
     """
@@ -197,7 +195,7 @@ class Subject:
         """Get all labels as a Python set."""
         ...
 
-    def get_properties(self) -> Dict[str, Value]:
+    def get_properties(self) -> Dict[str, Any]:
         """Get all properties as a Python dictionary."""
         ...
 
@@ -797,7 +795,7 @@ class SubjectBuilder:
         """Add a label. Returns self for chaining."""
         ...
 
-    def property(self, key: str, value: Union[str, int, float, bool, list, dict]) -> 'SubjectBuilder':
+    def property(self, key: str, value: Union[Value, str, int, float, bool, list, dict]) -> 'SubjectBuilder':
         """Add a property. Accepts native Python types. Returns self for chaining."""
         ...
 
@@ -824,8 +822,8 @@ class StandardGraph:
         ...
 
     @staticmethod
-    def from_patterns(patterns: List[PatternSubject]) -> 'StandardGraph':
-        """Create from a list of PatternSubject instances."""
+    def from_patterns(patterns: List[Pattern]) -> 'StandardGraph':
+        """Create from a list of Pattern instances."""
         ...
 
     # --- Element addition ---
@@ -849,25 +847,25 @@ class StandardGraph:
         Pass the Subject for the annotated element; use Subject.from_id("id") for string-only references."""
         ...
 
-    def add_pattern(self, pattern: PatternSubject) -> 'StandardGraph':
+    def add_pattern(self, pattern: Pattern) -> 'StandardGraph':
         """Add a single pattern (classified by shape). Returns self for chaining."""
         ...
 
     # --- Element access ---
 
-    def node(self, id: str) -> Optional[PatternSubject]:
+    def node(self, id: str) -> Optional[Pattern]:
         """Get a node by identity. Returns None if not found."""
         ...
 
-    def relationship(self, id: str) -> Optional[PatternSubject]:
+    def relationship(self, id: str) -> Optional[Pattern]:
         """Get a relationship by identity. Returns None if not found."""
         ...
 
-    def walk(self, id: str) -> Optional[PatternSubject]:
+    def walk(self, id: str) -> Optional[Pattern]:
         """Get a walk by identity. Returns None if not found."""
         ...
 
-    def annotation(self, id: str) -> Optional[PatternSubject]:
+    def annotation(self, id: str) -> Optional[Pattern]:
         """Get an annotation by identity. Returns None if not found."""
         ...
 
@@ -905,33 +903,33 @@ class StandardGraph:
 
     # --- Iteration ---
 
-    def nodes(self) -> List[Tuple[str, PatternSubject]]:
-        """All nodes as list of (id, PatternSubject) tuples."""
+    def nodes(self) -> List[Tuple[str, Pattern]]:
+        """All nodes as list of (id, Pattern) tuples."""
         ...
 
-    def relationships(self) -> List[Tuple[str, PatternSubject]]:
-        """All relationships as list of (id, PatternSubject) tuples."""
+    def relationships(self) -> List[Tuple[str, Pattern]]:
+        """All relationships as list of (id, Pattern) tuples."""
         ...
 
-    def walks(self) -> List[Tuple[str, PatternSubject]]:
-        """All walks as list of (id, PatternSubject) tuples."""
+    def walks(self) -> List[Tuple[str, Pattern]]:
+        """All walks as list of (id, Pattern) tuples."""
         ...
 
-    def annotations(self) -> List[Tuple[str, PatternSubject]]:
-        """All annotations as list of (id, PatternSubject) tuples."""
+    def annotations(self) -> List[Tuple[str, Pattern]]:
+        """All annotations as list of (id, Pattern) tuples."""
         ...
 
     # --- Graph-native queries ---
 
-    def source(self, rel_id: str) -> Optional[PatternSubject]:
+    def source(self, rel_id: str) -> Optional[Pattern]:
         """Source node of a relationship. Returns None if not found."""
         ...
 
-    def target(self, rel_id: str) -> Optional[PatternSubject]:
+    def target(self, rel_id: str) -> Optional[Pattern]:
         """Target node of a relationship. Returns None if not found."""
         ...
 
-    def neighbors(self, node_id: str) -> List[PatternSubject]:
+    def neighbors(self, node_id: str) -> List[Pattern]:
         """All neighbor nodes of a node (both directions)."""
         ...
 
@@ -948,7 +946,6 @@ __all__ = [
     'Subject',
     'SubjectBuilder',
     'Pattern',
-    'PatternSubject',
     'ValidationRules',
     'ValidationError',
     'StructureAnalysis',

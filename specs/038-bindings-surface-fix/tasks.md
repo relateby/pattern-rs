@@ -17,9 +17,9 @@
 
 **Purpose**: Create the public-surface validation harnesses and script hooks the rest of the feature will build on.
 
-- [ ] T001 Create the TypeScript public-consumer harness config in `typescript/@relateby/pattern/tests/public-api/tsconfig.json`
-- [ ] T002 Create the Python public-package test package scaffold in `python/relateby/tests/__init__.py`
-- [ ] T003 [P] Wire public-surface validation commands into `typescript/@relateby/pattern/package.json` and `python/relateby/pyproject.toml`
+- [X] T001 Create the TypeScript public-consumer harness config in `typescript/@relateby/pattern/tests/public-api/tsconfig.json`
+- [X] T002 Create the Python public-package test package scaffold in `python/relateby/tests/__init__.py`
+- [X] T003 [P] Wire public-surface validation commands into `typescript/@relateby/pattern/package.json` and `python/relateby/pyproject.toml`
 
 ---
 
@@ -29,10 +29,10 @@
 
 **⚠️ CRITICAL**: No user story work should begin until this phase is complete.
 
-- [ ] T004 Create the TypeScript runtime export inventory test in `typescript/@relateby/pattern/tests/public-api/export_inventory.test.ts`
-- [ ] T005 [P] Create the TypeScript packed-consumer import and typecheck fixture in `typescript/@relateby/pattern/tests/public-api/consumer.ts`
-- [ ] T006 [P] Create the Python public-package workflow regression test file in `python/relateby/tests/test_public_api.py`
-- [ ] T007 Update packaged smoke entrypoints in `scripts/release/npm-smoke/smoke.mjs` and `scripts/release/python-smoke.py`
+- [X] T004 Create the TypeScript runtime export inventory test in `typescript/@relateby/pattern/tests/public-api/export_inventory.test.ts`
+- [X] T005 [P] Create the TypeScript packed-consumer import and typecheck fixture in `typescript/@relateby/pattern/tests/public-api/consumer.ts`
+- [X] T006 [P] Create the Python public-package workflow regression test file in `python/relateby/tests/test_public_api.py`
+- [X] T007 Update packaged smoke entrypoints in `scripts/release/npm-smoke/smoke.mjs` and `scripts/release/python-smoke.py`
 
 **Checkpoint**: Public-surface harnesses exist for TypeScript and Python, and packaged-artifact smoke coverage is ready for story implementation.
 
@@ -46,12 +46,12 @@
 
 ### Implementation for User Story 1
 
-- [ ] T008 [P] [US1] Fix top-level TypeScript export resolution and missing public aliases in `typescript/@relateby/pattern/src/index.ts`
-- [ ] T009 [US1] Align the package-level Gram runtime surface and expose missing documented workflows in `typescript/@relateby/pattern/src/gram.ts`
-- [ ] T010 [P] [US1] Fix Python wrapper pattern reconstruction and public graph workflows in `python/relateby/relateby/pattern/__init__.py`
-- [ ] T011 [P] [US1] Fix native Python public workflow behavior in `crates/pattern-core/src/python.rs`
-- [ ] T012 [US1] Expand TypeScript runtime workflow coverage in `typescript/@relateby/pattern/tests/pattern.test.ts`
-- [ ] T013 [US1] Expand Python public workflow coverage in `python/relateby/tests/test_public_api.py`
+- [X] T008 [P] [US1] Fix top-level TypeScript export resolution and missing public aliases in `typescript/@relateby/pattern/src/index.ts`
+- [X] T009 [US1] Align the package-level Gram runtime surface and expose missing documented workflows in `typescript/@relateby/pattern/src/gram.ts`
+- [X] T010 [P] [US1] Fix Python wrapper pattern reconstruction and public graph workflows in `python/relateby/relateby/pattern/__init__.py`
+- [X] T011 [P] [US1] Fix native Python public workflow behavior in `crates/pattern-core/src/python.rs`
+- [X] T012 [US1] Expand TypeScript runtime workflow coverage in `typescript/@relateby/pattern/tests/pattern.test.ts`
+- [X] T013 [US1] Expand Python public workflow coverage in `python/relateby/tests/test_public_api.py`
 
 **Checkpoint**: TypeScript and Python developers can complete the core documented workflows from the supported package entry points without internal imports.
 
@@ -65,12 +65,12 @@
 
 ### Implementation for User Story 2
 
-- [ ] T014 [P] [US2] Align the package-level TypeScript declarations with the curated runtime surface in `typescript/@relateby/pattern/src/wasm-types.d.ts`
-- [ ] T015 [P] [US2] Align shared generated-facing TypeScript declarations in `crates/pattern-core/typescript/pattern_core.d.ts` and `crates/pattern-wasm/typescript/gram.d.ts`
-- [ ] T016 [P] [US2] Create shipped public Python stubs in `python/relateby/relateby/pattern/__init__.pyi` and `python/relateby/relateby/gram/__init__.pyi`
-- [ ] T017 [US2] Remove stale native-only assumptions from `crates/pattern-core/pattern_core/__init__.pyi`
-- [ ] T018 [US2] Update public guides and examples in `docs/wasm-usage.md`, `docs/typescript-graph.md`, `docs/python-usage.md`, `python/relateby/README.md`, and `examples/pattern-core-python/standard_graph.py`
-- [ ] T019 [US2] Add public import type/stub validation in `typescript/@relateby/pattern/tests/public-api/consumer.ts` and `python/relateby/tests/test_public_api.py`
+- [X] T014 [P] [US2] Align the package-level TypeScript declarations with the curated runtime surface in `typescript/@relateby/pattern/src/wasm-types.d.ts`
+- [X] T015 [P] [US2] Align shared generated-facing TypeScript declarations in `crates/pattern-core/typescript/pattern_core.d.ts` and `crates/pattern-wasm/typescript/gram.d.ts`
+- [X] T016 [P] [US2] Create shipped public Python stubs in `python/relateby/relateby/pattern/__init__.pyi` and `python/relateby/relateby/gram/__init__.pyi`
+- [X] T017 [US2] Remove stale native-only assumptions from `crates/pattern-core/pattern_core/__init__.pyi`
+- [X] T018 [US2] Update public guides and examples in `docs/wasm-usage.md`, `docs/typescript-graph.md`, `docs/python-usage.md`, `python/relateby/README.md`, and `examples/pattern-core-python/standard_graph.py`
+- [X] T019 [US2] Add public import type/stub validation in `typescript/@relateby/pattern/tests/public-api/consumer.ts` and `python/relateby/tests/test_public_api.py`
 
 **Checkpoint**: Official guidance and shipped type surfaces now describe the same public workflows that users get at runtime.
 
@@ -84,11 +84,11 @@
 
 ### Implementation for User Story 3
 
-- [ ] T020 [P] [US3] Normalize TypeScript public initialization and parse failure behavior in `typescript/@relateby/pattern/src/index.ts` and `typescript/@relateby/pattern/src/gram.ts`
-- [ ] T021 [P] [US3] Normalize Python public exception mapping and wrapper failure behavior in `crates/pattern-core/src/python.rs`, `python/relateby/relateby/pattern/__init__.py`, and `python/relateby/relateby/gram/__init__.py`
-- [ ] T022 [US3] Expand npm packed-artifact smoke coverage in `scripts/release/npm-smoke/smoke.mjs`
-- [ ] T023 [US3] Expand Python wheel smoke coverage in `scripts/release/python-smoke.py`
-- [ ] T024 [US3] Wire release-blocking public-surface verification into `scripts/ci-local.sh` and `.github/workflows/ci.yml`
+- [X] T020 [P] [US3] Normalize TypeScript public initialization and parse failure behavior in `typescript/@relateby/pattern/src/index.ts` and `typescript/@relateby/pattern/src/gram.ts`
+- [X] T021 [P] [US3] Normalize Python public exception mapping and wrapper failure behavior in `crates/pattern-core/src/python.rs`, `python/relateby/relateby/pattern/__init__.py`, and `python/relateby/relateby/gram/__init__.py`
+- [X] T022 [US3] Expand npm packed-artifact smoke coverage in `scripts/release/npm-smoke/smoke.mjs`
+- [X] T023 [US3] Expand Python wheel smoke coverage in `scripts/release/python-smoke.py`
+- [X] T024 [US3] Wire release-blocking public-surface verification into `scripts/ci-local.sh` and `.github/workflows/ci.yml`
 
 **Checkpoint**: Public failure behavior is predictable and packaged-artifact verification blocks regressions before release.
 
@@ -98,8 +98,8 @@
 
 **Purpose**: Finish cross-language release guidance and close remaining public-surface drift outside a single story.
 
-- [ ] T025 [P] Update release and packaging guidance for the public package boundaries in `docs/release.md` and `docs/python-packaging.md`
-- [ ] T026 [P] Remove or update stale public-surface examples in `examples/gram-codec-python/README.md`, `examples/gram-codec-python/quickstart.py`, and `examples/gram-codec-python/demo.py`
+- [X] T025 [P] Update release and packaging guidance for the public package boundaries in `docs/release.md` and `docs/python-packaging.md`
+- [X] T026 [P] Remove or update stale public-surface examples in `examples/gram-codec-python/README.md`, `examples/gram-codec-python/quickstart.py`, and `examples/gram-codec-python/demo.py`
 
 ---
 

@@ -1,0 +1,17 @@
+{
+  "compilerOptions": {
+    "target": "ES2020",
+    "module": "NodeNext",
+    "moduleResolution": "NodeNext",
+    "lib": ["ES2020"],
+    "types": ["node"],
+    "baseUrl": ".",
+    "paths": {
+      "@relateby/pattern": ["../../dist/index.d.ts"]
+    },
+    "strict": true,
+    "skipLibCheck": true,
+    "noEmit": true
+  },
+  "include": ["consumer.ts"]
+}
