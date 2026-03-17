@@ -1,10 +1,11 @@
+import importlib
 from pathlib import Path
 
 import pytest
 
 try:
-    import relateby._native.pattern_core  # noqa: F401
-    import relateby._native.gram_codec  # noqa: F401
+    importlib.import_module("relateby._native.pattern_core")
+    importlib.import_module("relateby._native.gram_codec")
 except ModuleNotFoundError as native_import_error:
     _NATIVE_IMPORT_ERROR = native_import_error
 else:
@@ -32,8 +33,6 @@ if _NATIVE_IMPORT_ERROR is not None:
 else:
     import relateby.gram as gram
     import relateby.pattern as pattern
-    from relateby.gram import parse_gram, round_trip, validate_gram
-    from relateby.pattern import Pattern, StandardGraph, Subject, ValidationRules, Value
 
 
     @pytest.mark.public_api
@@ -51,23 +50,23 @@ else:
 
     @pytest.mark.public_api
     def test_public_workflows_use_supported_imports_only():
-        alice = Subject("alice", {"Person"}, {
-            "name": Value.string("Alice"),
+        alice = pattern.Subject("alice", {"Person"}, {
+            "name": pattern.Value.string("Alice"),
             "active": True,
         })
-        alice_pattern = Pattern.point(alice)
-        graph = StandardGraph.from_patterns([alice_pattern])
+        alice_pattern = pattern.Pattern.point(alice)
+        graph = pattern.StandardGraph.from_patterns([alice_pattern])
 
         assert graph.node_count == 1
         assert alice.get_property("active").as_boolean() is True
-        assert parse_gram("(alice:Person)").pattern_count == 1
-        assert validate_gram("(alice:Person)") is True
-        assert round_trip("(alice:Person)") == "(alice:Person)"
+        assert gram.parse_gram("(alice:Person)").pattern_count == 1
+        assert gram.validate_gram("(alice:Person)") is True
+        assert gram.round_trip("(alice:Person)") == "(alice:Person)"
 
 
     @pytest.mark.public_api
     def test_standard_graph_from_gram_runs_from_wrapper_boundary():
-        graph = StandardGraph.from_gram("(alice:Person)")
+        graph = pattern.StandardGraph.from_gram("(alice:Person)")
 
         assert graph.node_count == 1
         assert graph.node("alice") is not None
@@ -76,10 +75,12 @@ else:
     @pytest.mark.public_api
     def test_invalid_public_workflow_raises_documented_exception_shape():
         with pytest.raises(ValueError, match="relateby.pattern"):
-            StandardGraph.from_gram("(alice")
+            pattern.StandardGraph.from_gram("(alice")
 
         with pytest.raises(Exception):
-            Pattern.pattern("root", [Pattern.point("child")]).validate(ValidationRules(max_depth=0))
+            pattern.Pattern.pattern("root", [pattern.Pattern.point("child")]).validate(
+                pattern.ValidationRules(max_depth=0)
+            )
 
         with pytest.raises(ValueError, match="relateby.gram.parse_gram"):
-            parse_gram("(alice")
+            gram.parse_gram("(alice")
