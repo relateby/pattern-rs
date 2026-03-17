@@ -251,6 +251,72 @@ fn parse_patterns_as_dicts(py: Python, input: &str) -> PyResult<PyObject> {
     loads.call1((json_array,)).map(|obj| obj.into())
 }
 
+/// Parse gram notation and return a JSON array string of pattern objects.
+///
+/// This is the primary interchange function for the native TypeScript/Python
+/// reimplementations. The JSON format uses the "subject" key and canonical
+/// value encoding (see data-model.md JSON Interchange Format).
+///
+/// Args:
+///     input (str): Gram notation string
+///
+/// Returns:
+///     str: JSON array string of AstPattern objects
+///
+/// Raises:
+///     ValueError: If parsing fails
+///
+/// Example:
+///     >>> import gram_codec
+///     >>> json_str = gram_codec.gram_parse_to_json("(alice:Person)")
+///     >>> import json
+///     >>> patterns = json.loads(json_str)
+///     >>> patterns[0]['subject']['identity']
+///     'alice'
+#[pyfunction]
+fn gram_parse_to_json_py(input: &str) -> PyResult<String> {
+    crate::json::gram_parse_to_json(input)
+        .map_err(|e| PyValueError::new_err(format!("Parse error: {}", e)))
+}
+
+/// Serialize a JSON array of pattern objects back to gram notation.
+///
+/// Args:
+///     input (str): JSON array string of AstPattern objects
+///
+/// Returns:
+///     str: Gram notation string
+///
+/// Raises:
+///     ValueError: If deserialization or serialization fails
+#[pyfunction]
+fn gram_stringify_from_json_py(input: &str) -> PyResult<String> {
+    crate::json::gram_stringify_from_json(input)
+        .map_err(|e| PyValueError::new_err(format!("Stringify error: {}", e)))
+}
+
+/// Validate gram notation and return a list of error strings.
+///
+/// Args:
+///     input (str): Gram notation string
+///
+/// Returns:
+///     list[str]: Empty list if valid, list of error strings if invalid
+///
+/// Example:
+///     >>> import gram_codec
+///     >>> gram_codec.gram_validate("(alice:Person)")
+///     []
+///     >>> gram_codec.gram_validate("(unclosed")
+///     ['Parse error at ...']
+#[pyfunction]
+fn gram_validate_py(input: &str) -> Vec<String> {
+    match crate::validate_gram(input) {
+        Ok(()) => vec![],
+        Err(e) => vec![e.to_string()],
+    }
+}
+
 /// Python module initialization
 #[pymodule]
 fn gram_codec(m: &Bound<'_, PyModule>) -> PyResult<()> {
@@ -260,6 +326,10 @@ fn gram_codec(m: &Bound<'_, PyModule>) -> PyResult<()> {
     m.add_function(wrap_pyfunction!(validate_gram, m)?)?;
     m.add_function(wrap_pyfunction!(round_trip, m)?)?;
     m.add_function(wrap_pyfunction!(version, m)?)?;
+    // New JSON interchange functions
+    m.add_function(wrap_pyfunction!(gram_parse_to_json_py, m)?)?;
+    m.add_function(wrap_pyfunction!(gram_stringify_from_json_py, m)?)?;
+    m.add_function(wrap_pyfunction!(gram_validate_py, m)?)?;
     m.add_class::<ParseResult>()?;
 
     // Add module metadata

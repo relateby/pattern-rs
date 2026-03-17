@@ -12,8 +12,8 @@
 // can publish as a single self-contained artifact.
 
 export type {
-  Subject,
-  Pattern,
+  Subject as LegacySubject,
+  Pattern as LegacyPattern,
   PatternGraph,
   GraphQuery,
   GraphView,
@@ -46,12 +46,28 @@ export {
 } from "./graph/index.js";
 
 import type {
-  Subject,
-  Pattern,
+  Subject as _LegacySubject,
+  Pattern as _LegacyPattern,
   PatternGraph,
 } from "./graph/interfaces.js";
 
 export { Gram } from "./gram.js";
+
+// ---------------------------------------------------------------------------
+// Native TypeScript types (effect-ts based, no WASM boundary for operations)
+// ---------------------------------------------------------------------------
+
+export type {
+  StringVal, IntVal, FloatVal, BoolVal, NullVal, SymbolVal,
+  TaggedStringVal, ArrayVal, MapVal, RangeVal, MeasurementVal,
+  Value,
+} from "./value.js";
+export { Value as ValueConstructors, ValueSchema } from "./value.js";
+
+export { Subject } from "./subject.js";
+export { Pattern } from "./pattern.js";
+export { GramParseError } from "./errors.js";
+export { map, fold, filter, findFirst, extend, extract, duplicate, values } from "./ops.js";
 
 // ---------------------------------------------------------------------------
 // WASM module types (declared; actual types come from wasm-pack generated glue)
@@ -94,26 +110,26 @@ export interface NativePatternInterface {
   values(): unknown[];
 }
 
-export interface NativePatternGraphInterface extends PatternGraph<Subject> {
-  readonly nodes: ReadonlyArray<Pattern<Subject>>;
-  readonly relationships: ReadonlyArray<Pattern<Subject>>;
-  readonly walks: ReadonlyArray<Pattern<Subject>>;
-  readonly annotations: ReadonlyArray<Pattern<Subject>>;
-  readonly conflicts: Readonly<Record<string, ReadonlyArray<Pattern<Subject>>>>;
+export interface NativePatternGraphInterface extends PatternGraph<_LegacySubject> {
+  readonly nodes: ReadonlyArray<_LegacyPattern<_LegacySubject>>;
+  readonly relationships: ReadonlyArray<_LegacyPattern<_LegacySubject>>;
+  readonly walks: ReadonlyArray<_LegacyPattern<_LegacySubject>>;
+  readonly annotations: ReadonlyArray<_LegacyPattern<_LegacySubject>>;
+  readonly conflicts: Readonly<Record<string, ReadonlyArray<_LegacyPattern<_LegacySubject>>>>;
   readonly size: number;
   merge(other: NativePatternGraphInterface): NativePatternGraphInterface;
-  topoSort(): ReadonlyArray<Pattern<Subject>>;
+  topoSort(): ReadonlyArray<_LegacyPattern<_LegacySubject>>;
 }
 
 export interface NativeGraphQueryInterface {
-  nodes(): ReadonlyArray<Pattern<Subject>>;
-  relationships(): ReadonlyArray<Pattern<Subject>>;
-  source(rel: Pattern<Subject>): Pattern<Subject> | null;
-  target(rel: Pattern<Subject>): Pattern<Subject> | null;
-  incidentRels(node: Pattern<Subject>): ReadonlyArray<Pattern<Subject>>;
-  degree(node: Pattern<Subject>): number;
-  nodeById(identity: string): Pattern<Subject> | null;
-  relationshipById(identity: string): Pattern<Subject> | null;
+  nodes(): ReadonlyArray<_LegacyPattern<_LegacySubject>>;
+  relationships(): ReadonlyArray<_LegacyPattern<_LegacySubject>>;
+  source(rel: _LegacyPattern<_LegacySubject>): _LegacyPattern<_LegacySubject> | null;
+  target(rel: _LegacyPattern<_LegacySubject>): _LegacyPattern<_LegacySubject> | null;
+  incidentRels(node: _LegacyPattern<_LegacySubject>): ReadonlyArray<_LegacyPattern<_LegacySubject>>;
+  degree(node: _LegacyPattern<_LegacySubject>): number;
+  nodeById(identity: string): _LegacyPattern<_LegacySubject> | null;
+  relationshipById(identity: string): _LegacyPattern<_LegacySubject> | null;
 }
 
 export interface NativeReconciliationPolicyInterface {
@@ -122,15 +138,15 @@ export interface NativeReconciliationPolicyInterface {
 
 export interface StandardGraphInterface {
   readonly annotationCount: number;
-  readonly annotations: ReadonlyArray<Pattern<Subject>>;
+  readonly annotations: ReadonlyArray<_LegacyPattern<_LegacySubject>>;
   readonly hasConflicts: boolean;
   readonly isEmpty: boolean;
   readonly nodeCount: number;
-  readonly nodes: ReadonlyArray<Pattern<Subject>>;
+  readonly nodes: ReadonlyArray<_LegacyPattern<_LegacySubject>>;
   readonly relationshipCount: number;
-  readonly relationships: ReadonlyArray<Pattern<Subject>>;
+  readonly relationships: ReadonlyArray<_LegacyPattern<_LegacySubject>>;
   readonly walkCount: number;
-  readonly walks: ReadonlyArray<Pattern<Subject>>;
+  readonly walks: ReadonlyArray<_LegacyPattern<_LegacySubject>>;
   addAnnotation(subject: NativeSubjectInterface, element: NativeSubjectInterface): void;
   addNode(subject: NativeSubjectInterface): void;
   addPattern(pattern: NativePatternInterface): void;
@@ -141,23 +157,23 @@ export interface StandardGraphInterface {
     target: NativeSubjectInterface
   ): void;
   addWalk(subject: NativeSubjectInterface, relationships: NativeSubjectInterface[]): void;
-  annotation(id: string): Pattern<Subject> | undefined;
+  annotation(id: string): _LegacyPattern<_LegacySubject> | undefined;
   asPatternGraph(): NativePatternGraphInterface;
   asQuery(): NativeGraphQueryInterface;
   degree(nodeId: string): number;
-  neighbors(nodeId: string): Pattern<Subject>[];
-  node(id: string): Pattern<Subject> | undefined;
-  relationship(id: string): Pattern<Subject> | undefined;
-  source(id: string): Pattern<Subject> | undefined;
-  target(id: string): Pattern<Subject> | undefined;
-  walk(id: string): Pattern<Subject> | undefined;
+  neighbors(nodeId: string): _LegacyPattern<_LegacySubject>[];
+  node(id: string): _LegacyPattern<_LegacySubject> | undefined;
+  relationship(id: string): _LegacyPattern<_LegacySubject> | undefined;
+  source(id: string): _LegacyPattern<_LegacySubject> | undefined;
+  target(id: string): _LegacyPattern<_LegacySubject> | undefined;
+  walk(id: string): _LegacyPattern<_LegacySubject> | undefined;
 }
 
 // ---------------------------------------------------------------------------
 // Weight type
 // ---------------------------------------------------------------------------
 
-export type WeightFn = (rel: Pattern<Subject>, direction: "forward" | "backward") => number;
+export type WeightFn = (rel: _LegacyPattern<_LegacySubject>, direction: "forward" | "backward") => number;
 export type Weight = "undirected" | "directed" | "directed_reverse" | WeightFn;
 
 // ---------------------------------------------------------------------------
@@ -485,53 +501,53 @@ function resolveWeight(weight?: Weight): unknown {
 /** Breadth-first search from a start node. */
 export function bfs(
   query: NativeGraphQueryInterface,
-  start: Pattern<Subject>,
+  start: _LegacyPattern<_LegacySubject>,
   weight?: Weight
-): Pattern<Subject>[] {
-  return requireWasm("bfs").bfs(query, start, resolveWeight(weight)) as Pattern<Subject>[];
+): _LegacyPattern<_LegacySubject>[] {
+  return requireWasm("bfs").bfs(query, start, resolveWeight(weight)) as _LegacyPattern<_LegacySubject>[];
 }
 
 /** Depth-first search from a start node. */
 export function dfs(
   query: NativeGraphQueryInterface,
-  start: Pattern<Subject>,
+  start: _LegacyPattern<_LegacySubject>,
   weight?: Weight
-): Pattern<Subject>[] {
-  return requireWasm("dfs").dfs(query, start, resolveWeight(weight)) as Pattern<Subject>[];
+): _LegacyPattern<_LegacySubject>[] {
+  return requireWasm("dfs").dfs(query, start, resolveWeight(weight)) as _LegacyPattern<_LegacySubject>[];
 }
 
 /** Shortest path between two nodes. Returns null if no path exists. */
 export function shortestPath(
   query: NativeGraphQueryInterface,
-  start: Pattern<Subject>,
-  end: Pattern<Subject>,
+  start: _LegacyPattern<_LegacySubject>,
+  end: _LegacyPattern<_LegacySubject>,
   weight?: Weight
-): Pattern<Subject>[] | null {
+): _LegacyPattern<_LegacySubject>[] | null {
   return requireWasm("shortestPath").shortestPath(
     query, start, end, resolveWeight(weight)
-  ) as Pattern<Subject>[] | null;
+  ) as _LegacyPattern<_LegacySubject>[] | null;
 }
 
 /** All paths between two nodes. */
 export function allPaths(
   query: NativeGraphQueryInterface,
-  start: Pattern<Subject>,
-  end: Pattern<Subject>,
+  start: _LegacyPattern<_LegacySubject>,
+  end: _LegacyPattern<_LegacySubject>,
   weight?: Weight
-): Pattern<Subject>[][] {
+): _LegacyPattern<_LegacySubject>[][] {
   return requireWasm("allPaths").allPaths(
     query, start, end, resolveWeight(weight)
-  ) as Pattern<Subject>[][];
+  ) as _LegacyPattern<_LegacySubject>[][];
 }
 
 /** Connected components of the graph. */
 export function connectedComponents(
   query: NativeGraphQueryInterface,
   weight?: Weight
-): Pattern<Subject>[][] {
+): _LegacyPattern<_LegacySubject>[][] {
   return requireWasm("connectedComponents").connectedComponents(
     query, resolveWeight(weight)
-  ) as Pattern<Subject>[][];
+  ) as _LegacyPattern<_LegacySubject>[][];
 }
 
 /** Returns true if the graph contains a directed cycle. */
@@ -547,8 +563,8 @@ export function isConnected(query: NativeGraphQueryInterface, weight?: Weight): 
 /** Topological sort. Returns null if the graph contains a cycle. */
 export function topologicalSort(
   query: NativeGraphQueryInterface
-): Pattern<Subject>[] | null {
-  return requireWasm("topologicalSort").topologicalSort(query) as Pattern<Subject>[] | null;
+): _LegacyPattern<_LegacySubject>[] | null {
+  return requireWasm("topologicalSort").topologicalSort(query) as _LegacyPattern<_LegacySubject>[] | null;
 }
 
 /** Degree centrality for all nodes. */
@@ -572,39 +588,39 @@ export function betweennessCentrality(
 export function minimumSpanningTree(
   query: NativeGraphQueryInterface,
   weight?: Weight
-): Pattern<Subject>[] {
+): _LegacyPattern<_LegacySubject>[] {
   return requireWasm("minimumSpanningTree").minimumSpanningTree(
     query, resolveWeight(weight)
-  ) as Pattern<Subject>[];
+  ) as _LegacyPattern<_LegacySubject>[];
 }
 
 /** Returns all walks containing the given node. */
 export function queryWalksContaining(
   query: NativeGraphQueryInterface,
-  node: Pattern<Subject>
-): Pattern<Subject>[] {
+  node: _LegacyPattern<_LegacySubject>
+): _LegacyPattern<_LegacySubject>[] {
   return requireWasm("queryWalksContaining").queryWalksContaining(
     query, node
-  ) as Pattern<Subject>[];
+  ) as _LegacyPattern<_LegacySubject>[];
 }
 
 /** Returns all elements that share a container with the given node. */
 export function queryCoMembers(
   query: NativeGraphQueryInterface,
-  node: Pattern<Subject>,
-  container: Pattern<Subject>
-): Pattern<Subject>[] {
+  node: _LegacyPattern<_LegacySubject>,
+  container: _LegacyPattern<_LegacySubject>
+): _LegacyPattern<_LegacySubject>[] {
   return requireWasm("queryCoMembers").queryCoMembers(
     query, node, container
-  ) as Pattern<Subject>[];
+  ) as _LegacyPattern<_LegacySubject>[];
 }
 
 /** Returns all annotations of the given target element. */
 export function queryAnnotationsOf(
   query: NativeGraphQueryInterface,
-  target: Pattern<Subject>
-): Pattern<Subject>[] {
+  target: _LegacyPattern<_LegacySubject>
+): _LegacyPattern<_LegacySubject>[] {
   return requireWasm("queryAnnotationsOf").queryAnnotationsOf(
     query, target
-  ) as Pattern<Subject>[];
+  ) as _LegacyPattern<_LegacySubject>[];
 }

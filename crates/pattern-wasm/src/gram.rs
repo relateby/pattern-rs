@@ -94,6 +94,50 @@ impl Gram {
     /// const first = Gram.parseOne("(alice) (bob)");
     /// console.log(first.value.identity); // "alice" (only first pattern returned)
     /// ```
+    /// Parse gram notation and return a JSON string array of pattern objects.
+    ///
+    /// This is the primary interchange function for native TypeScript consumers.
+    /// The JSON format uses the "subject" key and canonical value encoding.
+    ///
+    /// Empty or whitespace-only input returns "[]".
+    ///
+    /// # Arguments
+    /// * `gram` - Gram notation string to parse
+    ///
+    /// # Returns
+    /// * `Ok(String)` - JSON array string of AstPattern objects
+    /// * `Err(String)` - Parse error message
+    ///
+    /// # Example (JavaScript)
+    /// ```javascript
+    /// const json = Gram.parseToJson("(alice:Person)");
+    /// const patterns = JSON.parse(json);
+    /// console.log(patterns[0].subject.identity); // "alice"
+    /// ```
+    #[wasm_bindgen(js_name = parseToJson)]
+    pub fn parse_to_json(gram: &str) -> Result<String, String> {
+        gram_codec::gram_parse_to_json(gram)
+    }
+
+    /// Serialize a JSON array of pattern objects back to gram notation.
+    ///
+    /// # Arguments
+    /// * `json` - JSON array string of AstPattern objects
+    ///
+    /// # Returns
+    /// * `Ok(String)` - Gram notation string
+    /// * `Err(String)` - Error message if deserialization or serialization fails
+    ///
+    /// # Example (JavaScript)
+    /// ```javascript
+    /// const gram = Gram.stringifyFromJson(json);
+    /// console.log(gram); // "(alice:Person)"
+    /// ```
+    #[wasm_bindgen(js_name = stringifyFromJson)]
+    pub fn stringify_from_json(json: &str) -> Result<String, String> {
+        gram_codec::gram_stringify_from_json(json)
+    }
+
     #[wasm_bindgen(js_name = parseOne)]
     pub fn parse_one(gram: &str) -> Result<JsValue, String> {
         // Parse gram notation

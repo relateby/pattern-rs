@@ -81,17 +81,18 @@ Make the WASM/PyO3 surface the gram codec only. Implement `Pattern`, `Subject`, 
 
 ```
 ┌─────────────────────────────────────────────────┐
-│  @relateby/pattern (TypeScript)                  │
+│  @relateby/pattern (TypeScript + effect)         │
 │                                                  │
-│  Pattern<V>       ← pure TypeScript class        │
-│  Subject          ← pure TypeScript class        │
-│  Value            ← TypeScript discriminated union│
+│  Pattern<V>       ← Data.Class (structural eq)  │
+│  Subject          ← Data.Class (structural eq)  │
+│  Value            ← Data.Case tagged union       │
 │  StandardGraph    ← pure TypeScript class        │
-│  graph algorithms ← pure TypeScript functions    │
+│  graph algorithms ← pipeable functions           │
 │                                                  │
 │  Gram.parse(s)  ──► WASM: gram_codec             │
 │                 ◄── plain JSON array             │
-│                  → constructs native Pattern[]   │
+│        Schema.decodeUnknownSync validates tree   │
+│        → Effect<Pattern<Subject>[], GramParseError>│
 └─────────────────────────────────────────────────┘
 
 ┌─────────────────────────────────────────────────┐
@@ -132,102 +133,223 @@ def gram_validate(input: str) -> list[str]: ...    # returns error strings
 
 `python.rs` shrinks from ~1800 lines to ~50.
 
-### TypeScript implementation sketch
+### TypeScript implementation sketch (effect-ts style)
+
+This implementation uses [Effect](https://effect.website) for typed errors and async operations, `Data.Class` for structural equality on immutable data, `Schema` for decoding the JSON payload from the WASM codec boundary, and `Option` for partial lookups.
 
 ```typescript
-// Pattern<V>: ~80 lines, pure TypeScript
-export class Pattern<V> {
-  constructor(
-    readonly value: V,
-    readonly elements: readonly Pattern<V>[] = []
-  ) {}
+import { Data, Effect, Equal, Option, Schema, pipe } from "effect"
 
-  static point<V>(value: V): Pattern<V> {
-    return new Pattern(value);
-  }
+// ─── Value: tagged variants with structural equality ─────────────────────────
+//
+// Each variant is a Data.Case so Equal.equals() works structurally.
+// Data.tagged() fills _tag automatically; no manual bookkeeping.
 
-  static of<V>(value: V): Pattern<V> {
-    return Pattern.point(value);
-  }
+export interface StringVal extends Data.Case { readonly _tag: "StringVal"; readonly value: string }
+export interface IntVal    extends Data.Case { readonly _tag: "IntVal";    readonly value: number }
+export interface FloatVal  extends Data.Case { readonly _tag: "FloatVal";  readonly value: number }
+export interface BoolVal   extends Data.Case { readonly _tag: "BoolVal";   readonly value: boolean }
+export interface NullVal   extends Data.Case { readonly _tag: "NullVal" }
+export interface SymbolVal extends Data.Case { readonly _tag: "SymbolVal"; readonly value: string }
 
-  get isAtomic(): boolean { return this.elements.length === 0; }
-  get length(): number { return this.elements.length; }
-  get size(): number { return 1 + this.elements.reduce((n, e) => n + e.size, 0); }
-  get depth(): number {
-    if (this.isAtomic) return 0;
-    return 1 + Math.max(...this.elements.map(e => e.depth));
-  }
+export type Value = StringVal | IntVal | FloatVal | BoolVal | NullVal | SymbolVal
 
-  map<U>(fn: (v: V) => U): Pattern<U> {
-    return new Pattern(fn(this.value), this.elements.map(e => e.map(fn)));
-  }
+// Constructors mirror the Rust Value enum variants.
+export const Value = {
+  String:  Data.tagged<StringVal>("StringVal"),
+  Int:     Data.tagged<IntVal>("IntVal"),
+  Float:   Data.tagged<FloatVal>("FloatVal"),
+  Bool:    Data.tagged<BoolVal>("BoolVal"),
+  Null:    Data.tagged<NullVal>("NullVal"),
+  Symbol:  Data.tagged<SymbolVal>("SymbolVal"),
+} as const
 
-  fold<R>(init: R, fn: (acc: R, v: V) => R): R {
-    return this.elements.reduce(
-      (acc, e) => e.fold(acc, fn),
-      fn(init, this.value)
-    );
-  }
+// Schema for decoding the WASM JSON output → typed Value.
+// Schema.TaggedStruct attaches a _tag literal and validates fields.
+export const ValueSchema: Schema.Schema<Value> = Schema.Union(
+  Schema.TaggedStruct("StringVal", { value: Schema.String }),
+  Schema.TaggedStruct("IntVal",    { value: Schema.Number }),
+  Schema.TaggedStruct("FloatVal",  { value: Schema.Number }),
+  Schema.TaggedStruct("BoolVal",   { value: Schema.Boolean }),
+  Schema.TaggedStruct("NullVal",   {}),
+  Schema.TaggedStruct("SymbolVal", { value: Schema.String }),
+)
 
-  filter(predicate: (p: Pattern<V>) => boolean): Pattern<V>[] {
-    const results: Pattern<V>[] = predicate(this) ? [this] : [];
-    return results.concat(this.elements.flatMap(e => e.filter(predicate)));
-  }
+// ─── Subject ─────────────────────────────────────────────────────────────────
+//
+// Data.Class provides structural equality (Equal/Hash) automatically.
+// Immutable builder methods return new instances.
 
-  // ... values(), findFirst(), matches(), contains(), extend(), extract()
-}
-
-// Subject: ~40 lines, pure TypeScript
-export class Subject {
-  constructor(
-    readonly identity: string,
-    readonly labels: ReadonlySet<string> = new Set(),
-    readonly properties: ReadonlyMap<string, Value> = new Map()
-  ) {}
-
+export class Subject extends Data.Class<{
+  readonly identity: string
+  readonly labels:    ReadonlySet<string>
+  readonly properties: ReadonlyMap<string, Value>
+}> {
   static fromId(identity: string): Subject {
-    return new Subject(identity);
+    return new Subject({ identity, labels: new Set(), properties: new Map() })
   }
 
   withLabel(label: string): Subject {
-    return new Subject(this.identity, new Set([...this.labels, label]), this.properties);
+    return new Subject({ ...this, labels: new Set([...this.labels, label]) })
   }
 
   withProperty(name: string, value: Value): Subject {
-    return new Subject(this.identity, this.labels, new Map([...this.properties, [name, value]]));
+    return new Subject({
+      ...this,
+      properties: new Map([...this.properties, [name, value]])
+    })
   }
 }
 
-// Value: ~30 lines, discriminated union
-export type Value =
-  | { type: 'string'; value: string }
-  | { type: 'integer'; value: number }
-  | { type: 'float'; value: number }
-  | { type: 'boolean'; value: boolean }
-  | { type: 'null' }
-  | { type: 'symbol'; value: string };
+// ─── Pattern<V>: recursive tree with structural equality ─────────────────────
+//
+// Data.Class gives deep structural equality via Equal.equals(p1, p2).
+// Operations are standalone pipeable functions rather than methods,
+// enabling point-free composition with pipe().
 
-export const Value = {
-  string: (s: string): Value => ({ type: 'string', value: s }),
-  integer: (n: number): Value => ({ type: 'integer', value: n }),
-  float: (n: number): Value => ({ type: 'float', value: n }),
-  boolean: (b: boolean): Value => ({ type: 'boolean', value: b }),
-  null: (): Value => ({ type: 'null' }),
-  symbol: (s: string): Value => ({ type: 'symbol', value: s }),
-};
+export class Pattern<V> extends Data.Class<{
+  readonly value:    V
+  readonly elements: ReadonlyArray<Pattern<V>>
+}> {
+  static point<V>(value: V): Pattern<V> {
+    return new Pattern({ value, elements: [] })
+  }
 
-// Gram: WASM call returns JSON, TypeScript builds native Pattern<Subject>
+  static of<V>(value: V): Pattern<V> {
+    return Pattern.point(value)
+  }
+
+  get isAtomic(): boolean { return this.elements.length === 0 }
+  get length():   number  { return this.elements.length }
+  get size():     number  { return 1 + this.elements.reduce((n, e) => n + e.size, 0) }
+  get depth():    number  {
+    return this.isAtomic ? 0 : 1 + Math.max(...this.elements.map(e => e.depth))
+  }
+}
+
+// Pipeable operations — compose with pipe(pattern, map(fn), ...).
+// Returning Option rather than undefined makes absence explicit.
+
+export const map = <V, U>(fn: (v: V) => U) =>
+  (p: Pattern<V>): Pattern<U> =>
+    new Pattern({
+      value:    fn(p.value),
+      elements: p.elements.map(map(fn))
+    })
+
+export const fold = <V, R>(init: R, fn: (acc: R, v: V) => R) =>
+  (p: Pattern<V>): R =>
+    p.elements.reduce(
+      (acc, e) => pipe(e, fold(acc, fn)),
+      fn(init, p.value)
+    )
+
+export const filter = <V>(predicate: (p: Pattern<V>) => boolean) =>
+  (p: Pattern<V>): ReadonlyArray<Pattern<V>> => [
+    ...(predicate(p) ? [p] : []),
+    ...p.elements.flatMap(e => pipe(e, filter(predicate)))
+  ]
+
+export const findFirst = <V>(predicate: (v: V) => boolean) =>
+  (p: Pattern<V>): Option.Option<V> =>
+    predicate(p.value)
+      ? Option.some(p.value)
+      : p.elements.reduce(
+          (found: Option.Option<V>, e) =>
+            Option.orElse(found, () => pipe(e, findFirst(predicate))),
+          Option.none()
+        )
+
+// ─── Schema for Pattern<Subject> (decodes WASM JSON payload) ─────────────────
+//
+// Schema.suspend() handles the self-referential elements array.
+// Decoding validates the entire tree in one pass before any Pattern
+// objects are constructed.
+
+interface RawSubject {
+  readonly identity:   string
+  readonly labels:     ReadonlyArray<string>
+  readonly properties: Readonly<Record<string, Value>>
+}
+
+interface RawPattern {
+  readonly value:    RawSubject
+  readonly elements: ReadonlyArray<RawPattern>
+}
+
+const RawSubjectSchema = Schema.Struct({
+  identity:   Schema.String,
+  labels:     Schema.Array(Schema.String),
+  properties: Schema.Record({ key: Schema.String, value: ValueSchema }),
+})
+
+const RawPatternSchema: Schema.Schema<RawPattern> = Schema.Struct({
+  value:    RawSubjectSchema,
+  elements: Schema.Array(Schema.suspend((): Schema.Schema<RawPattern> => RawPatternSchema)),
+})
+
+const decodePayload = Schema.decodeUnknownSync(Schema.Array(RawPatternSchema))
+
+function patternFromRaw(raw: RawPattern): Pattern<Subject> {
+  return new Pattern({
+    value: new Subject({
+      identity:   raw.value.identity,
+      labels:     new Set(raw.value.labels),
+      properties: new Map(Object.entries(raw.value.properties)),
+    }),
+    elements: raw.elements.map(patternFromRaw),
+  })
+}
+
+// ─── Errors ───────────────────────────────────────────────────────────────────
+
+export class GramParseError extends Data.TaggedError("GramParseError")<{
+  readonly input: string
+  readonly cause: unknown
+}> {}
+
+// ─── Gram: WASM codec wrapped in Effect ──────────────────────────────────────
+//
+// Callers get typed errors (GramParseError) instead of thrown exceptions.
+// Effect.runPromise() converts to Promise when interoperating with async code.
+
 export const Gram = {
-  async parse(input: string): Promise<Pattern<Subject>[]> {
-    const wasm = await loadWasm();
-    const raw: RawPattern[] = JSON.parse(wasm.gram_parse(input));
-    return raw.map(patternFromRaw);
-  },
-  async stringify(patterns: Pattern<Subject>[]): Promise<string> {
-    const wasm = await loadWasm();
-    return wasm.gram_stringify(JSON.stringify(patterns.map(patternToRaw)));
-  },
-};
+  parse: (input: string): Effect.Effect<ReadonlyArray<Pattern<Subject>>, GramParseError> =>
+    pipe(
+      Effect.tryPromise({
+        try:   async () => { const wasm = await loadWasm(); return JSON.parse(wasm.gram_parse(input)) as unknown },
+        catch: (cause) => new GramParseError({ input, cause }),
+      }),
+      Effect.flatMap((raw) =>
+        Effect.try({
+          try:   () => decodePayload(raw).map(patternFromRaw),
+          catch: (cause) => new GramParseError({ input, cause }),
+        })
+      )
+    ),
+
+  stringify: (patterns: ReadonlyArray<Pattern<Subject>>): Effect.Effect<string, GramParseError> =>
+    Effect.tryPromise({
+      try:   async () => { const wasm = await loadWasm(); return wasm.gram_stringify(JSON.stringify(patterns.map(patternToRaw))) },
+      catch: (cause) => new GramParseError({ input: "(stringify)", cause }),
+    }),
+}
+
+// Usage: pipe/Effect compose naturally
+//
+//   const graph = await pipe(
+//     Gram.parse("(a)-->(b)"),
+//     Effect.map(patterns => StandardGraph.fromPatterns(patterns)),
+//     Effect.runPromise
+//   )
+//
+//   const ids = pipe(
+//     somePattern,
+//     fold([] as string[], (acc, s) => [...acc, s.identity])
+//   )
+//
+//   const maybeNode = pipe(somePattern, findFirst(s => s.identity === "a"))
+//   // → Option.some(Subject) | Option.none()
 ```
 
 ### Python implementation sketch
@@ -357,7 +479,12 @@ export class StandardGraph {
 | **WASM binary size** | Significant reduction: `pattern-core` excluded from WASM build; only `gram-codec` compiled to WASM |
 | **Sync Pattern ops** | `fold`, `map`, `filter` no longer cross the WASM boundary; run at native JS/Python speed |
 | **Python performance** | Eliminates GIL-held PyO3 round-trips for each fold/map step; native Python recursion is faster for this workload |
-| **TypeScript types** | Real TypeScript generics — `Pattern<Subject>` as a true generic class, not an opaque WASM handle; `instanceof` checks work naturally |
+| **TypeScript types** | Real TypeScript generics — `Pattern<Subject>` as a true generic class, not an opaque WASM handle; `instanceof` and `Equal.equals()` work naturally |
+| **Structural equality** | `Data.Class`/`Data.Case` gives deep structural equality on `Pattern`, `Subject`, and `Value` via `Equal.equals()` — no hand-written comparators |
+| **Typed errors** | `Gram.parse` returns `Effect<..., GramParseError>` — callers handle failures in the type system, not at runtime with try/catch |
+| **Pipeable operations** | `map`, `fold`, `filter`, `findFirst` are standalone curried functions; compose with `pipe()` for point-free style |
+| **Option for partial results** | `findFirst` returns `Option<V>` instead of `V \| undefined` — absence is explicit and composable |
+| **Schema validation** | `Schema.decodeUnknownSync` validates the entire WASM JSON payload before any `Pattern` is constructed — bad codec output surfaces as a typed error, not a runtime crash mid-tree |
 | **`convert.rs` deleted** | The most complex part of the WASM binding layer disappears; no bidirectional type conversion needed |
 | **`python.rs` shrinks ~97%** | From ~1800 lines to ~50 lines of gram codec exposure |
 | **Graph algorithms in Python** | With Pattern as native Python, graph algorithms can be written directly in Python (or use networkx) — closing the TypeScript/Python API gap |
@@ -372,7 +499,8 @@ export class StandardGraph {
 | Tradeoff | Impact | Mitigation |
 |----------|--------|------------|
 | Two implementations of Pattern | Rust (authoritative) + TypeScript + Python; behavior must stay in sync | Pattern semantics are simple and stable; property-based tests against gram-hs reference cover correctness |
-| JSON serialization at WASM boundary | Gram parse output crosses boundary as JSON string | Cost is one JSON parse per `Gram.parse()` call, not per operation; acceptable for a codec |
+| JSON serialization at WASM boundary | Gram parse output crosses boundary as JSON string | Cost is one JSON parse + one `Schema.decodeUnknownSync` per `Gram.parse()` call, not per operation; acceptable for a codec |
+| effect dependency | `effect` is a 70 kB (minified+gzip) peer dependency; its runtime is non-trivial | Only the core `Data`/`Schema`/`Effect`/`Option` modules are used; tree-shaking keeps bundle impact modest for browser targets |
 | Migration effort | Large diff: TypeScript and Python binding layers substantially rewritten | Can be staged: gram codec boundary first, then remove Rust types from bindings |
 | Gram stringify round-trip | To stringify a native Pattern, must serialize to JSON, pass to WASM, deserialize in Rust | Same cost as parse; stringify is less common than parse |
 
@@ -400,19 +528,31 @@ Specify the JSON schema that the gram codec returns. This schema becomes the con
 
 Add a thin Rust function that parses gram and returns a JSON string (using `serde_json`). Keep existing WASM bindings working in parallel.
 
-### Phase 3: Implement native TypeScript Pattern/Subject/Value
+### Phase 3: Cross-check semantics against pattern-hs
 
-Write `Pattern<V>`, `Subject`, `Value` as pure TypeScript. Port operations from the current WASM wrapper source. Validate against the existing test suite by running both the old (WASM) and new (native) implementations against the same inputs.
+Before writing TypeScript or Python code, review the authoritative Haskell source in `../pattern-hs/libs/` to confirm:
 
-### Phase 4: Implement native Python Pattern/Subject/Value
+- **`fold` traversal order** — the sketched implementation is pre-order (value before elements); verify this matches the Haskell `fold`/`foldMap` behavior. Wrong order breaks every accumulator built on `fold`.
+- **`extend` and `extract`** (comonad ops) — `extend`'s "annotate every subtree" semantics are non-obvious; take them from the Haskell source directly.
+- **`matches` and `contains`** — confirm whether matching is structural or identity-based, and whether it is full-subtree or partial.
+- **`Value` variant completeness** — verify the six proposed variants (`StringVal`, `IntVal`, `FloatVal`, `BoolVal`, `NullVal`, `SymbolVal`) cover everything gram-hs uses. Locking the `Schema.Union` prematurely would require a breaking change to add a variant later.
+- **StandardGraph classification rules** — the exact rules for node / relationship / walk / annotation detection should come from `../pattern-hs/libs/` rather than being inferred from the Rust port.
 
-Same as Phase 3 for Python. Use `dataclasses` and standard library types. Validate against existing pytest suite.
+The Haskell tests in `../pattern-hs/libs/*/tests/` also define the operation *laws* (functor laws for `map`, catamorphism laws for `fold`, comonad laws for `extend`/`extract`). These should be ported as property-based tests using `fast-check` alongside the implementation.
 
-### Phase 5: Implement native StandardGraph
+### Phase 4: Implement native TypeScript Pattern/Subject/Value
 
-Port `StandardGraph` to TypeScript and Python. The classification logic (node vs. relationship vs. walk vs. annotation detection) is the core of `GraphClassifier` — straightforward to port.
+Write `Pattern<V>`, `Subject`, `Value` as TypeScript using the effect-ts style described above (`Data.Class`, `Data.Case`, `Schema`, `Effect`, `Option`). Validate against the existing test suite by running both the old (WASM) and new (native) implementations against the same inputs. Use `fast-check` to verify operation laws from Phase 3.
 
-### Phase 6: Cut over and remove Rust types from bindings
+### Phase 5: Implement native Python Pattern/Subject/Value
+
+Same as Phase 4 for Python. Use `dataclasses` and standard library types. Validate against existing pytest suite.
+
+### Phase 6: Implement native StandardGraph
+
+Port `StandardGraph` to TypeScript and Python using the classification rules confirmed in Phase 3. The logic (node vs. relationship vs. walk vs. annotation detection) is the core of `GraphClassifier`.
+
+### Phase 7: Cut over and remove Rust types from bindings
 
 Switch `Gram.parse()` to use the new JSON path and construct native Pattern. Remove `WasmPattern`, `WasmSubject`, `WasmValue`, `WasmStandardGraph` from the WASM surface. Delete `convert.rs`. Shrink `python.rs` to codec-only.
 

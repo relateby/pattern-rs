@@ -39,6 +39,7 @@
 // Module declarations
 pub mod ast;
 mod error;
+pub mod json;
 mod serializer;
 pub mod standard_graph;
 mod value;
@@ -61,6 +62,7 @@ mod python;
 // Public API exports
 pub use ast::{AstPattern, AstSubject};
 pub use error::{Location, SerializeError};
+pub use json::{gram_parse_to_json, gram_stringify_from_json, gram_validate_to_json};
 // Use the new nom-based ParseError from the parser module
 pub use parser::ParseError;
 pub use serializer::{to_gram, to_gram_pattern, to_gram_with_header};
