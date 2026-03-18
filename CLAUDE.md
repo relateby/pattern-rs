@@ -301,6 +301,8 @@ Key cursor rule highlights:
 - Rust 1.70.0 (MSRV), Edition 2021; TypeScript (type definitions); Python 3.8+ (PyO3) + wasm-bindgen 0.2, js-sys 0.3, PyO3 (existing); pattern-core, gram-codec (workspace crates) (036-standardgraph-bindings)
 - N/A (in-memory graph structures) (036-standardgraph-bindings)
 - N/A (in-memory only) (039-native-bindings)
+- Rust 1.70.0 (workspace MSRV), Edition 2021 + `relateby-pattern` (workspace), `relateby-gram` (workspace), `clap` v4 with derive, `serde`/`serde_json` (workspace), `thiserror` (workspace), `strsim` v0.11 (new) (041-pato-cli)
+- Local filesystem — gram files read/written in-place. Atomic writes (temp-file + rename). No database. (041-pato-cli)
 
 ## Recent Changes
 - 030-graph-classifier: Added Rust 1.70.0 (MSRV), Edition 2021 + std (HashMap, Vec, HashSet) — no new external crates required
