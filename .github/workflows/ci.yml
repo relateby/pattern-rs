@@ -131,18 +131,26 @@ jobs:
           cache-dependency-path: package-lock.json
       - name: Install dependencies
         run: npm ci
-      - name: Build @relateby/pattern
-        run: npm run build --workspace=@relateby/pattern
-      - name: Test @relateby/pattern
-        run: npm run test --workspace=@relateby/pattern
+      - name: Build npm packages
+        run: |
+          npm run build --workspace=@relateby/pattern
+          npm run build --workspace=@relateby/graph
+          npm run build --workspace=@relateby/gram
+      - name: Test npm packages
+        run: |
+          npm run test --workspace=@relateby/pattern
+          npm run test --workspace=@relateby/graph
+          npm run test --workspace=@relateby/gram
       - name: Verify @relateby/pattern public exports
         run: npm run test:public-api --workspace=@relateby/pattern
       - name: Typecheck @relateby/pattern public consumer
         run: npm run test:public-api:types --workspace=@relateby/pattern
-      - name: Pack @relateby/pattern
+      - name: Pack npm artifacts
         run: |
           mkdir -p target/npm-packages
           npm run pack:release --workspace=@relateby/pattern
+          npm run pack:release --workspace=@relateby/graph
+          npm run pack:release --workspace=@relateby/gram
       - name: Smoke-test packed npm artifact
         run: |
           cd ./scripts/release/npm-smoke
@@ -161,8 +169,11 @@ jobs:
       - uses: actions/setup-python@v6
         with:
           python-version: '3.12'
+      - uses: astral-sh/setup-uv@v6
       - name: Install build tooling
         run: pip install maturin pytest twine
+      - name: Resolve Python package directory
+        run: echo "PY_PACKAGE_DIR=python/packages/relateby" >> "$GITHUB_ENV"
       - uses: actions/cache@v5
         with:
           path: |
@@ -171,11 +182,12 @@ jobs:
             target
           key: ${{ runner.os }}-cargo-python-${{ hashFiles('**/Cargo.lock') }}
       - name: Validate Python public API stubs
-        run: python -m pytest python/relateby/tests/test_public_api.py
+        run: python -m pytest "$PY_PACKAGE_DIR/tests/test_public_api.py"
       - name: Build combined wheel
-        working-directory: python/relateby
-        run: python -m pip wheel . -w dist --no-deps
+        run: |
+          cd "$PY_PACKAGE_DIR"
+          python -m pip wheel . -w dist --no-deps
       - name: Check wheel metadata
-        run: twine check python/relateby/dist/*
+        run: twine check "$PY_PACKAGE_DIR"/dist/*
       - name: Smoke-test combined wheel
-        run: bash ./scripts/release/smoke-python.sh --wheel ./python/relateby/dist/*.whl
+        run: bash ./scripts/release/smoke-python.sh --wheel ./"$PY_PACKAGE_DIR"/dist/*.whl

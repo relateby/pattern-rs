@@ -1,13 +1,16 @@
 # Release Process
 
-This repository publishes four stable release artifacts from the same release tag:
+This repository publishes stable release artifacts from the same release tag, centered on the same public multi-language surfaces described at the repository root:
 
 - `relateby-pattern` on crates.io
 - `relateby-gram` on crates.io
 - `@relateby/pattern` on npm
+- `@relateby/graph` on npm
+- `@relateby/gram` on npm
 - `relateby-pattern` on PyPI
 
 Python imports remain `relateby.pattern` and `relateby.gram`. `relateby` is a namespace only, not a published PyPI project.
+The `pattern-wasm` crate remains a discoverable adapter at `adapters/wasm/pattern-wasm`; it supports the TypeScript packages and is not presented as a peer Rust library release artifact.
 
 ## Release flow
 
@@ -33,8 +36,10 @@ The release script treats these files as the authoritative version set:
 
 - `Cargo.toml`
 - `crates/gram-codec/Cargo.toml`
-- `typescript/@relateby/pattern/package.json`
-- `python/relateby/pyproject.toml`
+- `typescript/packages/pattern/package.json`
+- `typescript/packages/graph/package.json`
+- `typescript/packages/gram/package.json`
+- `python/packages/relateby/pyproject.toml`
 
 ## Local validation
 
@@ -55,7 +60,9 @@ Release mode checks:
 - Rust fmt, clippy, build, tests, docs
 - WASM workspace build
 - `cargo publish --dry-run` for both crates
-- `@relateby/pattern` build, runtime tests, public export inventory, public consumer typecheck, pack, and packed-artifact smoke install
+- `@relateby/pattern`, `@relateby/graph`, and `@relateby/gram` build and test validation
+- `@relateby/pattern` public export inventory and public consumer typecheck
+- packed-artifact smoke install covering the public npm package surface
 - combined Python wheel build, public stub validation, metadata check, packaged-stub verification, and wheel smoke install
 
 Maintainer notes:
@@ -86,7 +93,9 @@ The publish workflow validates first, then publishes:
 1. `relateby-pattern` crate
 2. `relateby-gram` crate
 3. `@relateby/pattern`
-4. `relateby-pattern` Python wheel
+4. `@relateby/graph`
+5. `@relateby/gram`
+6. `relateby-pattern` Python wheel
 
 ## Verification
 
@@ -96,6 +105,8 @@ After publish:
 - Verify npm:
   ```bash
   npm view @relateby/pattern@0.2.0
+  npm view @relateby/graph@0.2.0
+  npm view @relateby/gram@0.2.0
   ```
 - Verify PyPI:
   ```bash
@@ -109,6 +120,8 @@ After publish:
 The release gate for this feature treats these as the supported developer surfaces:
 
 - `@relateby/pattern`
+- `@relateby/graph`
+- `@relateby/gram`
 - `relateby.pattern`
 - `relateby.gram`
 

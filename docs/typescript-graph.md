@@ -1,16 +1,16 @@
 # TypeScript Graph API Reference
 
-Use the single supported package boundary:
+Use the supported public package boundaries:
 
 ```bash
-npm install @relateby/pattern effect
+npm install @relateby/pattern @relateby/graph @relateby/gram effect
 ```
 
-`@relateby/pattern` now exposes:
+The current TypeScript surface is split by role:
 
-- native TypeScript `Pattern`, `Subject`, `Value`, and `StandardGraph`
-- pure TypeScript graph transforms such as `toGraphView`, `mapGraph`, and `filterGraph`
-- the Gram codec via `Gram`, backed by the Rust/WASM JSON interchange layer
+- `@relateby/pattern`: native TypeScript `Pattern`, `Subject`, `Value`, and `StandardGraph`
+- `@relateby/graph`: pure TypeScript graph transforms such as `toGraphView`, `mapGraph`, and `filterGraph`
+- `@relateby/gram`: the focused Gram codec package, backed by the Rust/WASM JSON interchange layer
 
 ## Gram
 
@@ -18,7 +18,7 @@ npm install @relateby/pattern effect
 
 ```typescript
 import { Effect } from "effect"
-import { Gram } from "@relateby/pattern"
+import { Gram } from "@relateby/gram"
 
 const patterns = await Effect.runPromise(
   Gram.parse("(alice:Person)-[:KNOWS]->(bob:Person)")
@@ -34,7 +34,8 @@ Use `StandardGraph` for graph classification and lookup over native `Pattern<Sub
 
 ```typescript
 import { Effect, Option } from "effect"
-import { Gram, StandardGraph } from "@relateby/pattern"
+import { Gram } from "@relateby/gram"
+import { StandardGraph } from "@relateby/pattern"
 
 const graph = await Effect.runPromise(
   Effect.map(
@@ -55,7 +56,8 @@ console.log(Option.getOrUndefined(graph.node("alice"))?.value.identity)
 The package also exports the graph view and transform helpers:
 
 ```typescript
-import { DeleteContainer, Pattern, Subject, SpliceGap, filterGraph, toGraphView } from "@relateby/pattern"
+import { DeleteContainer, SpliceGap, filterGraph, toGraphView } from "@relateby/graph"
+import { Pattern, Subject } from "@relateby/pattern"
 
 const alice = Pattern.point(Subject.fromId("alice").withLabel("Person"))
 const bob = Pattern.point(Subject.fromId("bob").withLabel("Person"))
@@ -90,3 +92,5 @@ const withoutRelationships = filterGraph((cls) => cls.tag !== "GRelationship", D
 console.log(withoutBob.viewElements.length)
 console.log(withoutRelationships.viewElements.length)
 ```
+
+See `examples/typescript/graph/` for the active repository example that combines `@relateby/pattern` and `@relateby/graph`.

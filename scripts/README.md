@@ -24,9 +24,11 @@ Release-grade validation:
 2. **Clippy lint**: Runs `cargo clippy` with strict warnings (`-D warnings`)
 3. **Native build / tests / docs**: Validates the Rust workspace
 4. **WASM build**: Builds the workspace for `wasm32-unknown-unknown`
-5. **npm package validation**: Builds, tests, packs, and smoke-installs `@relateby/pattern`
+5. **npm package validation**: Builds and tests `@relateby/pattern`, `@relateby/graph`, and `@relateby/gram`, then smoke-installs the public npm package surface
 6. **Python package validation**: Builds, checks, and smoke-installs the combined `relateby-pattern` wheel
 7. **Cargo dry-runs**: Included in `--release` mode
+
+The release helpers resolve the current package roots dynamically. The canonical package paths are `python/packages/relateby` and `typescript/packages/{pattern,graph,gram}`.
 
 ### Exit codes
 

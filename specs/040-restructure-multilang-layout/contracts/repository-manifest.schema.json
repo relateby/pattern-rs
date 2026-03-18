@@ -1,0 +1,188 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://relateby.local/schemas/repository-manifest.schema.json",
+  "title": "Repository Manifest",
+  "type": "object",
+  "required": [
+    "repositoryAreas",
+    "packageSurfaces",
+    "exampleCollections",
+    "documentationEntries",
+    "migrationMappings"
+  ],
+  "properties": {
+    "repositoryAreas": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/repositoryArea"
+      }
+    },
+    "packageSurfaces": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/packageSurface"
+      }
+    },
+    "exampleCollections": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/exampleCollection"
+      }
+    },
+    "documentationEntries": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/documentationEntry"
+      }
+    },
+    "migrationMappings": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/migrationMapping"
+      }
+    }
+  },
+  "$defs": {
+    "repositoryArea": {
+      "type": "object",
+      "required": ["path", "role", "languageScope", "status", "canonical"],
+      "properties": {
+        "path": { "type": "string" },
+        "role": {
+          "type": "string",
+          "enum": ["peer-implementation", "adapter", "example", "support", "archive"]
+        },
+        "languageScope": {
+          "type": "string",
+          "enum": ["rust", "python", "typescript", "cross-language", "repo-wide"]
+        },
+        "status": {
+          "type": "string",
+          "enum": ["active", "archived", "removed", "planned"]
+        },
+        "canonical": { "type": "boolean" },
+        "notes": { "type": "string" }
+      },
+      "additionalProperties": false
+    },
+    "packageSurface": {
+      "type": "object",
+      "required": [
+        "name",
+        "path",
+        "ecosystem",
+        "visibility",
+        "publishedIdentity",
+        "importSurface",
+        "status"
+      ],
+      "properties": {
+        "name": { "type": "string" },
+        "path": { "type": "string" },
+        "ecosystem": {
+          "type": "string",
+          "enum": ["cargo", "npm", "python"]
+        },
+        "visibility": {
+          "type": "string",
+          "enum": ["public", "internal", "adapter"]
+        },
+        "publishedIdentity": { "type": "string" },
+        "importSurface": { "type": "string" },
+        "status": {
+          "type": "string",
+          "enum": ["active", "archived", "planned"]
+        },
+        "dependsOn": {
+          "type": "array",
+          "items": { "type": "string" }
+        },
+        "discoverableRole": {
+          "type": "string",
+          "enum": ["peer-implementation", "adapter", "internal-support"]
+        }
+      },
+      "additionalProperties": false
+    },
+    "exampleCollection": {
+      "type": "object",
+      "required": ["path", "language", "status", "surfaceFocus"],
+      "properties": {
+        "path": { "type": "string" },
+        "language": {
+          "type": "string",
+          "enum": ["rust", "python", "typescript", "cross-language"]
+        },
+        "status": {
+          "type": "string",
+          "enum": ["active", "archived", "planned", "removed"]
+        },
+        "surfaceFocus": { "type": "string" },
+        "entryCommands": {
+          "type": "array",
+          "items": { "type": "string" }
+        },
+        "legacySource": { "type": "string" },
+        "archiveReason": { "type": "string" }
+      },
+      "additionalProperties": false
+    },
+    "documentationEntry": {
+      "type": "object",
+      "required": ["path", "audience", "status", "canonical"],
+      "properties": {
+        "path": { "type": "string" },
+        "audience": {
+          "type": "string",
+          "enum": ["user", "contributor", "release", "historical"]
+        },
+        "status": {
+          "type": "string",
+          "enum": ["active", "archived", "planned"]
+        },
+        "topics": {
+          "type": "array",
+          "items": { "type": "string" }
+        },
+        "references": {
+          "type": "array",
+          "items": { "type": "string" }
+        },
+        "canonical": { "type": "boolean" }
+      },
+      "additionalProperties": false
+    },
+    "migrationMapping": {
+      "type": "object",
+      "required": [
+        "sourcePath",
+        "disposition",
+        "reason",
+        "userImpact",
+        "validationStatus"
+      ],
+      "properties": {
+        "sourcePath": { "type": "string" },
+        "targetPath": { "type": "string" },
+        "disposition": {
+          "type": "string",
+          "enum": ["move", "archive", "remove", "retain"]
+        },
+        "reason": { "type": "string" },
+        "userImpact": {
+          "type": "string",
+          "enum": ["none", "low", "medium", "high"]
+        },
+        "validationStatus": {
+          "type": "string",
+          "enum": ["planned", "updated", "verified"]
+        },
+        "requiresArchive": {
+          "type": "boolean"
+        }
+      },
+      "additionalProperties": false
+    }
+  },
+  "additionalProperties": false
+}

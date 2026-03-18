@@ -122,7 +122,7 @@ The CI workflow includes these jobs:
 
 1. **rust-validation**: fmt, clippy, build, tests, docs, and cargo publish dry-runs
 2. **wasm-validation**: workspace wasm32 build
-3. **npm-validation**: build/test/pack/smoke for `@relateby/pattern`
+3. **npm-validation**: build/test for `@relateby/pattern`, `@relateby/graph`, and `@relateby/gram`, plus export/type checks for `@relateby/pattern` and packed-artifact smoke coverage for the public npm surface
 4. **python-validation**: build/check/smoke for the combined `relateby-pattern` wheel
 
 The publish workflow validates tagged releases first, then publishes crates.io, npm, and PyPI artifacts in separate jobs.

@@ -99,11 +99,22 @@ assert graph.node("alice") is not None
 
 ## Building From Source
 
+For local development, prefer `uv` with a project-local virtual environment:
+
+```bash
+cd python/packages/relateby
+uv venv --python 3.13 .venv
+source .venv/bin/activate
+uv pip install '.[dev]'
+```
+
+The supported Python range for this package is `>=3.8,<3.14`. Using `3.13` is the safest default for local development because the current PyO3 build stack does not yet support `3.14`.
+
 Build the combined wheel from the repo:
 
 ```bash
-cd python/relateby
-python -m pip wheel . -w dist
+cd python/packages/relateby
+uv build --wheel --python 3.13 --out-dir dist
 ```
 
-Then install the wheel and run examples from outside `python/relateby` so the source tree does not shadow the installed package.
+Then install the wheel and run examples from outside `python/packages/relateby` so the source tree does not shadow the installed package.

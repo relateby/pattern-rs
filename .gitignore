@@ -52,18 +52,18 @@ __pycache__/
 venv/
 *.egg-info/
 *.egg
-python/relateby/dist/
+python/packages/relateby/dist/
 
 # TypeScript @relateby packages
 node_modules/
-typescript/@relateby/pattern/wasm/
-typescript/@relateby/pattern/dist/
-typescript/@relateby/pattern/node_modules/
-typescript/@relateby/gram/wasm/
-typescript/@relateby/gram/dist/
-typescript/@relateby/gram/node_modules/
-typescript/@relateby/graph/dist/
-typescript/@relateby/graph/node_modules/
+typescript/packages/pattern/wasm/
+typescript/packages/pattern/dist/
+typescript/packages/pattern/node_modules/
+typescript/packages/graph/dist/
+typescript/packages/graph/node_modules/
+typescript/packages/gram/wasm/
+typescript/packages/gram/dist/
+typescript/packages/gram/node_modules/
 scripts/release/npm-smoke/node_modules/
 scripts/release/npm-smoke/package-lock.json
 *.tgz

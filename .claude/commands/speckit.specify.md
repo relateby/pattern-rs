@@ -36,7 +36,7 @@ Given that feature description, do this:
      - "Create a dashboard for analytics" → "analytics-dashboard"
      - "Fix payment processing timeout bug" → "fix-payment-timeout"
 
-2. **Check for existing branches before creating new one**:
+2. **Check existing branches before creating a new one**:
 
    a. First, fetch all remote branches to ensure we have the latest information:
 
@@ -44,25 +44,21 @@ Given that feature description, do this:
       git fetch --all --prune
       ```
 
-   b. Find the highest feature number across all sources for the short-name:
+   b. Inspect existing matches for the short-name across all sources:
       - Remote branches: `git ls-remote --heads origin | grep -E 'refs/heads/[0-9]+-<short-name>$'`
       - Local branches: `git branch | grep -E '^[* ]*[0-9]+-<short-name>$'`
       - Specs directories: Check for directories matching `specs/[0-9]+-<short-name>`
 
-   c. Determine the next available number:
-      - Extract all numbers from all three sources
-      - Find the highest number N
-      - Use N+1 for the new branch number
-
-   d. Run the script `.specify/scripts/bash/create-new-feature.sh --json "$ARGUMENTS"` with the calculated number and short-name:
-      - Pass `--number N+1` and `--short-name "your-short-name"` along with the feature description
-      - Bash example: `.specify/scripts/bash/create-new-feature.sh --json "$ARGUMENTS" --json --number 5 --short-name "user-auth" "Add user authentication"`
-      - PowerShell example: `.specify/scripts/bash/create-new-feature.sh --json "$ARGUMENTS" -Json -Number 5 -ShortName "user-auth" "Add user authentication"`
+   c. Run the script exactly once with the chosen short-name and let the script assign the next global feature number:
+      - Pass `--short-name "your-short-name"` along with the feature description
+      - Do **not** pass `--number` during normal operation; `.specify/scripts/bash/create-new-feature.sh` already computes the next global prefix from existing branches and spec directories
+      - Bash example: `.specify/scripts/bash/create-new-feature.sh --json --short-name "user-auth" "Add user authentication"`
+      - PowerShell example: `.specify/scripts/bash/create-new-feature.sh --json -ShortName "user-auth" "Add user authentication"`
 
    **IMPORTANT**:
-   - Check all three sources (remote branches, local branches, specs directories) to find the highest number
-   - Only match branches/directories with the exact short-name pattern
-   - If no existing branches/directories found with this short-name, start with number 1
+   - Check all three sources to understand whether the short-name already exists and whether stale directories need cleanup
+   - Do **not** compute or pass a manual feature number unless the user explicitly asks to override numbering
+   - The feature prefix must continue the repository-wide global sequence, not restart at `001` for a new short-name
    - You must only ever run this script once per feature
    - The JSON is provided in the terminal as output - always refer to it to get the actual content you're looking for
    - The JSON output will contain BRANCH_NAME and SPEC_FILE paths

@@ -8,7 +8,7 @@ All Rust examples are now in the top-level `examples/` directory for clean separ
 
 ### Pattern Core Examples
 
-Located in `examples/pattern-core/`:
+Located in `examples/rust/pattern-core/`:
 
 #### `comonad_usage.rs`
 **Run:** `cargo run --package pattern-core --example comonad_usage`
@@ -23,7 +23,7 @@ Comprehensive comonad demonstrations:
 
 ### Gram Codec Examples
 
-Located in `examples/gram-codec/`:
+Located in `examples/rust/gram-codec/`:
 
 #### `basic_usage.rs`
 **Run:** `cargo run --package gram-codec --example basic_usage`
@@ -48,58 +48,20 @@ Located in `examples/gram-codec/`:
 - Unicode support
 - Programmatic pattern building
 
-## 🌐 WASM Examples
+## 🌐 Historical WASM Examples
 
-### Browser (Web)
-**Location:** `examples/gram-codec-wasm-web/`
+The older browser and Node.js gram-codec WASM samples are preserved for reference in `examples/archive/`, but they are no longer the active example surface for this feature.
 
-**Build:**
-```bash
-cd crates/gram-codec
-wasm-pack build --target web . -- --features wasm
-```
+Archived locations:
 
-**Run:**
-```bash
-# From project root
-python3 -m http.server 8000
-# Open http://localhost:8000/examples/gram-codec-wasm-web/
-```
+- `examples/archive/gram-codec-wasm-web/`
+- `examples/archive/gram-codec-wasm-node/`
 
-**Features:**
-- ✨ Beautiful interactive UI
-- 📥 Real-time parsing with visual feedback
-- 📚 Quick example buttons
-- 🔄 Round-trip testing
-- 📊 Session statistics
-- 🎨 Fully styled with gradients and animations
-
-### Node.js
-**Location:** `examples/gram-codec-wasm-node/`
-
-**Build:**
-```bash
-cd crates/gram-codec
-wasm-pack build --target nodejs . -- --features wasm
-```
-
-**Run:**
-```bash
-cd examples/gram-codec-wasm-node
-npm install ../../crates/gram-codec/pkg
-node index.js
-```
-
-**Features:**
-- 8 comprehensive examples
-- Batch validation
-- Error handling
-- Performance demonstration
-- TypeScript support included
+For the current package-oriented WASM guidance, use `docs/wasm-usage.md`.
 
 ## 🐍 Python Examples
 
-**Location:** `examples/gram-codec-python/`
+**Location:** `examples/python/gram/`
 
 ### Interactive Demo
 **File:** `demo.py`
@@ -113,7 +75,7 @@ maturin develop --features python
 
 **Run:**
 ```bash
-python examples/gram-codec-python/demo.py
+python examples/python/gram/demo.py
 ```
 
 **Features:**
@@ -127,7 +89,7 @@ python examples/gram-codec-python/demo.py
 ### Quick Start
 **File:** `quickstart.py`
 
-**Run:** `python examples/gram-codec-python/quickstart.py`
+**Run:** `python examples/python/gram/quickstart.py`
 
 5-minute introduction covering:
 - Parse and validate
@@ -166,10 +128,10 @@ Each example directory includes:
 | **Rust (pattern-core)** | Comonad operations | `cargo run --package pattern-core --example comonad_usage` |
 | **Rust (gram-codec)** | Basic usage | `cargo run --package gram-codec --example basic_usage` |
 | **Rust (gram-codec)** | Advanced usage | `cargo run --package gram-codec --example advanced_usage` |
-| **WASM (Web)** | Interactive browser | Open `examples/gram-codec-wasm-web/index.html` |
-| **WASM (Node)** | Node.js CLI | `node examples/gram-codec-wasm-node/index.js` |
-| **Python** | Interactive demo | `python examples/gram-codec-python/demo.py` |
-| **Python** | Quick start | `python examples/gram-codec-python/quickstart.py` |
+| **WASM (Archived Web)** | Historical browser sample | `examples/archive/gram-codec-wasm-web/` |
+| **WASM (Archived Node)** | Historical Node.js sample | `examples/archive/gram-codec-wasm-node/` |
+| **Python** | Interactive demo | `python examples/python/gram/demo.py` |
+| **Python** | Quick start | `python examples/python/gram/quickstart.py` |
 
 ## 🔥 Try It Now
 
@@ -190,16 +152,12 @@ cargo run --package gram-codec --example basic_usage
 cd pattern-rs/crates/gram-codec
 pip install maturin
 maturin develop --features python
-python ../../examples/gram-codec-python/quickstart.py
+python ../../examples/python/gram/quickstart.py
 ```
 
-### 3-Minute Browser Example
+### 3-Minute WASM Orientation
 ```bash
-cd pattern-rs/crates/gram-codec
-wasm-pack build --target web . -- --features wasm
-cd ../..
-python3 -m http.server 8000
-# Open http://localhost:8000/examples/gram-codec-wasm-web/
+open docs/wasm-usage.md
 ```
 
 ## 📖 Learning Path
@@ -207,14 +165,14 @@ python3 -m http.server 8000
 **Beginner:**
 1. Start with `pattern-core/comonad_usage.rs` to understand the foundation
 2. Try `gram-codec/basic_usage.rs` or `gram-codec-python/quickstart.py`
-3. Explore the interactive browser demo (`gram-codec-wasm-web/`)
+3. Review `docs/wasm-usage.md` for the current WASM/package entrypoint
 4. Experiment with the Python REPL (`gram-codec-python/demo.py`)
 
 **Intermediate:**
 1. Study `gram-codec/advanced_usage.rs` for complex patterns
 2. Dive deeper into comonad operations with `pattern-core/comonad_usage.rs`
-3. Build a Node.js CLI tool with `gram-codec-wasm-node/`
-4. Create a web app with `gram-codec-wasm-web/` as template
+3. Inspect `examples/archive/gram-codec-wasm-node/` for historical Node.js usage patterns
+4. Inspect `examples/archive/gram-codec-wasm-web/` for historical browser usage patterns
 
 **Advanced:**
 1. Read the source code in `crates/pattern-core/src/` and `crates/gram-codec/src/`

@@ -328,7 +328,7 @@ See [gramref CLI Testing Guide](gramref-cli-testing-guide.md) for comprehensive 
 
 ### 8. Update Examples
 
-Update `examples/wasm-js/` to demonstrate new functionality (if applicable).
+Update the current examples under `examples/` to demonstrate new functionality (if applicable), and treat `examples/archive/` as historical reference material rather than the active example surface.
 
 ## Haskell → Rust Translation Guide
 

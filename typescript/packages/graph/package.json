@@ -1,0 +1,39 @@
+{
+  "name": "@relateby/graph",
+  "version": "0.2.5",
+  "description": "Pure TypeScript graph interfaces and transforms for relateby",
+  "license": "BSD-3-Clause",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/relateby/pattern-rs.git"
+  },
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "publishConfig": {
+    "access": "public"
+  },
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "default": "./dist/index.js"
+    }
+  },
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "tsc",
+    "test": "vitest run",
+    "pack:release": "npm pack --pack-destination ../../../target/npm-packages",
+    "test:watch": "vitest"
+  },
+  "devDependencies": {
+    "typescript": "^5.0.0",
+    "vitest": "^2.0.0"
+  },
+  "overrides": {
+    "why-is-node-running": "3.2.2"
+  }
+}

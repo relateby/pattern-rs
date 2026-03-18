@@ -31,6 +31,30 @@ release_tag_for_version() {
     printf 'v%s\n' "$1"
 }
 
+release_typescript_pattern_dir() {
+    local repo_root
+    repo_root="${1:-$(release_repo_root)}"
+    printf '%s\n' "$repo_root/typescript/packages/pattern"
+}
+
+release_typescript_graph_dir() {
+    local repo_root
+    repo_root="${1:-$(release_repo_root)}"
+    printf '%s\n' "$repo_root/typescript/packages/graph"
+}
+
+release_typescript_gram_dir() {
+    local repo_root
+    repo_root="${1:-$(release_repo_root)}"
+    printf '%s\n' "$repo_root/typescript/packages/gram"
+}
+
+release_python_package_dir() {
+    local repo_root
+    repo_root="${1:-$(release_repo_root)}"
+    printf '%s\n' "$repo_root/python/packages/relateby"
+}
+
 require_clean_worktree() {
     local repo_root
     repo_root="${1:-$(release_repo_root)}"
@@ -65,12 +89,22 @@ ensure_main_synced() {
 
 release_manifests() {
     local repo_root
+    local ts_pattern_dir
+    local ts_graph_dir
+    local ts_gram_dir
+    local python_pkg_dir
     repo_root="${1:-$(release_repo_root)}"
+    ts_pattern_dir="$(release_typescript_pattern_dir "$repo_root")"
+    ts_graph_dir="$(release_typescript_graph_dir "$repo_root")"
+    ts_gram_dir="$(release_typescript_gram_dir "$repo_root")"
+    python_pkg_dir="$(release_python_package_dir "$repo_root")"
     cat <<EOF
 $repo_root/Cargo.toml
 $repo_root/crates/gram-codec/Cargo.toml
-$repo_root/typescript/@relateby/pattern/package.json
-$repo_root/python/relateby/pyproject.toml
+$ts_pattern_dir/package.json
+$ts_graph_dir/package.json
+$ts_gram_dir/package.json
+$python_pkg_dir/pyproject.toml
 EOF
 }
 
@@ -119,15 +153,24 @@ replace(
     repo / "crates" / "gram-codec" / "Cargo.toml",
 )
 
-pkg_path = repo / "typescript" / "@relateby" / "pattern" / "package.json"
-pkg = json.loads(pkg_path.read_text(encoding="utf-8"))
-pkg["version"] = version
-pkg_path.write_text(json.dumps(pkg, indent=2) + "\n", encoding="utf-8")
+package_paths = {
+    "pattern": repo / "typescript" / "packages" / "pattern" / "package.json",
+    "graph": repo / "typescript" / "packages" / "graph" / "package.json",
+    "gram": repo / "typescript" / "packages" / "gram" / "package.json",
+}
 
+for name, pkg_path in package_paths.items():
+    pkg = json.loads(pkg_path.read_text(encoding="utf-8"))
+    pkg["version"] = version
+    if name == "gram":
+        pkg.setdefault("dependencies", {})["@relateby/pattern"] = version
+    pkg_path.write_text(json.dumps(pkg, indent=2) + "\n", encoding="utf-8")
+
+pyproject_path = repo / "python" / "packages" / "relateby" / "pyproject.toml"
 replace(
     r'(^version = ")[^"]+(")',
     rf'\g<1>{version}\2',
-    repo / "python" / "relateby" / "pyproject.toml",
+    pyproject_path,
 )
 PY
 }
@@ -159,11 +202,21 @@ gram_dep = re.search(
 if not gram_dep or gram_dep.group(1) != version:
     errors.append("gram-codec dependency version mismatch")
 
-pkg = json.loads((repo / "typescript" / "@relateby" / "pattern" / "package.json").read_text(encoding="utf-8"))
-if pkg.get("version") != version:
-    errors.append("@relateby/pattern package version mismatch")
+package_paths = {
+    "pattern": repo / "typescript" / "packages" / "pattern" / "package.json",
+    "graph": repo / "typescript" / "packages" / "graph" / "package.json",
+    "gram": repo / "typescript" / "packages" / "gram" / "package.json",
+}
 
-pyproject = (repo / "python" / "relateby" / "pyproject.toml").read_text(encoding="utf-8")
+for name, pkg_path in package_paths.items():
+    pkg = json.loads(pkg_path.read_text(encoding="utf-8"))
+    if pkg.get("version") != version:
+        errors.append(f"@relateby/{name} package version mismatch")
+    if name == "gram" and pkg.get("dependencies", {}).get("@relateby/pattern") != version:
+        errors.append("@relateby/gram dependency on @relateby/pattern version mismatch")
+
+pyproject_path = repo / "python" / "packages" / "relateby" / "pyproject.toml"
+pyproject = pyproject_path.read_text(encoding="utf-8")
 m = re.search(r'^version = "([^"]+)"', pyproject, re.M)
 if not m or m.group(1) != version:
     errors.append("python combined package version mismatch")
