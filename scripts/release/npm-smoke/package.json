@@ -1,11 +1,13 @@
 {
-  "name": "relateby-pattern-smoke",
+  "name": "relateby-public-surface-smoke",
   "private": true,
   "type": "module",
   "scripts": {
     "smoke": "node smoke.mjs"
   },
   "dependencies": {
-    "@relateby/pattern": "file:../../../target/npm-packages/relateby-pattern-0.1.0.tgz"
+    "@relateby/gram": "file:../../../target/npm-packages/relateby-gram-0.2.5.tgz",
+    "@relateby/graph": "file:../../../target/npm-packages/relateby-graph-0.2.5.tgz",
+    "@relateby/pattern": "file:../../../target/npm-packages/relateby-pattern-0.2.5.tgz"
   }
 }

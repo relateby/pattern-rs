@@ -1,0 +1,289 @@
+openapi: 3.1.0
+info:
+  title: Repository Structure Audit API
+  version: 1.0.0
+  description: >
+    Design contract for validating the multi-language repository restructure.
+    This contract models the repository audit and migration-preview interactions
+    needed to verify canonical paths, package boundaries, and stale-path cleanup.
+servers:
+  - url: https://repository-audit.local
+paths:
+  /repository-areas:
+    get:
+      summary: List classified repository areas
+      operationId: listRepositoryAreas
+      responses:
+        "200":
+          description: Repository areas returned successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [areas]
+                properties:
+                  areas:
+                    type: array
+                    items:
+                      $ref: "#/components/schemas/RepositoryArea"
+
+  /package-surfaces:
+    get:
+      summary: List public, internal, and adapter package surfaces
+      operationId: listPackageSurfaces
+      responses:
+        "200":
+          description: Package surfaces returned successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [packages]
+                properties:
+                  packages:
+                    type: array
+                    items:
+                      $ref: "#/components/schemas/PackageSurface"
+
+  /examples:
+    get:
+      summary: List active and archived example collections
+      operationId: listExampleCollections
+      responses:
+        "200":
+          description: Example collections returned successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [examples]
+                properties:
+                  examples:
+                    type: array
+                    items:
+                      $ref: "#/components/schemas/ExampleCollection"
+
+  /migration-preview:
+    post:
+      summary: Preview path migration outcomes before applying moves
+      operationId: previewMigration
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [mappings]
+              properties:
+                mappings:
+                  type: array
+                  items:
+                    $ref: "#/components/schemas/MigrationMapping"
+      responses:
+        "200":
+          description: Migration preview completed
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [summary]
+                properties:
+                  summary:
+                    $ref: "#/components/schemas/ValidationSummary"
+
+  /validations/stale-path-audit:
+    post:
+      summary: Audit active documentation and examples for stale path references
+      operationId: auditStalePaths
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [activeDocuments, deprecatedPaths]
+              properties:
+                activeDocuments:
+                  type: array
+                  items:
+                    type: string
+                deprecatedPaths:
+                  type: array
+                  items:
+                    type: string
+      responses:
+        "200":
+          description: Audit completed
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [summary]
+                properties:
+                  summary:
+                    $ref: "#/components/schemas/ValidationSummary"
+
+  /validations/removal-readiness:
+    post:
+      summary: Verify a stale path is safe to remove
+      operationId: verifyRemovalReadiness
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [targetPath, activeDocuments]
+              properties:
+                targetPath:
+                  type: string
+                activeDocuments:
+                  type: array
+                  items:
+                    type: string
+      responses:
+        "200":
+          description: Removal readiness audit completed
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [summary]
+                properties:
+                  summary:
+                    $ref: "#/components/schemas/ValidationSummary"
+
+components:
+  schemas:
+    RepositoryArea:
+      type: object
+      required:
+        - path
+        - role
+        - languageScope
+        - status
+        - canonical
+      properties:
+        path:
+          type: string
+        role:
+          type: string
+          enum: [peer-implementation, adapter, example, support, archive]
+        languageScope:
+          type: string
+          enum: [rust, python, typescript, cross-language, repo-wide]
+        status:
+          type: string
+          enum: [active, archived, removed, planned]
+        canonical:
+          type: boolean
+        notes:
+          type: string
+
+    PackageSurface:
+      type: object
+      required:
+        - name
+        - path
+        - ecosystem
+        - visibility
+        - publishedIdentity
+        - importSurface
+        - status
+      properties:
+        name:
+          type: string
+        path:
+          type: string
+        ecosystem:
+          type: string
+          enum: [cargo, npm, python]
+        visibility:
+          type: string
+          enum: [public, internal, adapter]
+        publishedIdentity:
+          type: string
+        importSurface:
+          type: string
+        status:
+          type: string
+          enum: [active, archived, planned]
+        dependsOn:
+          type: array
+          items:
+            type: string
+        discoverableRole:
+          type: string
+          enum: [peer-implementation, adapter, internal-support]
+
+    ExampleCollection:
+      type: object
+      required:
+        - path
+        - language
+        - status
+        - surfaceFocus
+      properties:
+        path:
+          type: string
+        language:
+          type: string
+          enum: [rust, python, typescript, cross-language]
+        status:
+          type: string
+          enum: [active, archived, planned, removed]
+        surfaceFocus:
+          type: string
+        entryCommands:
+          type: array
+          items:
+            type: string
+        legacySource:
+          type: string
+        archiveReason:
+          type: string
+
+    MigrationMapping:
+      type: object
+      required:
+        - sourcePath
+        - disposition
+        - reason
+        - userImpact
+        - validationStatus
+      properties:
+        sourcePath:
+          type: string
+        targetPath:
+          type: string
+        disposition:
+          type: string
+          enum: [move, archive, remove, retain]
+        reason:
+          type: string
+        userImpact:
+          type: string
+          enum: [none, low, medium, high]
+        validationStatus:
+          type: string
+          enum: [planned, updated, verified]
+        requiresArchive:
+          type: boolean
+
+    ValidationSummary:
+      type: object
+      required:
+        - passed
+        - checkedItems
+        - findings
+      properties:
+        passed:
+          type: boolean
+        checkedItems:
+          type: array
+          items:
+            type: string
+        findings:
+          type: array
+          items:
+            type: string

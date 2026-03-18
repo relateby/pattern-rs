@@ -1,6 +1,7 @@
 import { Effect, Either, Equal, Option, pipe } from "effect";
+import { filterGraph, mapGraph, SpliceGap, toGraphView } from "@relateby/graph";
+import { Gram } from "@relateby/gram";
 import {
-  Gram,
   Pattern,
   StandardGraph,
   Subject,
@@ -43,6 +44,39 @@ if (pipe(relationship, fold(0, (acc) => acc + 1)) !== 3) {
 
 if (pipe(relationship, findFirst((subject) => subject.identity === "bob"))._tag !== "Some") {
   throw new Error("findFirst did not locate the expected subject");
+}
+
+const view = toGraphView({
+  nodes: [Pattern.point(alice), Pattern.point(bob)],
+  relationships: [relationship],
+  walks: [],
+  annotations: [],
+  conflicts: {},
+  size: 3,
+  merge(other) {
+    return {
+      ...this,
+      nodes: [...this.nodes, ...other.nodes],
+      relationships: [...this.relationships, ...other.relationships],
+      size: this.size + other.size,
+    };
+  },
+  topoSort() {
+    return [...this.nodes, ...this.relationships];
+  },
+});
+
+const filtered = filterGraph((cls) => cls.tag !== "GRelationship", SpliceGap)(view);
+const mapped = mapGraph({
+  mapNode: (pattern) =>
+    new Pattern({
+      ...pattern,
+      value: pattern.value.withProperty("processed", Value.Bool({ value: true })),
+    }),
+})(view);
+
+if (filtered.viewElements.length === 0 || mapped.viewElements.length !== view.viewElements.length) {
+  throw new Error("@relateby/graph helpers returned an unexpected view");
 }
 
 if (!Array.isArray(values(relationship)) || parsed.length !== 1) {

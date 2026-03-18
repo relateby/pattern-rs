@@ -4,7 +4,14 @@
 
 ### Overview
 
-pattern-rs is a pure Rust library (no servers, databases, or network services). The workspace contains two main crates (`relateby-pattern`, `relateby-gram`), a WASM crate (`pattern-wasm`), and benchmarks.
+pattern-rs is a multi-language library monorepo (no servers, databases, or network services). The canonical layout is:
+
+- peer Rust crates in `crates/`
+- the WASM adapter in `adapters/wasm/pattern-wasm/`
+- TypeScript packages in `typescript/packages/{pattern,graph,gram}`
+- the Python distribution in `python/packages/relateby`
+- active examples in `examples/rust`, `examples/python`, and `examples/typescript`
+- archived material in `docs/archive` and `examples/archive`
 
 ### Rust toolchain
 
@@ -34,13 +41,26 @@ All CI checks are documented in `CLAUDE.md` and `scripts/ci-local.sh`. The key c
 - `cargo build --workspace --target wasm32-unknown-unknown` — WASM build (optional, non-blocking in CI)
 - `./scripts/ci-local.sh` — runs all of the above plus optional Python/TypeScript checks, and includes workflow validation when `actionlint` is installed
 
+### Python workflow
+
+- Supported Python range for the combined package: `>=3.8,<3.14`
+- Prefer `uv` with a local `.venv` for Python development and validation
+- Recommended local setup:
+
+```bash
+cd python/packages/relateby
+uv venv --python 3.13 .venv
+source .venv/bin/activate
+uv pip install '.[dev]'
+```
+
 ### Python and TypeScript bindings
 
 Python (PyO3/maturin) and TypeScript (wasm-pack) bindings are optional and marked `continue-on-error` in CI. They are not required for core development. See `CLAUDE.md` for build commands if needed.
 
 ### Examples
 
-Two runnable examples demonstrate core functionality:
+Two runnable Rust examples demonstrate core functionality:
 
 - `cargo run --example comonad_usage`
 - `cargo run --example paramorphism_usage`

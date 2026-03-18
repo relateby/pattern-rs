@@ -28,8 +28,10 @@ YELLOW='\033[1;33m'
 NC='\033[0m'
 FAILED=0
 
+UV_EXE="$(command -v uv || true)"
 PYTHON_EXE=""
-for candidate in python python3; do
+for candidate in "${PYTHON:-}" python3.13 python3.12 python3.11 python3.10 python3.9 python3.8 python3 python; do
+    [[ -n "$candidate" ]] || continue
     if command -v "$candidate" >/dev/null 2>&1; then
         if "$candidate" -c "import sys; raise SystemExit(0 if (3, 8) <= sys.version_info[:2] < (3, 14) else 1)" 2>/dev/null; then
             PYTHON_EXE="$candidate"
@@ -37,6 +39,8 @@ for candidate in python python3; do
         fi
     fi
 done
+PYTHON_PACKAGE_DIR="$(release_python_package_dir "$REPO_ROOT")"
+PYTHON_VENV="$PYTHON_PACKAGE_DIR/.venv"
 
 run_check() {
     local name=$1
@@ -70,27 +74,27 @@ npm_pack_smoke() {
     local smoke_dir="$REPO_ROOT/scripts/release/npm-smoke"
     local pack_dir="$REPO_ROOT/target/npm-packages"
     local -a tarballs=()
-    local tarball
     local tmp_dir
     local status
 
     mkdir -p "$pack_dir"
     rm -f "$pack_dir"/*.tgz
     npm run pack:release --workspace=@relateby/pattern >/dev/null
+    npm run pack:release --workspace=@relateby/graph >/dev/null
+    npm run pack:release --workspace=@relateby/gram >/dev/null
     shopt -s nullglob
     tarballs=("$pack_dir"/*.tgz)
     shopt -u nullglob
-    tarball="${tarballs[0]:-}"
-    if [[ -z "$tarball" ]]; then
+    if [[ ${#tarballs[@]} -lt 3 ]]; then
         echo "No npm tarball found in $pack_dir" >&2
         return 1
     fi
 
-    tmp_dir="$(mktemp -d "${TMPDIR:-/tmp}/pattern-npm-smoke.XXXXXX")"
+    tmp_dir="$(mktemp -d "${TMPDIR:-/tmp}/relateby-npm-smoke.XXXXXX")"
     cp "$smoke_dir/package.json" "$smoke_dir/smoke.mjs" "$tmp_dir/"
     (
         cd "$tmp_dir" &&
-        npm install --silent --no-save --package-lock=false "$tarball" &&
+        npm install --silent --no-save --package-lock=false "${tarballs[@]}" &&
         npm run smoke
     )
     status=$?
@@ -99,41 +103,58 @@ npm_pack_smoke() {
 }
 
 python_release_build() {
-    local pyproject_dir="$REPO_ROOT/python/relateby"
-    if [[ -z "$PYTHON_EXE" ]]; then
-        echo "Need Python 3.8-3.13 to build the combined wheel" >&2
+    local pyproject_dir
+    pyproject_dir="$(release_python_package_dir "$REPO_ROOT")"
+    if ! ensure_python_venv; then
         return 1
     fi
     rm -rf "$pyproject_dir/dist"
     (
         cd "$pyproject_dir" &&
-        "$PYTHON_EXE" -m pip wheel . -w dist --no-deps
+        CARGO_TARGET_DIR="$REPO_ROOT/target" "$UV_EXE" build --wheel --python "$PYTHON_EXE" --out-dir dist
     )
 }
 
 python_release_smoke() {
     local -a wheels=()
     local wheel
+    local pyproject_dir
+    pyproject_dir="$(release_python_package_dir "$REPO_ROOT")"
     shopt -s nullglob
-    wheels=("$REPO_ROOT/python/relateby/dist/"*.whl)
+    wheels=("$pyproject_dir/dist/"*.whl)
     shopt -u nullglob
     wheel="${wheels[0]:-}"
     if [[ -z "$wheel" ]]; then
-        echo "No Python wheel found in python/relateby/dist" >&2
+        echo "No Python wheel found in $pyproject_dir/dist" >&2
         return 1
     fi
     bash "$REPO_ROOT/scripts/release/smoke-python.sh" --wheel "$wheel"
 }
 
 python_public_api_tests() {
-    if [[ -z "$PYTHON_EXE" ]]; then
-        echo "Need Python 3.8-3.13 to run public API tests" >&2
+    local pyproject_dir
+    pyproject_dir="$(release_python_package_dir "$REPO_ROOT")"
+    if ! ensure_python_venv; then
         return 1
     fi
     (
-        cd "$REPO_ROOT/python/relateby" &&
-        "$PYTHON_EXE" -m pytest tests/test_public_api.py
+        cd "$pyproject_dir" &&
+        "$PYTHON_VENV/bin/python" -m pytest tests/test_public_api.py
     )
+}
+
+ensure_python_venv() {
+    if [[ -z "$PYTHON_EXE" ]]; then
+        echo "Need Python 3.8-3.13 to run Python validation" >&2
+        return 1
+    fi
+    if [[ -z "$UV_EXE" ]]; then
+        echo "Need uv to run Python validation" >&2
+        return 1
+    fi
+    mkdir -p "$PYTHON_PACKAGE_DIR"
+    "$UV_EXE" venv --python "$PYTHON_EXE" "$PYTHON_VENV" >/dev/null
+    "$UV_EXE" pip install --python "$PYTHON_VENV/bin/python" --quiet pytest twine maturin "tomli>=2.0; python_version<'3.11'" >/dev/null
 }
 
 crate_version_exists_on_crates_io() {
@@ -214,6 +235,14 @@ if command -v npm >/dev/null 2>&1 && command -v wasm-pack >/dev/null 2>&1; then
     echo ""
     run_check "Pattern package tests" npm run test --workspace=@relateby/pattern || true
     echo ""
+    run_check "Graph package build" npm run build --workspace=@relateby/graph || true
+    echo ""
+    run_check "Graph package tests" npm run test --workspace=@relateby/graph || true
+    echo ""
+    run_check "Gram package build" npm run build --workspace=@relateby/gram || true
+    echo ""
+    run_check "Gram package tests" npm run test --workspace=@relateby/gram || true
+    echo ""
     run_check "Pattern package public export test" npm run test:public-api --workspace=@relateby/pattern || true
     echo ""
     run_check "Pattern package public typecheck" npm run test:public-api:types --workspace=@relateby/pattern || true
@@ -227,15 +256,16 @@ else
     [[ $RELEASE_MODE -eq 1 ]] && FAILED=1
 fi
 
-if [[ -n "$PYTHON_EXE" ]]; then
+if [[ -n "$PYTHON_EXE" && -n "$UV_EXE" ]]; then
     if [[ $RELEASE_MODE -eq 1 ]]; then
         run_check "Combined Python wheel build" python_release_build || true
         echo ""
-        if "$PYTHON_EXE" -m twine --version >/dev/null 2>&1; then
-            run_check "Combined Python metadata check" "$PYTHON_EXE" -m twine check "$REPO_ROOT"/python/relateby/dist/* || true
+        if ensure_python_venv && "$PYTHON_VENV/bin/python" -m twine --version >/dev/null 2>&1; then
+            pyproject_dir="$(release_python_package_dir "$REPO_ROOT")"
+            run_check "Combined Python metadata check" "$PYTHON_VENV/bin/python" -m twine check "$pyproject_dir"/dist/* || true
             echo ""
         else
-            echo -e "${RED}✗${NC} twine unavailable (install with: $PYTHON_EXE -m pip install twine)"
+            echo -e "${RED}✗${NC} twine unavailable in $PYTHON_VENV"
             FAILED=1
         fi
         run_check "Combined Python smoke test" python_release_smoke || true
@@ -245,7 +275,7 @@ if [[ -n "$PYTHON_EXE" ]]; then
         echo ""
     fi
 else
-    echo -e "${YELLOW}⚠${NC} Python 3.8-3.13 unavailable"
+    echo -e "${YELLOW}⚠${NC} Python 3.8-3.13 or uv unavailable"
     [[ $RELEASE_MODE -eq 1 ]] && FAILED=1
 fi
 

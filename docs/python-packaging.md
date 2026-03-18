@@ -4,9 +4,21 @@ Python release packaging is now intentionally simple:
 
 - **Published distribution**: `relateby-pattern`
 - **Import namespace**: `relateby.pattern`, `relateby.gram`
-- **Build source**: `python/relateby/`
+- **Build source**: `python/packages/relateby/`
+- **Supported Python range**: `>=3.8,<3.14`
 
 `relateby` itself is not a PyPI artifact.
+
+For local development, prefer `uv` with a project-local `.venv`:
+
+```bash
+cd python/packages/relateby
+uv venv --python 3.13 .venv
+source .venv/bin/activate
+uv pip install '.[dev]'
+```
+
+This is guidance rather than a hard packaging requirement, but it keeps the interpreter version aligned with the currently supported PyO3 build path.
 
 ## Extras (optional dependencies)
 
@@ -23,13 +35,13 @@ pip install relateby-pattern[dev]
 pip install relateby-pattern[all]
 ```
 
-Defined in `python/relateby/pyproject.toml` under `[project.optional-dependencies]`. The build backend copies these into the wheel METADATA as `Provides-Extra` and `Requires-Dist`, so pip resolves them when a user requests an extra.
+Defined in `python/packages/relateby/pyproject.toml` under `[project.optional-dependencies]`. The build backend copies these into the wheel METADATA as `Provides-Extra` and `Requires-Dist`, so pip resolves them when a user requests an extra.
 
 ## Adding new optional libraries
 
 When you add an optional library (e.g. a visualization or export helper), add a new extra and optionally include it in `all`:
 
-1. **Edit** `python/relateby/pyproject.toml`:
+1. **Edit** `python/packages/relateby/pyproject.toml`:
 
    ```toml
    [project.optional-dependencies]
@@ -65,8 +77,8 @@ When you add an optional library (e.g. a visualization or export helper), add a 
 Build the published wheel from repo root:
 
 ```bash
-cd python/relateby
-pip wheel . -w dist
+cd python/packages/relateby
+uv build --wheel --python 3.13 --out-dir dist
 ```
 
 The legacy split package directories remain in the repository for migration/reference only and are not part of the supported publish path.
@@ -82,9 +94,9 @@ The combined wheel is expected to ship:
 
 Before release, verify all of the following:
 
-1. `python -m pytest python/relateby/tests/test_public_api.py`
-2. `python -m pip wheel python/relateby -w python/relateby/dist --no-deps`
-3. `bash ./scripts/release/smoke-python.sh --wheel ./python/relateby/dist/*.whl`
+1. `python -m pytest python/packages/relateby/tests/test_public_api.py`
+2. `python -m pip wheel python/packages/relateby -w python/packages/relateby/dist --no-deps`
+3. `bash ./scripts/release/smoke-python.sh --wheel ./python/packages/relateby/dist/*.whl`
 
 The supported public imports are:
 
@@ -112,6 +124,6 @@ For most use cases, one wheel with both pattern and gram and extras for **option
 | Goal | Approach |
 |------|----------|
 | Optional **dependencies** (dev, viz, export, etc.) | Add entries under `[project.optional-dependencies]` in `pyproject.toml`. Use `pip install relateby-pattern[extra]`. |
-| Publish combined package | Build from `python/relateby/`, upload with twine. |
+| Publish combined package | Build from `python/packages/relateby/`, upload with twine. |
 | Legacy split package directories | Keep out of the supported release flow. |
 | Adding a new extra | Edit that package's `pyproject.toml`; rebuild; document. |

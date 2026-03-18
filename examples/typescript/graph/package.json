@@ -1,0 +1,14 @@
+{
+  "name": "relateby-graph-example",
+  "version": "0.1.0",
+  "description": "Example: TypeScript graph API with @relateby/pattern and @relateby/graph",
+  "type": "module",
+  "scripts": {
+    "start": "node node.mjs"
+  },
+  "dependencies": {
+    "@relateby/graph": "file:../../../typescript/packages/graph",
+    "@relateby/pattern": "file:../../../typescript/packages/pattern",
+    "effect": "^3.20.0"
+  }
+}

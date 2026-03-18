@@ -1,5 +1,5 @@
 [workspace]
-members = ["crates/*", "benches"]
+members = ["crates/pattern-core", "crates/gram-codec", "adapters/wasm/pattern-wasm", "benches"]
 resolver = "2"
 
 [workspace.package]

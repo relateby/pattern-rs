@@ -7,8 +7,9 @@ This library provides a faithful port of the gram-hs reference implementation, e
 ## Published Artifacts
 
 - Rust crates: `relateby-pattern`, `relateby-gram`
-- npm package: `@relateby/pattern`
+- npm packages: `@relateby/pattern`, `@relateby/graph`, `@relateby/gram`
 - Python distribution: `relateby-pattern` with imports `relateby.pattern` and `relateby.gram`
+- WASM adapter crate: `adapters/wasm/pattern-wasm` (discoverable adapter, not a peer Rust library)
 
 ## Documentation
 
@@ -67,14 +68,25 @@ All functionality is designed to faithfully replicate the behavior of the Haskel
 
 ## Workspace Structure
 
-This project is organized as a Cargo workspace with multiple crates:
+This project is organized as a multi-language workspace with peer Rust libraries, public package roots, and a dedicated WASM adapter:
 
 ```
 pattern-rs/
-├── Cargo.toml              # Workspace root configuration
+├── Cargo.toml                # Workspace root configuration
 ├── crates/
-│   ├── pattern-core/        # Core pattern data structures
-│   └── gram-codec/          # Gram notation serialization/deserialization
+│   ├── pattern-core/         # Core pattern data structures
+│   └── gram-codec/           # Gram notation serialization/deserialization
+├── adapters/
+│   └── wasm/
+│       └── pattern-wasm/     # WASM adapter crate for the TypeScript surface
+├── typescript/
+│   └── packages/
+│       ├── pattern/          # Public Pattern + StandardGraph package
+│       ├── graph/            # Public graph interfaces and transforms
+│       └── gram/             # Public Gram codec package
+├── python/
+│   └── packages/
+│       └── relateby/         # Python distribution root
 └── .github/workflows/       # CI/CD configuration
 ```
 
@@ -141,7 +153,8 @@ For using the `gram-hs` CLI tool for testing and equivalence checking, see [gram
 
 See the [examples/](examples/) directory for usage examples:
 
-- **WASM/JavaScript**: `examples/wasm-js/` - Demonstrates WebAssembly compilation and JavaScript integration
+- Current example guidance is indexed in `examples/README.md`
+- Historical and superseded examples live under `examples/archive/`
 
 ## Troubleshooting
 

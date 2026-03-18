@@ -3,33 +3,25 @@
 This directory contains examples demonstrating how to use the pattern-rs libraries across different platforms and languages.
 
 > 📚 **For detailed gram-codec examples**, see [`gram-codec-README.md`](gram-codec-README.md)
+> Archived and superseded examples live under [`examples/archive/`](archive/).
 
 ## Directory Structure
 
 ```
 examples/
-├── pattern-core/              # Pattern core library examples
-│   ├── comonad_usage.rs       # Comonad operations
-│   └── README.md              # Pattern core guide
-├── gram-codec/                # Gram codec Rust examples
-│   ├── basic_usage.rs         # Basic parsing & serialization
-│   ├── advanced_usage.rs      # Advanced patterns
-│   └── (see gram-codec-README.md)
-├── gram-codec-python/         # Python bindings examples
-│   ├── demo.py                # Interactive demo with REPL
-│   ├── quickstart.py          # 5-minute introduction
-│   ├── gram_codec.py          # Extended template
-│   └── README.md              # Python usage guide
-├── gram-codec-wasm-web/       # Browser WASM examples
-│   ├── index.html             # Interactive web UI
-│   ├── gram_codec_wasm.js     # Template
-│   └── README.md              # Browser usage guide
-├── gram-codec-wasm-node/      # Node.js WASM examples
-│   ├── index.js               # CLI examples
-│   ├── package.json           # NPM configuration
-│   └── README.md              # Node.js usage guide
-├── wasm-js/                   # Legacy WASM example
-│   └── ...
+├── rust/
+│   ├── pattern-core/          # Pattern core Rust examples
+│   └── gram-codec/            # Gram codec Rust examples
+├── python/
+│   ├── pattern/               # relateby.pattern examples
+│   └── gram/                  # relateby.gram examples
+├── typescript/
+│   └── graph/                 # @relateby/pattern + @relateby/graph example
+├── archive/                   # Historical and superseded examples
+│   ├── gram-codec-wasm-web/
+│   ├── gram-codec-wasm-node/
+│   ├── pattern-core-wasm/
+│   └── wasm-js/
 ├── gram-codec-README.md       # Master guide for all gram-codec examples
 └── README.md                  # This file
 ```
@@ -71,46 +63,41 @@ pip install relateby-pattern
 pip install --index-url https://test.pypi.org/simple/ relateby-pattern
 
 # Run examples
-python examples/gram-codec-python/demo.py
-python examples/gram-codec-python/quickstart.py
-python examples/pattern-core-python/operations.py
+python examples/python/gram/demo.py
+python examples/python/gram/quickstart.py
+python examples/python/pattern/operations.py
 ```
 
-### Gram Codec (WASM - Browser)
+### TypeScript (`@relateby/pattern` + `@relateby/graph`)
 
 ```bash
-# Build WASM module
-cd crates/gram-codec
-wasm-pack build --target web . -- --features wasm
+npm install
+npm run build --workspace=@relateby/pattern
+npm run build --workspace=@relateby/graph
 
-# Start server and open browser
-cd ../..
-python3 -m http.server 8000
-# Open http://localhost:8000/examples/gram-codec-wasm-web/
+cd examples/typescript/graph
+npm install
+npm start
 ```
 
-### Gram Codec (WASM - Node.js)
+### Historical WASM examples (archived)
 
-```bash
-# Build WASM module
-cd crates/gram-codec
-wasm-pack build --target nodejs . -- --features wasm
+Current WASM and TypeScript usage is documented in `docs/wasm-usage.md`.
 
-# Install and run
-cd ../../examples/gram-codec-wasm-node
-npm install ../../crates/gram-codec/pkg
-node index.js
-```
+Historical browser and Node.js samples remain available under:
+
+- `examples/archive/gram-codec-wasm-web/`
+- `examples/archive/gram-codec-wasm-node/`
+- `examples/archive/pattern-core-wasm/`
+- `examples/archive/wasm-js/`
 
 ## Example Categories
 
 ### 🦀 Rust Examples
 
-All Rust examples have been moved to the top-level `examples/` directory for clean separation of library code from usage examples.
-
-- **pattern-core/**: Foundation library examples
+- **rust/pattern-core/**: Foundation library examples
   - Comonad operations and tree analysis
-- **gram-codec/**: Codec library examples
+- **rust/gram-codec/**: Codec library examples
   - Parsing and serialization
   - Round-trip correctness
   - Complex patterns
@@ -123,25 +110,28 @@ Python bindings via PyO3:
 - File processing patterns
 - Error handling demonstrations
 
+Active Python example roots:
+
+- `examples/python/pattern/`
+- `examples/python/gram/`
+
+### 📦 TypeScript Examples
+
+The active TypeScript example root is:
+
+- `examples/typescript/graph/`
+
 ### 🌐 WASM Examples
 
-WebAssembly bindings for multi-platform use:
-
-**Browser** (`gram-codec-wasm-web/`):
-- Beautiful interactive UI
-- Real-time parsing and validation
-- One-click examples
-- Session statistics
-
-**Node.js** (`gram-codec-wasm-node/`):
-- CLI examples
-- Batch processing
-- Stream processing patterns
-- Express.js integration
+The historical browser and Node.js WASM examples are preserved in `examples/archive/`.
+Use `docs/wasm-usage.md` for the current package-oriented guidance.
 
 ### 📜 Legacy Examples
 
-- **wasm-js/**: Original WASM example (kept for reference)
+- `examples/archive/wasm-js/`: original WASM example kept for reference
+- `examples/archive/pattern-core-wasm/`: earlier native TypeScript/WASM bridge examples
+- `examples/archive/gram-codec-wasm-web/`: earlier browser WASM examples
+- `examples/archive/gram-codec-wasm-node/`: earlier Node.js WASM examples
 
 ## Documentation
 
@@ -167,7 +157,7 @@ To add a new example:
 ### Rust
 - Examples use the workspace `Cargo.toml` for dependencies
 - Run from workspace root: `cargo run --example <name>`
-- Source is in `examples/<crate>/`
+- Source is in `examples/rust/<crate>/`
 
 ### Python
 - Install the combined package: `pip install relateby-pattern` (or from TestPyPI for pre-release)
@@ -175,9 +165,9 @@ To add a new example:
 - To build from source: see `docs/release.md`
 
 ### WASM
-- Requires `wasm-pack` for building
-- Browser examples need an HTTP server (not `file://`)
-- Node.js examples need npm package installation
+- Current TypeScript/WASM guidance is in `docs/wasm-usage.md`
+- Archived browser examples need an HTTP server (not `file://`)
+- Archived Node.js examples need npm package installation
 
 ## Getting Help
 

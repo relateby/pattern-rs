@@ -2,19 +2,28 @@
 
 ## Project Overview
 
-pattern-rs is a Rust workspace providing a Pattern data structure and Gram notation codec. It compiles for native Rust, WebAssembly, and Python (via PyO3).
+pattern-rs is a multi-language library workspace providing a Pattern data structure and Gram notation codec. It compiles for native Rust, WebAssembly, TypeScript, and Python (via PyO3).
 
 ## Workspace Structure
 
-The workspace has these crates — use the **package name** (from `Cargo.toml [package].name`), not the directory name:
+The workspace has these Rust crates and adapter packages. Use the **package name** (from `Cargo.toml [package].name`), not the directory name:
 
 | Directory | Package Name | Description |
 |-----------|-------------|-------------|
 | `crates/pattern-core/` | `relateby-pattern` | Core Pattern, Subject, StandardGraph types |
 | `crates/gram-codec/` | `relateby-gram` | Gram notation parser/serializer |
-| `crates/pattern-wasm/` | `pattern-wasm` | WASM bindings |
+| `adapters/wasm/pattern-wasm/` | `pattern-wasm` | WASM bindings |
 
 When writing cargo commands, use the package name: `cargo test -p relateby-pattern`, `cargo run --package relateby-pattern --example standard_graph_usage`.
+
+The public non-Rust package roots live in:
+
+- `typescript/packages/pattern/`
+- `typescript/packages/graph/`
+- `typescript/packages/gram/`
+- `python/packages/relateby/`
+
+For Python work, prefer `uv` with a local `.venv` inside `python/packages/relateby/`.
 
 ## Key Types
 

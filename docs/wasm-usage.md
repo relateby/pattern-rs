@@ -28,14 +28,14 @@ This covers:
 cargo install wasm-pack
 
 # Build the WASM module (from repo root)
-cd typescript/@relateby/pattern
+cd typescript/packages/pattern
 npm run build:wasm  # runs wasm-pack --target bundler
 npm run build:ts    # compiles TypeScript
 ```
 
 The `build:wasm` script runs:
 ```bash
-wasm-pack build ../../../crates/pattern-wasm --target bundler --out-dir ../../../typescript/@relateby/pattern/wasm
+wasm-pack build ../../../adapters/wasm/pattern-wasm --target bundler --out-dir wasm
 ```
 
 ## Quick Start
@@ -57,7 +57,7 @@ console.log(Option.getOrUndefined(graph.node("alice"))?.value.identity)
 await Effect.runPromise(Gram.validate("(alice:Person)"))
 ```
 
-The WASM boundary is intentionally narrow in this branch: it exists to support the Rust gram codec, while the higher-level Pattern and graph APIs are implemented natively in TypeScript.
+The WASM boundary is intentionally narrow in this branch: the `adapters/wasm/pattern-wasm` crate exists to support the Rust gram codec, while the higher-level Pattern and graph APIs are implemented natively in TypeScript.
 
 ## CI/CD
 

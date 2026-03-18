@@ -63,7 +63,7 @@ jobs:
         run: cargo publish -p relateby-gram
 
   publish-npm:
-    name: Publish npm artifact
+    name: Publish npm artifacts
     runs-on: ubuntu-latest
     needs: validate
     permissions:
@@ -86,10 +86,17 @@ jobs:
         run: cargo install wasm-pack
       - name: Install dependencies
         run: npm ci
-      - name: Build npm artifact
-        run: npm run build --workspace=@relateby/pattern
+      - name: Build npm artifacts
+        run: |
+          npm run build --workspace=@relateby/pattern
+          npm run build --workspace=@relateby/graph
+          npm run build --workspace=@relateby/gram
       - name: Publish @relateby/pattern
         run: npm publish --workspace=@relateby/pattern --access public --provenance
+      - name: Publish @relateby/graph
+        run: npm publish --workspace=@relateby/graph --access public --provenance
+      - name: Publish @relateby/gram
+        run: npm publish --workspace=@relateby/gram --access public --provenance
 
   publish-python:
     name: Publish combined Python artifact
@@ -105,14 +112,17 @@ jobs:
           python-version: '3.12'
       - name: Install build tooling
         run: pip install maturin twine
+      - name: Resolve Python package directory
+        run: echo "PY_PACKAGE_DIR=python/packages/relateby" >> "$GITHUB_ENV"
       - name: Build combined wheel
-        working-directory: python/relateby
-        run: python -m pip wheel . -w dist --no-deps
+        run: |
+          cd "$PY_PACKAGE_DIR"
+          python -m pip wheel . -w dist --no-deps
       - name: Publish relateby-pattern wheel
         env:
           TWINE_USERNAME: __token__
           TWINE_PASSWORD: ${{ secrets.PYPI_API_TOKEN }}
-        run: twine upload python/relateby/dist/*
+        run: twine upload "$PY_PACKAGE_DIR"/dist/*
 
   verify-release:
     name: Verify published artifacts
@@ -146,11 +156,13 @@ jobs:
               if version not in versions:
                   raise SystemExit(f"{crate} version {version} not found on crates.io")
           PY
-      - name: Verify npm version
+      - name: Verify npm versions
         env:
           RELEASE_VERSION: ${{ needs.validate.outputs.version }}
         run: |
-          test "$(npm view "@relateby/pattern@${RELEASE_VERSION}" version)" = "${RELEASE_VERSION}"
+          for package in @relateby/pattern @relateby/graph @relateby/gram; do
+            test "$(npm view "${package}@${RELEASE_VERSION}" version)" = "${RELEASE_VERSION}"
+          done
       - name: Verify PyPI install smoke test
         env:
           RELEASE_VERSION: ${{ needs.validate.outputs.version }}

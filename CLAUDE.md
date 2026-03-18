@@ -75,20 +75,17 @@ import relateby.pattern
 import relateby.gram
 ```
 
-See `docs/python-usage.md` and `docs/release.md`. For **publishing** (PyPI or crates.io), see **`docs/release.md`** for prerequisites, tag format, workflow, and recovery. For **development** of the pattern-core or gram-codec crates (building from source, running crate-level tests):
+See `docs/python-usage.md` and `docs/release.md`. For **publishing** (PyPI or crates.io), see **`docs/release.md`** for prerequisites, tag format, workflow, and recovery. For Python package development, prefer `uv` with a project-local `.venv` and stay within the supported range `>=3.8,<3.14` (Python `3.13` is the safest local default while PyO3 support for `3.14` is pending).
 
 ```bash
-# Build Python extension (requires Python 3.8+, uv)
-cd crates/pattern-core
-maturin develop --uv --features python
+# Create local virtual environment
+cd python/packages/relateby
+uv venv --python 3.13 .venv
+source .venv/bin/activate
+uv pip install '.[dev]'
 
-# Run Python tests (crate-level)
-cd crates/pattern-core
-pytest tests/python/
-
-# Build unified wheel (from repo)
-cd python/relateby
-pip wheel . -w dist
+# Build unified wheel (from the combined Python package root)
+CARGO_TARGET_DIR=../../../target uv build --wheel --python 3.13 --out-dir dist
 ```
 
 ### Code Quality
@@ -124,29 +121,31 @@ gram-lint -t -e "your expression"
 
 ### Workspace Structure
 
-```
+```text
 pattern-rs/
 ├── Cargo.toml              # Workspace root
 ├── crates/
 │   ├── pattern-core/       # Core Pattern<V> and Subject types
-│   │   ├── src/
-│   │   │   ├── lib.rs           # Main exports, Combinable trait
-│   │   │   ├── pattern.rs       # Pattern<V> implementation
-│   │   │   ├── pattern/         # Pattern modules (comonad, etc.)
-│   │   │   ├── subject.rs       # Subject type
-│   │   │   ├── python.rs        # PyO3 bindings (feature-gated)
-│   │   │   └── test_utils/      # Testing utilities
-│   │   ├── tests/               # Integration tests
-│   │   ├── tests/python/        # Python binding tests
-│   │   ├── pyproject.toml       # Python packaging (maturin)
-│   │   └── Cargo.toml
 │   └── gram-codec/         # Gram notation parser/serializer
-│       ├── src/
-│       ├── tests/
-│       └── Cargo.toml
+├── adapters/
+│   └── wasm/
+│       └── pattern-wasm/   # WASM adapter crate
+├── typescript/
+│   └── packages/
+│       ├── pattern/
+│       ├── graph/
+│       └── gram/
+├── python/
+│   └── packages/
+│       └── relateby/       # Combined Python distribution root
 ├── benches/                # Performance benchmarks (criterion)
-├── examples/               # Usage examples
-├── docs/                   # Documentation
+├── examples/
+│   ├── rust/
+│   ├── python/
+│   ├── typescript/
+│   └── archive/
+├── docs/
+│   └── archive/
 └── specs/                  # Feature specifications
 ```
 
