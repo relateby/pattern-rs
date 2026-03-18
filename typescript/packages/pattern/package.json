@@ -24,8 +24,8 @@
     "dist"
   ],
   "scripts": {
-    "build:wasm": "wasm-pack build ../../../adapters/wasm/pattern-wasm --target bundler --out-dir wasm",
-    "build:wasm:node": "wasm-pack build ../../../adapters/wasm/pattern-wasm --target nodejs --out-dir wasm-node",
+    "build:wasm": "wasm-pack build ../../../adapters/wasm/pattern-wasm --target bundler --out-dir ../../../typescript/packages/pattern/wasm",
+    "build:wasm:node": "wasm-pack build ../../../adapters/wasm/pattern-wasm --target nodejs --out-dir ../../../typescript/packages/pattern/wasm-node",
     "build:ts": "tsc",
     "build:assets": "rm -rf dist/wasm dist/wasm-node && cp -R wasm dist/wasm && cp -R wasm-node dist/wasm-node && rm -f dist/wasm/.gitignore dist/wasm-node/.gitignore",
     "build": "npm run build:wasm && npm run build:wasm:node && npm run build:ts && npm run build:assets",
