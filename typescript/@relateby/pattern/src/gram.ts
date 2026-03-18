@@ -1,95 +1,187 @@
-interface GramModule {
-  parse(input: string): unknown;
-  parseOne(input: string): unknown;
-  stringify(value: unknown): string;
+// gram.ts — Effect-based parse/stringify interface
+//
+// Returns Effect<..., GramParseError> instead of Promise. Errors are in the
+// type signature — no thrown exceptions. Callers use Effect.runPromise or
+// pipe with Effect operations to compose before running.
+
+import { Effect, HashMap, HashSet, pipe } from "effect"
+import { GramParseError } from "./errors.js"
+import { Pattern } from "./pattern.js"
+import { Subject } from "./subject.js"
+import { decodePayload, patternFromRaw } from "./schema.js"
+
+// --- WASM module loader ---
+
+interface WasmGram {
+  parseToJson(input: string): string
+  stringifyFromJson(input: string): string
+  validate(input: string): string[]
 }
 
-let gramModule: GramModule | null = null;
+let wasmGram: WasmGram | null = null
 
-function gramOperationError(operation: string, error: unknown): Error {
-  const message = error instanceof Error ? error.message : String(error);
-  return new Error(`@relateby/pattern ${operation} failed: ${message}`);
-}
+async function loadWasm(): Promise<WasmGram> {
+  if (wasmGram !== null) return wasmGram
 
-async function loadGram(): Promise<GramModule> {
-  if (gramModule !== null) return gramModule;
-
-  const { init } = await import("./index.js");
-  await init();
-  const nodeModulePath = "./wasm-node/pattern_wasm.js";
-  const browserModulePath = "./wasm/pattern_wasm.js";
-  const unavailableMessage =
-    "Gram bindings are unavailable after init(); expected a Gram export from " +
-    `${nodeModulePath} (Node) or ${browserModulePath} (browser/bundler).`;
+  const isNode =
+    typeof process !== "undefined" &&
+    process.versions != null &&
+    process.versions.node != null
 
   try {
-    const isNode = typeof process !== "undefined" &&
-      process.versions != null &&
-      process.versions.node != null;
-
     if (isNode) {
-      const { createRequire } = await import("module");
-      const { fileURLToPath } = await import("url");
-      const { dirname, resolve } = await import("path");
-      const __filename = fileURLToPath(import.meta.url);
-      const __dirname = dirname(__filename);
-      const require = createRequire(import.meta.url);
-      const wasmNodePath = resolve(__dirname, nodeModulePath);
-      const mod = require(wasmNodePath) as { Gram?: GramModule };
-      if (mod.Gram) {
-        gramModule = mod.Gram;
-        return gramModule;
+      const { createRequire } = await import("module")
+      const { fileURLToPath } = await import("url")
+      const { dirname, resolve } = await import("path")
+      const __filename = fileURLToPath(import.meta.url)
+      const __dirname = dirname(__filename)
+      const require = createRequire(import.meta.url)
+      const candidatePaths = [
+        resolve(__dirname, "./wasm-node/pattern_wasm.js"),
+        resolve(__dirname, "../wasm-node/pattern_wasm.js"),
+      ]
+      for (const wasmPath of candidatePaths) {
+        try {
+          const mod = require(wasmPath) as { Gram?: WasmGram }
+          if (mod.Gram) {
+            wasmGram = mod.Gram as WasmGram
+            return wasmGram
+          }
+        } catch {
+          // try the next candidate path
+        }
       }
     } else {
-      const mod = await import(/* @vite-ignore */ browserModulePath) as { Gram?: GramModule };
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const mod = await import(/* @vite-ignore */ "./wasm/pattern_wasm.js" as string) as any
       if (mod.Gram) {
-        gramModule = mod.Gram;
-        return gramModule;
+        wasmGram = mod.Gram as WasmGram
+        return wasmGram
       }
     }
   } catch {
-    // fall through to stub
+    // fall through to unavailable stub
   }
 
-  gramModule = {
-    parse: () => {
-      throw new Error(`Gram.parse: ${unavailableMessage}`);
-    },
-    parseOne: () => {
-      throw new Error(`Gram.parseOne: ${unavailableMessage}`);
-    },
-    stringify: () => {
-      throw new Error(`Gram.stringify: ${unavailableMessage}`);
-    },
-  };
-  return gramModule;
+  const unavailable = (): never => {
+    throw new Error(
+      "Gram WASM bindings are unavailable. " +
+      "Ensure wasm/ or wasm-node/ is present (run build:wasm first)."
+    )
+  }
+  wasmGram = {
+    parseToJson: unavailable,
+    stringifyFromJson: unavailable,
+    validate: () => unavailable(),
+  }
+  return wasmGram
 }
 
+// --- Public API ---
+
 export const Gram = {
-  async parse(input: string): Promise<unknown> {
-    try {
-      const g = await loadGram();
-      return g.parse(input);
-    } catch (error) {
-      throw gramOperationError("Gram.parse", error);
-    }
+  /**
+   * Parse gram notation into an array of Pattern<Subject>.
+   *
+   * Returns Effect<ReadonlyArray<Pattern<Subject>>, GramParseError>.
+   * Use Effect.runPromise to convert to a Promise.
+   *
+   * @example
+   * const patterns = await Effect.runPromise(Gram.parse("(a)-->(b)"))
+   */
+  parse(input: string): Effect.Effect<ReadonlyArray<Pattern<Subject>>, GramParseError> {
+    return pipe(
+      Effect.tryPromise({
+        try:   async () => {
+          const wasm = await loadWasm()
+          return JSON.parse(wasm.parseToJson(input)) as unknown
+        },
+        catch: (cause) => new GramParseError({ input, cause }),
+      }),
+      Effect.flatMap((raw) =>
+        Effect.try({
+          try:   () => decodePayload(raw).map(patternFromRaw),
+          catch: (cause) => new GramParseError({ input, cause }),
+        })
+      )
+    )
   },
 
-  async parseOne(input: string): Promise<unknown> {
-    try {
-      const g = await loadGram();
-      return g.parseOne(input);
-    } catch (error) {
-      throw gramOperationError("Gram.parseOne", error);
-    }
+  /**
+   * Serialize an array of Pattern<Subject> to gram notation.
+   *
+   * Returns Effect<string, GramParseError>.
+   */
+  stringify(
+    patterns: ReadonlyArray<Pattern<Subject>>
+  ): Effect.Effect<string, GramParseError> {
+    return Effect.tryPromise({
+      try:   async () => {
+        const wasm = await loadWasm()
+        // Build minimal AstPattern JSON from native Pattern<Subject> objects
+        const raw = patterns.map(patternToRaw)
+        return wasm.stringifyFromJson(JSON.stringify(raw))
+      },
+      catch: (cause) => new GramParseError({ input: "", cause }),
+    })
   },
 
-  async stringify(value: unknown): Promise<string> {
-    try {
-      const g = await loadGram();
-      return g.stringify(value);
-    } catch (error) {
-      throw gramOperationError("Gram.stringify", error);
-    }
+  /**
+   * Validate gram notation syntax.
+   *
+   * Returns Effect<void, GramParseError>. Succeeds silently if valid.
+   */
+  validate(input: string): Effect.Effect<void, GramParseError> {
+    return pipe(
+      Effect.tryPromise({
+        try:   async () => {
+          const wasm = await loadWasm()
+          return wasm.validate(input)
+        },
+        catch: (cause) => new GramParseError({ input, cause }),
+      }),
+      Effect.flatMap((errors) =>
+        errors.length === 0
+          ? Effect.succeed(undefined)
+          : Effect.fail(new GramParseError({ input, cause: errors.join("; ") }))
+      )
+    )
   },
-};
+}
+
+// --- Internal: native Pattern<Subject> → raw AstPattern JSON shape ---
+
+function patternToRaw(p: Pattern<Subject>): object {
+  return {
+    subject: {
+      identity:   p.value.identity,
+      labels:     [...HashSet.values(p.value.labels)].sort(),
+      properties: Object.fromEntries(
+        [...HashMap.entries(p.value.properties)].map(([k, v]) => [k, valueToRaw(v)])
+      ),
+    },
+    elements: p.elements.map(patternToRaw),
+  }
+}
+
+// Converts a native Value back to the JSON interchange format.
+// Mirrors json_to_value in the Rust json.rs module.
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+function valueToRaw(v: any): unknown {
+  switch (v._tag) {
+    case "StringVal":       return v.value
+    case "IntVal":          return v.value
+    case "FloatVal":        return v.value
+    case "BoolVal":         return v.value
+    case "NullVal":         throw new Error("JSON null is not representable as a gram value")
+    case "SymbolVal":       return { type: "symbol",      value: v.value }
+    case "TaggedStringVal": return { type: "tagged",      tag: v.tag, content: v.content }
+    case "RangeVal":        return { type: "range",       lower: v.lower, upper: v.upper }
+    case "MeasurementVal":  return { type: "measurement", unit: v.unit, value: v.value }
+    case "ArrayVal":        return (v.items as ReadonlyArray<unknown>).map(valueToRaw)
+    case "MapVal":          return Object.fromEntries(
+      Object.entries(v.entries as Record<string, unknown>).map(([k, val]) => [k, valueToRaw(val)])
+    )
+    default: return null
+  }
+}

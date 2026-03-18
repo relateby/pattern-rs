@@ -3,111 +3,90 @@
 Use the single supported package boundary:
 
 ```bash
-npm install @relateby/pattern
+npm install @relateby/pattern effect
 ```
 
-Everything in this guide comes from `@relateby/pattern`, including the WASM-backed graph types, the `Gram` facade, and the pure TypeScript graph utilities.
+`@relateby/pattern` now exposes:
 
-## Initialization
-
-In Node.js, call `init()` before using WASM-backed types:
-
-```typescript
-import { init, NativePatternGraph } from "@relateby/pattern";
-
-await init();
-const graph = NativePatternGraph.empty();
-```
-
-Bundlers can usually rely on the generated module init path, but calling `await init()` is always safe.
-
-## Public Workflow
-
-```typescript
-import {
-  Gram,
-  StandardGraph,
-  TraversalDirection,
-  bfs,
-  init,
-  NativeGraphQuery,
-  NativePattern,
-  NativePatternGraph,
-  NativeReconciliationPolicy,
-  NativeSubject,
-  NativeValue,
-  toGraphView,
-} from "@relateby/pattern";
-
-await init();
-
-const alice = NativePattern.point(
-  new NativeSubject("alice", ["Person"], { active: NativeValue.bool(true) })
-);
-const bob = NativePattern.point(new NativeSubject("bob", ["Person"], {}));
-const knows = NativePattern.pattern(new NativeSubject("r1", ["KNOWS"], {}));
-knows.addElement(alice);
-knows.addElement(bob);
-
-const nativeGraph = NativePatternGraph.fromPatterns(
-  [alice, bob, knows],
-  NativeReconciliationPolicy.lastWriteWins()
-);
-const query = NativeGraphQuery.fromPatternGraph(nativeGraph);
-const traversal = bfs(query, alice);
-
-const parsed = await Gram.parse("(alice:Person)-[:KNOWS]->(bob:Person)");
-const standardGraph = StandardGraph.fromPatterns(parsed as never[]);
-
-console.log(traversal.length);
-console.log(standardGraph.nodeCount);
-console.log(TraversalDirection.FORWARD);
-console.log(toGraphView(nativeGraph));
-```
-
-## Export Families
-
-`@relateby/pattern` exposes these public families:
-
-- `init`
-- `NativeSubject`, `NativePattern`, `NativeValue`, `NativeValidationRules`
-- `NativePatternGraph`, `NativeGraphQuery`, `NativeReconciliationPolicy`
-- `StandardGraph`
-- `Gram`
-- `GraphClass`, `TraversalDirection`
-- Pure TypeScript graph helpers such as `toGraphView`, `mapGraph`, `filterGraph`, `foldGraph`, `paraGraph`, and `unfoldGraph`
+- native TypeScript `Pattern`, `Subject`, `Value`, and `StandardGraph`
+- pure TypeScript graph transforms such as `toGraphView`, `mapGraph`, and `filterGraph`
+- the Gram codec via `Gram`, backed by the Rust/WASM JSON interchange layer
 
 ## Gram
 
-The package-level `Gram` namespace is the supported parser/serializer entry point:
+`Gram.parse`, `Gram.stringify`, and `Gram.validate` return `Effect` values:
 
 ```typescript
-const allPatterns = await Gram.parse("(alice:Person) (bob:Person)");
-const firstPattern = await Gram.parseOne("(alice:Person)");
-const serialized = await Gram.stringify(firstPattern);
+import { Effect } from "effect"
+import { Gram } from "@relateby/pattern"
+
+const patterns = await Effect.runPromise(
+  Gram.parse("(alice:Person)-[:KNOWS]->(bob:Person)")
+)
+
+const rendered = await Effect.runPromise(Gram.stringify(patterns))
+await Effect.runPromise(Gram.validate(rendered))
 ```
 
 ## StandardGraph
 
-Use `StandardGraph` when you want a higher-level graph workflow from the same package boundary:
+Use `StandardGraph` for graph classification and lookup over native `Pattern<Subject>` values:
 
 ```typescript
-const graph = StandardGraph.fromGram("(alice:Person)-[:KNOWS]->(bob:Person)");
-console.log(graph.nodeCount);
-console.log(graph.relationshipCount);
-console.log(graph.node("alice"));
+import { Effect, Option } from "effect"
+import { Gram, StandardGraph } from "@relateby/pattern"
+
+const graph = await Effect.runPromise(
+  Effect.map(
+    Gram.parse("(alice:Person)-[:KNOWS]->(bob:Person)"),
+    StandardGraph.fromPatterns
+  )
+)
+
+console.log(graph.nodeCount)
+console.log(graph.relationshipCount)
+console.log(Option.getOrUndefined(graph.node("alice"))?.value.identity)
 ```
 
-## Pure TypeScript Utilities
+`StandardGraph.fromGram(input)` is also available and returns `Effect<StandardGraph, GramParseError>`.
 
-Graph utilities remain available from the same package:
+## Pure TypeScript Graph Utilities
+
+The package also exports the graph view and transform helpers:
 
 ```typescript
-import { filterGraph, mapGraph, toGraphView } from "@relateby/pattern";
+import { DeleteContainer, Pattern, Subject, SpliceGap, filterGraph, toGraphView } from "@relateby/pattern"
 
-const view = toGraphView(nativeGraph);
-const mapped = mapGraph({ mapNode: (pattern) => pattern })(view);
-const filtered = filterGraph(() => true)(view);
+const alice = Pattern.point(Subject.fromId("alice").withLabel("Person"))
+const bob = Pattern.point(Subject.fromId("bob").withLabel("Person"))
+const knows = new Pattern({
+  value: Subject.fromId("r1").withLabel("KNOWS"),
+  elements: [alice, bob],
+})
 
-console.log(mapped, filtered);
+const view = toGraphView({
+  nodes: [alice, bob],
+  relationships: [knows],
+  walks: [],
+  annotations: [],
+  conflicts: {},
+  size: 3,
+  merge(other) {
+    return {
+      ...this,
+      nodes: [...this.nodes, ...other.nodes],
+      relationships: [...this.relationships, ...other.relationships],
+      size: this.size + other.size,
+    }
+  },
+  topoSort() {
+    return [...this.nodes, ...this.relationships]
+  },
+})
+
+const withoutBob = filterGraph((_cls, pattern) => pattern.identity !== "bob", SpliceGap)(view)
+const withoutRelationships = filterGraph((cls) => cls.tag !== "GRelationship", DeleteContainer)(view)
+
+console.log(withoutBob.viewElements.length)
+console.log(withoutRelationships.viewElements.length)
 ```

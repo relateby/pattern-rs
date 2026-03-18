@@ -1,73 +1,76 @@
+import { Effect, Either, Equal, Option, pipe } from "effect";
 import {
   Gram,
-  GraphClass,
-  NativePattern,
-  NativeSubject,
-  NativeValue,
+  Pattern,
   StandardGraph,
-  init,
+  Subject,
+  Value,
+  findFirst,
+  fold,
+  values,
 } from "@relateby/pattern";
 
-let initFailure = null;
-try {
-  StandardGraph.fromPatterns([]);
-} catch (error) {
-  initFailure = error;
+const alice = Subject.fromId("alice")
+  .withLabel("Person")
+  .withProperty("name", Value.String({ value: "Alice" }));
+const bob = Subject.fromId("bob").withLabel("Person");
+
+if (!Equal.equals(alice, alice)) {
+  throw new Error("Native Subject equality is not available");
 }
 
-if (!(initFailure instanceof Error) || !initFailure.message.includes("await init()")) {
-  throw new Error("Missing-init public error did not surface through @relateby/pattern");
-}
-
-await init();
-
-if (GraphClass.NODE !== "node") {
-  throw new Error("GraphClass constants not available");
-}
-
-if (typeof Gram?.parse !== "function" || typeof Gram?.stringify !== "function") {
-  throw new Error("Gram API not available from @relateby/pattern");
-}
-
-if (typeof NativeValue?.string !== "function") {
-  throw new Error("NativeValue factory is not available from @relateby/pattern");
-}
-
-if (typeof StandardGraph?.fromPatterns !== "function") {
-  throw new Error("StandardGraph is not available from @relateby/pattern");
-}
-
-const alice = new NativeSubject("alice", ["Person"], {
-  name: NativeValue.string("Alice"),
+const relationship = new Pattern({
+  value: Subject.fromId("r1").withLabel("KNOWS"),
+  elements: [Pattern.point(alice), Pattern.point(bob)],
 });
-const graph = StandardGraph.fromPatterns([NativePattern.point(alice)]);
-const parsed = await Gram.parse("(alice:Person)");
-const first = await Gram.parseOne("(alice:Person)");
-const serialized = await Gram.stringify(first);
-const fromGram = StandardGraph.fromGram("(alice:Person)");
 
-if (graph == null || fromGram == null) {
-  throw new Error("StandardGraph.fromPatterns returned nullish");
+const graph = StandardGraph.fromPatterns([relationship]);
+const parsed = await Effect.runPromise(Gram.parse("(alice:Person)-->(bob:Person)"));
+const serialized = await Effect.runPromise(Gram.stringify(parsed));
+await Effect.runPromise(Gram.validate("(alice:Person)-->(bob:Person)"));
+
+if (graph.nodeCount !== 2 || graph.relationshipCount !== 1) {
+  throw new Error("StandardGraph.fromPatterns returned an unexpected graph");
 }
-if (!Array.isArray(parsed) || parsed.length !== 1) {
-  throw new Error("Gram.parse returned an unexpected result");
+
+if (Option.getOrUndefined(graph.node("alice"))?.value.identity !== "alice") {
+  throw new Error("StandardGraph.node did not return the expected node");
 }
+
+if (pipe(relationship, fold(0, (acc) => acc + 1)) !== 3) {
+  throw new Error("fold did not visit each pattern value");
+}
+
+if (pipe(relationship, findFirst((subject) => subject.identity === "bob"))._tag !== "Some") {
+  throw new Error("findFirst did not locate the expected subject");
+}
+
+if (!Array.isArray(values(relationship)) || parsed.length !== 1) {
+  throw new Error("Native Pattern operations or Gram.parse returned an unexpected result");
+}
+
 if (typeof serialized !== "string" || !serialized.includes("alice")) {
   throw new Error("Gram.stringify returned an unexpected result");
 }
-if (fromGram.nodeCount !== 1) {
-  throw new Error("StandardGraph.fromGram returned an unexpected graph");
+
+const stringifyFailure = await Effect.runPromise(
+  Effect.either(
+    Gram.stringify([
+      Pattern.point(
+        Subject.fromId("alice").withProperty("nickname", Value.Null({}))
+      ),
+    ])
+  )
+);
+
+if (!Either.isLeft(stringifyFailure) || !String(stringifyFailure.left.cause).includes("not representable")) {
+  throw new Error("Unsupported null values did not surface a structured stringify error");
 }
 
-let parseFailure = null;
-try {
-  await Gram.parse("(alice");
-} catch (error) {
-  parseFailure = error;
-}
+const parseFailure = await Effect.runPromise(Effect.either(Gram.parse("(alice")));
 
-if (!(parseFailure instanceof Error) || !parseFailure.message.includes("Gram.parse")) {
-  throw new Error("Invalid Gram input did not surface a public parse error");
+if (!Either.isLeft(parseFailure) || parseFailure.left.input !== "(alice") {
+  throw new Error("Invalid Gram input did not surface a structured public parse error");
 }
 
 console.log("npm smoke test passed");

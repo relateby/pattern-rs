@@ -2,132 +2,57 @@
  * relateby-graph Node.js example
  *
  * Demonstrates:
- * 1. Building a graph from NativePattern/NativeSubject (WASM-backed)
- * 2. Running BFS traversal
- * 3. Computing degree centrality
- * 4. Applying mapGraph + filterGraph pipeline via @relateby/graph
- *
- * Prerequisites:
- *   cd typescript/@relateby/pattern && npm run build:wasm && npm run build:ts
- *   cd examples/relateby-graph && npm install
+ * 1. Building a graph from native Pattern/Subject values
+ * 2. Converting to a GraphView
+ * 3. Applying mapGraph + filterGraph via @relateby/pattern
  *
  * Run:
  *   node node.mjs
  */
 
-import {
-  init,
-  NativeSubject,
-  NativePattern,
-  NativePatternGraph,
-  NativeGraphQuery,
-  NativeReconciliationPolicy,
-  bfs,
-  degreeCentrality,
-} from "@relateby/pattern";
+import { Pattern, Subject, Value, filterGraph, mapGraph, SpliceGap, toGraphView } from "@relateby/pattern";
 
-import {
-  toGraphView,
-  mapGraph,
-  filterGraph,
-  SpliceGap,
-} from "@relateby/graph";
+const alice = Pattern.point(Subject.fromId("alice").withLabel("Person"));
+const bob = Pattern.point(Subject.fromId("bob").withLabel("Person"));
+const company = Pattern.point(Subject.fromId("acme").withLabel("Company"));
 
-// ---------------------------------------------------------------------------
-// Initialize WASM
-// ---------------------------------------------------------------------------
+const graph = {
+  nodes: [alice, bob, company],
+  relationships: [],
+  walks: [],
+  annotations: [],
+  conflicts: {},
+  size: 3,
+  merge(other) {
+    return {
+      ...this,
+      nodes: [...this.nodes, ...other.nodes],
+      size: this.size + other.size,
+    };
+  },
+  topoSort() {
+    return this.nodes;
+  },
+};
 
-try {
-  await init();
-} catch (e) {
-  console.error("Failed to initialize WASM:", e.message);
-  console.error("Run: cd typescript/@relateby/pattern && npm run build:wasm && npm run build:ts");
-  process.exit(1);
-}
-
-// ---------------------------------------------------------------------------
-// Build a graph
-// ---------------------------------------------------------------------------
-
-// Create subjects
-const aliceSubject = new NativeSubject("alice", ["Person"], { name: "Alice" });
-const bobSubject = new NativeSubject("bob", ["Person"], { name: "Bob" });
-const charlieSubject = new NativeSubject("charlie", ["Person"], { name: "Charlie" });
-
-// Create node patterns
-const alice = NativePattern.point(aliceSubject);
-const bob = NativePattern.point(bobSubject);
-const charlie = NativePattern.point(charlieSubject);
-
-// Create relationship patterns (source → target as elements)
-const aliceKnowsBob = NativePattern.pattern(
-  new NativeSubject("r1", ["KNOWS"], {})
-);
-aliceKnowsBob.addElement(alice);
-aliceKnowsBob.addElement(bob);
-
-const bobKnowsCharlie = NativePattern.pattern(
-  new NativeSubject("r2", ["KNOWS"], {})
-);
-bobKnowsCharlie.addElement(bob);
-bobKnowsCharlie.addElement(charlie);
-
-// Build the graph
-const graph = NativePatternGraph.fromPatterns(
-  [alice, bob, charlie, aliceKnowsBob, bobKnowsCharlie],
-  NativeReconciliationPolicy.lastWriteWins()
-);
-
-console.log(`Graph: ${graph.nodes.length} nodes, ${graph.relationships.length} relationships`);
-
-// ---------------------------------------------------------------------------
-// Query the graph
-// ---------------------------------------------------------------------------
-
-const query = NativeGraphQuery.fromPatternGraph(graph);
-
-// BFS from alice
-const aliceNode = query.nodeById("alice");
-if (aliceNode) {
-  const traversal = bfs(query, aliceNode);
-  const ids = traversal.map((p) => p.identity ?? "?");
-  console.log(`BFS from alice: ${ids.join(", ")}`);
-}
-
-// Degree centrality
-const centrality = degreeCentrality(query);
-console.log("Degree centrality:", centrality);
-
-// ---------------------------------------------------------------------------
-// Pure TypeScript transforms via @relateby/graph
-// ---------------------------------------------------------------------------
-
-// Convert to GraphView for transform pipeline
 const view = toGraphView(graph);
 
-// Filter: keep only Person nodes
-const personView = filterGraph(
-  (cls, p) => {
-    if (cls.tag === "GNode") {
-      return p.value?.labels?.has?.("Person") ?? false;
-    }
-    return cls.tag !== "GNode"; // keep non-nodes
-  },
-  SpliceGap
+const peopleOnly = filterGraph(
+  (cls, pattern) => cls.tag !== "GNode" || pattern.identity !== "acme",
+  SpliceGap,
 )(view);
 
-const personNodes = personView.viewElements.filter(([cls]) => cls.tag === "GNode");
-console.log(`Nodes after filter: ${personNodes.length} (Person nodes only)`);
-
-// Map: add a "processed" property to all nodes
-const processedView = mapGraph({
-  mapNode: (p) => ({
-    ...p,
-    identity: `processed:${p.identity}`,
-  }),
+const renamed = mapGraph({
+  mapNode: (pattern) =>
+    new Pattern({
+      ...pattern,
+      value: pattern.value.withProperty("processed", Value.Bool({ value: true })),
+    }),
 })(view);
 
-const processedIds = processedView.viewElements
-  .filter(([cls]) => cls.tag === "GNode")
-  .map(([, p]) => p.identity);
-console.log("Processed node IDs:", processedIds);
+console.log(`Graph nodes: ${view.viewElements.length}`);
+console.log(`People-only nodes: ${peopleOnly.viewElements.length}`);
+console.log(
+  "Processed node IDs:",
+  renamed.viewElements.map(([, pattern]) => pattern.identity),
+);

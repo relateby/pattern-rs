@@ -5,6 +5,7 @@ relateby.pattern and relateby.gram (no top-level pattern_core/gram_codec).
 """
 from __future__ import annotations
 
+import base64
 import re
 import shutil
 import subprocess
@@ -16,13 +17,20 @@ from typing import Any
 
 def _repo_root() -> Path:
     """Repository root (pattern-rs)."""
-    # This file is python/relateby/relateby_build/__init__.py
-    return Path(__file__).resolve().parent.parent.parent.parent
+    current = Path(__file__).resolve()
+    for candidate in current.parents:
+        if (candidate / "crates" / "pattern-core" / "Cargo.toml").exists():
+            return candidate
+    raise RuntimeError("Could not locate repository root containing crates/pattern-core")
 
 
 def _project_dir() -> Path:
     """Unified package dir (python/relateby)."""
-    return Path(__file__).resolve().parent.parent
+    current = Path(__file__).resolve()
+    for candidate in current.parents:
+        if (candidate / "pyproject.toml").exists() and (candidate / "relateby").exists():
+            return candidate
+    raise RuntimeError("Could not locate project directory containing pyproject.toml and relateby/")
 
 
 def _read_version() -> str:
@@ -140,8 +148,49 @@ def _hash_file(path: Path) -> tuple[str, str]:
     import hashlib
 
     data = path.read_bytes()
-    h = hashlib.sha256(data).hexdigest()
+    h = base64.urlsafe_b64encode(hashlib.sha256(data).digest()).rstrip(b"=").decode("ascii")
     return ("sha256", h)
+
+
+def _iter_sdist_files(repo: Path, project_dir: Path) -> list[tuple[Path, str]]:
+    """Return source files to include in the sdist."""
+    files: list[tuple[Path, str]] = []
+
+    def add_file(path: Path, arc: str) -> None:
+        if path.is_file():
+            files.append((path, arc.replace("\\", "/")))
+
+    add_file(project_dir / "pyproject.toml", "pyproject.toml")
+    add_file(project_dir / "README.md", "README.md")
+    add_file(repo / "Cargo.toml", "Cargo.toml")
+
+    for path in (project_dir / "relateby").rglob("*"):
+        if path.is_file() and (path.suffix in {".py", ".pyi"} or path.name == "py.typed"):
+            add_file(path, f"relateby/{path.relative_to(project_dir / 'relateby')}")
+
+    for path in (project_dir / "relateby_build").rglob("*.py"):
+        add_file(path, f"relateby_build/{path.relative_to(project_dir / 'relateby_build')}")
+
+    for crate_name in ("pattern-core", "gram-codec"):
+        crate_dir = repo / "crates" / crate_name
+        for path in crate_dir.rglob("*"):
+            if not path.is_file():
+                continue
+            if any(part in {"target", ".pytest_cache", "__pycache__"} for part in path.parts):
+                continue
+            if path.suffix in {".rs", ".toml", ".md", ".lock"} or path.name in {"Cargo.toml", "README.md"}:
+                add_file(path, f"crates/{crate_name}/{path.relative_to(crate_dir)}")
+
+    benches_dir = repo / "benches"
+    for path in benches_dir.rglob("*"):
+        if not path.is_file():
+            continue
+        if any(part in {"target", "__pycache__"} for part in path.parts):
+            continue
+        if path.suffix in {".rs", ".toml", ".md", ".lock"} or path.name == "Cargo.toml":
+            add_file(path, f"benches/{path.relative_to(benches_dir)}")
+
+    return files
 
 
 def build_wheel(
@@ -302,6 +351,7 @@ def build_sdist(
     """Build sdist. Source tree must be built from repo (crates available)."""
     import tarfile
 
+    repo = _repo_root()
     project_dir = _project_dir()
     version = _read_version()
     project_name = _read_project_name()
@@ -311,19 +361,8 @@ def build_sdist(
 
     with tarfile.open(tarball_path, "w:gz", format=tarfile.PAX_FORMAT) as tf:
         root = f"{wheel_dist_name}-{version}"
-        for path in [project_dir / "pyproject.toml", project_dir / "README.md"]:
-            if path.exists():
-                tf.add(path, f"{root}/{path.name}")
-        for path in (project_dir / "relateby").rglob("*"):
-            if path.is_file():
-                if path.suffix not in {".py", ".pyi"} and path.name != "py.typed":
-                    continue
-                arc = f"{root}/relateby/{path.relative_to(project_dir / 'relateby')}"
-                tf.add(path, arc.replace("\\", "/"))
-        # Include build backend so sdist can build
-        for path in (project_dir / "relateby_build").rglob("*.py"):
-            arc = f"{root}/relateby_build/{path.relative_to(project_dir / 'relateby_build')}"
-            tf.add(path, arc.replace("\\", "/"))
+        for path, arc in _iter_sdist_files(repo, project_dir):
+            tf.add(path, f"{root}/{arc}")
 
     return tarball_name
 

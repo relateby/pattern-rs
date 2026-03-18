@@ -1,7 +1,7 @@
 {
   "name": "@relateby/pattern",
   "version": "0.2.5",
-  "description": "WASM-backed pattern and graph types for relateby",
+  "description": "Native TypeScript pattern and graph APIs for relateby",
   "license": "BSD-3-Clause",
   "repository": {
     "type": "git",
@@ -43,11 +43,6 @@
   },
   "peerDependencies": {
     "effect": ">=3.0.0"
-  },
-  "peerDependenciesMeta": {
-    "effect": {
-      "optional": true
-    }
   },
   "overrides": {
     "why-is-node-running": "3.2.2"

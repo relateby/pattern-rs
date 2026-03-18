@@ -301,6 +301,7 @@ Key cursor rule highlights:
 - Rust 1.70.0 (workspace MSRV), Edition 2021 + pattern-core (PatternGraph, GraphClassifier, GraphQuery, GraphValue, Subject, Symbol, reconcile), gram-codec (parse_gram) — no new external crates (035-standard-graph)
 - Rust 1.70.0 (MSRV), Edition 2021; TypeScript (type definitions); Python 3.8+ (PyO3) + wasm-bindgen 0.2, js-sys 0.3, PyO3 (existing); pattern-core, gram-codec (workspace crates) (036-standardgraph-bindings)
 - N/A (in-memory graph structures) (036-standardgraph-bindings)
+- N/A (in-memory only) (039-native-bindings)
 
 ## Recent Changes
 - 030-graph-classifier: Added Rust 1.70.0 (MSRV), Edition 2021 + std (HashMap, Vec, HashSet) — no new external crates required

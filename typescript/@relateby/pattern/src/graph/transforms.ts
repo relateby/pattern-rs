@@ -51,7 +51,30 @@ function applySubstitution<V>(
       continue;
     }
 
-    if (cls.tag === "GWalk" || cls.tag === "GAnnotation") {
+    if (cls.tag === "GRelationship") {
+      const [left, right] = p.elements;
+      const leftRemoved = left !== undefined && isRemoved(left.identity);
+      const rightRemoved = right !== undefined && isRemoved(right.identity);
+
+      if (leftRemoved || rightRemoved) {
+        switch (subst.tag) {
+          case "DeleteContainer":
+          case "SpliceGap":
+            continue;
+          case "ReplaceWithSurrogate": {
+            const replaced = p.elements.map((e) =>
+              isRemoved(e.identity)
+                ? (subst.surrogate as Pattern<V>)
+                : e
+            );
+            result.push([cls, { ...p, identity: p.identity, elements: replaced }] as const);
+            break;
+          }
+        }
+      } else {
+        result.push([cls, p] as const);
+      }
+    } else if (cls.tag === "GWalk" || cls.tag === "GAnnotation") {
       const removedChildren = p.elements.filter((e) => isRemoved(e.identity));
 
       if (removedChildren.length > 0) {
@@ -62,7 +85,7 @@ function applySubstitution<V>(
             const remaining = p.elements.filter(
               (e) => !isRemoved(e.identity)
             );
-            const spliced: Pattern<V> = { ...p, elements: remaining };
+            const spliced: Pattern<V> = { ...p, identity: p.identity, elements: remaining };
             result.push([cls, spliced] as const);
             break;
           }
@@ -72,7 +95,7 @@ function applySubstitution<V>(
                 ? (subst.surrogate as Pattern<V>)
                 : e
             );
-            const substituted: Pattern<V> = { ...p, elements: replaced };
+            const substituted: Pattern<V> = { ...p, identity: p.identity, elements: replaced };
             result.push([cls, substituted] as const);
             break;
           }

@@ -1,275 +1,103 @@
-// Integration tests for @relateby/pattern
-// Tests that require WASM are skipped when WASM is not built.
-// Pure TypeScript tests run without WASM.
-
-import { describe, it, expect, beforeAll } from "vitest";
+import { Effect, Equal, HashMap, HashSet, Option, pipe } from "effect"
+import { describe, expect, it } from "vitest"
 import {
-  NativePatternGraph,
-  NativeReconciliationPolicy,
-  NativeGraphQuery,
-  NativePattern,
-  NativeSubject,
-  NativeValue,
-  connectedComponents,
-  hasCycle,
-  isConnected,
-  topologicalSort,
-  degreeCentrality,
-  betweennessCentrality,
-  minimumSpanningTree,
-  init,
   Gram,
+  Pattern,
   StandardGraph,
-  GraphClass,
-  TraversalDirection,
-  toGraphView,
-  mapGraph,
-  filterGraph,
-  foldGraph,
-  paraGraph,
-  unfoldGraph,
-} from "../src/index.js";
+  Subject,
+  Value,
+  findFirst,
+  fold,
+  values,
+} from "../src/index.js"
 
-// ---------------------------------------------------------------------------
-// WASM availability check
-// ---------------------------------------------------------------------------
+describe("@relateby/pattern", () => {
+  it("builds native Subject values immutably", () => {
+    const alice = Subject.fromId("alice")
+      .withLabel("Person")
+      .withProperty("name", Value.String({ value: "Alice" }))
 
-let wasmAvailable = false;
+    expect(alice.identity).toBe("alice")
+    expect([...HashSet.values(alice.labels)]).toContain("Person")
+    expect([...HashMap.entries(alice.properties)]).toContainEqual([
+      "name",
+      Value.String({ value: "Alice" }),
+    ])
+    expect(
+      Equal.equals(
+        alice,
+        Subject.fromId("alice")
+          .withLabel("Person")
+          .withProperty("name", Value.String({ value: "Alice" }))
+      )
+    ).toBe(true)
+  })
 
-beforeAll(async () => {
-  try {
-    await init();
-    wasmAvailable = true;
-  } catch {
-    console.warn("WASM not available — skipping WASM-dependent tests. Run `npm run build:wasm` first.");
-  }
-});
+  it("supports native Pattern metrics and operations", () => {
+    const tree = new Pattern({
+      value: "root",
+      elements: [
+        Pattern.point("left"),
+        new Pattern({ value: "right", elements: [Pattern.point("leaf")] }),
+      ],
+    })
 
-function skipIfNoWasm(fn: () => void | Promise<void>) {
-  return async () => {
-    if (!wasmAvailable) {
-      console.log("  [skipped: WASM not built]");
-      return;
-    }
-    await fn();
-  };
-}
+    expect(tree.isAtomic).toBe(false)
+    expect(tree.length).toBe(2)
+    expect(tree.size).toBe(4)
+    expect(tree.depth).toBe(2)
+    expect(values(tree)).toEqual(["root", "left", "right", "leaf"])
+    expect(pipe(tree, fold(0, (acc, value) => acc + value.length))).toBe(17)
+    expect(pipe(tree, findFirst((value) => value.startsWith("lea")))).toEqual(Option.some("leaf"))
+  })
 
-// ---------------------------------------------------------------------------
-// US1: Build and Query a Graph from Patterns
-// ---------------------------------------------------------------------------
+  it("parses, validates, and stringifies gram notation through the JSON codec bridge", async () => {
+    const parsed = await Effect.runPromise(Gram.parse("(alice:Person)-->(bob:Person)"))
+    const serialized = await Effect.runPromise(Gram.stringify(parsed))
+    await Effect.runPromise(Gram.validate("(alice:Person)-->(bob:Person)"))
+    const graph = StandardGraph.fromPatterns(parsed)
 
-describe("NativePatternGraph (US1)", () => {
-  it("fromPatterns constructs a graph from node patterns", skipIfNoWasm(async () => {
-    const alice = NativePattern.point(new (NativeSubject as unknown as { new(...args: unknown[]): unknown })(
-      "alice", ["Person"], {}
-    ));
-    const bob = NativePattern.point(new (NativeSubject as unknown as { new(...args: unknown[]): unknown })(
-      "bob", ["Person"], {}
-    ));
+    expect(parsed).toHaveLength(1)
+    expect(graph.nodeCount).toBe(2)
+    expect(graph.relationshipCount).toBe(1)
+    expect(serialized).toContain("alice")
+    expect(serialized).toContain("bob")
+  })
 
-    const graph = NativePatternGraph.fromPatterns([alice as unknown, bob as unknown] as never[]);
+  it("decodes subject properties from the JSON codec bridge", async () => {
+    const [parsed] = await Effect.runPromise(
+      Gram.parse('(alice:Person {name: "Alice", age: 42, active: true})')
+    )
 
-    expect(graph.nodes.length).toBeGreaterThan(0);
-    expect(graph.size).toBeGreaterThan(0);
-  }));
+    expect(parsed?.value.identity).toBe("alice")
+    expect([...HashMap.entries(parsed?.value.properties ?? HashMap.empty())]).toContainEqual([
+      "name",
+      Value.String({ value: "Alice" }),
+    ])
+    expect([...HashMap.entries(parsed?.value.properties ?? HashMap.empty())]).toContainEqual([
+      "age",
+      Value.Int({ value: 42 }),
+    ])
+    expect([...HashMap.entries(parsed?.value.properties ?? HashMap.empty())]).toContainEqual([
+      "active",
+      Value.Bool({ value: true }),
+    ])
+  })
 
-  it("empty() constructs an empty graph", skipIfNoWasm(async () => {
-    const graph = NativePatternGraph.empty();
-    expect(graph.nodes.length).toBe(0);
-    expect(graph.relationships.length).toBe(0);
-    expect(graph.size).toBe(0);
-  }));
+  it("classifies native patterns with StandardGraph", () => {
+    const alice = Pattern.point(Subject.fromId("alice").withLabel("Person"))
+    const bob = Pattern.point(Subject.fromId("bob").withLabel("Person"))
+    const knows = new Pattern({
+      value: Subject.fromId("r1").withLabel("KNOWS"),
+      elements: [alice, bob],
+    })
 
-  it("merge() combines two graphs", skipIfNoWasm(async () => {
-    const g1 = NativePatternGraph.empty();
-    const g2 = NativePatternGraph.empty();
-    const merged = g1.merge(g2);
-    expect(merged.size).toBe(0);
-  }));
+    const graph = StandardGraph.fromPatterns([knows])
 
-  it("topoSort() returns patterns in topological order", skipIfNoWasm(async () => {
-    const graph = NativePatternGraph.empty();
-    const sorted = graph.topoSort();
-    expect(Array.isArray(sorted)).toBe(true);
-  }));
-});
-
-describe("Public package workflows (US1)", () => {
-  it("NativeValue factories are available from @relateby/pattern", skipIfNoWasm(async () => {
-    expect(typeof NativeValue.string).toBe("function");
-    expect(typeof NativeValue.int).toBe("function");
-    expect(NativeValue.string("Alice")).toBeDefined();
-  }));
-
-  it("StandardGraph is available from the top-level package", skipIfNoWasm(async () => {
-    const alice = new (NativeSubject as unknown as { new(...args: unknown[]): unknown })(
-      "alice", ["Person"], {}
-    );
-    const graph = StandardGraph.fromPatterns([
-      NativePattern.point(alice),
-    ] as never[]);
-
-    expect(graph.nodeCount).toBe(1);
-    expect(graph.node("alice")).toBeDefined();
-  }));
-
-  it("Gram workflows are callable from the top-level package", skipIfNoWasm(async () => {
-    const patterns = await Gram.parse("(alice:Person) (bob:Person)") as unknown[];
-    const first = await Gram.parseOne("(alice:Person)");
-    const serialized = await Gram.stringify(first);
-
-    expect(Array.isArray(patterns)).toBe(true);
-    expect(patterns).toHaveLength(2);
-    expect(first).toBeTruthy();
-    expect(serialized).toContain("alice");
-  }));
-});
-
-// ---------------------------------------------------------------------------
-// US1: NativeReconciliationPolicy
-// ---------------------------------------------------------------------------
-
-describe("NativeReconciliationPolicy (US1)", () => {
-  it("lastWriteWins() constructs without error", skipIfNoWasm(async () => {
-    const policy = NativeReconciliationPolicy.lastWriteWins();
-    expect(policy).toBeDefined();
-  }));
-
-  it("firstWriteWins() constructs without error", skipIfNoWasm(async () => {
-    const policy = NativeReconciliationPolicy.firstWriteWins();
-    expect(policy).toBeDefined();
-  }));
-
-  it("strict() constructs without error", skipIfNoWasm(async () => {
-    const policy = NativeReconciliationPolicy.strict();
-    expect(policy).toBeDefined();
-  }));
-
-  it("merge() constructs without error", skipIfNoWasm(async () => {
-    const policy = NativeReconciliationPolicy.merge();
-    expect(policy).toBeDefined();
-  }));
-
-  it("strict policy records conflict in graph.conflicts", skipIfNoWasm(async () => {
-    // Two patterns with the same identity under strict policy → conflict
-    const strict = NativeReconciliationPolicy.strict();
-    const graph = NativePatternGraph.fromPatterns([], strict);
-    expect(graph.conflicts).toBeDefined();
-  }));
-});
-
-// ---------------------------------------------------------------------------
-// US1: NativeGraphQuery and algorithms
-// ---------------------------------------------------------------------------
-
-describe("NativeGraphQuery and algorithms (US1)", () => {
-  it("fromPatternGraph() creates a query handle", skipIfNoWasm(async () => {
-    const graph = NativePatternGraph.empty();
-    const query = NativeGraphQuery.fromPatternGraph(graph);
-    expect(query).toBeDefined();
-    expect(query.nodes()).toBeDefined();
-    expect(query.relationships()).toBeDefined();
-  }));
-
-  it("bfs() returns traversal order", skipIfNoWasm(async () => {
-    const graph = NativePatternGraph.empty();
-    const query = NativeGraphQuery.fromPatternGraph(graph);
-    // Empty graph — no start node, but function should not throw
-    expect(Array.isArray(query.nodes())).toBe(true);
-  }));
-
-  it("hasCycle() returns false for empty graph", skipIfNoWasm(async () => {
-    const graph = NativePatternGraph.empty();
-    const query = NativeGraphQuery.fromPatternGraph(graph);
-    expect(hasCycle(query)).toBe(false);
-  }));
-
-  it("isConnected() returns true for empty graph", skipIfNoWasm(async () => {
-    const graph = NativePatternGraph.empty();
-    const query = NativeGraphQuery.fromPatternGraph(graph);
-    expect(isConnected(query)).toBe(true);
-  }));
-
-  it("topologicalSort() returns array for acyclic graph", skipIfNoWasm(async () => {
-    const graph = NativePatternGraph.empty();
-    const query = NativeGraphQuery.fromPatternGraph(graph);
-    const sorted = topologicalSort(query);
-    // Empty graph has no cycle — should return empty array (not null)
-    expect(sorted).not.toBeNull();
-    expect(Array.isArray(sorted)).toBe(true);
-  }));
-
-  it("degreeCentrality() returns object", skipIfNoWasm(async () => {
-    const graph = NativePatternGraph.empty();
-    const query = NativeGraphQuery.fromPatternGraph(graph);
-    const centrality = degreeCentrality(query);
-    expect(typeof centrality).toBe("object");
-  }));
-
-  it("connectedComponents() returns array", skipIfNoWasm(async () => {
-    const graph = NativePatternGraph.empty();
-    const query = NativeGraphQuery.fromPatternGraph(graph);
-    const components = connectedComponents(query);
-    expect(Array.isArray(components)).toBe(true);
-  }));
-});
-
-// ---------------------------------------------------------------------------
-// US2: Structural analysis
-// ---------------------------------------------------------------------------
-
-describe("Structural analysis (US2)", () => {
-  it("hasCycle() returns false for acyclic graph", skipIfNoWasm(async () => {
-    const graph = NativePatternGraph.empty();
-    const query = NativeGraphQuery.fromPatternGraph(graph);
-    expect(hasCycle(query)).toBe(false);
-  }));
-
-  it("betweennessCentrality() returns scores", skipIfNoWasm(async () => {
-    const graph = NativePatternGraph.empty();
-    const query = NativeGraphQuery.fromPatternGraph(graph);
-    const scores = betweennessCentrality(query);
-    expect(typeof scores).toBe("object");
-  }));
-
-  it("minimumSpanningTree() returns array", skipIfNoWasm(async () => {
-    const graph = NativePatternGraph.empty();
-    const query = NativeGraphQuery.fromPatternGraph(graph);
-    const tree = minimumSpanningTree(query);
-    expect(Array.isArray(tree)).toBe(true);
-  }));
-});
-
-// ---------------------------------------------------------------------------
-// Pure TypeScript tests (no WASM required)
-// ---------------------------------------------------------------------------
-
-describe("Pure TypeScript exports (no WASM)", () => {
-  it("GraphClass constants are defined", () => {
-    expect(GraphClass.NODE).toBe("node");
-    expect(GraphClass.RELATIONSHIP).toBe("relationship");
-    expect(GraphClass.ANNOTATION).toBe("annotation");
-    expect(GraphClass.WALK).toBe("walk");
-    expect(GraphClass.OTHER).toBe("other");
-  });
-
-  it("TraversalDirection constants are defined", () => {
-    expect(TraversalDirection.FORWARD).toBe("forward");
-    expect(TraversalDirection.BACKWARD).toBe("backward");
-  });
-
-  it("@relateby/graph transforms are re-exported", () => {
-    expect(typeof toGraphView).toBe("function");
-    expect(typeof mapGraph).toBe("function");
-    expect(typeof filterGraph).toBe("function");
-    expect(typeof foldGraph).toBe("function");
-    expect(typeof paraGraph).toBe("function");
-    expect(typeof unfoldGraph).toBe("function");
-  });
-
-  it("Gram codec is exported from @relateby/pattern", () => {
-    expect(typeof Gram.parse).toBe("function");
-    expect(typeof Gram.stringify).toBe("function");
-  });
-});
+    expect(graph.nodeCount).toBe(2)
+    expect(graph.relationshipCount).toBe(1)
+    expect(Option.getOrUndefined(graph.node("alice"))?.value.identity).toBe("alice")
+    expect(Option.getOrUndefined(graph.source("r1"))?.value.identity).toBe("alice")
+    expect(Option.getOrUndefined(graph.target("r1"))?.value.identity).toBe("bob")
+  })
+})
