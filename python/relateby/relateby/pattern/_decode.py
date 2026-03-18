@@ -5,7 +5,7 @@ converts that raw JSON structure into native Python dataclasses.
 """
 from __future__ import annotations
 
-from ._value import value_from_dict, Value
+from ._value import value_from_dict
 from ._subject import Subject
 from ._pattern import Pattern
 

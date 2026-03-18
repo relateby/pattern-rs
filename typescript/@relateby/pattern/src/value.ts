@@ -42,7 +42,62 @@ export const Value = {
   Measurement:  Data.tagged<MeasurementVal>("MeasurementVal"),
 } as const
 
-// --- Schema for decoding the JSON interchange payload ---
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return typeof value === "object" && value !== null && !Array.isArray(value)
+}
+
+function asOptionalNumber(value: unknown, field: string): number | undefined {
+  if (value === undefined || value === null) return undefined
+  if (typeof value === "number") return value
+  throw new TypeError(`Expected ${field} to be a number`)
+}
+
+/**
+ * Decode a raw JSON-interchange value from Rust into the native tagged Value union.
+ */
+export function valueFromRaw(raw: unknown): Value {
+  if (typeof raw === "string") return Value.String({ value: raw })
+  if (typeof raw === "boolean") return Value.Bool({ value: raw })
+  if (typeof raw === "number") {
+    return Number.isInteger(raw)
+      ? Value.Int({ value: raw })
+      : Value.Float({ value: raw })
+  }
+  if (Array.isArray(raw)) {
+    return Value.Array({ items: Data.array(raw.map(valueFromRaw)) })
+  }
+  if (!isRecord(raw)) {
+    throw new TypeError("Unsupported raw value")
+  }
+
+  const typeTag = typeof raw.type === "string" ? raw.type : undefined
+  switch (typeTag) {
+    case "symbol":
+      if (typeof raw.value !== "string") throw new TypeError("Expected symbol value to be a string")
+      return Value.Symbol({ value: raw.value })
+    case "tagged":
+      if (typeof raw.tag !== "string") throw new TypeError("Expected tagged value tag to be a string")
+      if (typeof raw.content !== "string") throw new TypeError("Expected tagged value content to be a string")
+      return Value.TaggedString({ tag: raw.tag, content: raw.content })
+    case "range":
+      return Value.Range({
+        lower: asOptionalNumber(raw.lower, "range.lower"),
+        upper: asOptionalNumber(raw.upper, "range.upper"),
+      })
+    case "measurement":
+      if (typeof raw.unit !== "string") throw new TypeError("Expected measurement unit to be a string")
+      if (typeof raw.value !== "number") throw new TypeError("Expected measurement value to be a number")
+      return Value.Measurement({ unit: raw.unit, value: raw.value })
+    default:
+      return Value.Map({
+        entries: Object.fromEntries(
+          Object.entries(raw).map(([key, value]) => [key, valueFromRaw(value)])
+        ),
+      })
+  }
+}
+
+// --- Schema for native tagged Value objects ---
 // Schema.suspend is required because ArrayVal and MapVal reference ValueSchema recursively.
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export const ValueSchema: Schema.Schema<any> = Schema.Union(

@@ -9,7 +9,7 @@
 // constructed — invalid codec output surfaces as a GramParseError, not a crash.
 
 import { Data, HashMap, HashSet, Schema } from "effect"
-import { Value, ValueSchema } from "./value.js"
+import { valueFromRaw } from "./value.js"
 import { Subject } from "./subject.js"
 import { Pattern } from "./pattern.js"
 
@@ -18,7 +18,7 @@ import { Pattern } from "./pattern.js"
 interface RawSubject {
   identity:   string
   labels:     ReadonlyArray<string>
-  properties: Record<string, Value>
+  properties: Record<string, unknown>
 }
 
 interface RawPattern {
@@ -31,7 +31,7 @@ interface RawPattern {
 const RawSubjectSchema = Schema.Struct({
   identity:   Schema.String,
   labels:     Schema.Array(Schema.String),
-  properties: Schema.Record({ key: Schema.String, value: ValueSchema }),
+  properties: Schema.Record({ key: Schema.String, value: Schema.Unknown }),
 })
 
 // Schema.suspend is required because RawPatternSchema references itself via elements
@@ -49,7 +49,7 @@ export function patternFromRaw(raw: RawPattern): Pattern<Subject> {
     identity:   raw.subject.identity,
     labels:     HashSet.fromIterable(raw.subject.labels),
     properties: HashMap.fromIterable(
-      Object.entries(raw.subject.properties as Record<string, Value>)
+      Object.entries(raw.subject.properties).map(([key, value]) => [key, valueFromRaw(value)] as const)
     ),
   })
   const elements = Data.array(

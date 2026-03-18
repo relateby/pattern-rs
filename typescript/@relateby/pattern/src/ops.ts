@@ -63,5 +63,14 @@ export const duplicate = <V>(p: Pattern<V>): Pattern<Pattern<V>> =>
 // --- Extra utility ---
 
 /** Return all values in pre-order traversal order. */
-export const values = <V>(p: Pattern<V>): ReadonlyArray<V> =>
-  pipe(p, fold([] as V[], (acc, v) => [...acc, v]))
+export const values = <V>(p: Pattern<V>): ReadonlyArray<V> => {
+  const result: Array<V> = []
+
+  const visit = (node: Pattern<V>): void => {
+    result.push(node.value)
+    for (const element of node.elements) visit(element)
+  }
+
+  visit(p)
+  return result
+}

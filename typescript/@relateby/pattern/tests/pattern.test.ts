@@ -64,6 +64,26 @@ describe("@relateby/pattern", () => {
     expect(serialized).toContain("bob")
   })
 
+  it("decodes subject properties from the JSON codec bridge", async () => {
+    const [parsed] = await Effect.runPromise(
+      Gram.parse('(alice:Person {name: "Alice", age: 42, active: true})')
+    )
+
+    expect(parsed?.value.identity).toBe("alice")
+    expect([...HashMap.entries(parsed?.value.properties ?? HashMap.empty())]).toContainEqual([
+      "name",
+      Value.String({ value: "Alice" }),
+    ])
+    expect([...HashMap.entries(parsed?.value.properties ?? HashMap.empty())]).toContainEqual([
+      "age",
+      Value.Int({ value: 42 }),
+    ])
+    expect([...HashMap.entries(parsed?.value.properties ?? HashMap.empty())]).toContainEqual([
+      "active",
+      Value.Bool({ value: true }),
+    ])
+  })
+
   it("classifies native patterns with StandardGraph", () => {
     const alice = Pattern.point(Subject.fromId("alice").withLabel("Person"))
     const bob = Pattern.point(Subject.fromId("bob").withLabel("Person"))

@@ -1,12 +1,10 @@
-"""Property-based law tests for Pattern operations.
+"""Law-style tests for Pattern operations.
 
 Tests functor, foldable, and comonad laws for the native Python Pattern.
-These laws ensure algebraic correctness of the implementation.
+These checks use representative example patterns to exercise algebraic behavior.
 """
-import pytest
 from relateby.pattern import Pattern
 from relateby.pattern._subject import Subject
-from relateby.pattern._value import StringVal
 
 
 # --- Helpers ---

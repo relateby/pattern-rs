@@ -1,7 +1,7 @@
-// pattern-laws.test.ts — Property-based law tests for Pattern operations
+// pattern-laws.test.ts — Law-style tests for Pattern operations
 //
-// Tests functor, foldable, and comonad laws using fast-check.
-// These laws ensure the native TypeScript implementation is algebraically correct.
+// Uses representative example patterns to exercise functor, foldable,
+// and comonad behavior without a property-based generator.
 
 import { describe, it, expect } from "vitest"
 import { Data, Equal, pipe } from "effect"
@@ -101,14 +101,13 @@ describe("Comonad laws", () => {
   })
 
   it("extend composition: extend(f)(extend(g)(p)) == extend(f ∘ extend(g))(p)", () => {
-    const f = (p: Pattern<Subject>) => p.size
+    const f = (p: Pattern<number>) => p.value + p.size
     const g = (p: Pattern<Subject>) => p.depth
 
     for (const p of testPatterns) {
-      const lhs = pipe(p, extend(g), extend((q: Pattern<number>) => f(pipe(p, extend(g)))))
+      const lhs = pipe(p, extend(g), extend(f))
       const rhs = pipe(p, extend((q) => f(pipe(q, extend(g)))))
-      // Both should produce Pattern<number> with same structure
-      expect(extract(lhs)).toBe(extract(rhs))
+      expect(Equal.equals(lhs, rhs)).toBe(true)
     }
   })
 })
