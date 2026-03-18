@@ -22,6 +22,14 @@ export class Pattern<V> extends Data.Class<{
     return this.elements.length === 0
   }
 
+  get identity(): string | undefined {
+    if (typeof this.value === "object" && this.value !== null && "identity" in this.value) {
+      const candidate = (this.value as { identity?: unknown }).identity
+      return typeof candidate === "string" ? candidate : undefined
+    }
+    return undefined
+  }
+
   get length(): number {
     return this.elements.length
   }

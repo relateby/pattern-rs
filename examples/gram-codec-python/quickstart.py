@@ -1,43 +1,28 @@
 #!/usr/bin/env python3
-"""
-Quick start example for the public relateby.gram package.
+"""Quick start example for the public relateby.gram package."""
 
-Install:
-    pip install relateby-pattern
-"""
+from relateby.gram import GramParseError, gram_stringify, gram_validate, parse_gram, round_trip
 
-from relateby.gram import parse_gram, round_trip, validate_gram
-
-# Example 1: Parse a simple relationship
 print("1. Parse a relationship:")
-result = parse_gram("(alice)-[:KNOWS]->(bob)")
-print(f"   Patterns: {result.pattern_count}")
-print(f"   Identifiers: {result.identifiers}\n")
+patterns = parse_gram("(alice)-[:KNOWS]->(bob)")
+print(f"   Parsed patterns: {len(patterns)}")
+print(f"   Root identities: {[pattern.value.identity for pattern in patterns]}\n")
 
-# Example 2: Validate gram notation
 print("2. Validate gram notation:")
-print(f"   (hello) is valid: {validate_gram('(hello)')}")
-print(f"   (unclosed is valid: {validate_gram('(unclosed')}\n")
+print(f"   (hello) errors: {gram_validate('(hello)')}")
+print(f"   (unclosed errors: {gram_validate('(unclosed')}\n")
 
-# Example 3: Round-trip test
 print("3. Round-trip test:")
 original = "(alice)-->(bob)"
 serialized = round_trip(original)
 print(f"   Original:   {original}")
 print(f"   Serialized: {serialized}\n")
 
-# Example 4: Parse complex pattern
-print("4. Parse complex pattern:")
-gram = '[team:Team {name: "DevRel"} | (alice), (bob), (charlie)]'
-result = parse_gram(gram)
-print(f"   Input: {gram}")
-print(f"   Patterns: {result.pattern_count}")
-print(f"   Root identifiers: {result.identifiers}\n")
+print("4. Serialize parsed native patterns:")
+print(f"   Stringified: {gram_stringify(patterns)}\n")
 
-# Example 5: Error handling
 print("5. Error handling:")
 try:
     parse_gram("(invalid syntax")
-except ValueError as e:
-    print(f"   Caught error: {e}")
-
+except GramParseError as error:
+    print(f"   Caught error: {error}")

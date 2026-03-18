@@ -124,12 +124,12 @@
 
 ### Implementation
 
-- [ ] T036 [P] [US5] Implement `typescript/@relateby/pattern/src/standard-graph.ts`: `StandardGraph` class with private maps for nodes/relationships/annotations/walks/other; `fromPatterns(patterns)` applies the 5-class classification (0 elements→Node, 1→Annotation, 2+both-nodes→Relationship, valid identity chain→Walk, else→Other); walk validity check ports the identity-chain predicate from gram-hs `GraphClassifier.hs`; `fromGram(input)` is `pipe(Gram.parse(input), Effect.map(StandardGraph.fromPatterns))`; `node(id)` and `relationship(id)` return `Option.Option<...>` (depends on T015, T012)
-- [ ] T037 [P] [US5] Implement `python/relateby/relateby/pattern/_standard_graph.py`: `StandardGraph` class with the same 5-class classification logic; `from_patterns(patterns)` class method; `from_gram(input)` class method using `parse_gram` + `from_patterns`; `node(id)` and `relationship(id)` return `Pattern[Subject] | None` (depends on T026, T021)
-- [ ] T038 [US5] Update `typescript/@relateby/pattern/src/index.ts` to export `StandardGraph` (depends on T036, T016)
-- [ ] T039 [US5] Update `python/relateby/relateby/pattern/__init__.py` and `__init__.pyi` to export `StandardGraph` from `_standard_graph.py` (depends on T037, T024)
-- [ ] T040 [P] [US5] Add tests in `typescript/@relateby/pattern/tests/standard-graph.test.ts`: node/relationship/annotation/walk classification; `fromGram` convenience constructor; `node(id)` returns `Option.some`/`Option.none` correctly (depends on T036)
-- [ ] T041 [P] [US5] Add tests in `python/relateby/tests/test_standard_graph.py`: node/relationship/annotation/walk classification; `from_gram` convenience constructor (depends on T037)
+- [X] T036 [P] [US5] Implement `typescript/@relateby/pattern/src/standard-graph.ts`: `StandardGraph` class with private maps for nodes/relationships/annotations/walks/other; `fromPatterns(patterns)` applies the 5-class classification (0 elements→Node, 1→Annotation, 2+both-nodes→Relationship, valid identity chain→Walk, else→Other); walk validity check ports the identity-chain predicate from gram-hs `GraphClassifier.hs`; `fromGram(input)` is `pipe(Gram.parse(input), Effect.map(StandardGraph.fromPatterns))`; `node(id)` and `relationship(id)` return `Option.Option<...>` (depends on T015, T012)
+- [X] T037 [P] [US5] Implement `python/relateby/relateby/pattern/_standard_graph.py`: `StandardGraph` class with the same 5-class classification logic; `from_patterns(patterns)` class method; `from_gram(input)` class method using `parse_gram` + `from_patterns`; `node(id)` and `relationship(id)` return `Pattern[Subject] | None` (depends on T026, T021)
+- [X] T038 [US5] Update `typescript/@relateby/pattern/src/index.ts` to export `StandardGraph` (depends on T036, T016)
+- [X] T039 [US5] Update `python/relateby/relateby/pattern/__init__.py` and `__init__.pyi` to export `StandardGraph` from `_standard_graph.py` (depends on T037, T024)
+- [X] T040 [P] [US5] Add tests in `typescript/@relateby/pattern/tests/standard-graph.test.ts`: node/relationship/annotation/walk classification; `fromGram` convenience constructor; `node(id)` returns `Option.some`/`Option.none` correctly (depends on T036)
+- [X] T041 [P] [US5] Add tests in `python/relateby/tests/test_standard_graph.py`: node/relationship/annotation/walk classification; `from_gram` convenience constructor (depends on T037)
 
 **Checkpoint**: `StandardGraph.fromPatterns` correctly classifies all 5 element classes. `fromGram` composes parse + classify. Querying nodes/relationships by id works.
 
@@ -139,19 +139,19 @@
 
 **Purpose**: Remove the WASM and PyO3 type layers now that all native implementations are verified; update docs and examples; run full CI.
 
-- [ ] T042 Delete `crates/pattern-wasm/src/convert.rs` (the bidirectional Rust↔WASM type conversion layer — only deletable after all TS tests pass with the new native path)
-- [ ] T043 Delete `crates/pattern-wasm/src/standard_graph.rs` (WASM StandardGraph wrapper — superseded by native TypeScript)
-- [ ] T044 Update `crates/pattern-wasm/src/lib.rs` to remove re-exports of `pattern-core` types; retain only `gram_parse_to_json`, `gram_stringify_from_json`, `gram_validate` re-exports
-- [ ] T045 Update `crates/pattern-wasm/src/gram.rs` to remove the old `Gram.parse` / `Gram.parseOne` / `Gram.stringify` WASM methods; retain only the new JSON string functions
-- [ ] T046 [P] Slim `crates/pattern-core/src/python.rs` to ~50 lines: remove `PyPattern`, `PySubject`, `PyValue`, `PyStandardGraph`, `PyValidationRules`, `PyStructureAnalysis`, `PySubjectBuilder`, `PyValidationError`; retain only the module registration boilerplate and any remaining codec-only PyO3 bindings
-- [ ] T047 Update `typescript/@relateby/pattern/src/index.ts` to remove WASM-backed `NativePattern`, `NativeSubject`, `WasmStandardGraph` and related wrapper exports (depends on T042–T045, all US phases complete)
-- [ ] T048 Update `python/relateby/relateby/pattern/__init__.py` to remove aliased PyO3-backed classes (depends on T046, all Python US phases complete)
-- [ ] T049 Rebuild WASM (`wasm-pack build`) and measure binary size; verify ≥40% reduction from pre-migration baseline; document result in `specs/039-native-bindings/benchmarks.md`
-- [ ] T050 [P] Run performance benchmarks: TypeScript `fold` over 10,000-node tree vs WASM-bridge baseline (≥5× faster); Python `fold` over 1,000-node tree vs PyO3 round-trip baseline (≥10× faster); document in `specs/039-native-bindings/benchmarks.md`
-- [ ] T051 [P] Update `docs/python-usage.md` with native API examples (dataclass Pattern, `fold` with lambda, `GramParseError`)
-- [ ] T052 [P] Update `typescript/@relateby/pattern/README.md` with effect-ts examples (`pipe`, `Effect.runPromise`, `Option.getOrUndefined`, `Equal.equals`)
-- [ ] T053 [P] Update `examples/` for both TypeScript and Python to use the new native API
-- [ ] T054 Run full CI validation: `cargo fmt --all`, `cargo clippy --workspace -- -D warnings`, `cargo test --workspace`, `./scripts/ci-local.sh` — all must pass clean
+- [X] T042 Delete `crates/pattern-wasm/src/convert.rs` (the bidirectional Rust↔WASM type conversion layer — only deletable after all TS tests pass with the new native path)
+- [X] T043 Delete `crates/pattern-wasm/src/standard_graph.rs` (WASM StandardGraph wrapper — superseded by native TypeScript)
+- [X] T044 Update `crates/pattern-wasm/src/lib.rs` to remove re-exports of `pattern-core` types; retain only `gram_parse_to_json`, `gram_stringify_from_json`, `gram_validate` re-exports
+- [X] T045 Update `crates/pattern-wasm/src/gram.rs` to remove the old `Gram.parse` / `Gram.parseOne` / `Gram.stringify` WASM methods; retain only the new JSON string functions
+- [X] T046 [P] Slim `crates/pattern-core/src/python.rs` to ~50 lines: remove `PyPattern`, `PySubject`, `PyValue`, `PyStandardGraph`, `PyValidationRules`, `PyStructureAnalysis`, `PySubjectBuilder`, `PyValidationError`; retain only the module registration boilerplate and any remaining codec-only PyO3 bindings
+- [X] T047 Update `typescript/@relateby/pattern/src/index.ts` to remove WASM-backed `NativePattern`, `NativeSubject`, `WasmStandardGraph` and related wrapper exports (depends on T042–T045, all US phases complete)
+- [X] T048 Update `python/relateby/relateby/pattern/__init__.py` to remove aliased PyO3-backed classes (depends on T046, all Python US phases complete)
+- [X] T049 Rebuild WASM (`wasm-pack build`) and measure binary size; verify ≥40% reduction from pre-migration baseline; document result in `specs/039-native-bindings/benchmarks.md`
+- [X] T050 [P] Run performance benchmarks: TypeScript `fold` over 10,000-node tree vs WASM-bridge baseline (≥5× faster); Python `fold` over 1,000-node tree vs PyO3 round-trip baseline (≥10× faster); document in `specs/039-native-bindings/benchmarks.md`
+- [X] T051 [P] Update `docs/python-usage.md` with native API examples (dataclass Pattern, `fold` with lambda, `GramParseError`)
+- [X] T052 [P] Update `typescript/@relateby/pattern/README.md` with effect-ts examples (`pipe`, `Effect.runPromise`, `Option.getOrUndefined`, `Equal.equals`)
+- [X] T053 [P] Update `examples/` for both TypeScript and Python to use the new native API
+- [X] T054 Run full CI validation: `cargo fmt --all`, `cargo clippy --workspace -- -D warnings`, `cargo test --workspace`, `./scripts/ci-local.sh` — all must pass clean
 
 ---
 

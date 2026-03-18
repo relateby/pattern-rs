@@ -9,7 +9,7 @@ Run after installing the combined package from the repo:
     python examples/pattern-core-python/standard_graph.py
 """
 
-from relateby.pattern import StandardGraph, Subject
+from relateby.pattern import StandardGraph, StringVal, Subject
 
 
 def main():
@@ -20,8 +20,8 @@ def main():
     g = StandardGraph()
     assert g.is_empty, "new graph is empty"
 
-    alice = Subject(identity="alice", labels={"Person"}, properties={"name": "Alice"})
-    bob = Subject(identity="bob", labels={"Person"}, properties={"name": "Bob"})
+    alice = Subject(identity="alice", labels={"Person"}, properties={"name": StringVal("Alice")})
+    bob = Subject(identity="bob", labels={"Person"}, properties={"name": StringVal("Bob")})
     rel = Subject(identity="r1", labels={"KNOWS"}, properties={})
 
     g.add_node(alice)
@@ -36,13 +36,12 @@ def main():
     print(f"Neighbors of alice: {g.neighbors('alice')}")
     print(repr(g))
 
-    # --- SubjectBuilder fluent API ---
-    carol = Subject.build("carol").label("Person").property("name", "Carol").done()
+    # --- Immutable Subject helpers ---
+    carol = Subject.from_id("carol").with_label("Person")
     g.add_node(carol)
     print(f"After adding Carol: {g.node_count} nodes")
 
-    # Subject.build() shorthand
-    dave = Subject.build("dave").label("Person").property("age", 40).done()
+    dave = Subject.from_id("dave").with_label("Person")
     g.add_node(dave)
     print(f"After adding Dave: {g.node_count} nodes")
 

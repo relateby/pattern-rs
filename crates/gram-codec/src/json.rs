@@ -24,7 +24,7 @@
 //! - Primitives: native JSON (string, number, boolean)
 //! - Complex types: tagged objects `{ "type": "symbol"|"range"|"tagged"|"measurement", ... }`
 
-use crate::ast::{AstPattern, AstSubject};
+use crate::ast::AstPattern;
 use pattern_core::{Pattern, RangeValue, Subject, Symbol, Value};
 use std::collections::{HashMap, HashSet};
 
@@ -253,8 +253,7 @@ mod tests {
 
     #[test]
     fn test_value_types_in_json() {
-        let json =
-            gram_parse_to_json(r#"(a {s: "hello", i: 42, f: 3.14, b: true})"#).unwrap();
+        let json = gram_parse_to_json(r#"(a {s: "hello", i: 42, f: 3.14, b: true})"#).unwrap();
         let parsed: Vec<serde_json::Value> = serde_json::from_str(&json).unwrap();
         let props = &parsed[0]["subject"]["properties"];
         assert!(props["s"].is_string());

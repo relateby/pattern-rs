@@ -80,8 +80,9 @@ else:
 
     @pytest.mark.public_api
     def test_invalid_public_workflow_raises_documented_exception_shape():
-        with pytest.raises(ValueError):
+        with pytest.raises(gram.GramParseError) as exc_info:
             pattern.StandardGraph.from_gram("(alice")
+        assert exc_info.value.input == "(alice"
 
         with pytest.raises(gram.GramParseError) as exc_info:
             gram.parse_gram("(alice")

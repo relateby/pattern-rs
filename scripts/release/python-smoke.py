@@ -20,17 +20,17 @@ def main() -> int:
         raise SystemExit("relateby.pattern.StandardGraph is missing")
     if not hasattr(gram, "parse_gram"):
         raise SystemExit("relateby.gram.parse_gram is missing")
-    if not hasattr(gram, "validate_gram"):
-        raise SystemExit("relateby.gram.validate_gram is missing")
+    if not hasattr(gram, "gram_validate"):
+        raise SystemExit("relateby.gram.gram_validate is missing")
     if not hasattr(gram, "round_trip"):
         raise SystemExit("relateby.gram.round_trip is missing")
 
     result = gram.parse_gram("(alice:Person)")
-    if getattr(result, "pattern_count", 0) != 1:
-        raise SystemExit("relateby.gram.parse_gram returned an unexpected ParseResult")
+    if len(result) != 1 or result[0].value.identity != "alice":
+        raise SystemExit("relateby.gram.parse_gram returned an unexpected pattern list")
 
-    if gram.validate_gram("(alice:Person)") is not True:
-        raise SystemExit("relateby.gram.validate_gram returned False for valid input")
+    if gram.gram_validate("(alice:Person)") != []:
+        raise SystemExit("relateby.gram.gram_validate returned errors for valid input")
 
     if gram.round_trip("(alice:Person)") != "(alice:Person)":
         raise SystemExit("relateby.gram.round_trip returned an unexpected result")
@@ -43,17 +43,17 @@ def main() -> int:
 
     try:
         gram.parse_gram("(alice")
-    except ValueError as exc:
-        if "relateby.gram.parse_gram" not in str(exc):
-            raise SystemExit("relateby.gram.parse_gram did not raise the normalized public error")
+    except gram.GramParseError as exc:
+        if exc.input != "(alice":
+            raise SystemExit("relateby.gram.parse_gram did not preserve the failing input")
     else:
         raise SystemExit("relateby.gram.parse_gram accepted invalid input")
 
     try:
         pattern.StandardGraph.from_gram("(alice")
-    except ValueError as exc:
-        if "relateby.pattern" not in str(exc):
-            raise SystemExit("relateby.pattern.StandardGraph.from_gram did not raise the normalized public error")
+    except gram.GramParseError as exc:
+        if exc.input != "(alice":
+            raise SystemExit("relateby.pattern.StandardGraph.from_gram did not preserve the failing input")
     else:
         raise SystemExit("relateby.pattern.StandardGraph.from_gram accepted invalid input")
 

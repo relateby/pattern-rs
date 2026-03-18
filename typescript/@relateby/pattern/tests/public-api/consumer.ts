@@ -1,48 +1,56 @@
-import { Effect } from "effect";
+import { Effect, Equal, Option, pipe } from "effect"
 import {
   Gram,
-  GraphClass,
-  NativeGraphQuery,
-  NativePattern,
-  NativePatternGraph,
-  NativeReconciliationPolicy,
-  NativeSubject,
-  NativeValidationRules,
-  NativeValue,
+  Pattern,
   StandardGraph,
-  TraversalDirection,
-  init,
+  Subject,
+  Value,
+  findFirst,
+  fold,
   toGraphView,
-} from "@relateby/pattern";
+  values,
+} from "@relateby/pattern"
 
 export async function exercisePublicSurface(): Promise<void> {
-  await init();
+  const alice = Subject.fromId("alice")
+    .withLabel("Person")
+    .withProperty("name", Value.String({ value: "Alice" }))
+  const bob = Subject.fromId("bob").withLabel("Person")
 
-  const alice = new NativeSubject("alice", ["Person"], {
-    name: NativeValue.string("Alice"),
-  });
-  const bob = new NativeSubject("bob", ["Person"], {});
-  const alicePattern = NativePattern.point(alice);
-  const bobPattern = NativePattern.point(bob);
-  const rules = new NativeValidationRules();
-  const policy = NativeReconciliationPolicy.lastWriteWins();
-  const nativeGraph = NativePatternGraph.fromPatterns([alicePattern, bobPattern], policy);
-  const query = NativeGraphQuery.fromPatternGraph(nativeGraph);
-  const standardGraph = StandardGraph.fromPatterns([alicePattern, bobPattern]);
-  const parsed = await Effect.runPromise(Gram.parse("(alice:Person)"));
-  const serialized: string = await Effect.runPromise(Gram.stringify(parsed));
-  await Effect.runPromise(Gram.validate("(alice:Person)"));
-  const nodeCount: number = standardGraph.nodeCount;
-  const maybeAlice = standardGraph.node("alice");
+  const alicePattern = Pattern.point(alice)
+  const bobPattern = Pattern.point(bob)
+  const relationship = new Pattern({
+    value: Subject.fromId("r1").withLabel("KNOWS"),
+    elements: [alicePattern, bobPattern],
+  })
 
-  void rules;
-  void query;
-  void standardGraph;
-  void parsed;
-  void serialized;
-  void nodeCount;
-  void maybeAlice;
-  void GraphClass.NODE;
-  void TraversalDirection.FORWARD;
-  void toGraphView;
+  const graph = StandardGraph.fromPatterns([relationship])
+  const parsed = await Effect.runPromise(Gram.parse("(alice:Person)-->(bob:Person)"))
+  const serialized = await Effect.runPromise(Gram.stringify(parsed))
+  await Effect.runPromise(Gram.validate("(alice:Person)-->(bob:Person)"))
+
+  const allValues = values(relationship)
+  const count = pipe(relationship, fold(0, (acc) => acc + 1))
+  const match = pipe(relationship, findFirst((subject) => subject.identity === "bob"))
+  const aliceNode = Option.getOrUndefined(graph.node("alice"))
+  const graphView = toGraphView({
+    nodes: [alicePattern, bobPattern],
+    relationships: [],
+    walks: [],
+    annotations: [],
+    conflicts: {},
+    size: 2,
+    merge: (other) => other,
+    topoSort: () => [alicePattern, bobPattern],
+  })
+
+  void graph
+  void parsed
+  void serialized
+  void allValues
+  void count
+  void match
+  void aliceNode
+  void graphView
+  void Equal.equals(alice, alice)
 }

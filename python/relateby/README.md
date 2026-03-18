@@ -40,19 +40,19 @@ There are no top-level `pattern_core` or `gram_codec` imports; use `relateby.pat
 Representative public imports:
 
 ```python
-from relateby.pattern import Pattern, StandardGraph, Subject, ValidationRules, Value
-from relateby.gram import parse_gram, round_trip, validate_gram
+from relateby.pattern import Pattern, StandardGraph, StringVal, Subject
+from relateby.gram import gram_validate, parse_gram, round_trip
 ```
 
 Example public workflow:
 
 ```python
-alice = Subject("alice", {"Person"}, {"name": Value.string("Alice")})
+alice = Subject.from_id("alice").with_label("Person").with_property("name", StringVal("Alice"))
 graph = StandardGraph.from_patterns([Pattern.point(alice)])
 
 assert graph.node_count == 1
-assert parse_gram("(alice:Person)").pattern_count == 1
-assert validate_gram("(alice:Person)") is True
+assert len(parse_gram("(alice:Person)")) == 1
+assert gram_validate("(alice:Person)") == []
 assert round_trip("(alice:Person)") == "(alice:Person)"
 ```
 
