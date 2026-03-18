@@ -1,0 +1,20 @@
+---
+description: Prefer the project GitHub gh workflow skill for GitHub tasks
+alwaysApply: true
+---
+
+# GitHub Workflow
+
+When GitHub-related topics are mentioned, prefer the project skill at
+`.cursor/skills/github-gh-workflow/SKILL.md`.
+
+Use that skill for:
+- pull requests and PR reviews
+- comments and issue workflows
+- GitHub URLs
+- checks, statuses, workflow runs, and GitHub Actions
+
+Default to the `gh` CLI for GitHub inspection and actions.
+
+Inspect current state before acting, and avoid writing comments, editing issues,
+changing PR state, or triggering other GitHub side effects unless the user asked.
