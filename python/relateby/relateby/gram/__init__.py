@@ -64,7 +64,7 @@ def gram_stringify(patterns: "list[Pattern[Subject]]") -> str:
         return {
             "subject": {
                 "identity": p.value.identity,
-                "labels": list(p.value.labels),
+                "labels": sorted(p.value.labels),
                 "properties": {k: value_to_dict(v) for k, v in p.value.properties.items()},
             },
             "elements": [_pattern_to_dict(e) for e in p.elements],

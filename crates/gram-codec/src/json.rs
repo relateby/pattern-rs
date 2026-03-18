@@ -78,7 +78,10 @@ pub fn gram_parse_to_json(input: &str) -> Result<String, String> {
 /// ```
 pub fn gram_stringify_from_json(input: &str) -> Result<String, String> {
     let asts: Vec<AstPattern> = serde_json::from_str(input).map_err(|e| e.to_string())?;
-    let patterns: Vec<Pattern<Subject>> = asts.iter().map(ast_to_pattern).collect();
+    let patterns: Vec<Pattern<Subject>> = asts
+        .iter()
+        .map(ast_to_pattern)
+        .collect::<Result<Vec<_>, _>>()?;
     let gram_parts: Result<Vec<String>, String> = patterns
         .iter()
         .map(|p| crate::to_gram_pattern(p).map_err(|e| e.to_string()))
@@ -106,7 +109,7 @@ pub fn gram_validate_to_json(input: &str) -> String {
 }
 
 /// Convert an `AstPattern` back to a native `Pattern<Subject>`.
-fn ast_to_pattern(ast: &AstPattern) -> Pattern<Subject> {
+fn ast_to_pattern(ast: &AstPattern) -> Result<Pattern<Subject>, String> {
     let subject = Subject {
         identity: Symbol(ast.subject.identity.clone()),
         labels: ast.subject.labels.iter().cloned().collect::<HashSet<_>>(),
@@ -114,68 +117,92 @@ fn ast_to_pattern(ast: &AstPattern) -> Pattern<Subject> {
             .subject
             .properties
             .iter()
-            .filter_map(|(k, v)| json_to_value(v).map(|val| (k.clone(), val)))
-            .collect::<HashMap<_, _>>(),
+            .map(|(k, v)| json_to_value(v).map(|val| (k.clone(), val)))
+            .collect::<Result<HashMap<_, _>, _>>()?,
     };
-    let elements: Vec<Pattern<Subject>> = ast.elements.iter().map(ast_to_pattern).collect();
+    let elements: Vec<Pattern<Subject>> = ast
+        .elements
+        .iter()
+        .map(ast_to_pattern)
+        .collect::<Result<Vec<_>, _>>()?;
     if elements.is_empty() {
-        Pattern::point(subject)
+        Ok(Pattern::point(subject))
     } else {
-        Pattern::pattern(subject, elements)
+        Ok(Pattern::pattern(subject, elements))
     }
 }
 
 /// Convert a `serde_json::Value` back to a `pattern_core::Value`.
-///
-/// Mirrors `value_to_json` in `ast.rs`. Returns `None` for JSON null (not representable).
-fn json_to_value(v: &serde_json::Value) -> Option<Value> {
+fn json_to_value(v: &serde_json::Value) -> Result<Value, String> {
     match v {
-        serde_json::Value::String(s) => Some(Value::VString(s.clone())),
-        serde_json::Value::Bool(b) => Some(Value::VBoolean(*b)),
-        serde_json::Value::Null => None,
+        serde_json::Value::String(s) => Ok(Value::VString(s.clone())),
+        serde_json::Value::Bool(b) => Ok(Value::VBoolean(*b)),
+        serde_json::Value::Null => Err("JSON null is not representable as a gram value".to_string()),
         serde_json::Value::Number(n) => {
             if let Some(i) = n.as_i64() {
-                Some(Value::VInteger(i))
+                Ok(Value::VInteger(i))
             } else {
-                Some(Value::VDecimal(n.as_f64().unwrap_or(0.0)))
+                Ok(Value::VDecimal(n.as_f64().unwrap_or(0.0)))
             }
         }
         serde_json::Value::Array(arr) => {
-            let items: Vec<Value> = arr.iter().filter_map(json_to_value).collect();
-            Some(Value::VArray(items))
+            let items: Vec<Value> = arr
+                .iter()
+                .map(json_to_value)
+                .collect::<Result<Vec<_>, _>>()?;
+            Ok(Value::VArray(items))
         }
         serde_json::Value::Object(obj) => {
             // Check for tagged objects (symbol, range, measurement, tagged string)
             if let Some(type_tag) = obj.get("type").and_then(|t| t.as_str()) {
                 match type_tag {
                     "symbol" => {
-                        let val = obj.get("value")?.as_str()?.to_string();
-                        Some(Value::VSymbol(val))
+                        let val = obj
+                            .get("value")
+                            .and_then(|v| v.as_str())
+                            .ok_or_else(|| "symbol value must be a string".to_string())?
+                            .to_string();
+                        Ok(Value::VSymbol(val))
                     }
                     "range" => {
                         let lower = obj.get("lower").and_then(|v| v.as_f64());
                         let upper = obj.get("upper").and_then(|v| v.as_f64());
-                        Some(Value::VRange(RangeValue { lower, upper }))
+                        Ok(Value::VRange(RangeValue { lower, upper }))
                     }
                     "measurement" => {
-                        let unit = obj.get("unit")?.as_str()?.to_string();
-                        let value = obj.get("value")?.as_f64()?;
-                        Some(Value::VMeasurement { unit, value })
+                        let unit = obj
+                            .get("unit")
+                            .and_then(|v| v.as_str())
+                            .ok_or_else(|| "measurement unit must be a string".to_string())?
+                            .to_string();
+                        let value = obj
+                            .get("value")
+                            .and_then(|v| v.as_f64())
+                            .ok_or_else(|| "measurement value must be a number".to_string())?;
+                        Ok(Value::VMeasurement { unit, value })
                     }
                     "tagged" => {
-                        let tag = obj.get("tag")?.as_str()?.to_string();
-                        let content = obj.get("content")?.as_str()?.to_string();
-                        Some(Value::VTaggedString { tag, content })
+                        let tag = obj
+                            .get("tag")
+                            .and_then(|v| v.as_str())
+                            .ok_or_else(|| "tagged value tag must be a string".to_string())?
+                            .to_string();
+                        let content = obj
+                            .get("content")
+                            .and_then(|v| v.as_str())
+                            .ok_or_else(|| "tagged value content must be a string".to_string())?
+                            .to_string();
+                        Ok(Value::VTaggedString { tag, content })
                     }
-                    _ => None,
+                    _ => Err(format!("unknown tagged value type: {}", type_tag)),
                 }
             } else {
                 // Plain JSON object → VMap
                 let map: HashMap<String, Value> = obj
                     .iter()
-                    .filter_map(|(k, v)| json_to_value(v).map(|val| (k.clone(), val)))
-                    .collect();
-                Some(Value::VMap(map))
+                    .map(|(k, v)| json_to_value(v).map(|val| (k.clone(), val)))
+                    .collect::<Result<HashMap<_, _>, _>>()?;
+                Ok(Value::VMap(map))
             }
         }
     }
@@ -285,5 +312,35 @@ mod tests {
         let v = json_to_value(&serde_json::json!({"type": "range", "lower": 1.0, "upper": 10.0}))
             .unwrap();
         assert!(matches!(v, Value::VRange(_)));
+    }
+
+    #[test]
+    fn test_json_to_value_rejects_null() {
+        let err = json_to_value(&serde_json::Value::Null).unwrap_err();
+        assert!(err.contains("not representable"));
+    }
+
+    #[test]
+    fn test_json_to_value_rejects_unknown_tagged_type() {
+        let err = json_to_value(&serde_json::json!({"type": "unknown", "value": 1})).unwrap_err();
+        assert!(err.contains("unknown tagged value type"));
+    }
+
+    #[test]
+    fn test_stringify_rejects_null_property_in_json() {
+        let err = gram_stringify_from_json(
+            r#"[{"subject":{"identity":"alice","labels":["Person"],"properties":{"nickname":null}},"elements":[]}]"#,
+        )
+        .unwrap_err();
+        assert!(err.contains("not representable"));
+    }
+
+    #[test]
+    fn test_stringify_rejects_malformed_tagged_value() {
+        let err = gram_stringify_from_json(
+            r#"[{"subject":{"identity":"alice","labels":["Person"],"properties":{"code":{"type":"symbol"}}},"elements":[]}]"#,
+        )
+        .unwrap_err();
+        assert!(err.contains("symbol value must be a string"));
     }
 }

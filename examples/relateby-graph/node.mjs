@@ -4,14 +4,13 @@
  * Demonstrates:
  * 1. Building a graph from native Pattern/Subject values
  * 2. Converting to a GraphView
- * 3. Applying mapGraph + filterGraph via @relateby/graph
+ * 3. Applying mapGraph + filterGraph via @relateby/pattern
  *
  * Run:
  *   node node.mjs
  */
 
-import { Pattern, Subject, Value } from "@relateby/pattern";
-import { filterGraph, mapGraph, SpliceGap, toGraphView } from "@relateby/graph";
+import { Pattern, Subject, Value, filterGraph, mapGraph, SpliceGap, toGraphView } from "@relateby/pattern";
 
 const alice = Pattern.point(Subject.fromId("alice").withLabel("Person"));
 const bob = Pattern.point(Subject.fromId("bob").withLabel("Person"));

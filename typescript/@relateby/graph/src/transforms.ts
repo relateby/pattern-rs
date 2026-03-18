@@ -87,8 +87,31 @@ function applySubstitution<V>(
       continue;
     }
 
-    // For walks and annotations, check if any child element was removed
-    if (cls.tag === "GWalk" || cls.tag === "GAnnotation") {
+    if (cls.tag === "GRelationship") {
+      const [left, right] = p.elements;
+      const leftRemoved = left !== undefined && removedIdentities.has(left.identity);
+      const rightRemoved = right !== undefined && removedIdentities.has(right.identity);
+
+      if (leftRemoved || rightRemoved) {
+        switch (subst.tag) {
+          case "DeleteContainer":
+          case "SpliceGap":
+            continue;
+          case "ReplaceWithSurrogate": {
+            const replaced = p.elements.map((e) =>
+              removedIdentities.has(e.identity)
+                ? (subst.surrogate as Pattern<V>)
+                : e
+            );
+            result.push([cls, { ...p, identity: p.identity, elements: replaced }] as const);
+            break;
+          }
+        }
+      } else {
+        result.push([cls, p] as const);
+      }
+    } else if (cls.tag === "GWalk" || cls.tag === "GAnnotation") {
+      // For walks and annotations, check if any child element was removed
       const removedChildren = p.elements.filter((e) =>
         removedIdentities.has(e.identity)
       );
@@ -103,7 +126,7 @@ function applySubstitution<V>(
             const remaining = p.elements.filter(
               (e) => !removedIdentities.has(e.identity)
             );
-            const spliced: Pattern<V> = { ...p, elements: remaining };
+            const spliced: Pattern<V> = { ...p, identity: p.identity, elements: remaining };
             result.push([cls, spliced] as const);
             break;
           }
@@ -114,7 +137,7 @@ function applySubstitution<V>(
                 ? (subst.surrogate as Pattern<V>)
                 : e
             );
-            const substituted: Pattern<V> = { ...p, elements: replaced };
+            const substituted: Pattern<V> = { ...p, identity: p.identity, elements: replaced };
             result.push([cls, substituted] as const);
             break;
           }

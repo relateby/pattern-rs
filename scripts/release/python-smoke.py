@@ -35,6 +35,9 @@ def main() -> int:
     if gram.round_trip("(alice:Person)") != "(alice:Person)":
         raise SystemExit("relateby.gram.round_trip returned an unexpected result")
 
+    if "alice" not in gram.gram_stringify(result):
+        raise SystemExit("relateby.gram.gram_stringify returned an unexpected result")
+
     graph = pattern.StandardGraph.from_gram("(alice:Person)")
     if graph is None:
         raise SystemExit("relateby.pattern.StandardGraph.from_gram returned None")
@@ -56,6 +59,17 @@ def main() -> int:
             raise SystemExit("relateby.pattern.StandardGraph.from_gram did not preserve the failing input")
     else:
         raise SystemExit("relateby.pattern.StandardGraph.from_gram accepted invalid input")
+
+    bad_pattern = pattern.Pattern.point(
+        pattern.Subject.from_id("alice").with_property("nickname", pattern.NullVal())
+    )
+    try:
+        gram.gram_stringify([bad_pattern])
+    except gram.GramParseError as exc:
+        if "not representable" not in exc.cause:
+            raise SystemExit("relateby.gram.gram_stringify returned the wrong error for null values")
+    else:
+        raise SystemExit("relateby.gram.gram_stringify accepted unsupported null values")
 
     print(f"Python smoke test passed for {args.expect_distribution}", file=sys.stderr)
     return 0

@@ -53,6 +53,23 @@ if (typeof serialized !== "string" || !serialized.includes("alice")) {
   throw new Error("Gram.stringify returned an unexpected result");
 }
 
+let stringifyFailure = null;
+try {
+  await Effect.runPromise(
+    Gram.stringify([
+      Pattern.point(
+        Subject.fromId("alice").withProperty("nickname", Value.Null({}))
+      ),
+    ])
+  );
+} catch (error) {
+  stringifyFailure = error;
+}
+
+if (!(stringifyFailure instanceof Error) || !String(stringifyFailure.cause).includes("not representable")) {
+  throw new Error("Unsupported null values did not surface a structured stringify error");
+}
+
 let parseFailure = null;
 try {
   await Effect.runPromise(Gram.parse("(alice"));

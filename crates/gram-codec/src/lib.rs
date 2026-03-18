@@ -150,7 +150,10 @@ pub fn parse_gram_with_header(
 /// Parse gram notation to AST (Abstract Syntax Tree).
 ///
 /// Returns a single AstPattern representing the file-level pattern.
-/// This is the **recommended output format** for cross-language consumption.
+///
+/// For the stable cross-language boundary used by the native TypeScript and
+/// Python packages, prefer the JSON array helpers in `crate::json`
+/// (`gram_parse_to_json`, `gram_stringify_from_json`, `gram_validate_to_json`).
 ///
 /// # Why AST?
 ///

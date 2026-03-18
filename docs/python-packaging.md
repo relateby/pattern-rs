@@ -92,8 +92,8 @@ The supported public imports are:
 import relateby.pattern
 import relateby.gram
 
-from relateby.pattern import Pattern, StandardGraph, Subject, ValidationRules, Value
-from relateby.gram import parse_gram, round_trip, validate_gram
+from relateby.pattern import Pattern, StandardGraph, StringVal, Subject
+from relateby.gram import gram_validate, parse_gram, round_trip
 ```
 
 `pattern_core` and `gram_codec` remain internal build artifacts, not supported public imports.

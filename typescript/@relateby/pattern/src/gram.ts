@@ -155,7 +155,7 @@ function patternToRaw(p: Pattern<Subject>): object {
   return {
     subject: {
       identity:   p.value.identity,
-      labels:     [...HashSet.values(p.value.labels)],
+      labels:     [...HashSet.values(p.value.labels)].sort(),
       properties: Object.fromEntries(
         [...HashMap.entries(p.value.properties)].map(([k, v]) => [k, valueToRaw(v)])
       ),

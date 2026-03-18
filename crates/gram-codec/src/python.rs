@@ -273,7 +273,7 @@ fn parse_patterns_as_dicts(py: Python, input: &str) -> PyResult<PyObject> {
 ///     >>> patterns = json.loads(json_str)
 ///     >>> patterns[0]['subject']['identity']
 ///     'alice'
-#[pyfunction]
+#[pyfunction(name = "gram_parse_to_json")]
 fn gram_parse_to_json_py(input: &str) -> PyResult<String> {
     crate::json::gram_parse_to_json(input)
         .map_err(|e| PyValueError::new_err(format!("Parse error: {}", e)))
@@ -289,7 +289,7 @@ fn gram_parse_to_json_py(input: &str) -> PyResult<String> {
 ///
 /// Raises:
 ///     ValueError: If deserialization or serialization fails
-#[pyfunction]
+#[pyfunction(name = "gram_stringify_from_json")]
 fn gram_stringify_from_json_py(input: &str) -> PyResult<String> {
     crate::json::gram_stringify_from_json(input)
         .map_err(|e| PyValueError::new_err(format!("Stringify error: {}", e)))
@@ -309,7 +309,7 @@ fn gram_stringify_from_json_py(input: &str) -> PyResult<String> {
 ///     []
 ///     >>> gram_codec.gram_validate("(unclosed")
 ///     ['Parse error at ...']
-#[pyfunction]
+#[pyfunction(name = "gram_validate")]
 fn gram_validate_py(input: &str) -> Vec<String> {
     match crate::validate_gram(input) {
         Ok(()) => vec![],

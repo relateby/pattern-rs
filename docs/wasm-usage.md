@@ -8,8 +8,8 @@ The supported npm artifact is `@relateby/pattern`.
 
 It includes:
 
-- WASM-backed pattern and graph APIs
-- Gram codec exports via `Gram`
+- the Gram codec exposed through `Gram`
+- pure TypeScript `Pattern`, `Subject`, `Value`, and `StandardGraph`
 - pure TypeScript graph interfaces and transforms
 
 ## Graph API
@@ -17,13 +17,9 @@ It includes:
 For the complete TypeScript graph API reference, see **[docs/typescript-graph.md](./typescript-graph.md)**.
 
 This covers:
-- Package installation and initialization
-- `NativePatternGraph`, `NativeReconciliationPolicy`, `NativeGraphQuery`
-- Algorithm functions (BFS, DFS, shortest path, centrality, etc.)
-- Pure TypeScript transforms (`mapGraph`, `filterGraph`, `foldGraph`, `paraGraph`, etc.)
-- WASM-free stub pattern
-- Effect integration
-- Performance notes
+- `Gram` and the Effect-based codec workflow
+- `Pattern`, `Subject`, `Value`, and `StandardGraph`
+- pure TypeScript transforms (`mapGraph`, `filterGraph`, `foldGraph`, `paraGraph`, etc.)
 
 ## Building the WASM Module
 
@@ -45,88 +41,23 @@ wasm-pack build ../../../crates/pattern-wasm --target bundler --out-dir ../../..
 ## Quick Start
 
 ```typescript
-import {
-  Gram,
-  StandardGraph,
-  bfs,
-  init,
-  mapGraph,
-  NativeGraphQuery,
-  NativePattern,
-  NativePatternGraph,
-  NativeSubject,
-  NativeValue,
-  toGraphView,
-} from "@relateby/pattern";
+import { Effect, Option } from "effect"
+import { Gram, StandardGraph } from "@relateby/pattern"
 
-// Initialize WASM (Node.js; bundlers auto-initialize)
-await init();
+const patterns = await Effect.runPromise(
+  Gram.parse("(alice:Person)-[:KNOWS]->(bob:Person)")
+)
 
-// Build a graph
-const alice = NativePattern.point(new NativeSubject("alice", ["Person"], {}));
-const bob = NativePattern.point(new NativeSubject("bob", ["Person"], {}));
-const graph = NativePatternGraph.fromPatterns([alice, bob]);
+const graph = StandardGraph.fromPatterns(patterns)
 
-// Query
-const query = NativeGraphQuery.fromPatternGraph(graph);
-const aliceNode = query.nodeById("alice");
-const traversal = bfs(query, aliceNode!);
+console.log(graph.nodeCount)
+console.log(graph.relationshipCount)
+console.log(Option.getOrUndefined(graph.node("alice"))?.value.identity)
 
-// Transform (pure TypeScript, no WASM)
-const view = toGraphView(graph);
-const mapped = mapGraph({ mapNode: (p) => p })(view);
-
-// Public Gram and StandardGraph helpers
-const parsed = await Gram.parse("(alice:Person)");
-const standardGraph = StandardGraph.fromPatterns(parsed as never[]);
+await Effect.runPromise(Gram.validate("(alice:Person)"))
 ```
 
-## Pattern Types
-
-### `NativePattern` (formerly `Pattern`)
-
-The foundational data structure. Wraps `Pattern<Subject>`.
-
-```typescript
-const atomic = NativePattern.point(subject);      // atomic pattern
-const composite = NativePattern.pattern(subject); // pattern with children
-composite.addElement(child);
-```
-
-### `NativeSubject` (formerly `Subject`)
-
-A self-descriptive value with identity, labels, and properties.
-
-```typescript
-const subject = new NativeSubject(
-  "alice",                    // identity
-  ["Person", "User"],         // labels
-  { name: NativeValue.string("Alice"), age: NativeValue.int(30) }  // properties
-);
-```
-
-### `NativeValue` (formerly `Value`)
-
-Factory for typed property values.
-
-```typescript
-import { NativeValue } from "@relateby/pattern";
-
-NativeValue.string("hello")
-NativeValue.int(42)
-NativeValue.float(3.14)
-NativeValue.bool(true)
-NativeValue.null()
-```
-
-## Validation
-
-```typescript
-import { NativeValidationRules } from "@relateby/pattern";
-
-const rules = new NativeValidationRules(10, 100); // maxDepth=10, maxElements=100
-const result = pattern.validate(rules);
-```
+The WASM boundary is intentionally narrow in this branch: it exists to support the Rust gram codec, while the higher-level Pattern and graph APIs are implemented natively in TypeScript.
 
 ## CI/CD
 

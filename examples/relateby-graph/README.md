@@ -1,6 +1,6 @@
 # `relateby-graph` Example
 
-Demonstrates using native `Pattern` / `Subject` values from `@relateby/pattern` together with the pure TypeScript graph transforms from `@relateby/graph`.
+Demonstrates using native `Pattern` / `Subject` values together with the pure TypeScript graph transforms exported directly from `@relateby/pattern`.
 
 ## Prerequisites
 
@@ -9,11 +9,7 @@ cd typescript/@relateby/pattern
 npm install
 npm run build
 
-cd ../graph
-npm install
-npm run build
-
-cd ../../examples/relateby-graph
+cd ../../../examples/relateby-graph
 npm install
 ```
 
