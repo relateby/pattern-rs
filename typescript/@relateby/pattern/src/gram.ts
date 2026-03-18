@@ -173,7 +173,7 @@ function valueToRaw(v: any): unknown {
     case "IntVal":          return v.value
     case "FloatVal":        return v.value
     case "BoolVal":         return v.value
-    case "NullVal":         return null
+    case "NullVal":         throw new Error("JSON null is not representable as a gram value")
     case "SymbolVal":       return { type: "symbol",      value: v.value }
     case "TaggedStringVal": return { type: "tagged",      tag: v.tag, content: v.content }
     case "RangeVal":        return { type: "range",       lower: v.lower, upper: v.upper }

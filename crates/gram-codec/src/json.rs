@@ -137,7 +137,9 @@ fn json_to_value(v: &serde_json::Value) -> Result<Value, String> {
     match v {
         serde_json::Value::String(s) => Ok(Value::VString(s.clone())),
         serde_json::Value::Bool(b) => Ok(Value::VBoolean(*b)),
-        serde_json::Value::Null => Err("JSON null is not representable as a gram value".to_string()),
+        serde_json::Value::Null => {
+            Err("JSON null is not representable as a gram value".to_string())
+        }
         serde_json::Value::Number(n) => {
             if let Some(i) = n.as_i64() {
                 Ok(Value::VInteger(i))

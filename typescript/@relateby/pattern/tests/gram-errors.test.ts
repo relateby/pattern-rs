@@ -2,6 +2,9 @@ import { Effect, Either } from "effect"
 import { describe, expect, it } from "vitest"
 import { Gram } from "../src/gram.js"
 import { GramParseError } from "../src/errors.js"
+import { Pattern } from "../src/pattern.js"
+import { Subject } from "../src/subject.js"
+import { Value } from "../src/value.js"
 
 describe("Gram errors", () => {
   it("returns an Effect failure with GramParseError on invalid input", async () => {
@@ -35,6 +38,20 @@ describe("Gram errors", () => {
     if (Either.isLeft(invalid)) {
       expect(invalid.left).toBeInstanceOf(GramParseError)
       expect(invalid.left.input).toBe("not valid gram ##!!")
+    }
+  })
+
+  it("returns an Effect failure with GramParseError on unsupported null stringify values", async () => {
+    const pattern = Pattern.point(
+      Subject.fromId("alice").withProperty("nickname", Value.Null({}))
+    )
+
+    const result = await Effect.runPromise(Effect.either(Gram.stringify([pattern])))
+
+    expect(Either.isLeft(result)).toBe(true)
+    if (Either.isLeft(result)) {
+      expect(result.left).toBeInstanceOf(GramParseError)
+      expect(String(result.left.cause)).toContain("not representable")
     }
   })
 })

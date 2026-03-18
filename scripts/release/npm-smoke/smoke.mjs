@@ -1,4 +1,4 @@
-import { Effect, Equal, Option, pipe } from "effect";
+import { Effect, Either, Equal, Option, pipe } from "effect";
 import {
   Gram,
   Pattern,
@@ -53,31 +53,23 @@ if (typeof serialized !== "string" || !serialized.includes("alice")) {
   throw new Error("Gram.stringify returned an unexpected result");
 }
 
-let stringifyFailure = null;
-try {
-  await Effect.runPromise(
+const stringifyFailure = await Effect.runPromise(
+  Effect.either(
     Gram.stringify([
       Pattern.point(
         Subject.fromId("alice").withProperty("nickname", Value.Null({}))
       ),
     ])
-  );
-} catch (error) {
-  stringifyFailure = error;
-}
+  )
+);
 
-if (!(stringifyFailure instanceof Error) || !String(stringifyFailure.cause).includes("not representable")) {
+if (!Either.isLeft(stringifyFailure) || !String(stringifyFailure.left.cause).includes("not representable")) {
   throw new Error("Unsupported null values did not surface a structured stringify error");
 }
 
-let parseFailure = null;
-try {
-  await Effect.runPromise(Gram.parse("(alice"));
-} catch (error) {
-  parseFailure = error;
-}
+const parseFailure = await Effect.runPromise(Effect.either(Gram.parse("(alice")));
 
-if (!(parseFailure instanceof Error) || parseFailure.input !== "(alice")) {
+if (!Either.isLeft(parseFailure) || parseFailure.left.input !== "(alice") {
   throw new Error("Invalid Gram input did not surface a structured public parse error");
 }
 
