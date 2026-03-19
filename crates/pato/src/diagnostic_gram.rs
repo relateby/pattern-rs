@@ -399,7 +399,7 @@ fn edit_to_json(edit: &Edit) -> JsonValue {
         Edit::DeleteLine { file, line } => json!({
             "kind": "deleteLine",
             "file": file,
-            "deleteLine": line,
+            "delete_line": line,
         }),
         Edit::Append { file, content } => json!({
             "kind": "append",

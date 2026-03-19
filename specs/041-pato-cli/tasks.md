@@ -218,7 +218,6 @@ rule-driven model before building additional features on top of the older nested
 - **US2 Fmt (Phase 4)**: Depends on Phase 3c and `editor.rs` from Phase 3
 - **US3 Parse (Phase 5)**: Depends on Phase 3c
 - **US4 Rule (Phase 6)**: Depends on Phase 3c (shared registry introduced there); otherwise independent of US2–US3
-- **US5 Check (Phase 7)**: Depends on US1 (runs lint internally via shared function)
 - **Schema Exploration (Phase 6b)**: Depends on the completed `rule`/registry groundwork only as documentation context; informs future schema validation semantics before deeper `check` work
 - **US5 Check (Phase 7)**: Depends on US1 (runs lint internally via shared function) and is now informed by the recorded Phase 6b schema direction, even though v0.1 remains discovery-only
 - **US6 Extensions (Phase 8)**: Depends on Phase 1 only (CLI wiring); independent of all other stories

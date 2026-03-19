@@ -129,3 +129,27 @@ fn comments_are_optional_and_json_omits_derived_prose() {
         JsonValue::String("rename-duplicate-identity".to_string())
     );
 }
+
+#[test]
+fn delete_line_json_uses_contract_field_name() {
+    let file = PathBuf::from("sample.gram");
+    let report = FileDiagnostics::new(
+        "sample.gram",
+        vec![Diagnostic::new(
+            DiagnosticCode::P004,
+            Location::new(4, 10),
+            Remediation::Auto {
+                id: DiagnosticCode::P004
+                    .remediation_id()
+                    .expect("P004 remediation template should exist"),
+                edits: vec![Edit::DeleteLine { file, line: 7 }],
+            },
+        )],
+    );
+
+    let json = diagnostic_gram::to_json(&[report]).expect("json should serialize");
+    let apply = &json["problems"][0]["apply"][0];
+    assert_eq!(apply["kind"], "deleteLine");
+    assert_eq!(apply["delete_line"], 7);
+    assert!(apply.get("deleteLine").is_none());
+}

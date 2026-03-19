@@ -76,6 +76,19 @@ pub fn write_atomic(file: &Path, contents: &str) -> io::Result<()> {
             .unwrap_or("tmp")
     ));
     fs::write(&temp_path, contents)?;
+    replace_file(&temp_path, file)
+}
+
+#[cfg(windows)]
+fn replace_file(temp_path: &Path, file: &Path) -> io::Result<()> {
+    if file.exists() {
+        fs::remove_file(file)?;
+    }
+    fs::rename(temp_path, file)
+}
+
+#[cfg(not(windows))]
+fn replace_file(temp_path: &Path, file: &Path) -> io::Result<()> {
     fs::rename(temp_path, file)
 }
 
@@ -111,6 +124,17 @@ mod tests {
 
         assert!(result.is_err());
         assert_eq!(fs::read_to_string(&file).unwrap(), "beta alpha\n");
+        let _ = fs::remove_file(file);
+    }
+
+    #[test]
+    fn write_atomic_replaces_existing_file_contents() {
+        let file = temp_file_path("write_atomic_replaces_existing_file_contents");
+        fs::write(&file, "before\n").unwrap();
+
+        write_atomic(&file, "after\n").unwrap();
+
+        assert_eq!(fs::read_to_string(&file).unwrap(), "after\n");
         let _ = fs::remove_file(file);
     }
 
