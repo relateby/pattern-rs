@@ -1,6 +1,6 @@
 use clap::Parser;
 use relateby_pato::cli::{Cli, Commands};
-use relateby_pato::commands::lint;
+use relateby_pato::commands::{fmt, lint};
 use relateby_pato::diagnostic_gram;
 use relateby_pato::output::{OutputContext, OutputFormat};
 use std::process::ExitCode;
@@ -23,7 +23,14 @@ fn main() -> ExitCode {
             }
             ExitCode::from(outcome.exit_code() as u8)
         }
-        Commands::Fmt(_) | Commands::Parse(_) | Commands::Rule(_) | Commands::Check(_) => {
+        Commands::Fmt(args) => {
+            let outcome = fmt::format_paths(&args.files, args.check);
+            if let Some(stdout) = outcome.stdout {
+                print!("{stdout}");
+            }
+            ExitCode::from(outcome.exit_code as u8)
+        }
+        Commands::Parse(_) | Commands::Rule(_) | Commands::Check(_) => {
             eprintln!("not yet implemented");
             ExitCode::SUCCESS
         }

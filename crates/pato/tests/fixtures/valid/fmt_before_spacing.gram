@@ -1,0 +1,1 @@
+(alice:person) = [rel::knows { since: 2020, active: true }] => (bob:person)

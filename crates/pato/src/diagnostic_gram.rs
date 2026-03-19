@@ -1,3 +1,4 @@
+use crate::commands::fmt;
 use crate::diagnostics::{Diagnostic, Edit, FactValue, FileDiagnostics, Remediation};
 use crate::output::{render_text_reports, OutputFormat};
 use gram_codec::{to_gram_pattern, to_gram_with_header};
@@ -41,12 +42,15 @@ fn to_gram_internal(reports: &[FileDiagnostics], include_comments: bool) -> io::
     });
 
     if reports.len() != 1 {
-        return to_gram_with_header(header, &[run_pattern(reports)]).map_err(serialize_error);
+        let raw = to_gram_with_header(header, &[run_pattern(reports)]).map_err(serialize_error)?;
+        return fmt::format_gram(&raw);
     }
 
     let report = &reports[0];
     if report.diagnostics.is_empty() {
-        return to_gram_with_header(header, &[summary_pattern(report)]).map_err(serialize_error);
+        let raw =
+            to_gram_with_header(header, &[summary_pattern(report)]).map_err(serialize_error)?;
+        return fmt::format_gram(&raw);
     }
 
     let mut sections = vec![to_gram_with_header(header, &[]).map_err(serialize_error)?];
@@ -65,7 +69,7 @@ fn to_gram_internal(reports: &[FileDiagnostics], include_comments: bool) -> io::
         sections.push(block);
     }
 
-    Ok(sections.join("\n\n"))
+    fmt::format_gram(&sections.join("\n\n"))
 }
 
 pub fn to_json(reports: &[FileDiagnostics]) -> io::Result<JsonValue> {

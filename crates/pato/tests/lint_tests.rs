@@ -1,4 +1,5 @@
 use gram_codec::parse_gram;
+use relateby_pato::commands::fmt::format_gram;
 use relateby_pato::commands::lint::lint_source;
 use relateby_pato::diagnostics::{rule_info, DiagnosticCode};
 use serde_json::Value as JsonValue;
@@ -122,7 +123,8 @@ fn lint_gram_output_uses_problem_shape_and_registry_ids() {
     assert_eq!(output.status.code(), Some(1));
 
     let stdout = String::from_utf8(output.stdout).expect("stdout should be utf8");
-    assert!(stdout.contains(":Problem"));
+    assert!(stdout.contains("code: \"P005\""));
+    assert!(stdout.contains("rule: \"dangling-reference\""));
     assert!(stdout.contains("remediation: \"resolve-dangling-reference\""));
     assert!(stdout.contains("id: \"rename-reference\""));
     assert!(stdout.contains("// "));
@@ -152,6 +154,20 @@ fn lint_json_output_uses_compact_problem_shape() {
     assert_eq!(problem["options"][0]["id"], "rename-reference");
     assert!(problem.get("message").is_none());
     assert!(problem.get("decision").is_none());
+}
+
+#[test]
+fn lint_gram_output_is_already_canonical() {
+    let fixture_path = fixture_path("invalid/P005.gram");
+    let output = run_pato([
+        "lint",
+        fixture_path.to_str().expect("fixture path should be utf8"),
+    ]);
+    assert_eq!(output.status.code(), Some(1));
+
+    let stdout = String::from_utf8(output.stdout).expect("stdout should be utf8");
+    let canonical = format_gram(&stdout).expect("lint gram output should be formattable");
+    assert_eq!(stdout, canonical);
 }
 
 fn run_pato<I, S>(args: I) -> std::process::Output

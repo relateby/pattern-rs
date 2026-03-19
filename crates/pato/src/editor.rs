@@ -63,16 +63,20 @@ pub fn apply_edits(file: &Path, edits: &[Edit]) -> io::Result<()> {
         rewritten.push('\n');
     }
 
+    write_atomic(file, &rewritten)?;
+    eprintln!("modified {}", file.display());
+    Ok(())
+}
+
+pub fn write_atomic(file: &Path, contents: &str) -> io::Result<()> {
     let temp_path = file.with_extension(format!(
         "{}.pato.tmp",
         file.extension()
             .and_then(|ext| ext.to_str())
             .unwrap_or("tmp")
     ));
-    fs::write(&temp_path, rewritten)?;
-    fs::rename(temp_path, file)?;
-    eprintln!("modified {}", file.display());
-    Ok(())
+    fs::write(&temp_path, contents)?;
+    fs::rename(temp_path, file)
 }
 
 fn edit_sort_key(edit: &Edit) -> (u32, u32) {

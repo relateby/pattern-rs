@@ -40,6 +40,9 @@ pub struct LintArgs {
 
 #[derive(Debug, clap::Args)]
 pub struct FmtArgs {
+    #[arg(long)]
+    pub check: bool,
+
     #[arg(required = true)]
     pub files: Vec<PathBuf>,
 }

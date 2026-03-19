@@ -1,0 +1,1 @@
+(alice:Person)=[rel::KNOWS {active: true, since: 2020}]=>(bob:Person)

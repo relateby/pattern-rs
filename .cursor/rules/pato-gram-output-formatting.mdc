@@ -1,0 +1,15 @@
+---
+description: Canonicalize pato gram stdout output
+globs: crates/pato/**/*.rs
+alwaysApply: false
+---
+
+# pato Gram Output
+
+Any `pato` subcommand that emits gram on stdout must pass that output through the shared
+canonical formatter before writing it.
+
+- Reuse the shared formatter helper from `crates/pato/src/commands/fmt.rs`.
+- Do not let individual renderers invent their own whitespace, property ordering, or blank-line style.
+- Apply this to diagnostics now and to future gram-producing commands such as `parse`, `rule`, and `check`.
+- Add or update tests so gram-producing commands emit output that is already canonical when re-formatted.
