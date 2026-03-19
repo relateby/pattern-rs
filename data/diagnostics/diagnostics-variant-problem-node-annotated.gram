@@ -1,0 +1,81 @@
+{ kind: "diagnostics_variant", variant: "problem_node_annotated", source_file: "data/hello.gram" }
+
+(hello_1:NodeRef {
+  syntax_kind: "node",
+  line: 1,
+  column: 2,
+  span_start: 1,
+  span_end: 6,
+  source_text: "hello"
+})
+
+(world_1:NodeRef {
+  syntax_kind: "node",
+  line: 1,
+  column: 12,
+  span_start: 11,
+  span_end: 16,
+  source_text: "world"
+})
+
+(dangling_reference:Diagnostic {
+  severity: "warning",
+  code: "P005",
+  rule: "dangling-reference"
+})
+
+(problem_hello:Problem {
+  message: "'hello' is referenced but not defined in this file"
+})
+
+(problem_world:Problem {
+  message: "'world' is referenced but not defined in this file"
+})
+
+(problem_hello)-[:AT]->(hello_1)
+(problem_hello)-[:HAS_DIAGNOSTIC]->(dangling_reference)
+
+(problem_world)-[:AT]->(world_1)
+(problem_world)-[:HAS_DIAGNOSTIC]->(dangling_reference)
+
+[rem_hello:Remediation {
+  grade: "ambiguous",
+  summary: "Choose whether 'hello' should be renamed or defined",
+  decision: "Is 'hello' a misspelling of an existing identity, or should it be defined here?"
+} | problem_hello]
+
+[rem_world:Remediation {
+  grade: "ambiguous",
+  summary: "Choose whether 'world' should be renamed or defined",
+  decision: "Is 'world' a misspelling of an existing identity, or should it be defined here?"
+} | problem_world]
+
+[opt_hello_replace:Option {
+  kind: "replace",
+  description: "Rename reference to 'hello' (closest match)",
+  line: 1,
+  column: 2,
+  replace: "hello",
+  with: "hello"
+} | rem_hello]
+
+[opt_hello_append:Option {
+  kind: "append",
+  description: "Add a 'hello' definition to this file",
+  append: "(hello:Entity)"
+} | rem_hello]
+
+[opt_world_replace:Option {
+  kind: "replace",
+  description: "Rename reference to 'world' (closest match)",
+  line: 1,
+  column: 12,
+  replace: "world",
+  with: "world"
+} | rem_world]
+
+[opt_world_append:Option {
+  kind: "append",
+  description: "Add a 'world' definition to this file",
+  append: "(world:Entity)"
+} | rem_world]

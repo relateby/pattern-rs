@@ -1,0 +1,5 @@
+{a: 2, kind: "rule", z: 1}
+
+// intro
+
+(alice:Person)

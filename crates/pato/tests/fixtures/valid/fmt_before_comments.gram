@@ -1,0 +1,3 @@
+// lead
+@@meta::doc @source(primary) [team::group {z: 2, a: 1} | (alice::person)]
+// tail

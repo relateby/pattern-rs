@@ -81,7 +81,8 @@ Commands::External(args) => {
 
 ## Decision 4: sexp Output Format for `pato parse`
 
-**Decision**: Use tree-sitter-gram sexp format, matching gramref output. Implement as a new `to_sexp` function in `pato` using the existing `AstPattern` from gram-codec.
+**Decision**: Use tree-sitter-gram sexp format, matching gramref output. With CST now available,
+implement `to_sexp` directly from the CST shape exposed by `parse_gram_cst()`.
 
 **Rationale**: The proposal states sexp output should match `gram-lint` / `gramref` output. The gramref tool uses tree-sitter sexp notation. The gram-codec test corpus validator already parses this format for conformance checks, providing a reference for the expected output shape.
 
@@ -100,9 +101,10 @@ Commands::External(args) => {
 
 **Alternatives considered**:
 - Custom/minimal sexp format — diverges from gramref reference; harder to compare outputs
-- Reuse existing `AstPattern` JSON and translate — adds indirection; sexp is simpler to generate directly from `Pattern<Subject>`
+- Reconstruct sexp from lowered `Pattern<Subject>` or `AstPattern` — adds indirection and discards CST details already available from the parser
 
-**Implementation note**: The `AstPattern` type in gram-codec (`src/ast.rs`) is the right structural basis. The sexp serializer lives in `pato` as it is an output format concern, not a codec concern.
+**Implementation note**: The serializer lives in `pato` as an output-format concern, but the CST
+tree from `gram-codec` is now the right structural basis for the rendering.
 
 ---
 
@@ -143,11 +145,70 @@ No async runtime. No `walkdir` for v0.1 (glob expansion is shell-delegated; sing
 
 ---
 
+## Decision 7: Use the CST Parser for Source-Aware pato Work
+
+**Decision**: Enable `relateby-gram`'s `cst` feature in the native `pato` crate and use
+`parse_gram_cst()` as the source-of-truth parser for `lint`, `fmt`, and `parse` internals where
+source fidelity matters.
+
+**Rationale**: `042-gram-cst-parser` is now merged. It provides byte-accurate spans, preserved
+annotation content, exact arrow-kind information, and top-level comment nodes. This removes the
+need for pato's current location-reconstruction heuristics based on raw text scanning.
+
+**Alternatives considered**:
+- Continue using only `parse_gram` — simpler, but leaves pato dependent on fragile source-text
+  searches for diagnostics and edit coordinates
+- Add a second parser inside `pato` — redundant with `gram-codec` and would diverge from the
+  shared parser layer
+
+**Implementation note**: pato remains a native CLI, so enabling the `cst` feature in its
+dependency does not impose a WASM requirement on the workspace at large.
+
+---
+
+## Decision 8: Keep the Public Diagnostic Contract Line/Column-Based
+
+**Decision**: Keep `Location { line, column }` as the public diagnostic/edit contract for v0.1,
+while deriving those values from CST `SourceSpan`s internally.
+
+**Rationale**: The diagnostic gram and JSON contracts are already defined around line/column
+locations and are intended to be stable API. CST spans should improve correctness internally
+without forcing a public format change mid-feature.
+
+**Usage pattern**:
+```rust
+let result = gram_codec::parse_gram_cst(input);
+let span = result.tree.elements[0].value.span.clone();
+let location = source_map::offset_to_location(input, span.start);
+```
+
+---
+
+## Decision 9: Reframe `fmt` and `parse` Around CST-Led Hybrid Rendering
+
+**Decision**:
+- `pato parse --output-format sexp` should be driven from the CST shape, not reconstructed from
+  `AstPattern`
+- `pato fmt` should be planned as a CST-assisted rewrite pipeline, not purely semantic
+  parse→serialize, so comments and source ordering can be preserved where practical
+
+**Rationale**: The merged CST parser now carries exactly the information these subcommands need:
+tree-sitter-aligned structure for sexp, preserved annotations, and top-level comment nodes for
+formatting. A pure `Pattern<Subject>` reserialization path would immediately discard part of that
+information.
+
+**Constraint**: Full trivia-preserving pretty-printing is still out of scope for v0.1; the near-
+term goal is CST-informed canonical formatting with better preservation of comments and exact
+syntax-derived locations than the pre-CST plan allowed.
+
+---
+
 ## Key Source Files for Implementation Reference
 
 | Purpose | Path |
 |---------|------|
 | Gram parsing API | `crates/gram-codec/src/lib.rs` |
+| Gram CST API | `crates/gram-codec/src/cst/` |
 | Gram serializer | `crates/gram-codec/src/serializer.rs` |
 | AST types | `crates/gram-codec/src/ast.rs` |
 | Subject type | `crates/pattern-core/src/subject.rs` |

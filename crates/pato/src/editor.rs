@@ -63,16 +63,33 @@ pub fn apply_edits(file: &Path, edits: &[Edit]) -> io::Result<()> {
         rewritten.push('\n');
     }
 
+    write_atomic(file, &rewritten)?;
+    eprintln!("modified {}", file.display());
+    Ok(())
+}
+
+pub fn write_atomic(file: &Path, contents: &str) -> io::Result<()> {
     let temp_path = file.with_extension(format!(
         "{}.pato.tmp",
         file.extension()
             .and_then(|ext| ext.to_str())
             .unwrap_or("tmp")
     ));
-    fs::write(&temp_path, rewritten)?;
-    fs::rename(temp_path, file)?;
-    eprintln!("modified {}", file.display());
-    Ok(())
+    fs::write(&temp_path, contents)?;
+    replace_file(&temp_path, file)
+}
+
+#[cfg(windows)]
+fn replace_file(temp_path: &Path, file: &Path) -> io::Result<()> {
+    if file.exists() {
+        fs::remove_file(file)?;
+    }
+    fs::rename(temp_path, file)
+}
+
+#[cfg(not(windows))]
+fn replace_file(temp_path: &Path, file: &Path) -> io::Result<()> {
+    fs::rename(temp_path, file)
 }
 
 fn edit_sort_key(edit: &Edit) -> (u32, u32) {
@@ -107,6 +124,17 @@ mod tests {
 
         assert!(result.is_err());
         assert_eq!(fs::read_to_string(&file).unwrap(), "beta alpha\n");
+        let _ = fs::remove_file(file);
+    }
+
+    #[test]
+    fn write_atomic_replaces_existing_file_contents() {
+        let file = temp_file_path("write_atomic_replaces_existing_file_contents");
+        fs::write(&file, "before\n").unwrap();
+
+        write_atomic(&file, "after\n").unwrap();
+
+        assert_eq!(fs::read_to_string(&file).unwrap(), "after\n");
         let _ = fs::remove_file(file);
     }
 

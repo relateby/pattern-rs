@@ -1,0 +1,13 @@
+// This file has intentional poor formatting
+// which `pato fmt` should fix.
+{
+    kind: "social"
+    }
+
+(bob:Person { name:"Bob" })
+(pat:Person { name:
+    "Pat" })
+
+(bob)-[
+:KNOWS
+]->(pat)

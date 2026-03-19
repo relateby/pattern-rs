@@ -1,9 +1,7 @@
-use crate::diagnostics::{
-    Diagnostic, DiagnosticCode, Edit, FileDiagnostics, Remediation, RemediationGrade,
-    RemediationOption, RemediationSteps, Severity,
-};
-use crate::output::OutputFormat;
-use gram_codec::to_gram_with_header;
+use crate::commands::fmt;
+use crate::diagnostics::{Diagnostic, Edit, FactValue, FileDiagnostics, Remediation};
+use crate::output::{render_text_reports, OutputFormat};
+use gram_codec::{to_gram_pattern, to_gram_with_header};
 use pattern_core::{Pattern, Subject, Value};
 use serde_json::{json, Map as JsonMap, Value as JsonValue};
 use std::collections::{HashMap, HashSet};
@@ -24,25 +22,54 @@ pub fn render_diagnostics<W: Write>(
                 .map_err(|error| io::Error::new(io::ErrorKind::Other, error))?;
             writer.write_all(b"\n")
         }
-        OutputFormat::Text => writer.write_all(to_text(reports, use_color).as_bytes()),
+        OutputFormat::Text => writer.write_all(render_text_reports(reports, use_color).as_bytes()),
     }
 }
 
 pub fn to_gram(reports: &[FileDiagnostics]) -> io::Result<String> {
+    to_gram_internal(reports, true)
+}
+
+pub fn to_gram_without_comments(reports: &[FileDiagnostics]) -> io::Result<String> {
+    to_gram_internal(reports, false)
+}
+
+fn to_gram_internal(reports: &[FileDiagnostics], include_comments: bool) -> io::Result<String> {
     let header = header_record(if reports.len() == 1 {
         Some(reports[0].file.as_str())
     } else {
         None
     });
-    let patterns = if reports.len() == 1 {
-        single_file_patterns(&reports[0])
-    } else {
-        vec![run_pattern(reports)]
-    };
 
-    to_gram_with_header(header, &patterns).map_err(|error: gram_codec::SerializeError| {
-        io::Error::new(io::ErrorKind::Other, error.to_string())
-    })
+    if reports.len() != 1 {
+        let raw = to_gram_with_header(header, &[run_pattern(reports)]).map_err(serialize_error)?;
+        return fmt::format_gram(&raw);
+    }
+
+    let report = &reports[0];
+    if report.diagnostics.is_empty() {
+        let raw =
+            to_gram_with_header(header, &[summary_pattern(report)]).map_err(serialize_error)?;
+        return fmt::format_gram(&raw);
+    }
+
+    let mut sections = vec![to_gram_with_header(header, &[]).map_err(serialize_error)?];
+    for (index, diagnostic) in report.diagnostics.iter().enumerate() {
+        let mut block = String::new();
+        if include_comments {
+            for comment in diagnostic.comments() {
+                block.push_str("// ");
+                block.push_str(&comment);
+                block.push('\n');
+            }
+        }
+        block.push_str(
+            &to_gram_pattern(&problem_pattern(index + 1, diagnostic)).map_err(serialize_error)?,
+        );
+        sections.push(block);
+    }
+
+    fmt::format_gram(&sections.join("\n\n"))
 }
 
 pub fn to_json(reports: &[FileDiagnostics]) -> io::Result<JsonValue> {
@@ -63,8 +90,8 @@ pub fn to_json(reports: &[FileDiagnostics]) -> io::Result<JsonValue> {
             );
         } else {
             object.insert(
-                "locations".to_string(),
-                JsonValue::Array(report.diagnostics.iter().map(diagnostic_to_json).collect()),
+                "problems".to_string(),
+                JsonValue::Array(report.diagnostics.iter().map(problem_to_json).collect()),
             );
         }
         Ok(JsonValue::Object(object))
@@ -80,43 +107,8 @@ pub fn to_json(reports: &[FileDiagnostics]) -> io::Result<JsonValue> {
     }
 }
 
-pub fn to_text(reports: &[FileDiagnostics], use_color: bool) -> String {
-    let mut lines = Vec::new();
-    for report in reports {
-        if reports.len() > 1 {
-            lines.push(format!("{}:", report.file));
-        }
-        if report.diagnostics.is_empty() {
-            lines.push("  clean".to_string());
-            continue;
-        }
-        for diagnostic in &report.diagnostics {
-            let severity = style_severity(diagnostic.severity, use_color);
-            lines.push(format!(
-                "  {} {} {}:{} {}",
-                severity,
-                diagnostic.code.as_str(),
-                diagnostic.location.line,
-                diagnostic.location.column,
-                diagnostic.message
-            ));
-        }
-    }
-    lines.join("\n") + "\n"
-}
-
-fn style_severity(severity: Severity, use_color: bool) -> String {
-    let label = severity.as_str().to_uppercase();
-    if !use_color {
-        return label;
-    }
-
-    let code = match severity {
-        Severity::Error => 31,
-        Severity::Warning => 33,
-        Severity::Info => 36,
-    };
-    format!("\x1b[{}m{}\x1b[0m", code, label)
+fn serialize_error(error: gram_codec::SerializeError) -> io::Error {
+    io::Error::new(io::ErrorKind::Other, error.to_string())
 }
 
 fn header_record(file: Option<&str>) -> HashMap<String, Value> {
@@ -133,19 +125,6 @@ fn header_record(file: Option<&str>) -> HashMap<String, Value> {
         record.insert("file".to_string(), Value::VString(file.to_string()));
     }
     record
-}
-
-fn single_file_patterns(report: &FileDiagnostics) -> Vec<Pattern<Subject>> {
-    if report.diagnostics.is_empty() {
-        return vec![summary_pattern(report)];
-    }
-
-    report
-        .diagnostics
-        .iter()
-        .enumerate()
-        .map(|(index, diagnostic)| location_pattern(index + 1, diagnostic))
-        .collect()
 }
 
 fn run_pattern(reports: &[FileDiagnostics]) -> Pattern<Subject> {
@@ -181,7 +160,7 @@ fn file_pattern(index: usize, report: &FileDiagnostics) -> Pattern<Subject> {
                 .diagnostics
                 .iter()
                 .enumerate()
-                .map(|(offset, diagnostic)| location_pattern(offset + 1, diagnostic))
+                .map(|(offset, diagnostic)| problem_pattern(offset + 1, diagnostic))
                 .collect()
         },
     )
@@ -204,7 +183,7 @@ fn summary_pattern(report: &FileDiagnostics) -> Pattern<Subject> {
     Pattern::point(subject("summary", &["Summary"], properties))
 }
 
-fn location_pattern(index: usize, diagnostic: &Diagnostic) -> Pattern<Subject> {
+fn problem_pattern(index: usize, diagnostic: &Diagnostic) -> Pattern<Subject> {
     let mut properties = HashMap::new();
     properties.insert(
         "line".to_string(),
@@ -214,14 +193,6 @@ fn location_pattern(index: usize, diagnostic: &Diagnostic) -> Pattern<Subject> {
         "column".to_string(),
         Value::VInteger(i64::from(diagnostic.location.column)),
     );
-    Pattern::pattern(
-        subject(&format!("loc{index}"), &["Location"], properties),
-        vec![diagnostic_pattern(index, diagnostic)],
-    )
-}
-
-fn diagnostic_pattern(index: usize, diagnostic: &Diagnostic) -> Pattern<Subject> {
-    let mut properties = HashMap::new();
     properties.insert(
         "severity".to_string(),
         Value::VString(diagnostic.severity.as_str().to_string()),
@@ -234,84 +205,70 @@ fn diagnostic_pattern(index: usize, diagnostic: &Diagnostic) -> Pattern<Subject>
         "rule".to_string(),
         Value::VString(diagnostic.rule.to_string()),
     );
-    properties.insert(
-        "message".to_string(),
-        Value::VString(diagnostic.message.clone()),
-    );
-
-    if let Remediation::Guided {
-        steps: RemediationSteps::Inline(steps),
-        ..
-    } = &diagnostic.remediation
-    {
+    if let Some(remediation_id) = diagnostic.remediation.id() {
         properties.insert(
-            "remediations".to_string(),
-            Value::VArray(steps.iter().cloned().map(Value::VString).collect()),
+            "remediation".to_string(),
+            Value::VString(remediation_id.to_string()),
         );
     }
-
-    if let Remediation::Ambiguous { decision, .. } = &diagnostic.remediation {
-        properties.insert("decision".to_string(), Value::VString(decision.clone()));
+    for (key, value) in &diagnostic.facts {
+        properties.insert(key.clone(), fact_value_to_gram(value));
     }
 
-    let children = remediation_children(index, &diagnostic.remediation);
+    let children = remediation_children(index, diagnostic);
     if children.is_empty() {
-        Pattern::point(subject(&format!("d{index}"), &["Diagnostic"], properties))
+        Pattern::point(subject(
+            &format!("problem{index}"),
+            &["Problem"],
+            properties,
+        ))
     } else {
         Pattern::pattern(
-            subject(&format!("d{index}"), &["Diagnostic"], properties),
+            subject(&format!("problem{index}"), &["Problem"], properties),
             children,
         )
     }
 }
 
-fn remediation_children(index: usize, remediation: &Remediation) -> Vec<Pattern<Subject>> {
-    match remediation {
-        Remediation::Auto { summary, steps } | Remediation::Guided { summary, steps } => {
-            match steps {
-                RemediationSteps::Inline(_) => Vec::new(),
-                RemediationSteps::Structured(edits) => edits
-                    .iter()
-                    .enumerate()
-                    .map(|(offset, edit)| {
-                        remediation_pattern(index + offset, remediation.grade(), summary, edit)
-                    })
-                    .collect(),
-            }
-        }
+fn remediation_children(index: usize, diagnostic: &Diagnostic) -> Vec<Pattern<Subject>> {
+    match &diagnostic.remediation {
+        Remediation::Auto { edits, .. } | Remediation::Guided { edits, .. } => edits
+            .iter()
+            .enumerate()
+            .map(|(offset, edit)| apply_pattern(index, offset + 1, edit))
+            .collect(),
         Remediation::Ambiguous { options, .. } => options
             .iter()
             .enumerate()
-            .map(|(offset, option)| option_pattern(index + offset, option))
+            .map(|(offset, option)| option_pattern(index, offset + 1, option))
             .collect(),
         Remediation::None => Vec::new(),
     }
 }
 
-fn remediation_pattern(
-    index: usize,
-    grade: RemediationGrade,
-    summary: &str,
-    edit: &Edit,
-) -> Pattern<Subject> {
+fn apply_pattern(problem_index: usize, child_index: usize, edit: &Edit) -> Pattern<Subject> {
     let mut properties = HashMap::new();
-    properties.insert(
-        "grade".to_string(),
-        Value::VString(grade.as_str().to_string()),
-    );
-    properties.insert("summary".to_string(), Value::VString(summary.to_string()));
     apply_edit_properties(&mut properties, edit);
-    Pattern::point(subject(&format!("r{index}"), &["Remediation"], properties))
+    Pattern::point(subject(
+        &format!("apply{problem_index}_{child_index}"),
+        &["Apply"],
+        properties,
+    ))
 }
 
-fn option_pattern(index: usize, option: &RemediationOption) -> Pattern<Subject> {
+fn option_pattern(
+    problem_index: usize,
+    child_index: usize,
+    option: &crate::diagnostics::RemediationOption,
+) -> Pattern<Subject> {
     let mut properties = HashMap::new();
-    properties.insert(
-        "description".to_string(),
-        Value::VString(option.description.clone()),
-    );
+    properties.insert("id".to_string(), Value::VString(option.id.to_string()));
     apply_edit_properties(&mut properties, &option.edit);
-    Pattern::point(subject(&format!("opt{index}"), &["Option"], properties))
+    Pattern::point(subject(
+        &format!("option{problem_index}_{child_index}"),
+        &["Option"],
+        properties,
+    ))
 }
 
 fn apply_edit_properties(properties: &mut HashMap<String, Value>, edit: &Edit) {
@@ -323,15 +280,18 @@ fn apply_edit_properties(properties: &mut HashMap<String, Value>, edit: &Edit) {
             with,
             ..
         } => {
+            properties.insert("kind".to_string(), Value::VString("replace".to_string()));
             properties.insert("replace".to_string(), Value::VString(replace.clone()));
             properties.insert("with".to_string(), Value::VString(with.clone()));
             properties.insert("line".to_string(), Value::VInteger(i64::from(*line)));
             properties.insert("column".to_string(), Value::VInteger(i64::from(*column)));
         }
         Edit::DeleteLine { line, .. } => {
+            properties.insert("kind".to_string(), Value::VString("deleteLine".to_string()));
             properties.insert("delete_line".to_string(), Value::VInteger(i64::from(*line)));
         }
         Edit::Append { content, .. } => {
+            properties.insert("kind".to_string(), Value::VString("append".to_string()));
             properties.insert("append".to_string(), Value::VString(content.clone()));
         }
     }
@@ -348,59 +308,49 @@ fn subject(identity: &str, labels: &[&str], properties: HashMap<String, Value>) 
     }
 }
 
-fn diagnostic_to_json(diagnostic: &Diagnostic) -> JsonValue {
+fn fact_value_to_gram(value: &FactValue) -> Value {
+    match value {
+        FactValue::String(value) => Value::VString(value.clone()),
+        FactValue::Integer(value) => Value::VInteger(*value),
+        FactValue::Boolean(value) => Value::VBoolean(*value),
+    }
+}
+
+fn problem_to_json(diagnostic: &Diagnostic) -> JsonValue {
     let mut object = JsonMap::new();
-    object.insert(
-        "location".to_string(),
-        json!({
-            "line": diagnostic.location.line,
-            "column": diagnostic.location.column
-        }),
-    );
-    object.insert(
-        "diagnostic".to_string(),
-        json!({
-            "severity": diagnostic.severity.as_str(),
-            "code": diagnostic.code.as_str(),
-            "rule": diagnostic.rule,
-            "message": diagnostic.message,
-        }),
-    );
+    object.insert("line".to_string(), json!(diagnostic.location.line));
+    object.insert("column".to_string(), json!(diagnostic.location.column));
+    object.insert("severity".to_string(), json!(diagnostic.severity.as_str()));
+    object.insert("code".to_string(), json!(diagnostic.code.as_str()));
+    object.insert("rule".to_string(), json!(diagnostic.rule));
+    if let Some(remediation_id) = diagnostic.remediation.id() {
+        object.insert("remediation".to_string(), json!(remediation_id));
+    }
+
+    let mut facts = JsonMap::new();
+    for (key, value) in &diagnostic.facts {
+        facts.insert(key.clone(), fact_value_to_json(value));
+    }
+    if !facts.is_empty() {
+        object.insert("facts".to_string(), JsonValue::Object(facts));
+    }
 
     match &diagnostic.remediation {
-        Remediation::Auto { summary, steps } | Remediation::Guided { summary, steps } => {
+        Remediation::Auto { edits, .. } | Remediation::Guided { edits, .. } => {
+            if !edits.is_empty() {
+                object.insert(
+                    "apply".to_string(),
+                    JsonValue::Array(edits.iter().map(edit_to_json).collect()),
+                );
+            }
+        }
+        Remediation::Ambiguous { options, .. } => {
             object.insert(
-                "remediation".to_string(),
-                json!({
-                    "grade": diagnostic.remediation.grade().as_str(),
-                    "summary": summary,
-                    "steps": steps_to_json(steps),
-                }),
+                "options".to_string(),
+                JsonValue::Array(options.iter().map(option_to_json).collect()),
             );
         }
-        Remediation::Ambiguous {
-            summary,
-            decision,
-            options,
-        } => {
-            object.insert(
-                "remediation".to_string(),
-                json!({
-                    "grade": "ambiguous",
-                    "summary": summary,
-                    "decision": decision,
-                    "options": options.iter().map(option_to_json).collect::<Vec<_>>(),
-                }),
-            );
-        }
-        Remediation::None => {
-            object.insert(
-                "remediation".to_string(),
-                json!({
-                    "grade": "none"
-                }),
-            );
-        }
+        Remediation::None => {}
     }
 
     JsonValue::Object(object)
@@ -411,24 +361,21 @@ fn file_report_to_json(report: &FileDiagnostics) -> JsonValue {
         "file": report.file,
         "errors": report.error_count(),
         "warnings": report.warning_count(),
-        "locations": report.diagnostics.iter().map(diagnostic_to_json).collect::<Vec<_>>(),
+        "problems": report.diagnostics.iter().map(problem_to_json).collect::<Vec<_>>(),
     })
 }
 
-fn steps_to_json(steps: &RemediationSteps) -> JsonValue {
-    match steps {
-        RemediationSteps::Inline(lines) => {
-            JsonValue::Array(lines.iter().map(|line| json!(line)).collect())
-        }
-        RemediationSteps::Structured(edits) => {
-            JsonValue::Array(edits.iter().map(edit_to_json).collect())
-        }
+fn fact_value_to_json(value: &FactValue) -> JsonValue {
+    match value {
+        FactValue::String(value) => json!(value),
+        FactValue::Integer(value) => json!(value),
+        FactValue::Boolean(value) => json!(value),
     }
 }
 
-fn option_to_json(option: &RemediationOption) -> JsonValue {
+fn option_to_json(option: &crate::diagnostics::RemediationOption) -> JsonValue {
     json!({
-        "description": option.description,
+        "id": option.id,
         "edit": edit_to_json(&option.edit),
     })
 }
@@ -452,7 +399,7 @@ fn edit_to_json(edit: &Edit) -> JsonValue {
         Edit::DeleteLine { file, line } => json!({
             "kind": "deleteLine",
             "file": file,
-            "line": line,
+            "delete_line": line,
         }),
         Edit::Append { file, content } => json!({
             "kind": "append",
@@ -460,9 +407,4 @@ fn edit_to_json(edit: &Edit) -> JsonValue {
             "content": content,
         }),
     }
-}
-
-#[allow(dead_code)]
-fn _assert_grade_mapping() {
-    let _ = DiagnosticCode::P001.grade();
 }

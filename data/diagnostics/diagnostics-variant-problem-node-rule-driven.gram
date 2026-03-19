@@ -1,0 +1,82 @@
+{ kind: "diagnostics_variant", variant: "problem_node_rule_driven", source_file: "data/hello.gram" }
+
+(hello_1:NodeRef {
+  syntax_kind: "node",
+  line: 1,
+  column: 2,
+  span_start: 1,
+  span_end: 6,
+  source_text: "hello"
+})
+
+(world_1:NodeRef {
+  syntax_kind: "node",
+  line: 1,
+  column: 12,
+  span_start: 11,
+  span_end: 16,
+  source_text: "world"
+})
+
+(p005:Diagnostic {
+  severity: "warning",
+  code: "P005",
+  rule: "dangling-reference"
+})
+
+(remediation_03:Remediation {
+  grade: "ambiguous",
+  explanation: "Resolve a dangling reference by choosing one of the option templates attached to this remediation."
+})-[:FOR_RULE]->(p005)
+
+(option_03a:Option {
+  operation: "replace",
+  explanation: "Rename the unresolved reference to an existing identity."
+})-[:FOR_REMEDIATION]->(remediation_03)
+
+(option_03b:Option {
+  operation: "append",
+  explanation: "Add a definition for the unresolved identity."
+})-[:FOR_REMEDIATION]->(remediation_03)
+
+(problem_hello:Problem {
+  unresolved_identity: "hello"
+})-[:AT]->(hello_1)
+
+(problem_hello)-[:HAS_DIAGNOSTIC]->(p005)
+
+(problem_world:Problem {
+  unresolved_identity: "world"
+})-[:AT]->(world_1)
+
+(problem_world)-[:HAS_DIAGNOSTIC]->(p005)
+
+(apply_hello:ApplyRemediation {
+  remediation: "remediation_03"
+})-[:FOR_PROBLEM]->(problem_hello)
+
+(apply_world:ApplyRemediation {
+  remediation: "remediation_03"
+})-[:FOR_PROBLEM]->(problem_world)
+
+(apply_hello)-[:USE_OPTION]->(use_hello_replace:UseOption {
+  option: "option_03a",
+  replace: "hello",
+  with: "hello"
+})
+
+(apply_hello)-[:USE_OPTION]->(use_hello_append:UseOption {
+  option: "option_03b",
+  append: "(hello:Entity)"
+})
+
+(apply_world)-[:USE_OPTION]->(use_world_replace:UseOption {
+  option: "option_03a",
+  replace: "world",
+  with: "world"
+})
+
+(apply_world)-[:USE_OPTION]->(use_world_append:UseOption {
+  option: "option_03b",
+  append: "(world:Entity)"
+})

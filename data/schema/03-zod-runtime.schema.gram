@@ -1,0 +1,30 @@
+{ kind: "schema", variant: "zod_runtime" }
+
+// This variant leans into executable/runtime-validator style expressions.
+// It reads less like static typing and more like validation code, with
+// gram-native value forms still expressed via `gram`.
+// The style choice here differs from `01`: domain nodes still use `::`, but
+// relationships use the thin-arrow family to show those decisions can vary
+// independently.
+
+(::Account {
+  avatar_alt:: gram`(:TaggedString { tag: "md" })`,
+  created_at:: zod`z.string().datetime()`,
+  email:: zod`z.string().email()`,
+  id:: zod`z.string().uuid()`,
+  plan:: zod`z.enum(["free", "team", "enterprise"])`
+})
+
+(::Invoice {
+  amount_cents:: zod`z.number().int().nonnegative()`,
+  currency:: zod`z.string().length(3)`,
+  issued_at:: zod`z.string().datetime()`,
+  service_window:: gram`(:Range { type: "date" })`,
+  status:: zod`z.enum(["draft", "sent", "paid", "void"])`
+})
+
+// An Account may HAVE an Invoice; comments can express semantics that are
+// awkward to encode in the value language alone.
+(::Account)-[:HAS_INVOICE {
+  issued_for_plan:: zod`z.boolean()`
+}]->(::Invoice)

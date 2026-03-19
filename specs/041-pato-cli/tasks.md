@@ -68,18 +68,49 @@
 
 ---
 
+## Phase 3b: CST Alignment After 042 Merge
+
+**Purpose**: Rebase the completed lint MVP and the remaining parser-sensitive work onto the
+merged CST parser so pato stops relying on raw text reconstruction for source fidelity.
+
+- [X] T060 Refactor `crates/pato/Cargo.toml` to enable `gram_codec`'s `cst` feature for the pato crate dependency
+- [X] T061 Create `crates/pato/src/source_map.rs` — helpers for converting `gram_codec::cst::SourceSpan` to `Location { line, column }`, slicing source text by span, and ordering edits safely
+- [X] T062 Refactor `crates/pato/src/commands/lint.rs` — parse via `parse_gram_cst`; emit P001 from `CstParseResult.errors`; lower the valid CST tree only where semantic checks still require `Pattern<Subject>`
+- [X] T063 Replace raw text scanning heuristics in `commands/lint.rs` with CST-backed traversals for identities, labels, annotations, and document/header inspection
+- [X] T064 Expand `crates/pato/tests/lint_tests.rs` — add fixtures/assertions for precise duplicate-identity locations, identified annotation handling, and comment-bearing files
+
+**Checkpoint**: Lint remains green, but its locations and syntax-aware checks are now derived from CST spans and preserved annotations.
+
+---
+
+## Phase 3c: Diagnostic Contract Realignment After Modeling Exploration
+
+**Purpose**: Rework pato's unreleased diagnostic contract around the adopted compact
+rule-driven model before building additional features on top of the older nested report shape.
+
+- [X] T065 Update `specs/041-pato-cli/contracts/diagnostic-gram.md` — replace the nested/container-oriented examples with the adopted compact rule-driven schema; document canonical occurrence facts, stable rule/remediation identifiers, optional gram comments, and JSON parity without comments
+- [X] T066 Refactor `crates/pato/src/diagnostics.rs` — model diagnostics as compact problem occurrences with stable rule/remediation ids and occurrence parameters; move reusable prose and remediation knowledge into a shared rule registry used by renderers and `pato rule`
+- [X] T067 Refactor `crates/pato/src/diagnostic_gram.rs` — emit compact rule-driven gram/json output, including optional explanatory comments in gram output only; remove dependence on per-instance canonical `message` / `decision` / `summary` fields
+- [X] T068 Refactor `crates/pato/src/output.rs` text rendering — render human-readable diagnostics from structured occurrence data plus the shared rule registry instead of stored per-instance prose
+- [X] T069 Update `crates/pato/src/commands/lint.rs` — populate the new occurrence model, emit stable rule/remediation identifiers and fix parameters, and keep `--fix` behavior aligned with canonical edits/options
+- [X] T070 Update `crates/pato/tests/lint_tests.rs` and serializer tests — assert the new gram/json output shape, verify comments are optional/non-canonical, and ensure emitted rule/remediation identifiers resolve through the registry
+
+**Checkpoint**: Diagnostic output is realigned to the adopted v0.1 contract; lint, text, and JSON all derive from the same compact rule-driven data.
+
+---
+
 ## Phase 4: User Story 2 — Format a Gram File (Priority: P2)
 
 **Goal**: `pato fmt` rewrites gram files to canonical style idempotently; `--check` enables CI enforcement.
 
 **Independent Test**: Run `pato fmt` on `tests/fixtures/invalid/P004.gram` (lowercase label), verify the file is rewritten with uppercase label; run `pato fmt` again, verify no change; run `pato lint` on result, verify zero `auto` diagnostics.
 
-- [ ] T028 [US2] Implement `crates/pato/src/commands/fmt.rs` — accept files or `-`; parse each file via `parse_gram`; on parse error report to stderr, exit 2, skip file; on success apply all canonical style transformations and serialize back via `to_gram`
-- [ ] T029 [US2] Implement canonical style rules in `commands/fmt.rs`: (1) sort properties alphabetically within each `subject.properties` map before serializing; (2) ensure document header (bare record) is the first pattern; (3) ensure single blank line between top-level patterns in the output string; (4) consistent spacing around `-->`, `==>`, `~~>` arrow families (normalize to one space each side); preserve arrow family and label separator choices as-is
-- [ ] T030 [US2] Implement `--check` mode in `commands/fmt.rs` — compare computed canonical string to original file bytes; if different, report filename to stderr and set exit flag; exit 1 if any file would change, 0 if all canonical; no files modified
-- [ ] T031 [US2] Implement stdin→stdout mode in `commands/fmt.rs` — when `-` is passed, read stdin, apply canonical transform, write to stdout; on parse error write to stderr and exit 2
-- [ ] T032 [US2] Create before/after fixture pairs in `tests/fixtures/` for fmt tests — `fmt_before_spacing.gram` (inconsistent arrow spacing), `fmt_before_props.gram` (unsorted properties), `fmt_before_header.gram` (header not first)
-- [ ] T033 [US2] Write integration tests in `crates/pato/tests/fmt_tests.rs` — verify each before/after pair transforms correctly; verify idempotency (`fmt(fmt(x)) == fmt(x)`) for all valid fixtures; verify `pato lint` reports zero `auto`-grade diagnostics on all `pato fmt` output; verify `--check` exits 1 on before-fixtures and 0 on already-formatted files
+- [X] T028 [US2] Implement `crates/pato/src/commands/fmt.rs` — accept files or `-`; parse each file via `parse_gram_cst`; on CST errors report to stderr, exit 2, skip file; on success apply canonical style transformations through a CST-assisted rewrite pipeline
+- [X] T029 [US2] Implement canonical style rules in `commands/fmt.rs`: (1) sort properties alphabetically within each record before rendering; (2) ensure document header is first; (3) ensure single blank line between top-level patterns/comments; (4) consistent spacing around arrow families; preserve arrow family and label separator choices as-is; preserve top-level comments where practical
+- [X] T030 [US2] Implement `--check` mode in `commands/fmt.rs` — compare computed canonical string to original file bytes; if different, report filename to stderr and set exit flag; exit 1 if any file would change, 0 if all canonical; no files modified
+- [X] T031 [US2] Implement stdin→stdout mode in `commands/fmt.rs` — when `-` is passed, read stdin, apply canonical transform, write to stdout; on parse error write to stderr and exit 2
+- [X] T032 [US2] Create before/after fixture pairs in `tests/fixtures/` for fmt tests — `fmt_before_spacing.gram`, `fmt_before_props.gram`, `fmt_before_header.gram`, plus at least one fixture with preserved top-level comments / identified annotations
+- [X] T033 [US2] Write integration tests in `crates/pato/tests/fmt_tests.rs` — verify each before/after pair transforms correctly; verify idempotency (`fmt(fmt(x)) == fmt(x)`) for all valid fixtures; verify `pato lint` reports zero `auto`-grade diagnostics on all `pato fmt` output; verify `--check` exits 1 on before-fixtures and 0 on already-formatted files
 
 **Checkpoint**: `pato fmt` fully functional and independently testable.
 
@@ -91,12 +122,12 @@
 
 **Independent Test**: Run `pato parse my.gram | pato parse -` and verify the second invocation's output is identical to the first (round-trip stability); verify `--output-format json` produces a parseable JSON array.
 
-- [ ] T034 [US3] Implement `crates/pato/src/commands/parse.rs` — accept files or `-`; parse via `parse_gram`; on parse error report to stderr and exit 2; on success emit patterns in selected output format to stdout
-- [ ] T035 [US3] Implement gram output mode in `commands/parse.rs` — serialize each top-level pattern via `to_gram_pattern`, join with newline, emit as flat sequence with no root wrapper; verify round-trip: `parse(gram_out) == original_patterns`
-- [ ] T036 [P] [US3] Implement sexp output mode in `commands/parse.rs` — write `to_sexp(patterns: &[Pattern<Subject>]) -> String` that produces tree-sitter sexp notation; each pattern renders as `(gram_pattern ...)` with nested `(node_pattern ...)` / `(edge_pattern ...)` etc.; reference `crates/gram-codec/tests/corpus/validator.rs` for expected shape
-- [ ] T037 [P] [US3] Implement json output mode in `commands/parse.rs` — convert each `Pattern<Subject>` to `AstPattern` via `parse_to_ast` / `AstPattern::from_pattern`, then serialize array via `serde_json`
-- [ ] T038 [P] [US3] Implement summary output mode in `commands/parse.rs` — walk `Vec<Pattern<Subject>>` and count: node patterns (arity 0), relationship patterns (arity 2), annotation patterns (arity 1), group patterns (arity ≥ 3); print as plain text to stdout (not gram)
-- [ ] T039 [US3] Write integration tests in `crates/pato/tests/parse_tests.rs` — verify gram round-trip stability using valid fixtures; verify json output is parseable JSON array; verify sexp output matches gramref for at least two corpus fixtures from `crates/gram-codec/tests/corpus/`; verify no root-wrapper nesting on repeated round-trips
+- [X] T034 [US3] Implement `crates/pato/src/commands/parse.rs` — accept files or `-`; parse via `parse_gram_cst`; on CST errors report to stderr and exit 2; on success emit selected output format from either CST or lowered semantic patterns as appropriate
+- [X] T035 [US3] Implement gram output mode in `commands/parse.rs` — lower valid CST trees, serialize each top-level pattern via `to_gram_pattern`, join with newline, emit as flat sequence with no root wrapper; verify round-trip: `parse(gram_out) == lowered_patterns`
+- [X] T036 [P] [US3] Implement sexp output mode in `commands/parse.rs` — render directly from CST structure so the output mirrors tree-sitter/gramref shape without reconstructing it from `Pattern<Subject>`
+- [X] T037 [P] [US3] Implement json output mode in `commands/parse.rs` — convert lowered `Pattern<Subject>` values to `AstPattern`/JSON array via `serde_json`
+- [X] T038 [P] [US3] Implement summary output mode in `commands/parse.rs` — count nodes/relationships/annotations/walks from the CST tree so annotation counts remain accurate even when the semantic tree would drop syntax detail
+- [X] T039 [US3] Write integration tests in `crates/pato/tests/parse_tests.rs` — verify gram round-trip stability using valid fixtures; verify json output is parseable JSON array; verify sexp output matches gramref for at least two corpus fixtures; verify no root-wrapper nesting on repeated round-trips; verify annotation-aware summary counts
 
 **Checkpoint**: `pato parse` fully functional and independently testable.
 
@@ -104,17 +135,30 @@
 
 ## Phase 6: User Story 4 — Explain a Diagnostic Rule (Priority: P3)
 
-**Goal**: `pato rule` exposes the rule registry as gram output; agents can look up any P-code without reading source.
+**Goal**: `pato rule` exposes the shared rule/remediation registry as gram/json output; agents can look up any P-code and its reusable fix templates without reading source.
 
-**Independent Test**: Run `pato rule` (no args), verify gram output parses cleanly and lists all P001–P008; run `pato rule P002`, verify output includes code, name, grade, and a `TriggerExample` that when linted produces P002.
+**Independent Test**: Run `pato rule` (no args), verify gram output parses cleanly and lists all P001–P008 plus their remediation templates; run `pato rule P002`, verify output includes code, name, grade, remediation identifiers, and a `TriggerExample` that when linted produces P002.
 
-- [ ] T040 [US4] Implement rule registry in `crates/pato/src/diagnostics.rs` — add `RuleInfo { code, name, severity, grade, description, trigger_example_gram }` struct; static registry mapping each `DiagnosticCode` to its `RuleInfo`; `trigger_example_gram` is a minimal gram string that when linted produces exactly that P-code
-- [ ] T041 [US4] Implement `crates/pato/src/commands/rule.rs` — list mode (no args): emit gram file of kind `"rule"` with one `Rule` pattern per P-code (code, name, severity, grade, description properties); detail mode (with code): emit single `Rule` pattern with `TriggerExample` child containing the trigger gram
-- [ ] T042 [US4] Add JSON output mode to `commands/rule.rs` for `--output-format json`
-- [ ] T043 [US4] Handle unknown code in `commands/rule.rs` — emit error on stderr and exit 3
-- [ ] T044 [US4] Write integration tests in `crates/pato/tests/rule_tests.rs` — verify all P-codes have registry entries; verify listing gram output parses cleanly; verify each trigger_example_gram when linted produces exactly the claimed P-code
+- [X] T040 [US4] Extend the shared rule registry in `crates/pato/src/diagnostics.rs` — add `RuleInfo { code, name, severity, grade, description, remediations, trigger_example_gram }` and stable remediation template identifiers/parameter docs for each `DiagnosticCode`
+- [X] T041 [US4] Implement `crates/pato/src/commands/rule.rs` — list mode (no args): emit gram file of kind `"rule"` with one `Rule` pattern per P-code plus its reusable remediation templates; detail mode (with code): emit single `Rule` pattern with `TriggerExample` child and remediation template detail
+- [X] T042 [US4] Add JSON output mode to `commands/rule.rs` for `--output-format json`
+- [X] T043 [US4] Handle unknown code in `commands/rule.rs` — emit error on stderr and exit 3
+- [X] T044 [US4] Write integration tests in `crates/pato/tests/rule_tests.rs` — verify all P-codes and remediation templates have registry entries; verify listing gram output parses cleanly; verify each trigger_example_gram when linted produces exactly the claimed P-code; verify lint output references valid registry identifiers
 
 **Checkpoint**: `pato rule` fully functional; agents can self-serve on unknown diagnostics.
+
+---
+
+## Phase 6b: Schema Semantics Exploration
+
+**Purpose**: Record the emerging schema direction before proceeding with `pato check`.
+
+- [X] T071 [US5] Create `data/schema/*.schema.gram` exploratory examples that model archetypal schema-as-gram using `kind: "schema"`, `::` schema slots, and tagged-string constraint dialects such as `ts`, `re`, `zod`, `cypher`, and `pydantic`
+- [X] T072 [US5] Update `specs/041-pato-cli/spec.md` — document that future schema validation is based on archetypal gram files whose syntax choices are part of the schema contract; record tagged-string dialects plus the distinction between vocabulary openness and composition openness
+- [X] T073 [US5] Update `specs/041-pato-cli/plan.md` — treat schema modeling as a defined exploratory prerequisite for future semantic validation while keeping v0.1 `pato check` scoped to lint plus schema discovery
+- [X] T074 [US5] Add `specs/041-pato-cli/contracts/schema-gram.md` — record the archetypal schema contract, including `kind: "schema"`, syntax-as-contract semantics, open/closed vocabulary vs composition openness, and the `gram` tagged-string mini-DSL for gram-native value forms
+
+**Checkpoint**: The branch now records a concrete schema direction, even though semantic schema validation remains deferred.
 
 ---
 
@@ -124,10 +168,10 @@
 
 **Independent Test**: Run `pato check my.gram` (no schema) — verify lint runs and P007 is in output; run `pato check my.gram` with `my.schema.gram` alongside — verify P007 is absent and schema path appears on stderr.
 
-- [ ] T045 [US5] Implement `crates/pato/src/schema.rs` — `discover_schema(data_file: &Path, override_path: Option<&Path>) -> Option<PathBuf>`; if `override_path` is Some, return it; otherwise look for `<stem>.schema.gram` alongside the data file; return None if not found
-- [ ] T046 [US5] Implement `crates/pato/src/commands/check.rs` — for each input file: (1) run full lint, (2) call `schema::discover_schema`, (3) if no schema → append P007 info diagnostic; if schema found → log `"using schema: <path>"` to stderr and suppress P007; emit combined diagnostics via `render_diagnostics`
-- [ ] T047 [US5] Create `tests/fixtures/schema/sample.schema.gram` and `tests/fixtures/valid/sample.gram` with matching stem for schema discovery tests
-- [ ] T048 [US5] Write integration tests in `crates/pato/tests/check_tests.rs` — no schema: P007 present, lint diagnostics present, exit reflects lint severity; with same-stem schema: P007 absent, schema path on stderr; with `--schema` override: specified schema acknowledged; invalid `--schema` path: exit 3 with error on stderr
+- [X] T045 [US5] Implement `crates/pato/src/schema.rs` — `discover_schema(data_file: &Path, override_path: Option<&Path>) -> Option<PathBuf>`; if `override_path` is Some, return it; otherwise look for `<stem>.schema.gram` alongside the data file; return None if not found
+- [X] T046 [US5] Implement `crates/pato/src/commands/check.rs` — for each input file: (1) run full lint, (2) call `schema::discover_schema`, (3) if no schema → append P007 info diagnostic; if schema found → log `"using schema: <path>"` to stderr and suppress P007; emit combined diagnostics via `render_diagnostics`
+- [X] T047 [US5] Create `tests/fixtures/schema/sample.schema.gram` and `tests/fixtures/valid/sample.gram` with matching stem for schema discovery tests
+- [X] T048 [US5] Write integration tests in `crates/pato/tests/check_tests.rs` — no schema: P007 present, lint diagnostics present, exit reflects lint severity; with same-stem schema: P007 absent, schema path on stderr; with `--schema` override: specified schema acknowledged; invalid `--schema` path: exit 3 with error on stderr
 
 **Checkpoint**: `pato check` fully functional; CI workflows can use it as single entry point.
 
@@ -139,11 +183,11 @@
 
 **Independent Test**: Create a minimal `pato-foo` shell script on PATH that echoes args and exits 0; run `pato foo --test`, verify args forwarded; run `pato --help`, verify `pato-foo` appears.
 
-- [ ] T049 [US6] Implement `crates/pato/src/extensions.rs` — `discover_extensions() -> Vec<(String, Option<String>)>` that scans PATH directories for binaries starting with `pato-`, then queries each with `--pato-describe` (timeout ~1 second); returns `(binary_name, description_or_none)` pairs; deduplicate by name
-- [ ] T050 [US6] Implement `exec_extension(subcommand: &str, args: &[String])` in `extensions.rs` — construct binary name `pato-<subcommand>`; if not found in PATH emit error on stderr and exit 3; if found use `std::process::Command::new(bin).args(args).status()` with inherited stdin/stdout/stderr; relay exit code via `std::process::exit(status.code().unwrap_or(3))`
-- [ ] T051 [US6] Wire `Commands::External(args)` in `main.rs` to call `extensions::exec_extension` with `args[0]` as subcommand and `&args[1..]` as forwarded args
-- [ ] T052 [US6] Update `--help` output in `cli.rs` / `main.rs` to call `extensions::discover_extensions()` and append discovered extensions to the help text under an "Extensions" section with their descriptions
-- [ ] T053 [US6] Write integration tests in `crates/pato/tests/extensions_tests.rs` — test unknown subcommand with no PATH match exits 3 with stderr message; test `--pato-describe` protocol by creating a minimal test binary; test help listing includes discovered extensions
+- [X] T049 [US6] Implement `crates/pato/src/extensions.rs` — `discover_extensions() -> Vec<(String, Option<String>)>` that scans PATH directories for binaries starting with `pato-`, then queries each with `--pato-describe` (timeout ~1 second); returns `(binary_name, description_or_none)` pairs; deduplicate by name
+- [X] T050 [US6] Implement `exec_extension(subcommand: &str, args: &[String])` in `extensions.rs` — construct binary name `pato-<subcommand>`; if not found in PATH emit error on stderr and exit 3; if found use `std::process::Command::new(bin).args(args).status()` with inherited stdin/stdout/stderr; relay exit code via `std::process::exit(status.code().unwrap_or(3))`
+- [X] T051 [US6] Wire `Commands::External(args)` in `main.rs` to call `extensions::exec_extension` with `args[0]` as subcommand and `&args[1..]` as forwarded args
+- [X] T052 [US6] Update `--help` output in `cli.rs` / `main.rs` to call `extensions::discover_extensions()` and append discovered extensions to the help text under an "Extensions" section with their descriptions
+- [X] T053 [US6] Write integration tests in `crates/pato/tests/extensions_tests.rs` — test unknown subcommand with no PATH match exits 3 with stderr message; test `--pato-describe` protocol by creating a minimal test binary; test help listing includes discovered extensions
 
 **Checkpoint**: Extension ecosystem is open; `pato-apply` and `pato-ingest` can be built independently.
 
@@ -153,12 +197,12 @@
 
 **Purpose**: Code quality, CI compliance, and pipeline integration validation.
 
-- [ ] T054 [P] Run `cargo fmt --all` and fix any formatting issues across `crates/pato/src/`
-- [ ] T055 [P] Run `cargo clippy --workspace -- -D warnings` and fix all lint warnings in `crates/pato/`
-- [ ] T056 Run `cargo test --workspace` and verify all tests pass including pre-existing workspace tests
-- [ ] T057 Verify the diagnostic gram pipeline: `cargo run -p relateby-pato -- lint crates/pato/tests/fixtures/invalid/P004.gram | cargo run -p relateby-pato -- parse -` — confirm lint output is valid gram that parse accepts
-- [ ] T058 Run `./scripts/ci-local.sh` and fix any CI failures
-- [ ] T059 Review and update `specs/041-pato-cli/quickstart.md` with any corrections discovered during implementation
+- [X] T054 [P] Run `cargo fmt --all` and fix any formatting issues across `crates/pato/src/`
+- [X] T055 [P] Run `cargo clippy --workspace -- -D warnings` and fix all lint warnings in `crates/pato/`
+- [X] T056 Run `cargo test --workspace` and verify all tests pass including pre-existing workspace tests
+- [X] T057 Verify the diagnostic gram pipeline: `cargo run -p relateby-pato -- lint crates/pato/tests/fixtures/invalid/P004.gram | cargo run -p relateby-pato -- parse -` — confirm lint output is valid gram that parse accepts
+- [X] T058 Run `./scripts/ci-local.sh` and fix any CI failures
+- [X] T059 Review and update `specs/041-pato-cli/quickstart.md` with any corrections discovered during implementation
 
 ---
 
@@ -169,20 +213,23 @@
 - **Setup (Phase 1)**: No dependencies — start immediately
 - **Foundational (Phase 2)**: Depends on Phase 1 — **BLOCKS all user stories**
 - **US1 Lint (Phase 3)**: Depends on Phase 2 — first story to implement
-- **US2 Fmt (Phase 4)**: Depends on Phase 2; independent of US1 (shares `editor.rs` but that is built in US1 — see below)
-- **US3 Parse (Phase 5)**: Depends on Phase 2 only; fully independent of US1/US2
-- **US4 Rule (Phase 6)**: Depends on Phase 2 (uses `DiagnosticCode` registry from T040); fully independent of US1–US3
-- **US5 Check (Phase 7)**: Depends on US1 (runs lint internally via shared function)
+- **CST Alignment (Phase 3b)**: Depends on Phase 3 — rebases the completed lint MVP onto merged CST support
+- **Diagnostic Contract Realignment (Phase 3c)**: Depends on Phase 3b — updates the unreleased diagnostic/reporting contract before further feature work
+- **US2 Fmt (Phase 4)**: Depends on Phase 3c and `editor.rs` from Phase 3
+- **US3 Parse (Phase 5)**: Depends on Phase 3c
+- **US4 Rule (Phase 6)**: Depends on Phase 3c (shared registry introduced there); otherwise independent of US2–US3
+- **Schema Exploration (Phase 6b)**: Depends on the completed `rule`/registry groundwork only as documentation context; informs future schema validation semantics before deeper `check` work
+- **US5 Check (Phase 7)**: Depends on US1 (runs lint internally via shared function) and is now informed by the recorded Phase 6b schema direction, even though v0.1 remains discovery-only
 - **US6 Extensions (Phase 8)**: Depends on Phase 1 only (CLI wiring); independent of all other stories
 - **Polish (Phase 9)**: Depends on all desired stories being complete
 
 ### User Story Dependencies
 
 - **US1 (P1)**: Can start after Phase 2. No dependencies on other stories.
-- **US2 (P2)**: Can start after Phase 2. Uses `editor.rs` built in US1 (T023) — begin US2 after T023 is done, or implement a simpler write path in `fmt.rs` first and replace with `editor.rs` later.
-- **US3 (P3)**: Can start after Phase 2. Fully independent.
-- **US4 (P3)**: Can start after Phase 2 (needs `DiagnosticCode` from T007/T040). Fully independent.
-- **US5 (P4)**: Can start after US1 is complete (T016 provides the lint runner it calls).
+- **US2 (P2)**: Should start after Phase 3c. Uses `editor.rs` built in US1 and depends on CST-backed parsing plus the realigned diagnostic contract.
+- **US3 (P3)**: Should start after Phase 3c so sexp/summary outputs can use the merged CST parser directly while gram/json output expectations stay aligned with the adopted report model.
+- **US4 (P3)**: Should start after Phase 3c because the rule/remediation registry becomes shared infrastructure for lint and text rendering.
+- **US5 (P4)**: Can start after US1 is complete (T016 provides the lint runner it calls). Phase 6b now records the intended future schema semantics, but the Phase 7 implementation remains discovery-only in v0.1.
 - **US6 (P4)**: Can start after Phase 1. Fully independent.
 
 ### Parallel Opportunities Within Each Story
@@ -216,25 +263,30 @@ T022: P008 unknown document kind checker
 1. Complete Phase 1: Setup
 2. Complete Phase 2: Foundational (CRITICAL — blocks everything)
 3. Complete Phase 3: User Story 1 (pato lint)
-4. **STOP and VALIDATE**: `pato lint invalid/P002.gram` emits parseable diagnostic gram, exits 2
-5. At this point, pato has real value for CI and agentic use
+4. Complete Phase 3b: CST alignment after the 042 merge
+5. Complete Phase 3c: diagnostic contract realignment after the modeling exploration
+6. **STOP and VALIDATE**: `pato lint invalid/P002.gram` emits compact parseable diagnostic gram with CST-derived locations and stable rule/remediation identifiers, exits 2
+7. At this point, pato has real value for CI and agentic use
 
 ### Incremental Delivery
 
 1. Setup + Foundational → scaffolded binary with type system
 2. US1 (lint) → MVP: gram file checking with structured diagnostics
-3. US2 (fmt) → canonical formatting; `--check` for CI
-4. US3 (parse) → structural inspection and round-trip verification
-5. US4 (rule) → agent self-service on unknown P-codes
-6. US5 (check) → single CI entry point with schema awareness
-7. US6 (extensions) → ecosystem open for `pato-apply`, `pato-ingest`
+3. Phase 3b (CST alignment) → precise, syntax-aware lint foundation
+4. Phase 3c (diagnostic realignment) → compact rule-driven reporting contract
+5. US2 (fmt) → canonical formatting; `--check` for CI
+6. US3 (parse) → structural inspection and round-trip verification
+7. US4 (rule) → agent self-service on unknown P-codes and reusable remediations
+8. Phase 6b (schema exploration) → archetypal schema direction recorded before validation work deepens
+9. US5 (check) → single CI entry point with schema awareness
+10. US6 (extensions) → ecosystem open for `pato-apply`, `pato-ingest`
 
 ### Parallel Team Strategy
 
-Once Phase 2 is complete:
+Once Phase 3c is complete:
 
-- Dev A: US1 (lint) — P-code checkers + editor
-- Dev B: US3 (parse) + US4 (rule) — output formats + registry
+- Dev A: US2 (fmt) — canonical rewrites + fixtures
+- Dev B: US3 (parse) + US4 (rule) — output formats + registry exposure
 - Dev C: US6 (extensions) — can start from Phase 1
 
 ---
@@ -245,6 +297,6 @@ Once Phase 2 is complete:
 - `[Story]` label maps each task to its user story for traceability
 - Each user story checkpoint describes a self-contained, demonstrable deliverable
 - `editor.rs` (T023, built in US1) is shared by US2 (`pato fmt`); build it before starting T028–T031
-- The diagnostic gram format in `contracts/diagnostic-gram.md` is stable API — do not change the gram structure once US1 is implemented
+- The diagnostic gram format in `contracts/diagnostic-gram.md` remains draft until Phase 3c is complete; the adopted compact rule-driven schema is the intended stable v0.1 API
 - `std::io::IsTerminal` is available at MSRV 1.70.0 — no additional crate needed for TTY detection
-- Total tasks: 59 (T001–T059)
+- Total tasks: 74 (T001–T074)

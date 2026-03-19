@@ -124,6 +124,23 @@ A source position in a gram file.
 | `line` | `u32` | 1-indexed |
 | `column` | `u32` | 1-indexed |
 
+**Source of truth**: `Location` is derived from CST byte spans when pato is operating on parsed
+source. The line/column pair remains the stable public contract emitted in diagnostics and edits.
+
+---
+
+### SourceSpan (internal)
+
+An internal source range originating from `gram-codec`'s CST parser.
+
+| Field | Type | Notes |
+|-------|------|-------|
+| `start` | `usize` | Inclusive byte offset |
+| `end` | `usize` | Exclusive byte offset |
+
+**Use**: Drives accurate diagnostic placement and edit targeting inside pato. Not emitted directly
+in the v0.1 diagnostic gram contract.
+
 ---
 
 ### DocumentKind
@@ -156,19 +173,23 @@ The output rendering mode, controlled by `--output-format`.
 Input file
     │
     ▼
-[parse]
-    │── ParseError ──► P001 Diagnostic (guided)
+[parse_gram_cst]
+    │── CST errors ──► P001 Diagnostic (guided)
     ▼
-Parsed patterns (Vec<Pattern<Subject>>)
+CST tree (Pattern<SyntaxNode>) + SourceSpans
+    │
+    ├── [lower]
+    │       ▼
+    │   Parsed patterns (Vec<Pattern<Subject>>)
     │
     ▼
 [lint checks]
-    │── P002 duplicate identity (guided)
-    │── P003 duplicate annotation key (guided)
-    │── P004 label case (auto)
-    │── P005 dangling reference (ambiguous)
+    │── P002 duplicate identity (guided; CST spans for both occurrences)
+    │── P003 duplicate annotation key (guided; SyntaxNode.annotations)
+    │── P004 label case (auto; CST label spans)
+    │── P005 dangling reference (ambiguous; CST refs + lowered identity set)
     │── P006 empty array (guided)
-    │── P008 unknown document kind (guided)
+    │── P008 unknown document kind (guided; document/header node from CST)
     ▼
 Vec<Diagnostic>
     │
@@ -210,7 +231,8 @@ Exit code reflects the highest severity across all files in the run.
 
 **Trigger**: The same identity string appears as the `identity` field of more than one `Subject` in the same file.
 
-**Detection**: Collect all non-empty identities into a `HashMap<String, Location>`. On second occurrence, emit P002 referencing both line numbers.
+**Detection**: Traverse the CST, collect all definition-site identities with their `SourceSpan`s, and
+emit P002 on the second and subsequent occurrences. Convert spans to `Location` for output.
 
 **Grade**: Guided — the fix is to rename one occurrence, but pato cannot choose which without context.
 
@@ -220,7 +242,8 @@ Exit code reflects the highest severity across all files in the run.
 
 **Trigger**: A relationship label (arity-2 pattern) is not all-UPPERCASE. A node label (arity-0 or arity-1 pattern) is not TitleCase (first letter uppercase, rest lowercase-or-mixed).
 
-**Detection**: For each pattern, check arity to determine if labels are node labels or relationship labels, then check casing.
+**Detection**: Use CST node kind plus preserved label text/spans to determine whether the label is on
+a node or relationship, then emit the auto-fix at the exact span-derived location.
 
 **Grade**: Auto — the correct casing is deterministic and unambiguous.
 
@@ -230,7 +253,9 @@ Exit code reflects the highest severity across all files in the run.
 
 **Trigger**: A pattern uses an identity as a reference but that identity has no definition in the same file.
 
-**Detection**: Collect all defined identities (patterns that are definition sites). Collect all reference identities. Emit P005 for any reference not in the definition set.
+**Detection**: Collect definition/reference occurrences from the CST, then compare reference
+identities against the lowered semantic definition set. Emit P005 at the reference span when the
+identity is not defined in-file.
 
 **Ambiguous options** (exactly 2 per diagnostic):
 1. Rename the reference to the nearest defined identity (by Levenshtein distance via `strsim`)
@@ -241,5 +266,8 @@ Exit code reflects the highest severity across all files in the run.
 ### P008: unknown-document-kind
 
 **Trigger**: The file's first pattern is a bare record (no identity, no labels, no elements) with a `kind` property whose value is not a recognized `DocumentKind`.
+
+**Detection**: Read the document/header subject from the CST document root, then validate its
+`kind` property against the known set.
 
 **Grade**: Guided — the fix is to change the `kind` value to a recognized one, or remove it.

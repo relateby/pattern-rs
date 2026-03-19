@@ -86,7 +86,7 @@ A coding agent or developer encounters an unfamiliar diagnostic code in `pato li
 
 A developer runs `pato check` as a single "is this correct?" command that combines lint with optional schema validation. When a `*.schema.gram` file is present alongside the data file, it is discovered automatically.
 
-**Why this priority**: `check` is the intended entry point for CI and agent workflows. It depends on lint being stable first. Schema validation itself is deferred to v0.2; this story covers the lint-plus-discovery behavior without full semantic validation.
+**Why this priority**: `check` is the intended entry point for CI and agent workflows. It depends on lint being stable first. Full schema validation is still deferred beyond the current branch; this story covers the lint-plus-discovery behavior while the schema model is explored as a gram-native archetypal contract.
 
 **Independent Test**: Run `pato check` with and without a schema file present; verify that without a schema the P007 informational diagnostic is emitted and lint checks still run; verify that with `--schema` the schema path is accepted.
 
@@ -170,6 +170,18 @@ A user runs `pato xyz` where `xyz` is not a built-in subcommand. Pato searches P
 - **FR-026**: `pato check` MUST accept `--schema <path>` to override schema discovery for all inputs.
 - **FR-027**: When no schema is found or provided, `pato check` MUST emit a P007 informational diagnostic. When a schema IS found or provided, P007 MUST be suppressed and the schema path MUST be noted on stderr; full semantic validation is deferred to v0.2.
 
+**Future schema foundation (recorded now, not yet implemented in `pato check`)**
+
+- **FR-034**: The long-term schema direction for gram in pato MUST be an archetypal gram document, not a separate sidecar meta-format.
+- **FR-035**: A schema document MUST be a gram file with a header record whose `kind` is `"schema"`.
+- **FR-036**: In archetypal schemas, syntax choices are part of the schema contract. Label separators, arrow families, annotation forms, and similar surface forms may therefore be interpreted as normative, not merely illustrative.
+- **FR-037**: Property and value constraints in schemas SHOULD be expressed via `::` schema slots whose values are tagged strings.
+- **FR-038**: Tagged-string schema slots MAY defer to well-known external languages such as `ts`, `re`, `zod`, `cypher`, or `pydantic` when those languages naturally express the intended constraint.
+- **FR-039**: Gram-specific value forms that do not fit naturally in those external languages SHOULD use a `gram` tagged-string dialect whose content is a small gram-shaped constraint vocabulary expressed through conventional labels and properties.
+- **FR-040**: Because gram does not allow patterns as direct property values, the `gram` dialect MUST encode its explicit constraint structure inside the tagged string rather than as nested outer-schema value patterns.
+- **FR-041**: Validation strictness MUST distinguish vocabulary openness (`open` vs `closed`) from composition openness. These are separate axes and MUST NOT be collapsed into a single rule.
+- **FR-042**: Composition strictness MUST determine whether larger structural compositions of valid archetypes are allowed beyond the exact patterns shown in the schema.
+
 **Extension dispatch**
 
 - **FR-028**: When an unknown subcommand is invoked, pato MUST search PATH for `pato-<subcommand>` and exec it with remaining arguments forwarded verbatim.
@@ -190,6 +202,9 @@ A user runs `pato xyz` where `xyz` is not a built-in subcommand. Pato searches P
 - **DiagnosticCode (P-code)**: A stable, never-reused identifier for a rule (P001–P008 in v0.1).
 - **Location**: A line and column reference into a gram file.
 - **DocumentKind**: A recognized value for the `kind` property in a gram document header.
+- **SchemaDocument**: A gram file with `kind: "schema"` whose archetypal structures, syntax choices, comments, and tagged-string constraints together describe an intended data contract.
+- **SchemaSlot**: A property written with `::` whose tagged-string value describes a constraint or type contract.
+- **GramConstraintDialect**: A small gram-shaped DSL carried inside `gram\`...\`` tagged strings for gram-native value forms such as ranges, measurements, tagged strings, and related concepts.
 
 ## Success Criteria *(mandatory)*
 
@@ -212,12 +227,28 @@ A user runs `pato xyz` where `xyz` is not a built-in subcommand. Pato searches P
 - Q: What exit code should `pato fmt --check` use when files need formatting? → A: Exit code 1 (warning-level; unformatted files are not data errors).
 - Q: What does `pato check` v0.1 do when a schema is found but validation is deferred? → A: Run lint only; suppress P007 (schema acknowledged); log schema path to stderr.
 
+### Session 2026-03-19
+
+- Q: Now that the `gram-codec` CST parser is available, should pato continue to use only the semantic parser? → A: No. `pato` should use the CST parser as its source-aware parsing layer for native CLI work, then lower to `Pattern<Subject>` where semantic compatibility or existing serializers are still needed.
+- Q: Does the availability of CST change pato's public diagnostic contract? → A: No. Diagnostics still report stable line/column locations and the existing gram/json/text output shapes; CST spans become the internal source of truth used to derive those locations more accurately.
+- Q: Does comment preservation remain out of scope? → A: Full trivia-preserving rewrites remain out of scope, but the merged CST parser makes top-level comment-aware lint/parse/fmt behavior part of the v0.1 design space rather than a blocked future concern.
+- Q: What does "schema" mean for future pato validation work? → A: The current preferred direction is an archetypal gram file with `kind: "schema"`, where syntax choices in the example are themselves part of the schema contract.
+- Q: How should value constraints be represented in those schema files? → A: Use `::` schema slots with tagged strings; when mainstream external languages fit, use tags such as `ts`, `re`, `zod`, `cypher`, or `pydantic`.
+- Q: What about gram-native value forms like ranges, measurements, and tagged strings? → A: Use a `gram` tagged-string dialect whose content is itself a tiny gram-shaped constraint vocabulary using conventional labels and fields.
+- Q: Can those gram-native constraints be expressed as literal nested patterns in property values? → A: No. Gram does not allow patterns as values, so the explicit structure must live inside the tagged-string content.
+- Q: Should schema strictness be modeled as a single open/closed switch? → A: No. Vocabulary openness and composition openness are separate validation-time axes.
+
 ## Assumptions
 
 - The gram library is the authoritative gram parser; pato delegates all parsing to it and does not implement its own.
-- Comment preservation is out of scope for v0.1 (the parser currently drops comments).
+- For native `pato`, the authoritative parsing entry point is now the CST parser when source fidelity matters; semantic outputs continue to flow through lowering to `Pattern<Subject>` as needed.
+- Full trivia-preserving formatting is out of scope for v0.1, but CST-backed implementations should preserve source-order structure and top-level comments where practical.
 - Glob expansion is delegated to the shell in v0.1; pato does not expand globs internally.
 - `pato validate` (semantic validation against a schema) is deferred to v0.2.
+- Schema exploration in this branch follows an archetypal gram-native direction: the schema is itself gram, syntax choices may be normative, and tagged strings carry constraint syntax.
+- When external languages fit naturally, tags such as `ts`, `re`, `zod`, `cypher`, and `pydantic` are preferred carriers for those constraints.
+- When the constrained concept is native to gram itself, a `gram` tagged-string dialect is preferred over awkward encodings in unrelated external languages.
+- Open/closed vocabulary and structural composition openness are separate schema-validation concerns and should not be treated as one switch.
 - Style settings (arrow family, label separator) are not configurable in v0.1; `pato fmt` preserves the author's choices for these.
 - `pato apply` is deferred to v0.2+; the diagnostic gram format is treated as stable API from v0.1.
 - Duplicate identity detection (P002) is file-scoped; cross-file detection is out of scope.

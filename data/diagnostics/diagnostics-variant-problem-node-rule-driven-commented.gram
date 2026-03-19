@@ -1,0 +1,105 @@
+// Compact rule-driven report for `data/hello.gram`.
+// The structured patterns below are intended to be machine-usable without the comments.
+// These comments are a human-facing expansion layer that pato could synthesize on demand.
+
+// Diagnostic rule template:
+// P005 = dangling-reference
+// Severity = warning
+// Meaning: a referenced identity does not resolve to a definition in the current file.
+
+{ kind: "diagnostics_variant", variant: "problem_node_rule_driven_commented", source_file: "data/hello.gram" }
+
+(hello_1:NodeRef {
+  syntax_kind: "node",
+  line: 1,
+  column: 2,
+  span_start: 1,
+  span_end: 6,
+  source_text: "hello"
+})
+
+(world_1:NodeRef {
+  syntax_kind: "node",
+  line: 1,
+  column: 12,
+  span_start: 11,
+  span_end: 16,
+  source_text: "world"
+})
+
+(p005:Diagnostic {
+  severity: "warning",
+  code: "P005",
+  rule: "dangling-reference"
+})
+
+// Remediation template:
+// remediation_03 provides an ambiguous fix family for P005.
+// A consumer chooses one of the option templates and binds concrete values.
+
+(remediation_03:Remediation {
+  grade: "ambiguous"
+})-[:FOR_RULE]->(p005)
+
+(option_03a:Option {
+  operation: "replace"
+})-[:FOR_REMEDIATION]->(remediation_03)
+
+(option_03b:Option {
+  operation: "append"
+})-[:FOR_REMEDIATION]->(remediation_03)
+
+// Problem instance:
+// `hello` appears as a reference site and does not resolve in-file.
+// Suggested decision: either rename the reference to an existing identity or add a definition.
+
+(problem_hello:Problem {
+  unresolved_identity: "hello"
+})-[:AT]->(hello_1)
+
+(problem_hello)-[:HAS_DIAGNOSTIC]->(p005)
+
+// Concrete remediation bindings for `problem_hello`.
+// pato could render this as:
+//   "'hello' is referenced but not defined in this file"
+//   Option 1: rename the reference.
+//   Option 2: add a definition for 'hello'.
+
+(apply_hello:ApplyRemediation {
+  remediation: "remediation_03"
+})-[:FOR_PROBLEM]->(problem_hello)
+
+(apply_hello)-[:USE_OPTION]->(use_hello_replace:UseOption {
+  option: "option_03a",
+  replace: "hello",
+  with: "hello"
+})
+
+(apply_hello)-[:USE_OPTION]->(use_hello_append:UseOption {
+  option: "option_03b",
+  append: "(hello:Entity)"
+})
+
+// Problem instance:
+// `world` appears as a reference site and does not resolve in-file.
+
+(problem_world:Problem {
+  unresolved_identity: "world"
+})-[:AT]->(world_1)
+
+(problem_world)-[:HAS_DIAGNOSTIC]->(p005)
+
+(apply_world:ApplyRemediation {
+  remediation: "remediation_03"
+})-[:FOR_PROBLEM]->(problem_world)
+
+(apply_world)-[:USE_OPTION]->(use_world_replace:UseOption {
+  option: "option_03a",
+  replace: "world",
+  with: "world"
+})
+
+(apply_world)-[:USE_OPTION]->(use_world_append:UseOption {
+  option: "option_03b",
+  append: "(world:Entity)"
+})

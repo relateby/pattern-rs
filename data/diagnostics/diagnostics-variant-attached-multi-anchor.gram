@@ -1,0 +1,42 @@
+{ kind: "diagnostics_variant", variant: "attached_multi_anchor", source_file: "data/hello.gram" }
+
+(hello_1:NodeRef {
+  syntax_kind: "node",
+  line: 1,
+  column: 2,
+  span_start: 1,
+  span_end: 6,
+  source_text: "hello"
+})
+
+(world_1:NodeRef {
+  syntax_kind: "node",
+  line: 1,
+  column: 12,
+  span_start: 11,
+  span_end: 16,
+  source_text: "world"
+})
+
+[pairing_note:ExampleDiagnostic {
+  severity: "info",
+  rule: "pairwise-overlay",
+  message: "Demonstrates one compositional diagnostic attached to multiple anchors"
+} | hello_1, world_1]
+
+[pairing_remediation:Remediation {
+  grade: "guided",
+  summary: "Split this into per-anchor diagnostics if the consumer requires one-fix-per-target"
+} | pairing_note]
+
+[diag_hello:P005 {
+  severity: "warning",
+  rule: "dangling-reference",
+  message: "'hello' is referenced but not defined in this file"
+} | hello_1]
+
+[diag_world:P005 {
+  severity: "warning",
+  rule: "dangling-reference",
+  message: "'world' is referenced but not defined in this file"
+} | world_1]
