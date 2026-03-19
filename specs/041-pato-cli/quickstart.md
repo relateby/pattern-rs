@@ -10,6 +10,10 @@ The pato crate depends on two existing workspace crates:
 - `relateby-pattern` (`crates/pattern-core/`) — Pattern and Subject types
 - `relateby-gram` (`crates/gram-codec/`) — Gram parsing and serialization
 
+For the remaining 041 work, `pato` should consume `relateby-gram` with its `cst` feature enabled.
+That keeps CST support local to the native CLI crate while leaving the workspace's broader API
+surface unchanged.
+
 Both build cleanly. Verify:
 
 ```bash
@@ -59,9 +63,9 @@ Follow the implementation sequence from the proposal:
 
 1. **Scaffold** — `crates/pato/Cargo.toml`, `main.rs`, `cli.rs`, extension dispatch
 2. **Diagnostic infrastructure** — `diagnostics.rs`, `diagnostic_gram.rs`, `output.rs`
-3. **`pato lint`** — wire P001–P008, `editor.rs`, `--fix`
-4. **`pato fmt`** — canonical style, idempotency, `--check`
-5. **`pato parse`** — gram/sexp/json/summary output
+3. **CST alignment** — enable `gram-codec`'s `cst` feature in `pato`, add span→location helpers, and refactor lint to consume CST spans/annotations instead of raw text scans
+4. **`pato fmt`** — CST-assisted canonical style, idempotency, `--check`
+5. **`pato parse`** — lowered gram/json output plus CST-backed sexp/summary output
 6. **`pato rule`** — rule registry
 7. **`pato check`** — lint + schema discovery
 
@@ -101,6 +105,7 @@ cargo test --workspace
 | What | Where |
 |------|-------|
 | Gram parsing | `crates/gram-codec/src/lib.rs` — `parse_gram`, `parse_gram_with_header` |
+| Gram CST parsing | `crates/gram-codec/src/cst/` — `parse_gram_cst`, `SyntaxNode`, `SourceSpan`, `lower` |
 | Gram serialization | `crates/gram-codec/src/serializer.rs` — `to_gram`, `to_gram_pattern` |
 | Subject fields | `crates/pattern-core/src/subject.rs` — `identity`, `labels`, `properties` |
 | Pattern structure | `crates/pattern-core/src/pattern.rs` — `elements`, `value` |

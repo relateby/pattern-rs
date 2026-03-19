@@ -212,10 +212,17 @@ A user runs `pato xyz` where `xyz` is not a built-in subcommand. Pato searches P
 - Q: What exit code should `pato fmt --check` use when files need formatting? → A: Exit code 1 (warning-level; unformatted files are not data errors).
 - Q: What does `pato check` v0.1 do when a schema is found but validation is deferred? → A: Run lint only; suppress P007 (schema acknowledged); log schema path to stderr.
 
+### Session 2026-03-19
+
+- Q: Now that the `gram-codec` CST parser is available, should pato continue to use only the semantic parser? → A: No. `pato` should use the CST parser as its source-aware parsing layer for native CLI work, then lower to `Pattern<Subject>` where semantic compatibility or existing serializers are still needed.
+- Q: Does the availability of CST change pato's public diagnostic contract? → A: No. Diagnostics still report stable line/column locations and the existing gram/json/text output shapes; CST spans become the internal source of truth used to derive those locations more accurately.
+- Q: Does comment preservation remain out of scope? → A: Full trivia-preserving rewrites remain out of scope, but the merged CST parser makes top-level comment-aware lint/parse/fmt behavior part of the v0.1 design space rather than a blocked future concern.
+
 ## Assumptions
 
 - The gram library is the authoritative gram parser; pato delegates all parsing to it and does not implement its own.
-- Comment preservation is out of scope for v0.1 (the parser currently drops comments).
+- For native `pato`, the authoritative parsing entry point is now the CST parser when source fidelity matters; semantic outputs continue to flow through lowering to `Pattern<Subject>` as needed.
+- Full trivia-preserving formatting is out of scope for v0.1, but CST-backed implementations should preserve source-order structure and top-level comments where practical.
 - Glob expansion is delegated to the shell in v0.1; pato does not expand globs internally.
 - `pato validate` (semantic validation against a schema) is deferred to v0.2.
 - Style settings (arrow family, label separator) are not configurable in v0.1; `pato fmt` preserves the author's choices for these.

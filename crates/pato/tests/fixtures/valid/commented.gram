@@ -1,0 +1,4 @@
+// heading
+(alice:Person)
+(alice)-[:KNOWS]->(bob:Person) // edge comment
+// footer

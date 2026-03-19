@@ -1,9 +1,11 @@
 use crate::diagnostics::{
-    exit_code_for_reports, Diagnostic, DiagnosticCode, Edit, FileDiagnostics, Location,
-    Remediation, RemediationOption, RemediationSteps,
+    exit_code_for_reports, rule_info, Diagnostic, DiagnosticCode, Edit, FileDiagnostics, Location,
+    Remediation, RemediationOption,
 };
-use crate::editor;
-use pattern_core::{Pattern, Subject, Value};
+use crate::{editor, source_map};
+use gram_codec::cst::{Annotation, CstParseResult, SourceSpan, SyntaxKind, SyntaxNode};
+use gram_codec::{lower, parse_gram_cst, Pattern, Subject};
+use pattern_core::Value;
 use std::cmp::Ordering;
 use std::collections::{HashMap, HashSet};
 use std::fs;
@@ -89,10 +91,7 @@ pub fn lint_source(
         .diagnostics
         .iter()
         .flat_map(|diagnostic| match &diagnostic.remediation {
-            Remediation::Auto {
-                steps: RemediationSteps::Structured(edits),
-                ..
-            } => edits.clone(),
+            Remediation::Auto { edits, .. } => edits.clone(),
             _ => Vec::new(),
         })
         .collect();
@@ -116,58 +115,103 @@ pub fn lint_source(
 }
 
 fn analyze_source(file_name: &str, source: &str, path: Option<&Path>) -> FileDiagnostics {
-    let parse_result = gram_codec::parse_gram(source);
-    let diagnostics = match parse_result {
-        Ok(patterns) => collect_diagnostics(file_name, source, path, &patterns),
-        Err(error) => vec![parse_error_diagnostic(path, error)],
+    let parse_result = parse_gram_cst(source);
+    let diagnostics = if !parse_result.is_valid() {
+        parse_error_diagnostics(source, path, &parse_result)
+    } else if let Err(error) = gram_codec::parse_gram(source) {
+        vec![nom_parse_error_diagnostic(path, error)]
+    } else {
+        let patterns = lower(parse_result.tree.clone());
+        collect_diagnostics(file_name, source, path, &parse_result.tree, &patterns)
     };
 
     FileDiagnostics::new(file_name, diagnostics)
 }
 
-fn parse_error_diagnostic(path: Option<&Path>, error: gram_codec::ParseError) -> Diagnostic {
+fn parse_error_diagnostics(
+    source: &str,
+    _path: Option<&Path>,
+    parse_result: &CstParseResult,
+) -> Vec<Diagnostic> {
+    let error_spans = if parse_result.errors.is_empty() {
+        vec![SourceSpan {
+            start: 0,
+            end: source.len(),
+        }]
+    } else {
+        let mut spans = parse_result.errors.clone();
+        spans.sort_by(source_map::compare_spans);
+        spans
+    };
+
+    error_spans
+        .into_iter()
+        .map(|span| {
+            let location = source_map::span_start_location(source, &span);
+            let snippet = source_map::span_text(source, &span).trim();
+            let remediation_id = DiagnosticCode::P001
+                .remediation_id()
+                .expect("P001 should have a remediation template");
+            let diagnostic = Diagnostic::new(
+                DiagnosticCode::P001,
+                location,
+                Remediation::Guided {
+                    id: remediation_id,
+                    edits: Vec::new(),
+                },
+            );
+            if snippet.is_empty() {
+                diagnostic
+            } else {
+                diagnostic.with_fact("snippet", snippet.to_string())
+            }
+        })
+        .collect()
+}
+
+fn nom_parse_error_diagnostic(path: Option<&Path>, error: gram_codec::ParseError) -> Diagnostic {
     let location = error
         .location()
         .map(|location| Location::new(location.line as u32, location.column as u32))
         .unwrap_or(Location::new(1, 1));
+    let _ = path;
     Diagnostic::new(
         DiagnosticCode::P001,
-        error.to_string(),
         location,
         Remediation::Guided {
-            summary: "Fix the gram syntax and re-run lint".to_string(),
-            steps: RemediationSteps::Inline(vec![
-                "Correct the syntax near the reported location.".to_string(),
-                "Re-run `pato lint` to confirm the file parses cleanly.".to_string(),
-            ]),
+            id: DiagnosticCode::P001
+                .remediation_id()
+                .expect("P001 should have a remediation template"),
+            edits: Vec::new(),
         },
     )
-    .with_default_file(path)
+    .with_fact("detail", error.to_string())
 }
 
 fn collect_diagnostics(
     file_name: &str,
     source: &str,
     path: Option<&Path>,
+    tree: &Pattern<SyntaxNode>,
     patterns: &[Pattern<Subject>],
 ) -> Vec<Diagnostic> {
     let mut diagnostics = Vec::new();
-    diagnostics.extend(check_duplicate_identities(source, path, patterns));
-    diagnostics.extend(check_duplicate_annotation_keys(source, path));
-    diagnostics.extend(check_label_case(source, path, patterns));
-    diagnostics.extend(check_dangling_references(source, path, patterns));
+    diagnostics.extend(check_duplicate_identities(source, path, tree));
+    diagnostics.extend(check_duplicate_annotation_keys(source, path, tree));
+    diagnostics.extend(check_label_case(source, path, tree));
+    diagnostics.extend(check_dangling_references(source, path, tree));
     diagnostics.extend(check_empty_arrays(source, path, patterns));
-    diagnostics.extend(check_document_kind(file_name, source, path));
+    diagnostics.extend(check_document_kind(file_name, source, path, tree));
     diagnostics.sort_by(|left, right| compare_locations(left.location, right.location));
     diagnostics
 }
 
 fn check_duplicate_identities(
     source: &str,
-    path: Option<&Path>,
-    patterns: &[Pattern<Subject>],
+    _path: Option<&Path>,
+    tree: &Pattern<SyntaxNode>,
 ) -> Vec<Diagnostic> {
-    let occurrences = collect_identity_occurrences(source, patterns);
+    let occurrences = collect_identity_occurrences(source, tree);
     let mut first_seen: HashMap<String, Location> = HashMap::new();
     let mut diagnostics = Vec::new();
 
@@ -179,20 +223,17 @@ fn check_duplicate_identities(
             diagnostics.push(
                 Diagnostic::new(
                     DiagnosticCode::P002,
-                    format!(
-                        "Identity '{}' is defined twice: first at {}:{}, again here",
-                        occurrence.identity, first_location.line, first_location.column
-                    ),
                     occurrence.location,
                     Remediation::Guided {
-                        summary: "Rename one of the duplicate identities".to_string(),
-                        steps: RemediationSteps::Inline(vec![format!(
-                            "Rename either the first or second '{}' identity so both definitions are unique.",
-                            occurrence.identity
-                        )]),
+                        id: DiagnosticCode::P002
+                            .remediation_id()
+                            .expect("P002 should have a remediation template"),
+                        edits: Vec::new(),
                     },
                 )
-                .with_default_file(path),
+                .with_fact("identity", occurrence.identity.clone())
+                .with_fact("first_line", first_location.line)
+                .with_fact("first_column", first_location.column),
             );
         } else {
             first_seen.insert(occurrence.identity.clone(), occurrence.location);
@@ -202,36 +243,22 @@ fn check_duplicate_identities(
     diagnostics
 }
 
-fn check_duplicate_annotation_keys(source: &str, path: Option<&Path>) -> Vec<Diagnostic> {
-    find_duplicate_annotation_keys(source)
-        .into_iter()
-        .map(|duplicate| {
-            Diagnostic::new(
-                DiagnosticCode::P003,
-                format!(
-                    "Annotation key '{}' appears more than once before the same pattern",
-                    duplicate.key
-                ),
-                duplicate.location,
-                Remediation::Guided {
-                    summary: format!("Remove the duplicate @{} annotation", duplicate.key),
-                    steps: RemediationSteps::Inline(vec![format!(
-                        "Keep only one @{} annotation in the annotation chain.",
-                        duplicate.key
-                    )]),
-                },
-            )
-            .with_default_file(path)
-        })
-        .collect()
+fn check_duplicate_annotation_keys(
+    source: &str,
+    path: Option<&Path>,
+    tree: &Pattern<SyntaxNode>,
+) -> Vec<Diagnostic> {
+    let mut diagnostics = Vec::new();
+    collect_duplicate_annotation_keys_inner(source, path, tree, &mut diagnostics);
+    diagnostics
 }
 
 fn check_label_case(
     source: &str,
     path: Option<&Path>,
-    patterns: &[Pattern<Subject>],
+    tree: &Pattern<SyntaxNode>,
 ) -> Vec<Diagnostic> {
-    collect_label_occurrences(source, patterns)
+    collect_label_occurrences(source, tree)
         .into_iter()
         .filter_map(|occurrence| {
             let expected = if occurrence.is_relationship {
@@ -244,37 +271,35 @@ fn check_label_case(
             }
 
             let file = path?.to_path_buf();
-            let summary = format!("Recase to {expected}");
+            let observed = occurrence.label.clone();
+            let expected = expected.clone();
             Some(
                 Diagnostic::new(
                     DiagnosticCode::P004,
-                    format!(
-                        "{} label '{}' should be {}",
-                        if occurrence.is_relationship {
-                            "Relationship"
-                        } else {
-                            "Node"
-                        },
-                        occurrence.label,
-                        if occurrence.is_relationship {
-                            "uppercase"
-                        } else {
-                            "TitleCase"
-                        }
-                    ),
                     occurrence.location,
                     Remediation::Auto {
-                        summary,
-                        steps: RemediationSteps::Structured(vec![Edit::Replace {
+                        id: DiagnosticCode::P004
+                            .remediation_id()
+                            .expect("P004 should have a remediation template"),
+                        edits: vec![Edit::Replace {
                             file,
                             line: occurrence.location.line,
                             column: occurrence.location.column,
-                            replace: occurrence.label,
-                            with: expected,
-                        }]),
+                            replace: observed.clone(),
+                            with: expected.clone(),
+                        }],
                     },
                 )
-                .with_default_file(path),
+                .with_fact(
+                    "label_kind",
+                    if occurrence.is_relationship {
+                        "relationship"
+                    } else {
+                        "node"
+                    },
+                )
+                .with_fact("observed", observed)
+                .with_fact("expected", expected),
             )
         })
         .collect()
@@ -283,9 +308,9 @@ fn check_label_case(
 fn check_dangling_references(
     source: &str,
     path: Option<&Path>,
-    patterns: &[Pattern<Subject>],
+    tree: &Pattern<SyntaxNode>,
 ) -> Vec<Diagnostic> {
-    let occurrences = collect_identity_occurrences(source, patterns);
+    let occurrences = collect_identity_occurrences(source, tree);
     let defined: HashSet<String> = occurrences
         .iter()
         .filter(|occurrence| occurrence.is_definition)
@@ -299,35 +324,27 @@ fn check_dangling_references(
             let suggested = nearest_identity(&occurrence.identity, &defined)
                 .unwrap_or_else(|| occurrence.identity.clone());
             let file = path.map(Path::to_path_buf).unwrap_or_default();
+            let remediation = rule_info(DiagnosticCode::P005)
+                .remediation
+                .expect("P005 should have a remediation template");
             Diagnostic::new(
                 DiagnosticCode::P005,
-                format!(
-                    "'{}' is referenced but not defined in this file",
-                    occurrence.identity
-                ),
                 occurrence.location,
                 Remediation::Ambiguous {
-                    summary: format!("Choose whether '{}' should be renamed or defined", occurrence.identity),
-                    decision: format!(
-                        "Is '{}' a misspelling of an existing identity, or should it be defined here?",
-                        occurrence.identity
-                    ),
+                    id: remediation.id,
                     options: vec![
                         RemediationOption {
-                            description: format!(
-                                "Rename reference to '{}' (closest match)",
-                                suggested
-                            ),
+                            id: remediation.option_templates[0].id,
                             edit: Edit::Replace {
                                 file: file.clone(),
                                 line: occurrence.location.line,
                                 column: occurrence.location.column,
                                 replace: occurrence.identity.clone(),
-                                with: suggested,
+                                with: suggested.clone(),
                             },
                         },
                         RemediationOption {
-                            description: format!("Add a '{}' definition to this file", occurrence.identity),
+                            id: remediation.option_templates[1].id,
                             edit: Edit::Append {
                                 file,
                                 content: format!("({}:Entity)", occurrence.identity),
@@ -336,7 +353,8 @@ fn check_dangling_references(
                     ],
                 },
             )
-            .with_default_file(path)
+            .with_fact("unresolved_identity", occurrence.identity)
+            .with_fact("suggested_identity", suggested)
         })
         .collect()
 }
@@ -357,21 +375,16 @@ fn check_empty_arrays(
                 } else {
                     array_locations.remove(0)
                 };
-                diagnostics.push(
-                    Diagnostic::new(
-                        DiagnosticCode::P006,
-                        "Empty array values are discouraged in gram files",
-                        location,
-                        Remediation::Guided {
-                            summary: "Replace the empty array with a concrete value or remove the property".to_string(),
-                            steps: RemediationSteps::Inline(vec![
-                                "Remove the empty array property if it is unused.".to_string(),
-                                "Otherwise replace it with a non-empty array or another concrete value.".to_string(),
-                            ]),
-                        },
-                    )
-                    .with_default_file(path),
-                );
+                diagnostics.push(Diagnostic::new(
+                    DiagnosticCode::P006,
+                    location,
+                    Remediation::Guided {
+                        id: DiagnosticCode::P006
+                            .remediation_id()
+                            .expect("P006 should have a remediation template"),
+                        edits: Vec::new(),
+                    },
+                ));
             }
         });
         collect_empty_arrays_from_children(
@@ -388,7 +401,7 @@ fn check_empty_arrays(
 fn collect_empty_arrays_from_children(
     patterns: &[Pattern<Subject>],
     array_locations: &mut Vec<Location>,
-    path: Option<&Path>,
+    _path: Option<&Path>,
     diagnostics: &mut Vec<Diagnostic>,
 ) {
     for pattern in patterns {
@@ -399,58 +412,50 @@ fn collect_empty_arrays_from_children(
                 } else {
                     array_locations.remove(0)
                 };
-                diagnostics.push(
-                    Diagnostic::new(
-                        DiagnosticCode::P006,
-                        "Empty array values are discouraged in gram files",
-                        location,
-                        Remediation::Guided {
-                            summary: "Replace the empty array with a concrete value or remove the property".to_string(),
-                            steps: RemediationSteps::Inline(vec![
-                                "Remove the empty array property if it is unused.".to_string(),
-                                "Otherwise replace it with a non-empty array or another concrete value.".to_string(),
-                            ]),
-                        },
-                    )
-                    .with_default_file(path),
-                );
+                diagnostics.push(Diagnostic::new(
+                    DiagnosticCode::P006,
+                    location,
+                    Remediation::Guided {
+                        id: DiagnosticCode::P006
+                            .remediation_id()
+                            .expect("P006 should have a remediation template"),
+                        edits: Vec::new(),
+                    },
+                ));
             }
         });
-        collect_empty_arrays_from_children(&pattern.elements, array_locations, path, diagnostics);
+        collect_empty_arrays_from_children(&pattern.elements, array_locations, _path, diagnostics);
     }
 }
 
-fn check_document_kind(file_name: &str, source: &str, path: Option<&Path>) -> Vec<Diagnostic> {
-    let Ok((header, _)) = gram_codec::parse_gram_with_header(source) else {
+fn check_document_kind(
+    _file_name: &str,
+    source: &str,
+    _path: Option<&Path>,
+    tree: &Pattern<SyntaxNode>,
+) -> Vec<Diagnostic> {
+    let Some(header) = tree.value.subject.as_ref() else {
         return Vec::new();
     };
-    let Some(header) = header else {
-        return Vec::new();
-    };
-    let Some(Value::VString(kind)) = header.get("kind") else {
+    let Some(Value::VString(kind)) = header.properties.get("kind") else {
         return Vec::new();
     };
     if matches!(kind.as_str(), "diagnostics" | "rule") {
         return Vec::new();
     }
 
-    let location = find_identifier_literal(source, kind).unwrap_or(Location::new(1, 1));
+    let location = document_kind_location(source, tree, kind).unwrap_or(Location::new(1, 1));
     vec![Diagnostic::new(
         DiagnosticCode::P008,
-        format!(
-            "Document header kind '{}' is not recognized in {}",
-            kind, file_name
-        ),
         location,
         Remediation::Guided {
-            summary: "Use a recognized document kind or remove the header".to_string(),
-            steps: RemediationSteps::Inline(vec![
-                "Change the kind to 'diagnostics' or 'rule' if this is pato output.".to_string(),
-                "Otherwise remove the kind property from the document header.".to_string(),
-            ]),
+            id: DiagnosticCode::P008
+                .remediation_id()
+                .expect("P008 should have a remediation template"),
+            edits: Vec::new(),
         },
     )
-    .with_default_file(path)]
+    .with_fact("kind", kind.clone())]
 }
 
 fn read_stdin() -> io::Result<String> {
@@ -516,44 +521,60 @@ struct IdentityOccurrence {
 
 fn collect_identity_occurrences(
     source: &str,
-    patterns: &[Pattern<Subject>],
+    tree: &Pattern<SyntaxNode>,
 ) -> Vec<IdentityOccurrence> {
-    let mut locator = CursorLocator::new(source);
     let mut occurrences = Vec::new();
-    for pattern in patterns {
-        collect_identity_occurrences_inner(pattern, true, &mut locator, &mut occurrences);
-    }
+    collect_identity_occurrences_inner(source, tree, false, &mut occurrences);
     occurrences
 }
 
 fn collect_identity_occurrences_inner(
-    pattern: &Pattern<Subject>,
+    source: &str,
+    pattern: &Pattern<SyntaxNode>,
     top_level: bool,
-    locator: &mut CursorLocator<'_>,
     occurrences: &mut Vec<IdentityOccurrence>,
 ) {
-    if !pattern.value.identity.0.is_empty() {
-        let location = locator
-            .find_identifier(&pattern.value.identity.0)
-            .unwrap_or(Location::new(1, 1));
-        let is_definition = top_level
-            || !pattern.value.labels.is_empty()
-            || !pattern.value.properties.is_empty()
-            || !pattern.elements.is_empty();
-        let is_reference = !top_level
-            && pattern.value.labels.is_empty()
-            && pattern.value.properties.is_empty()
-            && pattern.elements.is_empty();
-        occurrences.push(IdentityOccurrence {
-            identity: pattern.value.identity.0.clone(),
-            location,
-            is_definition,
-            is_reference,
-        });
+    match pattern.value.kind {
+        SyntaxKind::Document => {
+            for child in &pattern.elements {
+                collect_identity_occurrences_inner(source, child, true, occurrences);
+            }
+            return;
+        }
+        SyntaxKind::Comment => return,
+        SyntaxKind::Annotated => {
+            for child in &pattern.elements {
+                collect_identity_occurrences_inner(source, child, top_level, occurrences);
+            }
+            return;
+        }
+        _ => {}
+    }
+
+    if let Some(subject) = pattern.value.subject.as_ref() {
+        if !subject.identity.0.is_empty() {
+            let location = subject_identity_location(source, pattern, &subject.identity.0)
+                .unwrap_or_else(|| source_map::span_start_location(source, &pattern.value.span));
+            let is_definition = top_level
+                || !subject.labels.is_empty()
+                || !subject.properties.is_empty()
+                || !pattern.elements.is_empty();
+            let is_reference = !top_level
+                && subject.labels.is_empty()
+                && subject.properties.is_empty()
+                && pattern.elements.is_empty()
+                && matches!(pattern.value.kind, SyntaxKind::Node);
+            occurrences.push(IdentityOccurrence {
+                identity: subject.identity.0.clone(),
+                location,
+                is_definition,
+                is_reference,
+            });
+        }
     }
 
     for child in &pattern.elements {
-        collect_identity_occurrences_inner(child, false, locator, occurrences);
+        collect_identity_occurrences_inner(source, child, false, occurrences);
     }
 }
 
@@ -564,129 +585,235 @@ struct LabelOccurrence {
     is_relationship: bool,
 }
 
-fn collect_label_occurrences(source: &str, patterns: &[Pattern<Subject>]) -> Vec<LabelOccurrence> {
-    let mut locator = CursorLocator::new(source);
+fn collect_label_occurrences(source: &str, tree: &Pattern<SyntaxNode>) -> Vec<LabelOccurrence> {
     let mut occurrences = Vec::new();
-    for pattern in patterns {
-        collect_label_occurrences_inner(pattern, &mut locator, &mut occurrences);
-    }
+    collect_label_occurrences_inner(source, tree, &mut occurrences);
     occurrences
 }
 
 fn collect_label_occurrences_inner(
-    pattern: &Pattern<Subject>,
-    locator: &mut CursorLocator<'_>,
+    source: &str,
+    pattern: &Pattern<SyntaxNode>,
     occurrences: &mut Vec<LabelOccurrence>,
 ) {
-    let is_relationship = pattern.elements.len() == 2;
-    let mut labels: Vec<String> = pattern.value.labels.iter().cloned().collect();
-    labels.sort();
-    for label in labels {
-        let location = locator.find_label(&label).unwrap_or(Location::new(1, 1));
-        occurrences.push(LabelOccurrence {
-            label,
-            location,
-            is_relationship,
-        });
+    match pattern.value.kind {
+        SyntaxKind::Document | SyntaxKind::Comment => {}
+        SyntaxKind::Annotated => {
+            for child in &pattern.elements {
+                collect_label_occurrences_inner(source, child, occurrences);
+            }
+            return;
+        }
+        SyntaxKind::Node | SyntaxKind::Subject | SyntaxKind::Relationship(_) => {
+            if let Some(subject) = pattern.value.subject.as_ref() {
+                for (label, location) in subject_label_locations(source, pattern, subject) {
+                    occurrences.push(LabelOccurrence {
+                        label,
+                        location,
+                        is_relationship: matches!(pattern.value.kind, SyntaxKind::Relationship(_)),
+                    });
+                }
+            }
+        }
     }
 
     for child in &pattern.elements {
-        collect_label_occurrences_inner(child, locator, occurrences);
+        collect_label_occurrences_inner(source, child, occurrences);
     }
 }
 
-#[derive(Clone)]
-struct DuplicateAnnotation {
-    key: String,
-    location: Location,
+fn collect_duplicate_annotation_keys_inner(
+    source: &str,
+    _path: Option<&Path>,
+    node: &Pattern<SyntaxNode>,
+    diagnostics: &mut Vec<Diagnostic>,
+) {
+    if matches!(node.value.kind, SyntaxKind::Annotated) {
+        let mut counts: HashMap<String, usize> = HashMap::new();
+        for annotation in &node.value.annotations {
+            if let Annotation::Property { key, .. } = annotation {
+                let occurrence_index = counts.entry(key.clone()).or_insert(0);
+                *occurrence_index += 1;
+                if *occurrence_index >= 2 {
+                    let location =
+                        nth_property_annotation_location(source, node, key, *occurrence_index - 1)
+                            .unwrap_or_else(|| {
+                                source_map::span_start_location(source, &node.value.span)
+                            });
+                    diagnostics.push(
+                        Diagnostic::new(
+                            DiagnosticCode::P003,
+                            location,
+                            Remediation::Guided {
+                                id: DiagnosticCode::P003
+                                    .remediation_id()
+                                    .expect("P003 should have a remediation template"),
+                                edits: Vec::new(),
+                            },
+                        )
+                        .with_fact("key", key.clone()),
+                    );
+                }
+            }
+        }
+    }
+
+    for child in &node.elements {
+        collect_duplicate_annotation_keys_inner(source, _path, child, diagnostics);
+    }
 }
 
-fn find_duplicate_annotation_keys(source: &str) -> Vec<DuplicateAnnotation> {
-    let bytes = source.as_bytes();
-    let mut offset = 0;
-    let mut duplicates = Vec::new();
+fn subject_identity_location(
+    source: &str,
+    node: &Pattern<SyntaxNode>,
+    identity: &str,
+) -> Option<Location> {
+    let (base_offset, region) = subject_region(source, node)?;
+    find_identifier_in_region(region, identity)
+        .map(|relative| source_map::offset_to_location(source, base_offset + relative))
+}
 
-    while offset < bytes.len() {
-        while offset < bytes.len() && bytes[offset].is_ascii_whitespace() {
-            offset += 1;
+fn subject_label_locations(
+    source: &str,
+    node: &Pattern<SyntaxNode>,
+    subject: &Subject,
+) -> Vec<(String, Location)> {
+    let Some((base_offset, region)) = subject_region(source, node) else {
+        return Vec::new();
+    };
+
+    scan_labels(region)
+        .into_iter()
+        .filter(|(label, _)| subject.labels.contains(label))
+        .map(|(label, relative)| {
+            (
+                label,
+                source_map::offset_to_location(source, base_offset + relative),
+            )
+        })
+        .collect()
+}
+
+fn subject_region<'a>(source: &'a str, node: &'a Pattern<SyntaxNode>) -> Option<(usize, &'a str)> {
+    let fragment = source_map::span_text(source, &node.value.span);
+    match node.value.kind {
+        SyntaxKind::Node => Some((node.value.span.start, fragment)),
+        SyntaxKind::Subject => {
+            let split = fragment.find('|').unwrap_or(fragment.len());
+            Some((node.value.span.start, &fragment[..split]))
         }
-        if offset >= bytes.len() || bytes[offset] != b'@' {
-            offset += 1;
+        SyntaxKind::Relationship(_) => {
+            let open = fragment.find('[')?;
+            let close = fragment[open + 1..].find(']')?;
+            let start = open + 1;
+            let end = open + 1 + close;
+            Some((node.value.span.start + start, &fragment[start..end]))
+        }
+        _ => None,
+    }
+}
+
+fn find_identifier_in_region(region: &str, token: &str) -> Option<usize> {
+    region.match_indices(token).find_map(|(offset, _)| {
+        identifier_boundaries(region, offset, token.len()).then_some(offset)
+    })
+}
+
+fn scan_labels(region: &str) -> Vec<(String, usize)> {
+    let bytes = region.as_bytes();
+    let mut cursor = 0;
+    let mut labels = Vec::new();
+
+    while cursor < bytes.len() {
+        if bytes[cursor] != b':' {
+            cursor += 1;
             continue;
         }
 
-        let chain_start = offset;
-        let mut seen = HashSet::new();
-        loop {
-            if offset >= bytes.len() || bytes[offset] != b'@' {
-                break;
-            }
-            let key_start = offset + 1;
-            let mut cursor = key_start;
-            while cursor < bytes.len() && is_ident_char(bytes[cursor] as char) {
-                cursor += 1;
-            }
-            if cursor == key_start {
-                break;
-            }
-            let key = &source[key_start..cursor];
-            if !seen.insert(key.to_string()) {
-                duplicates.push(DuplicateAnnotation {
-                    key: key.to_string(),
-                    location: offset_to_location(source, key_start),
-                });
-            }
-            offset = cursor;
-            if offset < bytes.len() && bytes[offset] == b'(' {
-                offset += 1;
-                while offset < bytes.len() && bytes[offset] != b')' {
-                    offset += 1;
-                }
-                if offset < bytes.len() {
-                    offset += 1;
-                }
-            }
-            while offset < bytes.len() && bytes[offset].is_ascii_whitespace() {
-                if bytes[offset] == b'\n' {
-                    break;
-                }
-                offset += 1;
-            }
-            if offset >= bytes.len() || bytes[offset] != b'@' {
-                break;
-            }
+        let label_start = cursor + 1;
+        let mut end = label_start;
+        while end < bytes.len() && is_ident_char(bytes[end] as char) {
+            end += 1;
         }
 
-        if chain_start == offset {
-            offset += 1;
+        if end > label_start {
+            labels.push((region[label_start..end].to_string(), label_start));
+            cursor = end;
+        } else {
+            cursor += 1;
         }
     }
 
-    duplicates
+    labels
+}
+
+fn nth_property_annotation_location(
+    source: &str,
+    node: &Pattern<SyntaxNode>,
+    key: &str,
+    occurrence_index: usize,
+) -> Option<Location> {
+    let fragment = source_map::span_text(source, &node.value.span);
+    let bytes = fragment.as_bytes();
+    let mut cursor = 0;
+    let mut seen = 0;
+
+    while cursor < bytes.len() {
+        if bytes[cursor] != b'@' || bytes.get(cursor + 1) == Some(&b'@') {
+            cursor += 1;
+            continue;
+        }
+
+        let key_start = cursor + 1;
+        if !fragment[key_start..].starts_with(key) {
+            cursor += 1;
+            continue;
+        }
+
+        let key_end = key_start + key.len();
+        let next = bytes.get(key_end).copied().map(char::from);
+        if next.is_some_and(is_ident_char) {
+            cursor += 1;
+            continue;
+        }
+
+        if seen == occurrence_index {
+            return Some(source_map::location_at_span_offset(
+                source,
+                &node.value.span,
+                key_start,
+            ));
+        }
+
+        seen += 1;
+        cursor = key_end;
+    }
+
+    None
+}
+
+fn document_kind_location(
+    source: &str,
+    tree: &Pattern<SyntaxNode>,
+    kind: &str,
+) -> Option<Location> {
+    let header_end = tree
+        .elements
+        .first()
+        .map(|element| element.value.span.start)
+        .unwrap_or(source.len());
+    let header = &source[..header_end.min(source.len())];
+    header
+        .match_indices(kind)
+        .next()
+        .map(|(offset, _)| source_map::offset_to_location(source, offset))
 }
 
 fn find_all_occurrences(source: &str, needle: &str) -> Vec<Location> {
     source
         .match_indices(needle)
-        .map(|(offset, _)| offset_to_location(source, offset))
+        .map(|(offset, _)| source_map::offset_to_location(source, offset))
         .collect()
-}
-
-fn find_identifier_literal(source: &str, needle: &str) -> Option<Location> {
-    source
-        .match_indices(needle)
-        .map(|(offset, _)| offset_to_location(source, offset))
-        .next()
-}
-
-fn offset_to_location(source: &str, offset: usize) -> Location {
-    let prefix = &source[..offset.min(source.len())];
-    let line = prefix.matches('\n').count() as u32 + 1;
-    let column = prefix
-        .rfind('\n')
-        .map(|position| (offset - position) as u32)
-        .unwrap_or(offset as u32 + 1);
-    Location::new(line, column)
 }
 
 fn compare_locations(left: Location, right: Location) -> Ordering {
@@ -697,55 +824,8 @@ fn is_ident_char(ch: char) -> bool {
     ch.is_ascii_alphanumeric() || matches!(ch, '_' | '-')
 }
 
-struct CursorLocator<'a> {
-    source: &'a str,
-    cursor: usize,
-}
-
-impl<'a> CursorLocator<'a> {
-    fn new(source: &'a str) -> Self {
-        Self { source, cursor: 0 }
-    }
-
-    fn find_identifier(&mut self, token: &str) -> Option<Location> {
-        let (offset, location) = self.find_token(token, false)?;
-        self.cursor = offset + token.len();
-        Some(location)
-    }
-
-    fn find_label(&mut self, label: &str) -> Option<Location> {
-        let search = format!(":{label}");
-        let (offset, location) = self.find_token(&search, true)?;
-        self.cursor = offset + search.len();
-        Some(location)
-    }
-
-    fn find_token(&self, token: &str, skip_prefix: bool) -> Option<(usize, Location)> {
-        let slice = &self.source[self.cursor..];
-        for (relative, _) in slice.match_indices(token) {
-            let absolute = self.cursor + relative;
-            if !skip_prefix && !identifier_boundaries(self.source, absolute, token.len()) {
-                continue;
-            }
-            let location = offset_to_location(self.source, absolute + usize::from(skip_prefix));
-            return Some((absolute, location));
-        }
-        None
-    }
-}
-
 fn identifier_boundaries(source: &str, offset: usize, len: usize) -> bool {
     let before = source[..offset].chars().next_back();
     let after = source[offset + len..].chars().next();
     before.map_or(true, |ch| !is_ident_char(ch)) && after.map_or(true, |ch| !is_ident_char(ch))
-}
-
-trait DiagnosticExt {
-    fn with_default_file(self, path: Option<&Path>) -> Self;
-}
-
-impl DiagnosticExt for Diagnostic {
-    fn with_default_file(self, _path: Option<&Path>) -> Self {
-        self
-    }
 }
