@@ -1,0 +1,26 @@
+{ kind: "schema", variant: "ts_and_re" }
+
+// Combine a broad type language (`ts`) with a string-pattern language (`re`),
+// while using the `gram` mini-DSL for value kinds that are native to gram.
+// This file intentionally varies the surface form:
+// nodes use single-colon labels, schema slots still use `::`, and
+// relationships use the thin-arrow family.
+
+(:Person {
+  availability:: gram`(:Range { type: "int", min: 0, max: 7 })`,
+  display_name:: ts`string`,
+  email:: re`^[^@ ]+@[^@ ]+[.][^@ ]+$`,
+  handle:: re`^[a-z][a-z0-9_]{2,31}$`
+})
+
+(:Repository {
+  clone_size:: gram`(:Measurement { unit: "MB", value_type: "number" })`,
+  default_branch:: re`^(main|master|develop|release/[A-Za-z0-9._-]+)$`,
+  slug:: re`^[a-z0-9._-]+/[a-z0-9._-]+$`,
+  visibility:: ts`"public" | "internal" | "private"`
+})
+
+// A Person may MAINTAIN a Repository.
+(:Person)-[:MAINTAINS {
+  permissions:: ts`Array<"admin" | "maintain" | "triage">`
+}]->(:Repository)

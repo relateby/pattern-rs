@@ -19,7 +19,7 @@ pub fn render_diagnostics<W: Write>(
         OutputFormat::Gram => writer.write_all(to_gram(reports)?.as_bytes()),
         OutputFormat::Json => {
             serde_json::to_writer_pretty(&mut *writer, &to_json(reports)?)
-                .map_err(io::Error::other)?;
+                .map_err(|error| io::Error::new(io::ErrorKind::Other, error))?;
             writer.write_all(b"\n")
         }
         OutputFormat::Text => writer.write_all(render_text_reports(reports, use_color).as_bytes()),
@@ -108,7 +108,7 @@ pub fn to_json(reports: &[FileDiagnostics]) -> io::Result<JsonValue> {
 }
 
 fn serialize_error(error: gram_codec::SerializeError) -> io::Error {
-    io::Error::other(error.to_string())
+    io::Error::new(io::ErrorKind::Other, error.to_string())
 }
 
 fn header_record(file: Option<&str>) -> HashMap<String, Value> {

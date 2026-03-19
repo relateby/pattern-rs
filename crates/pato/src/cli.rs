@@ -80,6 +80,12 @@ pub struct RuleArgs {
 
 #[derive(Debug, clap::Args)]
 pub struct CheckArgs {
+    #[arg(long)]
+    pub schema: Option<PathBuf>,
+
+    #[arg(long, value_enum, default_value_t = OutputFormatArg::Gram)]
+    pub output_format: OutputFormatArg,
+
     #[arg(required = true)]
     pub files: Vec<PathBuf>,
 }

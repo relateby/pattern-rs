@@ -149,16 +149,29 @@ rule-driven model before building additional features on top of the older nested
 
 ---
 
+## Phase 6b: Schema Semantics Exploration
+
+**Purpose**: Record the emerging schema direction before proceeding with `pato check`.
+
+- [X] T071 [US5] Create `data/schema/*.schema.gram` exploratory examples that model archetypal schema-as-gram using `kind: "schema"`, `::` schema slots, and tagged-string constraint dialects such as `ts`, `re`, `zod`, `cypher`, and `pydantic`
+- [X] T072 [US5] Update `specs/041-pato-cli/spec.md` — document that future schema validation is based on archetypal gram files whose syntax choices are part of the schema contract; record tagged-string dialects plus the distinction between vocabulary openness and composition openness
+- [X] T073 [US5] Update `specs/041-pato-cli/plan.md` — treat schema modeling as a defined exploratory prerequisite for future semantic validation while keeping v0.1 `pato check` scoped to lint plus schema discovery
+- [X] T074 [US5] Add `specs/041-pato-cli/contracts/schema-gram.md` — record the archetypal schema contract, including `kind: "schema"`, syntax-as-contract semantics, open/closed vocabulary vs composition openness, and the `gram` tagged-string mini-DSL for gram-native value forms
+
+**Checkpoint**: The branch now records a concrete schema direction, even though semantic schema validation remains deferred.
+
+---
+
 ## Phase 7: User Story 5 — Check Against a Schema (Priority: P4)
 
 **Goal**: `pato check` is the one-stop CI command — lint + schema discovery + P007 signal.
 
 **Independent Test**: Run `pato check my.gram` (no schema) — verify lint runs and P007 is in output; run `pato check my.gram` with `my.schema.gram` alongside — verify P007 is absent and schema path appears on stderr.
 
-- [ ] T045 [US5] Implement `crates/pato/src/schema.rs` — `discover_schema(data_file: &Path, override_path: Option<&Path>) -> Option<PathBuf>`; if `override_path` is Some, return it; otherwise look for `<stem>.schema.gram` alongside the data file; return None if not found
-- [ ] T046 [US5] Implement `crates/pato/src/commands/check.rs` — for each input file: (1) run full lint, (2) call `schema::discover_schema`, (3) if no schema → append P007 info diagnostic; if schema found → log `"using schema: <path>"` to stderr and suppress P007; emit combined diagnostics via `render_diagnostics`
-- [ ] T047 [US5] Create `tests/fixtures/schema/sample.schema.gram` and `tests/fixtures/valid/sample.gram` with matching stem for schema discovery tests
-- [ ] T048 [US5] Write integration tests in `crates/pato/tests/check_tests.rs` — no schema: P007 present, lint diagnostics present, exit reflects lint severity; with same-stem schema: P007 absent, schema path on stderr; with `--schema` override: specified schema acknowledged; invalid `--schema` path: exit 3 with error on stderr
+- [X] T045 [US5] Implement `crates/pato/src/schema.rs` — `discover_schema(data_file: &Path, override_path: Option<&Path>) -> Option<PathBuf>`; if `override_path` is Some, return it; otherwise look for `<stem>.schema.gram` alongside the data file; return None if not found
+- [X] T046 [US5] Implement `crates/pato/src/commands/check.rs` — for each input file: (1) run full lint, (2) call `schema::discover_schema`, (3) if no schema → append P007 info diagnostic; if schema found → log `"using schema: <path>"` to stderr and suppress P007; emit combined diagnostics via `render_diagnostics`
+- [X] T047 [US5] Create `tests/fixtures/schema/sample.schema.gram` and `tests/fixtures/valid/sample.gram` with matching stem for schema discovery tests
+- [X] T048 [US5] Write integration tests in `crates/pato/tests/check_tests.rs` — no schema: P007 present, lint diagnostics present, exit reflects lint severity; with same-stem schema: P007 absent, schema path on stderr; with `--schema` override: specified schema acknowledged; invalid `--schema` path: exit 3 with error on stderr
 
 **Checkpoint**: `pato check` fully functional; CI workflows can use it as single entry point.
 
@@ -170,11 +183,11 @@ rule-driven model before building additional features on top of the older nested
 
 **Independent Test**: Create a minimal `pato-foo` shell script on PATH that echoes args and exits 0; run `pato foo --test`, verify args forwarded; run `pato --help`, verify `pato-foo` appears.
 
-- [ ] T049 [US6] Implement `crates/pato/src/extensions.rs` — `discover_extensions() -> Vec<(String, Option<String>)>` that scans PATH directories for binaries starting with `pato-`, then queries each with `--pato-describe` (timeout ~1 second); returns `(binary_name, description_or_none)` pairs; deduplicate by name
-- [ ] T050 [US6] Implement `exec_extension(subcommand: &str, args: &[String])` in `extensions.rs` — construct binary name `pato-<subcommand>`; if not found in PATH emit error on stderr and exit 3; if found use `std::process::Command::new(bin).args(args).status()` with inherited stdin/stdout/stderr; relay exit code via `std::process::exit(status.code().unwrap_or(3))`
-- [ ] T051 [US6] Wire `Commands::External(args)` in `main.rs` to call `extensions::exec_extension` with `args[0]` as subcommand and `&args[1..]` as forwarded args
-- [ ] T052 [US6] Update `--help` output in `cli.rs` / `main.rs` to call `extensions::discover_extensions()` and append discovered extensions to the help text under an "Extensions" section with their descriptions
-- [ ] T053 [US6] Write integration tests in `crates/pato/tests/extensions_tests.rs` — test unknown subcommand with no PATH match exits 3 with stderr message; test `--pato-describe` protocol by creating a minimal test binary; test help listing includes discovered extensions
+- [X] T049 [US6] Implement `crates/pato/src/extensions.rs` — `discover_extensions() -> Vec<(String, Option<String>)>` that scans PATH directories for binaries starting with `pato-`, then queries each with `--pato-describe` (timeout ~1 second); returns `(binary_name, description_or_none)` pairs; deduplicate by name
+- [X] T050 [US6] Implement `exec_extension(subcommand: &str, args: &[String])` in `extensions.rs` — construct binary name `pato-<subcommand>`; if not found in PATH emit error on stderr and exit 3; if found use `std::process::Command::new(bin).args(args).status()` with inherited stdin/stdout/stderr; relay exit code via `std::process::exit(status.code().unwrap_or(3))`
+- [X] T051 [US6] Wire `Commands::External(args)` in `main.rs` to call `extensions::exec_extension` with `args[0]` as subcommand and `&args[1..]` as forwarded args
+- [X] T052 [US6] Update `--help` output in `cli.rs` / `main.rs` to call `extensions::discover_extensions()` and append discovered extensions to the help text under an "Extensions" section with their descriptions
+- [X] T053 [US6] Write integration tests in `crates/pato/tests/extensions_tests.rs` — test unknown subcommand with no PATH match exits 3 with stderr message; test `--pato-describe` protocol by creating a minimal test binary; test help listing includes discovered extensions
 
 **Checkpoint**: Extension ecosystem is open; `pato-apply` and `pato-ingest` can be built independently.
 
@@ -184,12 +197,12 @@ rule-driven model before building additional features on top of the older nested
 
 **Purpose**: Code quality, CI compliance, and pipeline integration validation.
 
-- [ ] T054 [P] Run `cargo fmt --all` and fix any formatting issues across `crates/pato/src/`
-- [ ] T055 [P] Run `cargo clippy --workspace -- -D warnings` and fix all lint warnings in `crates/pato/`
-- [ ] T056 Run `cargo test --workspace` and verify all tests pass including pre-existing workspace tests
-- [ ] T057 Verify the diagnostic gram pipeline: `cargo run -p relateby-pato -- lint crates/pato/tests/fixtures/invalid/P004.gram | cargo run -p relateby-pato -- parse -` — confirm lint output is valid gram that parse accepts
-- [ ] T058 Run `./scripts/ci-local.sh` and fix any CI failures
-- [ ] T059 Review and update `specs/041-pato-cli/quickstart.md` with any corrections discovered during implementation
+- [X] T054 [P] Run `cargo fmt --all` and fix any formatting issues across `crates/pato/src/`
+- [X] T055 [P] Run `cargo clippy --workspace -- -D warnings` and fix all lint warnings in `crates/pato/`
+- [X] T056 Run `cargo test --workspace` and verify all tests pass including pre-existing workspace tests
+- [X] T057 Verify the diagnostic gram pipeline: `cargo run -p relateby-pato -- lint crates/pato/tests/fixtures/invalid/P004.gram | cargo run -p relateby-pato -- parse -` — confirm lint output is valid gram that parse accepts
+- [X] T058 Run `./scripts/ci-local.sh` and fix any CI failures
+- [X] T059 Review and update `specs/041-pato-cli/quickstart.md` with any corrections discovered during implementation
 
 ---
 
@@ -206,6 +219,8 @@ rule-driven model before building additional features on top of the older nested
 - **US3 Parse (Phase 5)**: Depends on Phase 3c
 - **US4 Rule (Phase 6)**: Depends on Phase 3c (shared registry introduced there); otherwise independent of US2–US3
 - **US5 Check (Phase 7)**: Depends on US1 (runs lint internally via shared function)
+- **Schema Exploration (Phase 6b)**: Depends on the completed `rule`/registry groundwork only as documentation context; informs future schema validation semantics before deeper `check` work
+- **US5 Check (Phase 7)**: Depends on US1 (runs lint internally via shared function) and is now informed by the recorded Phase 6b schema direction, even though v0.1 remains discovery-only
 - **US6 Extensions (Phase 8)**: Depends on Phase 1 only (CLI wiring); independent of all other stories
 - **Polish (Phase 9)**: Depends on all desired stories being complete
 
@@ -215,7 +230,7 @@ rule-driven model before building additional features on top of the older nested
 - **US2 (P2)**: Should start after Phase 3c. Uses `editor.rs` built in US1 and depends on CST-backed parsing plus the realigned diagnostic contract.
 - **US3 (P3)**: Should start after Phase 3c so sexp/summary outputs can use the merged CST parser directly while gram/json output expectations stay aligned with the adopted report model.
 - **US4 (P3)**: Should start after Phase 3c because the rule/remediation registry becomes shared infrastructure for lint and text rendering.
-- **US5 (P4)**: Can start after US1 is complete (T016 provides the lint runner it calls).
+- **US5 (P4)**: Can start after US1 is complete (T016 provides the lint runner it calls). Phase 6b now records the intended future schema semantics, but the Phase 7 implementation remains discovery-only in v0.1.
 - **US6 (P4)**: Can start after Phase 1. Fully independent.
 
 ### Parallel Opportunities Within Each Story
@@ -263,8 +278,9 @@ T022: P008 unknown document kind checker
 5. US2 (fmt) → canonical formatting; `--check` for CI
 6. US3 (parse) → structural inspection and round-trip verification
 7. US4 (rule) → agent self-service on unknown P-codes and reusable remediations
-8. US5 (check) → single CI entry point with schema awareness
-9. US6 (extensions) → ecosystem open for `pato-apply`, `pato-ingest`
+8. Phase 6b (schema exploration) → archetypal schema direction recorded before validation work deepens
+9. US5 (check) → single CI entry point with schema awareness
+10. US6 (extensions) → ecosystem open for `pato-apply`, `pato-ingest`
 
 ### Parallel Team Strategy
 
@@ -284,4 +300,4 @@ Once Phase 3c is complete:
 - `editor.rs` (T023, built in US1) is shared by US2 (`pato fmt`); build it before starting T028–T031
 - The diagnostic gram format in `contracts/diagnostic-gram.md` remains draft until Phase 3c is complete; the adopted compact rule-driven schema is the intended stable v0.1 API
 - `std::io::IsTerminal` is available at MSRV 1.70.0 — no additional crate needed for TTY detection
-- Total tasks: 70 (T001–T070)
+- Total tasks: 74 (T001–T074)

@@ -76,6 +76,7 @@ specs/041-pato-cli/
 ├── contracts/
 │   ├── cli-schema.md          # Subcommand interface contract
 │   ├── diagnostic-gram.md     # Diagnostic gram format (draft until realignment is complete)
+│   ├── schema-gram.md         # Archetypal schema contract and tagged-string DSL direction
 │   └── extension-protocol.md # pato-foo extension protocol
 └── tasks.md             # Phase 2 output (/speckit.tasks — NOT created here)
 ```
@@ -143,6 +144,33 @@ The diagnostics modeling exercise in `data/diagnostics/` changes the plan for pa
 - `pato rule` is no longer just a convenience command. The rule/remediation registry becomes shared infrastructure used by `lint`, `check`, `text` rendering, and optional explanatory gram comments.
 - Gram comments may carry rich contextual explanation, but comments are non-canonical presentation and must be optional to preserve machine-oriented stability.
 - JSON mirrors the canonical structured report only; text mode is explicitly a rendering of structured data plus rule templates.
+
+## Schema Exploration Direction
+
+Schema work in this branch now has an explicit exploratory direction, informed by the examples in
+`data/schema/`:
+
+- A schema should itself be a gram document with `kind: "schema"`, not a separate sidecar format.
+- The schema is archetypal: canonical example structures are part of the contract, not just
+  illustrative data.
+- Syntax choices in those examples may therefore be normative, including choices such as `:` vs
+  `::`, arrow family, and annotation form.
+- Property/value constraints should be carried in `::` schema slots using tagged strings.
+- When mainstream external languages fit naturally, those slots may use tags such as `ts`, `re`,
+  `zod`, `cypher`, or `pydantic`.
+- When the constrained concept is native to gram itself (for example ranges, measurements, or
+  tagged strings), the preferred direction is a `gram` tagged-string dialect whose content is a
+  small gram-shaped vocabulary built from conventional labels and properties.
+- Because gram does not allow patterns as direct property values, that explicit constraint
+  structure must live inside the tagged-string content rather than as nested outer-schema values.
+- Future validation strictness must distinguish at least two axes:
+  - vocabulary openness (`open` vs `closed`)
+  - composition openness (whether larger structures composed from valid archetypes are allowed)
+
+This does **not** change the current v0.1 implementation target for `pato check`: in this branch,
+`check` remains lint plus schema discovery/P007 suppression only. The exploration clarifies the
+intended contract for future semantic validation so later work does not have to invent "schema"
+from scratch.
 
 ## Complexity Tracking
 
@@ -228,6 +256,8 @@ The diagnostics modeling exercise in `data/diagnostics/` changes the plan for pa
 - Compose lint + schema discovery
 - Same-stem `*.schema.gram` discovery; `--schema` override
 - P007 when no schema; suppress P007 + log schema path when schema found
+- Keep semantic schema validation deferred until the archetypal schema contract and validation
+  strictness modes are specified
 - **Tests**: With/without schema; explicit `--schema` path
 
 ## Dependency Changes

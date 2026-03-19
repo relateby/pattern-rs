@@ -15,7 +15,7 @@ pub struct FmtOutcome {
 
 pub fn format_gram(source: &str) -> io::Result<String> {
     format_source_internal("<generated>", source, false)
-        .map_err(|message| io::Error::other(message))
+        .map_err(|message| io::Error::new(io::ErrorKind::Other, message))
 }
 
 pub fn format_paths(files: &[PathBuf], check: bool) -> FmtOutcome {

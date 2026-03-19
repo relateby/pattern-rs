@@ -1,0 +1,35 @@
+{ kind: "schema", variant: "cypher_graph_assertions" }
+
+// This variant uses ordinary gram structure for the archetypes and reserves
+// `cypher` for graph-wide assertions or endpoint semantics that feel more
+// natural as pattern constraints. Gram-native value kinds still use `gram`.
+// This file intentionally mixes styles by construct:
+// domain nodes use single-colon labels, relationships use fat arrows with
+// `::` relationship labels, and schema-meta nodes use ordinary single-colon
+// labeled records.
+
+(:Service {
+  slo:: gram`(:Measurement { unit: "ms", value_type: "number" })`,
+  name:: ts`string`,
+  tier:: ts`"edge" | "core" | "batch"`
+})
+
+(:Database {
+  engine:: ts`"postgres" | "mysql" | "sqlite"`,
+  retention_window:: gram`(:Range { type: "date" })`,
+  name:: ts`string`
+})
+
+(:Service) =[::READS_FROM {
+  cardinality:: cypher`(:Service)-[:READS_FROM]->(:Database)`
+}]=> (:Database)
+
+(:Service) =[::WRITES_TO {
+  cardinality:: cypher`(:Service)-[:WRITES_TO]->(:Database)`
+}]=> (:Database)
+
+// Graph-level invariants can also be captured as archetypal rule nodes.
+(schema_rule:Assertion {
+  description: "Every Service that WRITES_TO a Database must also READS_FROM that Database.",
+  check:: cypher`MATCH (s:Service)-[:WRITES_TO]->(d:Database) WHERE NOT (s)-[:READS_FROM]->(d) RETURN s, d`
+})

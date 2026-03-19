@@ -663,12 +663,8 @@ fn subject_pattern_subject_text<'a>(
 }
 
 fn arrow_subject_text<'a>(source: &'a str, node: &'a Pattern<SyntaxNode>) -> Option<&'a str> {
-    let Some(left) = node.elements.first() else {
-        return None;
-    };
-    let Some(right) = node.elements.get(1) else {
-        return None;
-    };
+    let left = node.elements.first()?;
+    let right = node.elements.get(1)?;
     let start = left.value.span.end.min(source.len());
     let end = right.value.span.start.min(source.len());
     if start >= end {

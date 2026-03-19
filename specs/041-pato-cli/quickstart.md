@@ -68,6 +68,7 @@ Follow the implementation sequence from the proposal:
 5. **`pato parse`** — lowered gram/json output plus CST-backed sexp/summary output
 6. **`pato rule`** — rule registry
 7. **`pato check`** — lint + schema discovery
+8. **`pato` extensions** — PATH discovery, `--pato-describe`, external subcommand dispatch
 
 ## Verifying Diagnostic Gram Output
 
@@ -79,6 +80,23 @@ pato lint my.gram | pato parse -
 ```
 
 Or in tests, use `relateby_gram::parse_gram` to verify the output string round-trips.
+
+Note: if the linted file produces warnings, `pato lint` may exit `1` even though the emitted gram is
+valid and `pato parse -` accepts it. For pipeline smoke tests, treat parse success as the signal
+that the diagnostic gram is structurally valid.
+
+## Verifying Extension Dispatch
+
+The extension mechanism can be tested with a minimal `pato-foo` binary on `PATH`:
+
+```bash
+pato foo --arg1 val1
+pato --help
+```
+
+Expected behavior:
+- `pato foo --arg1 val1` executes `pato-foo --arg1 val1`
+- `pato --help` includes an `Extensions` section for discovered `pato-*` binaries
 
 ## Verifying sexp Output
 

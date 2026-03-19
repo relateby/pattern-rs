@@ -1,0 +1,32 @@
+{ kind: "schema", variant: "archetypal_ts" }
+
+// Archetypal example-first schema:
+// this file is intentionally uniform in surface form.
+// Domain nodes use `::`, schema slots use `::`, and relationships use the
+// fat-arrow family with `::` relationship labels.
+//
+// the structure shows the allowed shapes, while tagged strings defer value
+// constraints either to a well-known external language or to the `gram`
+// mini-DSL for gram-native value forms.
+
+// A Person must have a non-null name and may have an optional nickname.
+(::Person {
+  bio:: gram`(:TaggedString { tag: "md" })`,
+  id:: ts`string`,
+  interests:: gram`(:Array { items: "string" })`,
+  name:: ts`string`,
+  nickname:: ts`string | undefined`
+})
+
+// A Project has a required title, an optional archived flag, and a gram-native
+// date-ish tagged string for release cadence notes.
+(::Project {
+  archived:: ts`boolean | undefined`,
+  cadence_note:: gram`(:TaggedString { tag: "date" })`,
+  title:: ts`string`
+})
+
+// WORKS_ON connects a Person to a Project.
+(::Person) =[::WORKS_ON {
+  role:: ts`"lead" | "support" | "reviewer"`
+}]=> (::Project)

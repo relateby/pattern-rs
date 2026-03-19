@@ -1,0 +1,43 @@
+{ kind: "schema", variant: "mixed_dialects" }
+
+// Mixed-dialect exploration:
+// - `ts` for broad type signatures
+// - `re` for lexical constraints
+// - `pydantic` for Python-facing model semantics
+// - `sql` for storage-level declarations
+// - `gram` for value forms that are specific to gram itself
+// This file also shows annotation form as a schema choice. The bracketed
+// annotation syntax below is part of the example contract, not just commentary.
+
+(::User {
+  created_at:: pydantic`AwareDatetime`,
+  email:: re`^[^@ ]+@example[.]org$`,
+  favorite_band:: gram`(:TaggedString { tag: "fence", language: "gram" })`,
+  id:: sql`UUID PRIMARY KEY`,
+  preferences:: ts`Record<string, string | number | boolean>`
+})
+
+(::Team {
+  budget_band:: gram`(:Range { type: "int" })`,
+  name:: ts`string`,
+  slug:: re`^[a-z0-9-]{3,32}$`
+})
+
+(::User) =[::MEMBER_OF {
+  membership_state:: pydantic`Literal["active", "invited", "suspended"]`,
+  joined_at:: pydantic`AwareDatetime | None`
+}]=> (::Team)
+
+(membership_style:StyleGuide {
+  annotation_form: "bracketed-reference",
+  note: "Schema metadata may be attached using explicit annotation records."
+})
+
+[membership_annotation:SurfaceForm {
+  applies_to: "membership archetype",
+  expectation: "Use bracketed annotations for extra schema semantics."
+} | membership_style]
+
+// One open question this file highlights:
+// should pato understand any of these tags directly, or should they remain
+// opaque to pato and only meaningful to downstream validators?
