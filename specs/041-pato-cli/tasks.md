@@ -16,12 +16,12 @@
 
 **Purpose**: Create the `crates/pato` workspace member with skeleton CLI wiring.
 
-- [ ] T001 Add `"crates/pato"` to `members` in root `Cargo.toml`; add `clap = { version = "4", features = ["derive"] }` and `strsim = "0.11"` to `[workspace.dependencies]`
-- [ ] T002 Create `crates/pato/Cargo.toml` with `[package] name = "relateby-pato"`, `[[bin]] name = "pato"`, and workspace-inherited fields; add dependencies: `relateby-pattern`, `relateby-gram`, `clap`, `serde`, `serde_json`, `thiserror`, `strsim`
-- [ ] T003 Create `crates/pato/src/cli.rs` — `Commands` enum with stub variants for `Lint`, `Fmt`, `Parse`, `Rule`, `Check`, and `#[command(external_subcommand)] External(Vec<String>)` for unknown-subcommand forwarding
-- [ ] T004 Create `crates/pato/src/main.rs` — parse args with clap, dispatch to stub handlers that `eprintln!("not yet implemented")` and exit 0; `External` variant prints error to stderr and exits 3
-- [ ] T005 Verify `cargo build -p relateby-pato` and `cargo run -p relateby-pato -- --version` succeed
-- [ ] T006 Create `crates/pato/tests/fixtures/valid/`, `tests/fixtures/invalid/`, and `tests/fixtures/schema/` directories with `.gitkeep` placeholders
+- [X] T001 Add `"crates/pato"` to `members` in root `Cargo.toml`; add `clap = { version = "4", features = ["derive"] }` and `strsim = "0.11"` to `[workspace.dependencies]`
+- [X] T002 Create `crates/pato/Cargo.toml` with `[package] name = "relateby-pato"`, `[[bin]] name = "pato"`, and workspace-inherited fields; add dependencies: `relateby-pattern`, `relateby-gram`, `clap`, `serde`, `serde_json`, `thiserror`, `strsim`
+- [X] T003 Create `crates/pato/src/cli.rs` — `Commands` enum with stub variants for `Lint`, `Fmt`, `Parse`, `Rule`, `Check`, and `#[command(external_subcommand)] External(Vec<String>)` for unknown-subcommand forwarding
+- [X] T004 Create `crates/pato/src/main.rs` — parse args with clap, dispatch to stub handlers that `eprintln!("not yet implemented")` and exit 0; `External` variant prints error to stderr and exits 3
+- [X] T005 Verify `cargo build -p relateby-pato` and `cargo run -p relateby-pato -- --version` succeed
+- [X] T006 Create `crates/pato/tests/fixtures/valid/`, `tests/fixtures/invalid/`, and `tests/fixtures/schema/` directories with `.gitkeep` placeholders
 
 ---
 
@@ -31,13 +31,13 @@
 
 **⚠️ CRITICAL**: No user story work can begin until this phase is complete.
 
-- [ ] T007 Implement `crates/pato/src/diagnostics.rs` — define `Severity` (Error/Warning/Info), `DiagnosticCode` (P001–P008 with associated grade and rule name constants), `Location { line: u32, column: u32 }`, `Edit` (Replace/DeleteLine/Append), `RemediationSteps` (Inline/Structured), `RemediationOption`, `Remediation` (Auto/Guided/Ambiguous/None), `Diagnostic` struct with all fields per data-model.md
-- [ ] T008 Implement `crates/pato/src/output.rs` — `OutputFormat` enum (Gram/Text/Json); TTY detection via `use std::io::IsTerminal; stdout().is_terminal()` stored at startup; rendering dispatch function that routes a gram string, diagnostic list, or JSON value to stdout in the chosen format; ANSI color enabled in Text mode only when TTY detected
-- [ ] T009 Implement `crates/pato/src/diagnostic_gram.rs` — serialize `Vec<Diagnostic>` to a gram string per `specs/041-pato-cli/contracts/diagnostic-gram.md`; single-file header `{ kind: "diagnostics", pato_version: "...", file: "..." }`; `Summary` pattern for clean files; `Location > Diagnostic > Remediation` nesting; scalar `remediations` array for `Inline` steps; child `Remediation` patterns for `Structured` steps; `Option` child patterns for `Ambiguous`
-- [ ] T010 Implement multi-file wrapper in `diagnostic_gram.rs` — `Run > FileResult > Location > Diagnostic` grouping for when multiple files are processed
-- [ ] T011 Add `to_json` serialization to `diagnostic_gram.rs` using `serde_json` — convert `Vec<Diagnostic>` to a JSON structure mirroring the gram output shape
-- [ ] T012 Wire `OutputFormat` into `diagnostic_gram.rs` — top-level `render_diagnostics(diagnostics, output_format, writer)` function that dispatches to gram/text/json rendering
-- [ ] T013 Write smoke test in `crates/pato/tests/` verifying that a `Vec<Diagnostic>` with one diagnostic of each grade (auto/guided/ambiguous/none) serializes to a gram string that parses cleanly via `relateby_gram::parse_gram`
+- [X] T007 Implement `crates/pato/src/diagnostics.rs` — define `Severity` (Error/Warning/Info), `DiagnosticCode` (P001–P008 with associated grade and rule name constants), `Location { line: u32, column: u32 }`, `Edit` (Replace/DeleteLine/Append), `RemediationSteps` (Inline/Structured), `RemediationOption`, `Remediation` (Auto/Guided/Ambiguous/None), `Diagnostic` struct with all fields per data-model.md
+- [X] T008 Implement `crates/pato/src/output.rs` — `OutputFormat` enum (Gram/Text/Json); TTY detection via `use std::io::IsTerminal; stdout().is_terminal()` stored at startup; rendering dispatch function that routes a gram string, diagnostic list, or JSON value to stdout in the chosen format; ANSI color enabled in Text mode only when TTY detected
+- [X] T009 Implement `crates/pato/src/diagnostic_gram.rs` — serialize `Vec<Diagnostic>` to a gram string per `specs/041-pato-cli/contracts/diagnostic-gram.md`; single-file header `{ kind: "diagnostics", pato_version: "...", file: "..." }`; `Summary` pattern for clean files; `Location > Diagnostic > Remediation` nesting; scalar `remediations` array for `Inline` steps; child `Remediation` patterns for `Structured` steps; `Option` child patterns for `Ambiguous`
+- [X] T010 Implement multi-file wrapper in `diagnostic_gram.rs` — `Run > FileResult > Location > Diagnostic` grouping for when multiple files are processed
+- [X] T011 Add `to_json` serialization to `diagnostic_gram.rs` using `serde_json` — convert `Vec<Diagnostic>` to a JSON structure mirroring the gram output shape
+- [X] T012 Wire `OutputFormat` into `diagnostic_gram.rs` — top-level `render_diagnostics(diagnostics, output_format, writer)` function that dispatches to gram/text/json rendering
+- [X] T013 Write smoke test in `crates/pato/tests/` verifying that a `Vec<Diagnostic>` with one diagnostic of each grade (auto/guided/ambiguous/none) serializes to a gram string that parses cleanly via `relateby_gram::parse_gram`
 
 **Checkpoint**: Foundation ready — all user story phases can now begin.
 
@@ -49,20 +49,20 @@
 
 **Independent Test**: `cargo run -p relateby-pato -- lint crates/pato/tests/fixtures/invalid/P002.gram` emits gram with a P002 diagnostic on stdout, exits 2; output parses via `relateby_gram::parse_gram`.
 
-- [ ] T014 [US1] Create `crates/pato/tests/fixtures/invalid/P001.gram` — syntactically broken gram that triggers a parse error; `P002.gram` — two patterns sharing the same identity; `P003.gram` — annotation with duplicate property key; `P004.gram` — relationship with lowercase label; `P005.gram` — pattern referencing an identity not defined in file; `P006.gram` — `[]` used as a property value; `P008.gram` — document header `{ kind: "unknownkind" }`
-- [ ] T015 [US1] Create `crates/pato/tests/fixtures/valid/simple.gram` — a small valid gram file with no lint issues (node, relationship, annotation, document header with recognized kind)
-- [ ] T016 [US1] Implement `crates/pato/src/commands/lint.rs` — accept `files: Vec<PathBuf>` and `OutputFormat`; read each file; call `relateby_gram::parse_gram`; on `ParseError`, produce P001 `Diagnostic` with location from the error; on success, pass `Vec<Pattern<Subject>>` to the rule checkers below
-- [ ] T017 [P] [US1] Implement P002 checker in `commands/lint.rs` — collect all non-empty `subject.identity.0` strings into a `HashMap<String, Location>`; on second occurrence emit P002 guided diagnostic referencing both line numbers
-- [ ] T018 [P] [US1] Implement P003 checker in `commands/lint.rs` — for each pattern's `subject.properties`, detect duplicate keys by iterating the raw AST (use `parse_to_ast` for key-order access); emit P003 guided diagnostic with location of the duplicate key
-- [ ] T019 [P] [US1] Implement P004 checker in `commands/lint.rs` — for each pattern, determine arity (0/1 = node label → TitleCase; 2 = rel label → UPPERCASE); check each label string; emit P004 auto-grade warning with a `Replace` edit when casing is wrong
-- [ ] T020 [US1] Implement P005 checker in `commands/lint.rs` — collect defined identity set from all patterns; for each pattern using an identity as a reference not in the defined set, emit P005 ambiguous warning; use `strsim::levenshtein` to find the closest defined identity and offer it as Option 1; offer "add definition" as Option 2
-- [ ] T021 [P] [US1] Implement P006 checker in `commands/lint.rs` — scan `subject.properties` values for `Value::VArray(arr)` where `arr.is_empty()`; emit P006 info/guided diagnostic
-- [ ] T022 [P] [US1] Implement P008 checker in `commands/lint.rs` — detect bare record first pattern via `parse_gram_with_header`; if `kind` property is present and value is not in `["diagnostics", "rule"]`, emit P008 warning/guided diagnostic
-- [ ] T023 [US1] Implement `crates/pato/src/editor.rs` — `apply_edits(file: &Path, edits: &[Edit])` using reverse-order line sort to prevent drift; write to a temp file alongside the original, then atomically rename; report modified file name to stderr
-- [ ] T024 [US1] Wire `--fix` flag in `commands/lint.rs` — after collecting diagnostics, filter to `auto`-grade; if any `ambiguous` diagnostic exists for the file skip it entirely (report ambiguous on stdout, leave file unchanged); otherwise call `editor::apply_edits` with all auto edits; re-run lint on rewritten file to verify clean
-- [ ] T025 [US1] Add stdin support in `commands/lint.rs` — when file path is `-`, read from `std::io::stdin()` and use `"<stdin>"` as the filename in diagnostics
-- [ ] T026 [US1] Wire exit codes in `main.rs` lint dispatch — compute highest severity across all files; exit 0/1/2 per contract; exit 3 for file-not-found or unreadable files (report on stderr, skip file)
-- [ ] T027 [US1] Write integration test in `crates/pato/tests/lint_tests.rs` — for each `invalid/P00N.gram` fixture: run lint, assert correct P-code present in output, assert output parses via `parse_gram`, assert exit code is 2 for errors / 1 for warnings / 0 for valid fixture; also test `--fix` rewrites P004 fixture to clean
+- [X] T014 [US1] Create `crates/pato/tests/fixtures/invalid/P001.gram` — syntactically broken gram that triggers a parse error; `P002.gram` — two patterns sharing the same identity; `P003.gram` — annotation with duplicate property key; `P004.gram` — relationship with lowercase label; `P005.gram` — pattern referencing an identity not defined in file; `P006.gram` — `[]` used as a property value; `P008.gram` — document header `{ kind: "unknownkind" }`
+- [X] T015 [US1] Create `crates/pato/tests/fixtures/valid/simple.gram` — a small valid gram file with no lint issues (node, relationship, annotation, document header with recognized kind)
+- [X] T016 [US1] Implement `crates/pato/src/commands/lint.rs` — accept `files: Vec<PathBuf>` and `OutputFormat`; read each file; call `relateby_gram::parse_gram`; on `ParseError`, produce P001 `Diagnostic` with location from the error; on success, pass `Vec<Pattern<Subject>>` to the rule checkers below
+- [X] T017 [P] [US1] Implement P002 checker in `commands/lint.rs` — collect all non-empty `subject.identity.0` strings into a `HashMap<String, Location>`; on second occurrence emit P002 guided diagnostic referencing both line numbers
+- [X] T018 [P] [US1] Implement P003 checker in `commands/lint.rs` — for each pattern's `subject.properties`, detect duplicate keys by iterating the raw AST (use `parse_to_ast` for key-order access); emit P003 guided diagnostic with location of the duplicate key
+- [X] T019 [P] [US1] Implement P004 checker in `commands/lint.rs` — for each pattern, determine arity (0/1 = node label → TitleCase; 2 = rel label → UPPERCASE); check each label string; emit P004 auto-grade warning with a `Replace` edit when casing is wrong
+- [X] T020 [US1] Implement P005 checker in `commands/lint.rs` — collect defined identity set from all patterns; for each pattern using an identity as a reference not in the defined set, emit P005 ambiguous warning; use `strsim::levenshtein` to find the closest defined identity and offer it as Option 1; offer "add definition" as Option 2
+- [X] T021 [P] [US1] Implement P006 checker in `commands/lint.rs` — scan `subject.properties` values for `Value::VArray(arr)` where `arr.is_empty()`; emit P006 info/guided diagnostic
+- [X] T022 [P] [US1] Implement P008 checker in `commands/lint.rs` — detect bare record first pattern via `parse_gram_with_header`; if `kind` property is present and value is not in `["diagnostics", "rule"]`, emit P008 warning/guided diagnostic
+- [X] T023 [US1] Implement `crates/pato/src/editor.rs` — `apply_edits(file: &Path, edits: &[Edit])` using reverse-order line sort to prevent drift; write to a temp file alongside the original, then atomically rename; report modified file name to stderr
+- [X] T024 [US1] Wire `--fix` flag in `commands/lint.rs` — after collecting diagnostics, filter to `auto`-grade; if any `ambiguous` diagnostic exists for the file skip it entirely (report ambiguous on stdout, leave file unchanged); otherwise call `editor::apply_edits` with all auto edits; re-run lint on rewritten file to verify clean
+- [X] T025 [US1] Add stdin support in `commands/lint.rs` — when file path is `-`, read from `std::io::stdin()` and use `"<stdin>"` as the filename in diagnostics
+- [X] T026 [US1] Wire exit codes in `main.rs` lint dispatch — compute highest severity across all files; exit 0/1/2 per contract; exit 3 for file-not-found or unreadable files (report on stderr, skip file)
+- [X] T027 [US1] Write integration test in `crates/pato/tests/lint_tests.rs` — for each `invalid/P00N.gram` fixture: run lint, assert correct P-code present in output, assert output parses via `parse_gram`, assert exit code is 2 for errors / 1 for warnings / 0 for valid fixture; also test `--fix` rewrites P004 fixture to clean
 
 **Checkpoint**: `pato lint` is fully functional and independently testable.
 
