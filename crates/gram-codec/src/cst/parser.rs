@@ -7,28 +7,30 @@ use tree_sitter::{Node, Parser};
 
 pub fn parse_gram_cst(input: &str) -> CstParseResult {
     let mut parser = Parser::new();
-    parser
+    let mut errors = Vec::new();
+    if parser
         .set_language(&tree_sitter_gram::LANGUAGE.into())
-        .expect("tree-sitter-gram language should load");
+        .is_err()
+    {
+        errors.push(whole_input_span(input));
+        return CstParseResult {
+            tree: document_tree(input, whole_input_span(input), None, vec![]),
+            errors,
+        };
+    }
 
     let Some(tree) = parser.parse(input, None) else {
+        errors.push(whole_input_span(input));
         return CstParseResult {
-            tree: Pattern::point(SyntaxNode {
-                kind: SyntaxKind::Document,
-                subject: None,
-                span: SourceSpan {
-                    start: 0,
-                    end: input.len(),
-                },
-                annotations: vec![],
-                text: None,
-            }),
-            errors: vec![],
+            tree: document_tree(input, whole_input_span(input), None, vec![]),
+            errors,
         };
     };
 
     let root = tree.root_node();
-    assert_eq!(root.kind(), "gram_pattern");
+    if root.kind() != "gram_pattern" {
+        record_error(&mut errors, root);
+    }
 
     let mut elements = Vec::new();
     let mut cursor = root.walk();
@@ -44,38 +46,45 @@ pub fn parse_gram_cst(input: &str) -> CstParseResult {
             | "subject_pattern"
             | "annotated_pattern"
             | "comment" => {
-                elements.push(convert_named_node(child, input));
+                if let Some(element) = convert_named_node(child, input, &mut errors) {
+                    elements.push(element);
+                }
             }
             _ => {}
         }
     }
 
+    errors.extend(collect_error_spans(root));
+    dedupe_errors(&mut errors);
+
     CstParseResult {
-        tree: Pattern::pattern(
-            SyntaxNode {
-                kind: SyntaxKind::Document,
-                subject: root
-                    .child_by_field_name("root")
-                    .map(|record| extract_record_subject(record, input)),
-                span: span_from_node(root),
-                annotations: vec![],
-                text: None,
-            },
+        tree: document_tree(
+            input,
+            span_from_node(root),
+            root.child_by_field_name("root")
+                .map(|record| extract_record_subject(record, input)),
             elements,
         ),
-        errors: collect_error_spans(root),
+        errors,
     }
 }
 
-fn convert_named_node(node: Node<'_>, input: &str) -> Pattern<SyntaxNode> {
+fn convert_named_node(
+    node: Node<'_>,
+    input: &str,
+    errors: &mut Vec<SourceSpan>,
+) -> Option<Pattern<SyntaxNode>> {
     match node.kind() {
-        "node_pattern" => convert_node_pattern(node, input),
-        "relationship_pattern" => convert_relationship_pattern(node, input),
-        "subject_pattern" => convert_subject_pattern(node, input),
-        "annotated_pattern" => convert_annotated_pattern(node, input),
-        "comment" => convert_comment(node, input),
-        "pattern_reference" => convert_pattern_reference(node, input),
-        kind => panic!("Unexpected CST node kind: {kind}"),
+        "node_pattern" => Some(convert_node_pattern(node, input)),
+        "relationship_pattern" => Some(convert_relationship_pattern(node, input, errors)),
+        "subject_pattern" => Some(convert_subject_pattern(node, input, errors)),
+        "annotated_pattern" => Some(convert_annotated_pattern(node, input, errors)),
+        "comment" => Some(convert_comment(node, input)),
+        "pattern_reference" => Some(convert_pattern_reference(node, input, errors)),
+        _ => {
+            record_error(errors, node);
+            None
+        }
     }
 }
 
@@ -89,23 +98,37 @@ fn convert_node_pattern(node: Node<'_>, input: &str) -> Pattern<SyntaxNode> {
     })
 }
 
-fn convert_relationship_pattern(node: Node<'_>, input: &str) -> Pattern<SyntaxNode> {
+fn convert_relationship_pattern(
+    node: Node<'_>,
+    input: &str,
+    errors: &mut Vec<SourceSpan>,
+) -> Pattern<SyntaxNode> {
     let left = node
         .child_by_field_name("left")
-        .map(|child| convert_named_node(child, input))
-        .expect("relationship_pattern.left should be present");
+        .and_then(|child| convert_named_node(child, input, errors))
+        .unwrap_or_else(|| {
+            record_error(errors, node);
+            fallback_pattern(node)
+        });
     let right = node
         .child_by_field_name("right")
-        .map(|child| convert_named_node(child, input))
-        .expect("relationship_pattern.right should be present");
-    let arrow_node = node
-        .child_by_field_name("kind")
-        .expect("relationship_pattern.kind should be present");
+        .and_then(|child| convert_named_node(child, input, errors))
+        .unwrap_or_else(|| {
+            record_error(errors, node);
+            fallback_pattern(node)
+        });
+    let arrow_node = node.child_by_field_name("kind");
+    let arrow_kind = arrow_node
+        .map(|kind| arrow_kind(kind.kind(), kind, errors))
+        .unwrap_or_else(|| {
+            record_error(errors, node);
+            ArrowKind::Right
+        });
 
     Pattern::pattern(
         SyntaxNode {
-            kind: SyntaxKind::Relationship(arrow_kind(arrow_node.kind())),
-            subject: extract_subject(arrow_node, input),
+            kind: SyntaxKind::Relationship(arrow_kind),
+            subject: arrow_node.and_then(|kind| extract_subject(kind, input)),
             span: span_from_node(node),
             annotations: vec![],
             text: None,
@@ -114,7 +137,11 @@ fn convert_relationship_pattern(node: Node<'_>, input: &str) -> Pattern<SyntaxNo
     )
 }
 
-fn convert_subject_pattern(node: Node<'_>, input: &str) -> Pattern<SyntaxNode> {
+fn convert_subject_pattern(
+    node: Node<'_>,
+    input: &str,
+    errors: &mut Vec<SourceSpan>,
+) -> Pattern<SyntaxNode> {
     let mut elements = Vec::new();
 
     let mut node_cursor = node.walk();
@@ -134,7 +161,11 @@ fn convert_subject_pattern(node: Node<'_>, input: &str) -> Pattern<SyntaxNode> {
                 | "node_pattern"
                 | "relationship_pattern"
                 | "subject_pattern"
-                | "annotated_pattern" => elements.push(convert_named_node(child, input)),
+                | "annotated_pattern" => {
+                    if let Some(element) = convert_named_node(child, input, errors) {
+                        elements.push(element);
+                    }
+                }
                 _ => {}
             }
         }
@@ -152,15 +183,18 @@ fn convert_subject_pattern(node: Node<'_>, input: &str) -> Pattern<SyntaxNode> {
     )
 }
 
-fn convert_annotated_pattern(node: Node<'_>, input: &str) -> Pattern<SyntaxNode> {
+fn convert_annotated_pattern(
+    node: Node<'_>,
+    input: &str,
+    errors: &mut Vec<SourceSpan>,
+) -> Pattern<SyntaxNode> {
     let annotations = node
         .child_by_field_name("annotations")
-        .map(|annotations_node| extract_annotations(annotations_node, input))
+        .map(|annotations_node| extract_annotations(annotations_node, input, errors))
         .unwrap_or_default();
     let inner = node
         .child_by_field_name("elements")
-        .map(|child| convert_named_node(child, input))
-        .expect("annotated_pattern.elements should be present");
+        .and_then(|child| convert_named_node(child, input, errors));
 
     Pattern::pattern(
         SyntaxNode {
@@ -170,7 +204,7 @@ fn convert_annotated_pattern(node: Node<'_>, input: &str) -> Pattern<SyntaxNode>
             annotations,
             text: None,
         },
-        vec![inner],
+        inner.into_iter().collect(),
     )
 }
 
@@ -184,11 +218,20 @@ fn convert_comment(node: Node<'_>, input: &str) -> Pattern<SyntaxNode> {
     })
 }
 
-fn convert_pattern_reference(node: Node<'_>, input: &str) -> Pattern<SyntaxNode> {
+fn convert_pattern_reference(
+    node: Node<'_>,
+    input: &str,
+    errors: &mut Vec<SourceSpan>,
+) -> Pattern<SyntaxNode> {
     let identifier = node
         .child_by_field_name("identifier")
         .map(|child| extract_identifier(child, input))
-        .expect("pattern_reference.identifier should be present");
+        .or_else(|| {
+            record_error(errors, node);
+            let raw = node_text(node, input).trim();
+            (!raw.is_empty()).then(|| raw.to_string())
+        })
+        .unwrap_or_default();
 
     Pattern::point(SyntaxNode {
         kind: SyntaxKind::Node,
@@ -203,7 +246,11 @@ fn convert_pattern_reference(node: Node<'_>, input: &str) -> Pattern<SyntaxNode>
     })
 }
 
-fn extract_annotations(node: Node<'_>, input: &str) -> Vec<Annotation> {
+fn extract_annotations(
+    node: Node<'_>,
+    input: &str,
+    errors: &mut Vec<SourceSpan>,
+) -> Vec<Annotation> {
     let mut annotations = Vec::new();
     let mut cursor = node.walk();
 
@@ -213,7 +260,9 @@ fn extract_annotations(node: Node<'_>, input: &str) -> Vec<Annotation> {
         }
 
         match child.kind() {
-            "property_annotation" => annotations.push(extract_property_annotation(child, input)),
+            "property_annotation" => {
+                annotations.push(extract_property_annotation(child, input, errors))
+            }
             "identified_annotation" => {
                 annotations.push(extract_identified_annotation(child, input))
             }
@@ -224,19 +273,24 @@ fn extract_annotations(node: Node<'_>, input: &str) -> Vec<Annotation> {
     annotations
 }
 
-fn extract_property_annotation(node: Node<'_>, input: &str) -> Annotation {
+fn extract_property_annotation(
+    node: Node<'_>,
+    input: &str,
+    errors: &mut Vec<SourceSpan>,
+) -> Annotation {
     let key = node
         .child_by_field_name("key")
         .map(|child| node_text(child, input).to_string())
-        .expect("property_annotation.key should be present");
-    let value_node = node
+        .unwrap_or_else(|| {
+            record_error(errors, node);
+            String::new()
+        });
+    let value = node
         .child_by_field_name("value")
-        .expect("property_annotation.value should be present");
+        .map(|value_node| extract_annotation_value(value_node, input))
+        .unwrap_or(Value::Boolean(true));
 
-    Annotation::Property {
-        key,
-        value: extract_annotation_value(value_node, input),
-    }
+    Annotation::Property { key, value }
 }
 
 fn extract_identified_annotation(node: Node<'_>, input: &str) -> Annotation {
@@ -412,13 +466,16 @@ fn collect_error_spans_inner(node: Node<'_>, spans: &mut Vec<SourceSpan>) {
     }
 }
 
-fn arrow_kind(kind: &str) -> ArrowKind {
+fn arrow_kind(kind: &str, node: Node<'_>, errors: &mut Vec<SourceSpan>) -> ArrowKind {
     match kind {
         "right_arrow" => ArrowKind::Right,
         "left_arrow" => ArrowKind::Left,
         "bidirectional_arrow" => ArrowKind::Bidirectional,
         "undirected_arrow" => ArrowKind::Undirected,
-        other => panic!("Unexpected relationship kind: {other}"),
+        _ => {
+            record_error(errors, node);
+            ArrowKind::Right
+        }
     }
 }
 
@@ -430,6 +487,49 @@ fn span_from_node(node: Node<'_>) -> SourceSpan {
 }
 
 fn node_text<'a>(node: Node<'_>, input: &'a str) -> &'a str {
-    node.utf8_text(input.as_bytes())
-        .expect("tree-sitter node text should be valid UTF-8")
+    node.utf8_text(input.as_bytes()).unwrap_or("")
+}
+
+fn document_tree(
+    _input: &str,
+    span: SourceSpan,
+    subject: Option<Subject>,
+    elements: Vec<Pattern<SyntaxNode>>,
+) -> Pattern<SyntaxNode> {
+    Pattern::pattern(
+        SyntaxNode {
+            kind: SyntaxKind::Document,
+            subject,
+            span,
+            annotations: vec![],
+            text: None,
+        },
+        elements,
+    )
+}
+
+fn fallback_pattern(node: Node<'_>) -> Pattern<SyntaxNode> {
+    Pattern::point(SyntaxNode {
+        kind: SyntaxKind::Node,
+        subject: None,
+        span: span_from_node(node),
+        annotations: vec![],
+        text: None,
+    })
+}
+
+fn whole_input_span(input: &str) -> SourceSpan {
+    SourceSpan {
+        start: 0,
+        end: input.len(),
+    }
+}
+
+fn record_error(errors: &mut Vec<SourceSpan>, node: Node<'_>) {
+    errors.push(span_from_node(node));
+}
+
+fn dedupe_errors(errors: &mut Vec<SourceSpan>) {
+    errors.sort_by_key(|span| (span.start, span.end));
+    errors.dedup_by(|left, right| left.start == right.start && left.end == right.end);
 }

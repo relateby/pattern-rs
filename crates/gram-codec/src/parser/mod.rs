@@ -105,9 +105,7 @@ fn annotated_pattern(input: &str) -> ParseResult<'_, Pattern<Subject>> {
             }
 
             for annotation in annotations {
-                if let Some(value) = annotation.value {
-                    subject.properties.insert(annotation.key, value);
-                }
+                subject.properties.insert(annotation.key, annotation.value);
             }
 
             Pattern::pattern(subject, vec![pattern])

@@ -17,7 +17,7 @@ use nom::{
 #[derive(Debug, Clone, PartialEq)]
 pub struct Annotation {
     pub key: String,
-    pub value: Option<pattern_core::Value>,
+    pub value: pattern_core::Value,
 }
 
 /// Identity/label annotation syntax: @@id, @@:label, @@id:label
@@ -43,10 +43,10 @@ pub fn property_annotation(input: &str) -> ParseResult<'_, Annotation> {
         ),
         |(key, value)| Annotation {
             key,
-            value: Some(value.map_or_else(
+            value: value.map_or_else(
                 || pattern_core::Value::VBoolean(true),
                 normalize_annotation_value,
-            )),
+            ),
         },
     )(input)
 }
@@ -95,7 +95,7 @@ mod tests {
     fn test_annotation_key_only() {
         let (remaining, ann) = property_annotation("@deprecated").unwrap();
         assert_eq!(ann.key, "deprecated");
-        assert_eq!(ann.value, Some(pattern_core::Value::VBoolean(true)));
+        assert_eq!(ann.value, pattern_core::Value::VBoolean(true));
         assert_eq!(remaining, "");
     }
 
@@ -103,10 +103,7 @@ mod tests {
     fn test_annotation_with_value() {
         let (remaining, ann) = property_annotation("@since(v1_0)").unwrap();
         assert_eq!(ann.key, "since");
-        assert_eq!(
-            ann.value,
-            Some(pattern_core::Value::VString("v1_0".to_string()))
-        );
+        assert_eq!(ann.value, pattern_core::Value::VString("v1_0".to_string()));
         assert_eq!(remaining, "");
     }
 
@@ -114,10 +111,7 @@ mod tests {
     fn test_annotation_with_whitespace() {
         let (remaining, ann) = property_annotation("@key( value )").unwrap();
         assert_eq!(ann.key, "key");
-        assert_eq!(
-            ann.value,
-            Some(pattern_core::Value::VString("value".to_string()))
-        );
+        assert_eq!(ann.value, pattern_core::Value::VString("value".to_string()));
         assert_eq!(remaining, "");
     }
 
