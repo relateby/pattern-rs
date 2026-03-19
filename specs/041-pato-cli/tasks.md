@@ -122,12 +122,12 @@ rule-driven model before building additional features on top of the older nested
 
 **Independent Test**: Run `pato parse my.gram | pato parse -` and verify the second invocation's output is identical to the first (round-trip stability); verify `--output-format json` produces a parseable JSON array.
 
-- [ ] T034 [US3] Implement `crates/pato/src/commands/parse.rs` — accept files or `-`; parse via `parse_gram_cst`; on CST errors report to stderr and exit 2; on success emit selected output format from either CST or lowered semantic patterns as appropriate
-- [ ] T035 [US3] Implement gram output mode in `commands/parse.rs` — lower valid CST trees, serialize each top-level pattern via `to_gram_pattern`, join with newline, emit as flat sequence with no root wrapper; verify round-trip: `parse(gram_out) == lowered_patterns`
-- [ ] T036 [P] [US3] Implement sexp output mode in `commands/parse.rs` — render directly from CST structure so the output mirrors tree-sitter/gramref shape without reconstructing it from `Pattern<Subject>`
-- [ ] T037 [P] [US3] Implement json output mode in `commands/parse.rs` — convert lowered `Pattern<Subject>` values to `AstPattern`/JSON array via `serde_json`
-- [ ] T038 [P] [US3] Implement summary output mode in `commands/parse.rs` — count nodes/relationships/annotations/walks from the CST tree so annotation counts remain accurate even when the semantic tree would drop syntax detail
-- [ ] T039 [US3] Write integration tests in `crates/pato/tests/parse_tests.rs` — verify gram round-trip stability using valid fixtures; verify json output is parseable JSON array; verify sexp output matches gramref for at least two corpus fixtures; verify no root-wrapper nesting on repeated round-trips; verify annotation-aware summary counts
+- [X] T034 [US3] Implement `crates/pato/src/commands/parse.rs` — accept files or `-`; parse via `parse_gram_cst`; on CST errors report to stderr and exit 2; on success emit selected output format from either CST or lowered semantic patterns as appropriate
+- [X] T035 [US3] Implement gram output mode in `commands/parse.rs` — lower valid CST trees, serialize each top-level pattern via `to_gram_pattern`, join with newline, emit as flat sequence with no root wrapper; verify round-trip: `parse(gram_out) == lowered_patterns`
+- [X] T036 [P] [US3] Implement sexp output mode in `commands/parse.rs` — render directly from CST structure so the output mirrors tree-sitter/gramref shape without reconstructing it from `Pattern<Subject>`
+- [X] T037 [P] [US3] Implement json output mode in `commands/parse.rs` — convert lowered `Pattern<Subject>` values to `AstPattern`/JSON array via `serde_json`
+- [X] T038 [P] [US3] Implement summary output mode in `commands/parse.rs` — count nodes/relationships/annotations/walks from the CST tree so annotation counts remain accurate even when the semantic tree would drop syntax detail
+- [X] T039 [US3] Write integration tests in `crates/pato/tests/parse_tests.rs` — verify gram round-trip stability using valid fixtures; verify json output is parseable JSON array; verify sexp output matches gramref for at least two corpus fixtures; verify no root-wrapper nesting on repeated round-trips; verify annotation-aware summary counts
 
 **Checkpoint**: `pato parse` fully functional and independently testable.
 
@@ -139,11 +139,11 @@ rule-driven model before building additional features on top of the older nested
 
 **Independent Test**: Run `pato rule` (no args), verify gram output parses cleanly and lists all P001–P008 plus their remediation templates; run `pato rule P002`, verify output includes code, name, grade, remediation identifiers, and a `TriggerExample` that when linted produces P002.
 
-- [ ] T040 [US4] Extend the shared rule registry in `crates/pato/src/diagnostics.rs` — add `RuleInfo { code, name, severity, grade, description, remediations, trigger_example_gram }` and stable remediation template identifiers/parameter docs for each `DiagnosticCode`
-- [ ] T041 [US4] Implement `crates/pato/src/commands/rule.rs` — list mode (no args): emit gram file of kind `"rule"` with one `Rule` pattern per P-code plus its reusable remediation templates; detail mode (with code): emit single `Rule` pattern with `TriggerExample` child and remediation template detail
-- [ ] T042 [US4] Add JSON output mode to `commands/rule.rs` for `--output-format json`
-- [ ] T043 [US4] Handle unknown code in `commands/rule.rs` — emit error on stderr and exit 3
-- [ ] T044 [US4] Write integration tests in `crates/pato/tests/rule_tests.rs` — verify all P-codes and remediation templates have registry entries; verify listing gram output parses cleanly; verify each trigger_example_gram when linted produces exactly the claimed P-code; verify lint output references valid registry identifiers
+- [X] T040 [US4] Extend the shared rule registry in `crates/pato/src/diagnostics.rs` — add `RuleInfo { code, name, severity, grade, description, remediations, trigger_example_gram }` and stable remediation template identifiers/parameter docs for each `DiagnosticCode`
+- [X] T041 [US4] Implement `crates/pato/src/commands/rule.rs` — list mode (no args): emit gram file of kind `"rule"` with one `Rule` pattern per P-code plus its reusable remediation templates; detail mode (with code): emit single `Rule` pattern with `TriggerExample` child and remediation template detail
+- [X] T042 [US4] Add JSON output mode to `commands/rule.rs` for `--output-format json`
+- [X] T043 [US4] Handle unknown code in `commands/rule.rs` — emit error on stderr and exit 3
+- [X] T044 [US4] Write integration tests in `crates/pato/tests/rule_tests.rs` — verify all P-codes and remediation templates have registry entries; verify listing gram output parses cleanly; verify each trigger_example_gram when linted produces exactly the claimed P-code; verify lint output references valid registry identifiers
 
 **Checkpoint**: `pato rule` fully functional; agents can self-serve on unknown diagnostics.
 

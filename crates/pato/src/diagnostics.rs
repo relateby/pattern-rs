@@ -84,7 +84,24 @@ impl DiagnosticCode {
     }
 
     pub fn remediation_id(self) -> Option<&'static str> {
-        rule_info(self).remediation.map(|template| template.id)
+        rule_info(self)
+            .remediations
+            .first()
+            .map(|template| template.id)
+    }
+
+    pub fn parse(input: &str) -> Option<Self> {
+        match input.to_ascii_uppercase().as_str() {
+            "P001" => Some(DiagnosticCode::P001),
+            "P002" => Some(DiagnosticCode::P002),
+            "P003" => Some(DiagnosticCode::P003),
+            "P004" => Some(DiagnosticCode::P004),
+            "P005" => Some(DiagnosticCode::P005),
+            "P006" => Some(DiagnosticCode::P006),
+            "P007" => Some(DiagnosticCode::P007),
+            "P008" => Some(DiagnosticCode::P008),
+            _ => None,
+        }
     }
 }
 
@@ -292,7 +309,7 @@ impl Diagnostic {
     }
 
     pub fn remediation_template(&self) -> Option<&'static RemediationTemplate> {
-        let template = rule_info(self.code).remediation?;
+        let template = rule_info(self.code).remediations.first()?;
         if self.remediation.id() == Some(template.id) {
             Some(template)
         } else {
@@ -417,10 +434,17 @@ pub struct RemediationOptionTemplate {
 }
 
 #[derive(Clone, Copy, Debug, Eq, PartialEq)]
+pub struct RemediationParameter {
+    pub name: &'static str,
+    pub description: &'static str,
+}
+
+#[derive(Clone, Copy, Debug, Eq, PartialEq)]
 pub struct RemediationTemplate {
     pub id: &'static str,
     pub summary: &'static str,
     pub details: &'static str,
+    pub parameters: &'static [RemediationParameter],
     pub option_templates: &'static [RemediationOptionTemplate],
 }
 
@@ -431,11 +455,55 @@ pub struct RuleInfo {
     pub severity: Severity,
     pub grade: RemediationGrade,
     pub description: &'static str,
-    pub remediation: Option<&'static RemediationTemplate>,
+    pub remediations: &'static [RemediationTemplate],
     pub trigger_example_gram: &'static str,
 }
 
 const NO_OPTIONS: &[RemediationOptionTemplate] = &[];
+const NO_PARAMETERS: &[RemediationParameter] = &[];
+const P001_PARAMETERS: &[RemediationParameter] = &[
+    RemediationParameter {
+        name: "detail",
+        description:
+            "Rendered parser detail when a more specific syntax error message is available.",
+    },
+    RemediationParameter {
+        name: "snippet",
+        description: "Source snippet near the syntax failure when pato can recover it.",
+    },
+];
+const P002_PARAMETERS: &[RemediationParameter] = &[
+    RemediationParameter {
+        name: "identity",
+        description: "The duplicate identity string that must be made unique.",
+    },
+    RemediationParameter {
+        name: "first_line",
+        description: "Line number of the first definition site for the duplicate identity.",
+    },
+    RemediationParameter {
+        name: "first_column",
+        description: "Column number of the first definition site for the duplicate identity.",
+    },
+];
+const P003_PARAMETERS: &[RemediationParameter] = &[RemediationParameter {
+    name: "key",
+    description: "The repeated annotation property key that should only appear once in the chain.",
+}];
+const P004_PARAMETERS: &[RemediationParameter] = &[
+    RemediationParameter {
+        name: "label_kind",
+        description: "Whether the observed label is a node label or a relationship label.",
+    },
+    RemediationParameter {
+        name: "observed",
+        description: "The label spelling found in source before canonical recasing.",
+    },
+    RemediationParameter {
+        name: "expected",
+        description: "The canonical label spelling pato expects after recasing.",
+    },
+];
 const P005_OPTIONS: &[RemediationOptionTemplate] = &[
     RemediationOptionTemplate {
         id: "rename-reference",
@@ -446,11 +514,26 @@ const P005_OPTIONS: &[RemediationOptionTemplate] = &[
         summary: "Add a new definition for the unresolved identity",
     },
 ];
+const P005_PARAMETERS: &[RemediationParameter] = &[
+    RemediationParameter {
+        name: "unresolved_identity",
+        description: "The reference that did not resolve to any definition in the file.",
+    },
+    RemediationParameter {
+        name: "suggested_identity",
+        description: "The closest in-file identity pato found as a rename candidate.",
+    },
+];
+const P008_PARAMETERS: &[RemediationParameter] = &[RemediationParameter {
+    name: "kind",
+    description: "The unrecognized document header kind value that should be changed or removed.",
+}];
 
 const P001_REMEDIATION: RemediationTemplate = RemediationTemplate {
     id: "fix-gram-syntax",
     summary: "Fix the syntax near the reported location",
     details: "Correct the surrounding gram syntax and re-run `pato lint`.",
+    parameters: P001_PARAMETERS,
     option_templates: NO_OPTIONS,
 };
 
@@ -458,6 +541,7 @@ const P002_REMEDIATION: RemediationTemplate = RemediationTemplate {
     id: "rename-duplicate-identity",
     summary: "Rename one duplicate definition so each identity is unique",
     details: "Choose one of the duplicate definition sites and rename its identity.",
+    parameters: P002_PARAMETERS,
     option_templates: NO_OPTIONS,
 };
 
@@ -465,6 +549,7 @@ const P003_REMEDIATION: RemediationTemplate = RemediationTemplate {
     id: "remove-duplicate-annotation",
     summary: "Remove the duplicate annotation key from the annotation chain",
     details: "Keep only one annotation with the repeated key before the target pattern.",
+    parameters: P003_PARAMETERS,
     option_templates: NO_OPTIONS,
 };
 
@@ -472,6 +557,7 @@ const P004_REMEDIATION: RemediationTemplate = RemediationTemplate {
     id: "recase-label",
     summary: "Rewrite the label into the canonical case",
     details: "This remediation is deterministic and can be applied automatically.",
+    parameters: P004_PARAMETERS,
     option_templates: NO_OPTIONS,
 };
 
@@ -479,6 +565,7 @@ const P005_REMEDIATION: RemediationTemplate = RemediationTemplate {
     id: "resolve-dangling-reference",
     summary: "Resolve the reference by renaming it or by adding a matching definition",
     details: "Pick the option that matches the intended meaning of the source file.",
+    parameters: P005_PARAMETERS,
     option_templates: P005_OPTIONS,
 };
 
@@ -486,6 +573,7 @@ const P006_REMEDIATION: RemediationTemplate = RemediationTemplate {
     id: "replace-empty-array",
     summary: "Replace the empty array with a concrete value or remove the property",
     details: "Empty arrays are discouraged because they usually hide missing data or an omitted property.",
+    parameters: NO_PARAMETERS,
     option_templates: NO_OPTIONS,
 };
 
@@ -493,8 +581,18 @@ const P008_REMEDIATION: RemediationTemplate = RemediationTemplate {
     id: "fix-document-kind",
     summary: "Use a recognized pato document kind or remove the header property",
     details: "Recognized pato kinds in v0.1 are `diagnostics` and `rule`.",
+    parameters: P008_PARAMETERS,
     option_templates: NO_OPTIONS,
 };
+
+const P001_REMEDIATIONS: &[RemediationTemplate] = &[P001_REMEDIATION];
+const P002_REMEDIATIONS: &[RemediationTemplate] = &[P002_REMEDIATION];
+const P003_REMEDIATIONS: &[RemediationTemplate] = &[P003_REMEDIATION];
+const P004_REMEDIATIONS: &[RemediationTemplate] = &[P004_REMEDIATION];
+const P005_REMEDIATIONS: &[RemediationTemplate] = &[P005_REMEDIATION];
+const P006_REMEDIATIONS: &[RemediationTemplate] = &[P006_REMEDIATION];
+const P007_REMEDIATIONS: &[RemediationTemplate] = &[];
+const P008_REMEDIATIONS: &[RemediationTemplate] = &[P008_REMEDIATION];
 
 const P001_RULE: RuleInfo = RuleInfo {
     code: DiagnosticCode::P001,
@@ -502,7 +600,7 @@ const P001_RULE: RuleInfo = RuleInfo {
     severity: Severity::Error,
     grade: RemediationGrade::Guided,
     description: "The file could not be parsed as gram.",
-    remediation: Some(&P001_REMEDIATION),
+    remediations: P001_REMEDIATIONS,
     trigger_example_gram: "(",
 };
 
@@ -512,7 +610,7 @@ const P002_RULE: RuleInfo = RuleInfo {
     severity: Severity::Error,
     grade: RemediationGrade::Guided,
     description: "An identity is defined more than once in the same file.",
-    remediation: Some(&P002_REMEDIATION),
+    remediations: P002_REMEDIATIONS,
     trigger_example_gram: "(alice:Person)\n(alice:Employee)",
 };
 
@@ -522,7 +620,7 @@ const P003_RULE: RuleInfo = RuleInfo {
     severity: Severity::Error,
     grade: RemediationGrade::Guided,
     description: "The same annotation key appears more than once in a single annotation chain.",
-    remediation: Some(&P003_REMEDIATION),
+    remediations: P003_REMEDIATIONS,
     trigger_example_gram: "@@meta:Doc @source(primary) @source(backup) (alice:Person)",
 };
 
@@ -532,8 +630,8 @@ const P004_RULE: RuleInfo = RuleInfo {
     severity: Severity::Warning,
     grade: RemediationGrade::Auto,
     description: "Labels should use the canonical case for their syntactic role.",
-    remediation: Some(&P004_REMEDIATION),
-    trigger_example_gram: "(alice)-[:knows]->(bob)",
+    remediations: P004_REMEDIATIONS,
+    trigger_example_gram: "(alice:Person)-[:knows]->(bob:Person)",
 };
 
 const P005_RULE: RuleInfo = RuleInfo {
@@ -542,8 +640,8 @@ const P005_RULE: RuleInfo = RuleInfo {
     severity: Severity::Warning,
     grade: RemediationGrade::Ambiguous,
     description: "A referenced identity does not resolve to a definition in the same file.",
-    remediation: Some(&P005_REMEDIATION),
-    trigger_example_gram: "(alice)-->(bob)",
+    remediations: P005_REMEDIATIONS,
+    trigger_example_gram: "(alice:Person)-->(bob)",
 };
 
 const P006_RULE: RuleInfo = RuleInfo {
@@ -552,7 +650,7 @@ const P006_RULE: RuleInfo = RuleInfo {
     severity: Severity::Info,
     grade: RemediationGrade::Guided,
     description: "An empty array was used as a property value.",
-    remediation: Some(&P006_REMEDIATION),
+    remediations: P006_REMEDIATIONS,
     trigger_example_gram: "(alice {tags: []})",
 };
 
@@ -562,7 +660,7 @@ const P007_RULE: RuleInfo = RuleInfo {
     severity: Severity::Info,
     grade: RemediationGrade::None,
     description: "No matching schema file was found for the input.",
-    remediation: None,
+    remediations: P007_REMEDIATIONS,
     trigger_example_gram: "(alice:Person)",
 };
 
@@ -572,28 +670,40 @@ const P008_RULE: RuleInfo = RuleInfo {
     severity: Severity::Warning,
     grade: RemediationGrade::Guided,
     description: "The document header uses an unrecognized `kind` value.",
-    remediation: Some(&P008_REMEDIATION),
+    remediations: P008_REMEDIATIONS,
     trigger_example_gram: "{ kind: \"unknownkind\" }\n(alice:Person)",
 };
 
+const ALL_RULE_INFOS: &[RuleInfo] = &[
+    P001_RULE, P002_RULE, P003_RULE, P004_RULE, P005_RULE, P006_RULE, P007_RULE, P008_RULE,
+];
+pub const ALL_DIAGNOSTIC_CODES: &[DiagnosticCode] = &[
+    DiagnosticCode::P001,
+    DiagnosticCode::P002,
+    DiagnosticCode::P003,
+    DiagnosticCode::P004,
+    DiagnosticCode::P005,
+    DiagnosticCode::P006,
+    DiagnosticCode::P007,
+    DiagnosticCode::P008,
+];
+
 pub fn rule_info(code: DiagnosticCode) -> &'static RuleInfo {
-    match code {
-        DiagnosticCode::P001 => &P001_RULE,
-        DiagnosticCode::P002 => &P002_RULE,
-        DiagnosticCode::P003 => &P003_RULE,
-        DiagnosticCode::P004 => &P004_RULE,
-        DiagnosticCode::P005 => &P005_RULE,
-        DiagnosticCode::P006 => &P006_RULE,
-        DiagnosticCode::P007 => &P007_RULE,
-        DiagnosticCode::P008 => &P008_RULE,
-    }
+    ALL_RULE_INFOS
+        .iter()
+        .find(|info| info.code == code)
+        .expect("every diagnostic code should have rule info")
+}
+
+pub fn all_rule_infos() -> &'static [RuleInfo] {
+    ALL_RULE_INFOS
 }
 
 pub fn option_template(
     code: DiagnosticCode,
     option_id: &str,
 ) -> Option<&'static RemediationOptionTemplate> {
-    let remediation = rule_info(code).remediation?;
+    let remediation = rule_info(code).remediations.first()?;
     remediation
         .option_templates
         .iter()

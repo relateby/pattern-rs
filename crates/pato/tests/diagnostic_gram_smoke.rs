@@ -11,7 +11,8 @@ use std::path::PathBuf;
 fn serializes_each_remediation_grade_to_parseable_gram() {
     let file = PathBuf::from("sample.gram");
     let p005_remediation = rule_info(DiagnosticCode::P005)
-        .remediation
+        .remediations
+        .first()
         .expect("P005 remediation template should exist");
     let report = FileDiagnostics::new(
         "sample.gram",

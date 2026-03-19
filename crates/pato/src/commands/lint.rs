@@ -325,7 +325,8 @@ fn check_dangling_references(
                 .unwrap_or_else(|| occurrence.identity.clone());
             let file = path.map(Path::to_path_buf).unwrap_or_default();
             let remediation = rule_info(DiagnosticCode::P005)
-                .remediation
+                .remediations
+                .first()
                 .expect("P005 should have a remediation template");
             Diagnostic::new(
                 DiagnosticCode::P005,
