@@ -116,6 +116,50 @@ fn lowering_builds_annotation_wrapper_from_property_annotations_only() {
     assert_eq!(annotated.elements[0].value.identity.0, "alice");
 }
 
+#[test]
+fn pattern_traversal_operations_work_on_cst_trees() {
+    let input = "@@meta:Doc @desc(\"route\") [team | (alice), (bob)-->(carol)]";
+    let tree = parse_gram_cst(input).tree;
+
+    let count = tree.fold(0, |acc, _| acc + 1);
+    assert_eq!(count, 7);
+
+    let kinds = tree.clone().map(|node| node.kind.clone());
+    assert!(matches!(kinds.value, SyntaxKind::Document));
+    assert_eq!(kinds.elements.len(), 1);
+    assert!(matches!(kinds.elements[0].value, SyntaxKind::Annotated));
+    assert_eq!(kinds.elements[0].elements.len(), 1);
+    assert!(matches!(
+        kinds.elements[0].elements[0].value,
+        SyntaxKind::Subject
+    ));
+    assert_eq!(kinds.elements[0].elements[0].elements.len(), 2);
+    assert!(matches!(
+        kinds.elements[0].elements[0].elements[0].value,
+        SyntaxKind::Node
+    ));
+    assert!(matches!(
+        kinds.elements[0].elements[0].elements[1].value,
+        SyntaxKind::Relationship(_)
+    ));
+}
+
+#[test]
+fn map_style_lowering_matches_lower_tree_structure() {
+    let input = "[team | (alice), (bob)-->(carol)]";
+    let tree = parse_gram_cst(input).tree;
+    let mapped = tree.clone().map(lower_value);
+
+    assert_eq!(mapped.value.identity.0, "");
+    assert_eq!(mapped.elements.len(), 1);
+
+    let expected_lowered = lower(tree);
+    assert_eq!(expected_lowered.len(), 1);
+
+    let expected = Pattern::pattern(empty_subject(), expected_lowered);
+    assert_eq!(mapped, expected);
+}
+
 fn subject(identity: &str) -> Subject {
     Subject {
         identity: Symbol(identity.to_string()),
@@ -126,4 +170,16 @@ fn subject(identity: &str) -> Subject {
 
 fn span() -> gram_codec::cst::SourceSpan {
     gram_codec::cst::SourceSpan { start: 0, end: 0 }
+}
+
+fn lower_value(node: &SyntaxNode) -> Subject {
+    node.subject.clone().unwrap_or_else(empty_subject)
+}
+
+fn empty_subject() -> Subject {
+    Subject {
+        identity: Symbol(String::new()),
+        labels: HashSet::new(),
+        properties: HashMap::new(),
+    }
 }

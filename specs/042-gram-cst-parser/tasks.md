@@ -155,8 +155,8 @@ byte-accuracy sweep and a duplicate-identity lint simulation.
 
 ### Tests
 
-- [ ] T042 [US3] Extend `crates/gram-codec/tests/cst/parse_tests.rs`: for each named node in a parsed tree, assert `input[span.start..span.end]` is non-empty and matches the source fragment; cover identifiers, arrow tokens, annotation keys, and comment text
-- [ ] T043 [US3] Write a diagnostic demonstration test in `crates/gram-codec/tests/cst/parse_tests.rs`: given `"(alice) (alice)"`, parse with `parse_gram_cst`, collect all `SyntaxKind::Node` nodes whose `subject.identity == "alice"`, assert exactly two found with non-overlapping spans
+- [X] T042 [US3] Extend `crates/gram-codec/tests/cst/parse_tests.rs`: for each named node in a parsed tree, assert `input[span.start..span.end]` is non-empty and matches the source fragment; cover identifiers, arrow tokens, annotation keys, and comment text
+- [X] T043 [US3] Write a diagnostic demonstration test in `crates/gram-codec/tests/cst/parse_tests.rs`: given `"(alice) (alice)"`, parse with `parse_gram_cst`, collect all `SyntaxKind::Node` nodes whose `subject.identity == "alice"`, assert exactly two found with non-overlapping spans
 
 **Checkpoint**: Span data confirmed usable for diagnostic tooling.
 
@@ -171,8 +171,8 @@ work, and `lower` is expressible as a `Pattern::map`-style transformation.
 
 ### Tests
 
-- [ ] T044 [US4] Write traversal tests in `crates/gram-codec/tests/cst/lowering_tests.rs`: call `pattern.fold(0, |acc, _| acc + 1)` and assert the count; call `pattern.map(|n| n.kind.clone())` and assert the returned `Pattern<SyntaxKind>` structure is correct
-- [ ] T045 [US4] Write a map-style lowering test in `crates/gram-codec/tests/cst/lowering_tests.rs`: implement a local `lower_value(node: SyntaxNode) -> Subject`, call `tree.map(lower_value)`, assert the result type is `Pattern<Subject>` and its structure matches `lower(tree)` — demonstrating lowering is a value-level map
+- [X] T044 [US4] Write traversal tests in `crates/gram-codec/tests/cst/lowering_tests.rs`: call `pattern.fold(0, |acc, _| acc + 1)` and assert the count; call `pattern.map(|n| n.kind.clone())` and assert the returned `Pattern<SyntaxKind>` structure is correct
+- [X] T045 [US4] Write a map-style lowering test in `crates/gram-codec/tests/cst/lowering_tests.rs`: implement a local `lower_value(node: SyntaxNode) -> Subject`, call `tree.map(lower_value)`, assert the result type is `Pattern<Subject>` and its structure matches `lower(tree)` — demonstrating lowering is a value-level map
 
 **Checkpoint**: All four user stories fully verified.
 
@@ -180,12 +180,12 @@ work, and `lower` is expressible as a `Pattern::map`-style transformation.
 
 ## Phase 7: Polish & Cross-Cutting Concerns
 
-- [ ] T046 [P] Write `examples/rust/cst_parse.rs`: parse `"// greeting\n(alice)->(bob)"`, print document tree showing kinds and spans, lower to `Vec<Pattern<Subject>>`; add `[[example]] name = "cst_parse" required-features = ["cst"]` to `crates/gram-codec/Cargo.toml`
-- [ ] T047 [P] Run `cargo clippy -p relateby-gram --features cst -- -D warnings` and resolve all warnings in `src/cst/`
-- [ ] T048 [P] Run `cargo fmt --all -- --check` and fix any formatting in `src/cst/` and `tests/cst/`
-- [ ] T049 Run `cargo test -p relateby-gram` (without `--features cst`) and confirm all tests pass including `test_corpus_conformance` at 100% — no regressions
-- [ ] T050 Run `cargo test -p relateby-gram --features cst` and confirm all CST tests pass
-- [ ] T051 Run `./scripts/ci-local.sh` to validate the full CI pipeline
+- [X] T046 [P] Write `examples/rust/cst_parse.rs`: parse `"// greeting\n(alice)->(bob)"`, print document tree showing kinds and spans, lower to `Vec<Pattern<Subject>>`; add `[[example]] name = "cst_parse" required-features = ["cst"]` to `crates/gram-codec/Cargo.toml`
+- [X] T047 [P] Run `cargo clippy -p relateby-gram --features cst -- -D warnings` and resolve all warnings in `src/cst/`
+- [X] T048 [P] Run `cargo fmt --all -- --check` and fix any formatting in `src/cst/` and `tests/cst/`
+- [X] T049 Run `cargo test -p relateby-gram` (without `--features cst`) and confirm all tests pass including `test_corpus_conformance` at 100% — no regressions
+- [X] T050 Run `cargo test -p relateby-gram --features cst` and confirm all CST tests pass
+- [X] T051 Run `./scripts/ci-local.sh` to validate the full CI pipeline
 
 ---
 

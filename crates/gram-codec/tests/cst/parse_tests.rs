@@ -1,5 +1,5 @@
-use gram_codec::cst::{Annotation, ArrowKind, SyntaxKind};
-use gram_codec::parse_gram_cst;
+use gram_codec::cst::{Annotation, ArrowKind, SyntaxKind, SyntaxNode};
+use gram_codec::{parse_gram_cst, Pattern};
 
 #[test]
 fn parse_reproduces_spans_for_top_level_constructs() {
@@ -100,5 +100,107 @@ fn parse_preserves_identified_and_property_annotations() {
             assert_eq!(value, &gram_codec::Value::String("a".to_string()));
         }
         other => panic!("expected property annotation, got {other:?}"),
+    }
+}
+
+#[test]
+fn parse_spans_cover_named_nodes_for_diagnostics() {
+    let input =
+        "// note\n@@meta:Doc @desc(\"route\") [team | (alice), (bob)-->(carol)]\n(commentary)";
+    let result = parse_gram_cst(input);
+
+    assert!(result.is_valid());
+
+    let mut nodes = Vec::new();
+    collect_nodes(&result.tree, &mut nodes);
+    assert!(!nodes.is_empty());
+
+    for node in &nodes {
+        let span = &node.value.span;
+        assert!(span.start <= span.end, "invalid span ordering: {span:?}");
+        assert!(span.end <= input.len(), "span past end of input: {span:?}");
+
+        let fragment = &input[span.start..span.end];
+        assert!(
+            !fragment.is_empty(),
+            "expected non-empty fragment for {:?}",
+            node.value.kind
+        );
+
+        if let Some(subject) = &node.value.subject {
+            if !subject.identity.0.is_empty() {
+                assert!(
+                    fragment.contains(&subject.identity.0),
+                    "fragment '{fragment}' should contain identifier '{}'",
+                    subject.identity.0
+                );
+            }
+        }
+
+        match &node.value.kind {
+            SyntaxKind::Relationship(ArrowKind::Right) => assert!(fragment.contains("-->")),
+            SyntaxKind::Relationship(ArrowKind::Left) => assert!(fragment.contains("<--")),
+            SyntaxKind::Relationship(ArrowKind::Bidirectional) => {
+                assert!(fragment.contains("<-->"))
+            }
+            SyntaxKind::Relationship(ArrowKind::Undirected) => assert!(fragment.contains("--")),
+            SyntaxKind::Annotated => {
+                assert!(fragment.contains("@@meta:Doc"));
+                assert!(fragment.contains("@desc(\"route\")"));
+            }
+            SyntaxKind::Comment => {
+                assert_eq!(node.value.text.as_deref(), Some(fragment));
+                assert!(fragment.contains("// note"));
+            }
+            _ => {}
+        }
+    }
+}
+
+#[test]
+fn parse_duplicate_identity_demo_returns_two_non_overlapping_spans() {
+    let input = "(alice) (alice)";
+    let result = parse_gram_cst(input);
+
+    assert!(result.is_valid());
+
+    let mut matches = Vec::new();
+    collect_matching_nodes(&result.tree, "alice", &mut matches);
+    assert_eq!(matches.len(), 2);
+
+    matches.sort_by_key(|span| span.start);
+    assert_eq!(&input[matches[0].start..matches[0].end], "(alice)");
+    assert_eq!(&input[matches[1].start..matches[1].end], "(alice)");
+    assert!(
+        matches[0].end <= matches[1].start,
+        "duplicate identity spans should not overlap: {:?}",
+        matches
+    );
+}
+
+fn collect_nodes<'a>(node: &'a Pattern<SyntaxNode>, out: &mut Vec<&'a Pattern<SyntaxNode>>) {
+    out.push(node);
+    for child in &node.elements {
+        collect_nodes(child, out);
+    }
+}
+
+fn collect_matching_nodes(
+    node: &Pattern<SyntaxNode>,
+    identity: &str,
+    out: &mut Vec<gram_codec::cst::SourceSpan>,
+) {
+    if matches!(node.value.kind, SyntaxKind::Node)
+        && node
+            .value
+            .subject
+            .as_ref()
+            .is_some_and(|subject| subject.identity.0 == identity)
+    {
+        out.push(node.value.span.clone());
+    }
+
+    for child in &node.elements {
+        collect_matching_nodes(child, identity, out);
     }
 }
