@@ -52,6 +52,9 @@ mod value;
 // New nom-based parser module (under development)
 mod parser;
 
+#[cfg(feature = "cst")]
+pub mod cst;
+
 // Optional platform-specific modules
 #[cfg(feature = "wasm")]
 mod wasm;
@@ -64,6 +67,8 @@ pub use ast::{AstPattern, AstSubject};
 pub use error::{Location, SerializeError};
 pub use json::{gram_parse_to_json, gram_stringify_from_json, gram_validate_to_json};
 // Use the new nom-based ParseError from the parser module
+#[cfg(feature = "cst")]
+pub use cst::{lower, parse_gram_cst, CstParseResult};
 pub use parser::ParseError;
 pub use serializer::{to_gram, to_gram_pattern, to_gram_with_header};
 pub use value::Value;

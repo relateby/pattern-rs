@@ -86,12 +86,29 @@ pub fn subject_pattern(input: &str) -> ParseResult<'_, Pattern<Subject>> {
 /// Parse an annotated pattern: @key(value) pattern
 fn annotated_pattern(input: &str) -> ParseResult<'_, Pattern<Subject>> {
     map(
-        pair(delimited(ws, annotation::annotation, ws), gram_pattern),
-        |(_ann, pattern)| {
-            // For now, annotations are not stored in the Pattern structure
-            // They would need to be added to the Pattern type in pattern-core
-            // TODO: Handle annotation metadata properly
-            pattern
+        pair(delimited(ws, annotation::annotations, ws), gram_pattern),
+        |((identified, annotations), pattern)| {
+            let mut subject = Subject {
+                identity: pattern_core::Symbol(String::new()),
+                labels: std::collections::HashSet::new(),
+                properties: std::collections::HashMap::new(),
+            };
+
+            if let Some(identified) = identified {
+                if let Some(identity) = identified.identity {
+                    subject.identity = pattern_core::Symbol(identity);
+                }
+
+                for label in identified.labels {
+                    subject.labels.insert(label);
+                }
+            }
+
+            for annotation in annotations {
+                subject.properties.insert(annotation.key, annotation.value);
+            }
+
+            Pattern::pattern(subject, vec![pattern])
         },
     )(input)
 }

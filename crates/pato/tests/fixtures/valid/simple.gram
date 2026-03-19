@@ -1,0 +1,4 @@
+{ kind: "rule" }
+(alice:Person {name: "Alice"})
+(bob:Person {name: "Bob"})
+(alice)-[:KNOWS]->(bob)

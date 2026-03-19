@@ -40,10 +40,29 @@ pub fn validate_patterns(patterns: &[Pattern<Subject>], expected_sexp: &str) -> 
 
 /// Count the number of top-level gram_pattern elements in S-expression
 fn count_gram_patterns(sexp: &str) -> usize {
-    // Simple count of (gram_pattern occurrences at the start of lines
-    sexp.lines()
-        .filter(|line| line.trim().starts_with("(gram_pattern"))
-        .count()
+    let root_record_count = usize::from(sexp.contains("root: (record"));
+    let top_level_children = sexp
+        .lines()
+        .filter_map(|line| {
+            line.strip_prefix("  (")
+                .and_then(|rest| rest.split_whitespace().next())
+                .map(|kind| kind.trim_end_matches(')'))
+        })
+        .filter(|kind| {
+            matches!(
+                *kind,
+                "node_pattern" | "relationship_pattern" | "subject_pattern" | "annotated_pattern"
+            )
+        })
+        .count();
+
+    let total = root_record_count + top_level_children;
+
+    if total <= 1 {
+        1
+    } else {
+        total
+    }
 }
 
 /// Validate a single pattern against the expected S-expression
@@ -63,7 +82,6 @@ fn validate_single_pattern(
         // Check what the expected S-expression says
         let expects_node = expected_sexp.contains("node_pattern");
         let expects_subject = expected_sexp.contains("subject_pattern");
-        let expects_record_root = expected_sexp.contains("root: (record");
         let expects_record = expected_sexp.contains("(record");
 
         // Standalone record or file-level pattern with record root
@@ -90,9 +108,6 @@ fn validate_single_pattern(
     // Relationship or path pattern OR file-level pattern with multiple elements
     else if element_count == 2 {
         // Check if this is a simple relationship (both elements atomic)
-        let is_simple_relationship =
-            pattern.elements[0].elements.is_empty() && pattern.elements[1].elements.is_empty();
-
         // Check if this is a path (one element is itself a relationship with 2 elements)
         let is_path =
             pattern.elements[0].elements.len() == 2 || pattern.elements[1].elements.len() == 2;
@@ -252,5 +267,23 @@ mod tests {
         let result = validate_patterns(&[pattern], sexp);
         assert!(result.is_err());
         assert!(result.unwrap_err().contains("Pattern count mismatch"));
+    }
+
+    #[test]
+    fn test_count_gram_patterns_for_multi_pattern_document() {
+        let sexp = "(gram_pattern\n  (node_pattern)\n  (relationship_pattern)\n  (comment))";
+        assert_eq!(count_gram_patterns(sexp), 2);
+    }
+
+    #[test]
+    fn test_count_gram_patterns_for_record_root_only() {
+        let sexp = "(gram_pattern\n  root: (record\n    (record_property\n      key: (symbol))))";
+        assert_eq!(count_gram_patterns(sexp), 1);
+    }
+
+    #[test]
+    fn test_count_gram_patterns_for_record_root_and_node() {
+        let sexp = "(gram_pattern\n  root: (record)\n  (node_pattern))";
+        assert_eq!(count_gram_patterns(sexp), 2);
     }
 }

@@ -130,7 +130,25 @@ fn test_serialize_nested_subject_pattern() {
 
     let result = to_gram_pattern(&outer);
     assert!(result.is_ok());
-    assert_eq!(result.unwrap(), "[outer | [inner | (leaf)]]");
+    assert_eq!(result.unwrap(), "@@outer @@inner (leaf)");
+}
+
+#[test]
+fn test_serialize_annotation_with_identity_and_properties() {
+    let mut annotation_subject = subject_with_id("p");
+    annotation_subject.labels.insert("L".to_string());
+    annotation_subject.properties.insert(
+        "k".to_string(),
+        pattern_core::Value::VString("v".to_string()),
+    );
+    let pattern = Pattern::pattern(
+        annotation_subject,
+        vec![Pattern::point(subject_with_id("a"))],
+    );
+
+    let result = to_gram_pattern(&pattern);
+    assert!(result.is_ok());
+    assert_eq!(result.unwrap(), "@@p:L @k(\"v\") (a)");
 }
 
 #[test]

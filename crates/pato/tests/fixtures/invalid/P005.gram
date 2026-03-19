@@ -1,0 +1,3 @@
+(person:Person)
+(team:Team)
+(person)-[:MEMBER_OF]->(persn)

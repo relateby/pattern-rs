@@ -21,6 +21,8 @@ nom = "7"
 serde = { version = "1.0", features = ["derive"] }
 serde_json = "1.0"
 thiserror.workspace = true
+tree-sitter = { version = "0.25", optional = true }
+tree-sitter-gram = { version = "0.3", path = "../../external/tree-sitter-gram", optional = true }
 
 # WASM support
 wasm-bindgen = { version = "0.2", optional = true }
@@ -38,6 +40,7 @@ proptest = "1.0"
 default = []
 wasm = ["wasm-bindgen", "js-sys"]
 python = ["pyo3"]
+cst = ["dep:tree-sitter", "dep:tree-sitter-gram"]
 
 [lib]
 name = "gram_codec"
@@ -56,3 +59,8 @@ path = "examples/basic_usage.rs"
 [[example]]
 name = "advanced_usage"
 path = "examples/advanced_usage.rs"
+
+[[example]]
+name = "cst_parse"
+path = "../../examples/rust/cst_parse.rs"
+required-features = ["cst"]

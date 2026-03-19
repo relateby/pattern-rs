@@ -31,6 +31,14 @@ fn assert_round_trip_equivalent(input: &str) {
     );
 }
 
+fn assert_canonical_output(input: &str, expected: &str) {
+    let patterns =
+        parse_gram(input).unwrap_or_else(|e| panic!("Parse failed for '{}': {}", input, e));
+    let actual = to_gram(&patterns)
+        .unwrap_or_else(|e| panic!("Serialization failed for '{}': {}", input, e));
+    assert_eq!(actual, expected);
+}
+
 #[test]
 fn test_round_trip_simple_node() {
     assert_round_trip_equivalent("(hello)");
@@ -88,7 +96,20 @@ fn test_round_trip_annotation_simple() {
     assert_round_trip_equivalent("@deprecated (old_node)");
 }
 
-// TODO: Add test for annotations with values when parser implements `@key(value)` syntax
+#[test]
+fn test_round_trip_annotation_with_identity_and_value() {
+    assert_round_trip_equivalent("@@p:L @k(\"v\") (a)");
+}
+
+#[test]
+fn test_annotation_output_prefers_annotated_form() {
+    assert_canonical_output("[p:L {k: \"v\"} | (a)]", "@@p:L @k(\"v\") (a)");
+}
+
+#[test]
+fn test_bare_annotation_canonicalizes_to_true() {
+    assert_canonical_output("@deprecated (old_node)", "@deprecated(true) (old_node)");
+}
 
 #[test]
 fn test_round_trip_multiple_patterns() {

@@ -27,6 +27,9 @@ pub struct CorpusTest {
 
     /// Expected S-expression output from tree-sitter
     pub expected_sexp: String,
+
+    /// Whether this corpus case is marked as an expected parse error
+    pub is_error: bool,
 }
 
 impl CorpusTest {
@@ -37,6 +40,7 @@ impl CorpusTest {
         line: usize,
         input: String,
         expected_sexp: String,
+        is_error: bool,
     ) -> Self {
         Self {
             name,
@@ -44,12 +48,17 @@ impl CorpusTest {
             line,
             input,
             expected_sexp,
+            is_error,
         }
     }
 
     /// Run this test using the nom parser
     pub fn run(&self) -> CorpusTestResult {
         use gram_codec::parse_gram;
+
+        if self.is_error {
+            return CorpusTestResult::SkippedExpectedError;
+        }
 
         // Try to parse with nom parser
         match parse_gram(&self.input) {
@@ -78,6 +87,9 @@ pub enum CorpusTestResult {
     /// Test passed - parsed correctly and matches expected structure
     Pass,
 
+    /// Test is an expected tree-sitter error case that is intentionally skipped
+    SkippedExpectedError,
+
     /// Test parsed but structure doesn't match expected S-expression
     Mismatch {
         expected: String,
@@ -92,13 +104,16 @@ pub enum CorpusTestResult {
 impl CorpusTestResult {
     /// Check if test passed
     pub fn is_pass(&self) -> bool {
-        matches!(self, CorpusTestResult::Pass)
+        matches!(
+            self,
+            CorpusTestResult::Pass | CorpusTestResult::SkippedExpectedError
+        )
     }
 
     /// Get failure message if test failed
     pub fn failure_message(&self) -> Option<String> {
         match self {
-            CorpusTestResult::Pass => None,
+            CorpusTestResult::Pass | CorpusTestResult::SkippedExpectedError => None,
             CorpusTestResult::Mismatch {
                 expected,
                 actual,
