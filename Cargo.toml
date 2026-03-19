@@ -6,6 +6,7 @@ members = [
     "adapters/wasm/pattern-wasm",
     "benches",
 ]
+exclude = ["external/tree-sitter-gram"]
 resolver = "2"
 
 [workspace.package]

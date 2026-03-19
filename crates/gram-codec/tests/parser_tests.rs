@@ -1,6 +1,7 @@
 //! Parser integration tests
 
 use gram_codec::{parse_gram_notation, parse_single_pattern};
+use pattern_core::Value;
 
 #[test]
 fn test_parse_simple_node() {
@@ -135,8 +136,12 @@ fn test_parse_annotated_pattern_with_symbol_value() {
     assert!(result.is_ok(), "Failed to parse: {:?}", result.err());
     let patterns = result.unwrap();
     assert_eq!(patterns.len(), 1);
-    // Currently, annotations are parsed but not stored (TODO in parser)
-    // The annotated pattern is returned as-is
+    assert_eq!(patterns[0].elements.len(), 1);
+    assert_eq!(
+        patterns[0].value.properties.get("type"),
+        Some(&Value::VString("node".to_string()))
+    );
+    assert_eq!(patterns[0].elements[0].value.identity.0, "a");
 }
 
 #[test]
@@ -145,16 +150,28 @@ fn test_parse_annotated_pattern_with_integer_value() {
     assert!(result.is_ok(), "Failed to parse: {:?}", result.err());
     let patterns = result.unwrap();
     assert_eq!(patterns.len(), 1);
-    // Currently, annotations are parsed but not stored (TODO in parser)
+    assert_eq!(
+        patterns[0].value.properties.get("depth"),
+        Some(&Value::VInteger(2))
+    );
+    assert_eq!(patterns[0].elements[0].value.identity.0, "a");
 }
 
 #[test]
 fn test_parse_multiple_annotations() {
-    // Note: This test will work once tree-sitter-gram supports multiple annotations
-    // For now, we test that parsing doesn't fail
-    let result = parse_gram_notation("@type(node) (a)");
+    let result = parse_gram_notation("@@p:L @type(node) @deprecated (a)");
     assert!(result.is_ok(), "Failed to parse: {:?}", result.err());
     let patterns = result.unwrap();
     assert_eq!(patterns.len(), 1);
-    // Currently, annotations are parsed but not stored (TODO in parser)
+    assert_eq!(patterns[0].value.identity.0, "p");
+    assert!(patterns[0].value.labels.contains("L"));
+    assert_eq!(
+        patterns[0].value.properties.get("type"),
+        Some(&Value::VString("node".to_string()))
+    );
+    assert_eq!(
+        patterns[0].value.properties.get("deprecated"),
+        Some(&Value::VBoolean(true))
+    );
+    assert_eq!(patterns[0].elements[0].value.identity.0, "a");
 }

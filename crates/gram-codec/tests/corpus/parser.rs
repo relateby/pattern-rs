@@ -82,7 +82,14 @@ fn parse_single_test(
     let test_name = lines[i].trim().to_string();
     i += 1;
 
-    // Line 2: ==================
+    let is_error = if i < lines.len() && lines[i].trim() == ":error" {
+        i += 1;
+        true
+    } else {
+        false
+    };
+
+    // Closing header: ==================
     if i >= lines.len() || !lines[i].starts_with("==================") {
         return Err(format!("Expected closing header at line {}", i + 1));
     }
@@ -121,11 +128,9 @@ fn parse_single_test(
 
     // Collect expected S-expression lines
     let mut sexp_lines = Vec::new();
-    let mut found_next_test = false;
 
     while i < lines.len() {
         if lines[i].starts_with("==================") {
-            found_next_test = true;
             break;
         }
         sexp_lines.push(lines[i]);
@@ -143,7 +148,7 @@ fn parse_single_test(
         return Err(format!("Test '{}' has empty input", test_name));
     }
 
-    if expected_sexp.is_empty() {
+    if expected_sexp.is_empty() && !is_error {
         return Err(format!("Test '{}' has empty expected output", test_name));
     }
 
@@ -153,6 +158,7 @@ fn parse_single_test(
         start_line + 1, // 1-indexed for humans
         input,
         expected_sexp,
+        is_error,
     );
 
     Ok((test, i))
@@ -214,5 +220,44 @@ Test Two
         assert_eq!(tests.len(), 2);
         assert_eq!(tests[0].name, "Test One");
         assert_eq!(tests[1].name, "Test Two");
+    }
+
+    #[test]
+    fn test_parse_error_marked_test() {
+        let content = r#"==================
+Expected Error
+:error
+==================
+
+@@bad (a)
+
+---
+
+(gram_pattern
+  (ERROR))
+"#;
+
+        let tests = parse_corpus_content(content, &PathBuf::from("test.txt")).unwrap();
+        assert_eq!(tests.len(), 1);
+        assert_eq!(tests[0].name, "Expected Error");
+        assert!(tests[0].is_error);
+    }
+
+    #[test]
+    fn test_parse_error_marked_test_without_expected_output() {
+        let content = r#"==================
+Expected Error
+:error
+==================
+
+@@bad (a)
+
+---
+"#;
+
+        let tests = parse_corpus_content(content, &PathBuf::from("test.txt")).unwrap();
+        assert_eq!(tests.len(), 1);
+        assert!(tests[0].is_error);
+        assert!(tests[0].expected_sexp.is_empty());
     }
 }

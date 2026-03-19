@@ -152,14 +152,12 @@ fn is_relationship_pattern(pattern: &Pattern<Subject>) -> bool {
 ///
 /// True if:
 /// - Exactly 1 element
-/// - Subject has empty identity (anonymous)
-/// - Subject has no labels
-/// - Subject has properties (the annotations)
+/// - Subject carries any annotation metadata
 fn is_annotation_pattern(pattern: &Pattern<Subject>) -> bool {
     pattern.elements.len() == 1
-        && pattern.value.identity.0.is_empty()
-        && pattern.value.labels.is_empty()
-        && !pattern.value.properties.is_empty()
+        && (!pattern.value.identity.0.is_empty()
+            || !pattern.value.labels.is_empty()
+            || !pattern.value.properties.is_empty())
 }
 
 /// Serialize as node pattern: `(subject)`
@@ -209,7 +207,7 @@ fn serialize_subject_pattern(pattern: &Pattern<Subject>) -> Result<String, Seria
     Ok(format!("[{} | {}]", subject_str, elements_str))
 }
 
-/// Serialize as annotation pattern: `@key(value) element`
+/// Serialize as annotation pattern: `@@id:Label @key(value) element`
 fn serialize_annotation_pattern(pattern: &Pattern<Subject>) -> Result<String, SerializeError> {
     if pattern.elements.len() != 1 {
         return Err(SerializeError::invalid_structure(
@@ -217,21 +215,40 @@ fn serialize_annotation_pattern(pattern: &Pattern<Subject>) -> Result<String, Se
         ));
     }
 
-    // Serialize annotations from properties
-    let mut annotations: Vec<String> = pattern
+    let mut annotations = Vec::new();
+
+    if !pattern.value.identity.0.is_empty() || !pattern.value.labels.is_empty() {
+        let mut identified = String::from("@@");
+
+        if !pattern.value.identity.0.is_empty() {
+            identified.push_str(&quote_identifier(&pattern.value.identity.0));
+        }
+
+        if !pattern.value.labels.is_empty() {
+            let mut labels: Vec<_> = pattern.value.labels.iter().collect();
+            labels.sort();
+            for label in labels {
+                identified.push(':');
+                identified.push_str(&quote_identifier(label));
+            }
+        }
+
+        annotations.push(identified);
+    }
+
+    let mut property_annotations: Vec<String> = pattern
         .value
         .properties
         .iter()
         .map(|(key, value)| {
-            // Convert pattern_core::Value to gram_codec::Value
             let gram_value = value_from_pattern_value(value)?;
             let value_str = gram_value.to_gram_notation();
             Ok(format!("@{}({})", quote_identifier(key), value_str))
         })
         .collect::<Result<Vec<_>, SerializeError>>()?;
 
-    // Sort for consistent output
-    annotations.sort();
+    property_annotations.sort();
+    annotations.extend(property_annotations);
 
     let element_str = to_gram_pattern(&pattern.elements[0])?;
 

@@ -26,34 +26,34 @@ tree-sitter-gram v0.3.4. Three independent root causes; each has its own sub-gro
 
 ### 0A — Corpus runner: `:error` test handling
 
-- [ ] T001 Update `crates/gram-codec/tests/corpus/parser.rs`: after reading the test name line, check whether the next line is `:error` (exact match after trim); if so, read and discard it before expecting the closing `==================` separator; record a boolean `is_error_test` on `CorpusTest`
-- [ ] T002 Add `is_error: bool` field to `CorpusTest` in `crates/gram-codec/tests/corpus/mod.rs` and update `CorpusTest::new` to accept it; update all call sites
-- [ ] T003 Update `CorpusTest::run` in `crates/gram-codec/tests/corpus/mod.rs`: if `self.is_error`, return a new `CorpusTestResult::SkippedExpectedError` variant rather than running the nom parser
-- [ ] T004 Update `CorpusTestResult` in `crates/gram-codec/tests/corpus/mod.rs`: add `SkippedExpectedError` variant; update `is_pass()` to return `true` for this variant (skipped-error is not a failure); update `failure_message()` to return `None`
-- [ ] T005 Update `CorpusTestReport::print_summary` in `crates/gram-codec/tests/corpus/runner.rs` to show a "Skipped (expected error)" count alongside passed/failed
+- [X] T001 Update `crates/gram-codec/tests/corpus/parser.rs`: after reading the test name line, check whether the next line is `:error` (exact match after trim); if so, read and discard it before expecting the closing `==================` separator; record a boolean `is_error_test` on `CorpusTest`
+- [X] T002 Add `is_error: bool` field to `CorpusTest` in `crates/gram-codec/tests/corpus/mod.rs` and update `CorpusTest::new` to accept it; update all call sites
+- [X] T003 Update `CorpusTest::run` in `crates/gram-codec/tests/corpus/mod.rs`: if `self.is_error`, return a new `CorpusTestResult::SkippedExpectedError` variant rather than running the nom parser
+- [X] T004 Update `CorpusTestResult` in `crates/gram-codec/tests/corpus/mod.rs`: add `SkippedExpectedError` variant; update `is_pass()` to return `true` for this variant (skipped-error is not a failure); update `failure_message()` to return `None`
+- [X] T005 Update `CorpusTestReport::print_summary` in `crates/gram-codec/tests/corpus/runner.rs` to show a "Skipped (expected error)" count alongside passed/failed
 
 **Checkpoint 0A**: Running the corpus test suite produces no "Skipping test" warnings and the skipped-error count matches the number of `:error` tests in the corpus files.
 
 ### 0B — Corpus validator: multi-pattern document count fix
 
-- [ ] T006 Replace `count_gram_patterns` in `crates/gram-codec/tests/corpus/validator.rs`: instead of counting `(gram_pattern` occurrences, count the number of direct named-pattern children of the single outer `gram_pattern` root — specifically, count lines that match `^\s{2}\(` (two-space indent, opening paren) to identify top-level children, filtering for known pattern node types (`node_pattern`, `relationship_pattern`, `subject_pattern`, `annotated_pattern`, `comment`); return 1 if only one such child exists, otherwise return the count
-- [ ] T007 Verify the fix against each of the 9 currently-failing multi-pattern tests by running `cargo test -p relateby-gram test_corpus_conformance -- --nocapture` and confirming `empty_nodes.txt`, `empty_relationships.txt`, `identifiers.txt`, `records.txt`, `comments.txt`, and `graph_global.txt` failures are resolved
+- [X] T006 Replace `count_gram_patterns` in `crates/gram-codec/tests/corpus/validator.rs`: instead of counting `(gram_pattern` occurrences, count the number of direct named-pattern children of the single outer `gram_pattern` root — specifically, count lines that match `^\s{2}\(` (two-space indent, opening paren) to identify top-level children, filtering for known pattern node types (`node_pattern`, `relationship_pattern`, `subject_pattern`, `annotated_pattern`, `comment`); return 1 if only one such child exists, otherwise return the count
+- [X] T007 Verify the fix against each of the 9 currently-failing multi-pattern tests by running `cargo test -p relateby-gram test_corpus_conformance -- --nocapture` and confirming `empty_nodes.txt`, `empty_relationships.txt`, `identifiers.txt`, `records.txt`, `comments.txt`, and `graph_global.txt` failures are resolved
 
 **Checkpoint 0B**: 9 multi-pattern failures resolved; corpus pass rate ≥ 96.5%.
 
 ### 0C — Nom parser: `@@` identified annotation support
 
-- [ ] T008 Add `identified_annotation` parser function to `crates/gram-codec/src/parser/annotation.rs`: parse `@@` (two `@` chars using `tag("@@")`), then parse an optional identifier (`opt(identifier)`), then parse optional labels (`opt(many1(preceded(alt((char(':'), tag("::"))), identifier)))`); return a new `IdentifiedAnnotation { identity: Option<String>, labels: Vec<String> }` struct
-- [ ] T009 Update the `annotations` combinator in `crates/gram-codec/src/parser/annotation.rs`: replace `repeat1(annotation)` with a choice that accepts either (a) one `identified_annotation` optionally followed by zero or more `property_annotation` entries, or (b) one or more `property_annotation` entries — mirroring the v0.3.4 grammar's `choice(seq(identified_annotation, repeat(property_annotation)), repeat1(property_annotation))`; rename the old `annotation` function to `property_annotation` for clarity
-- [ ] T010 Update `annotated_pattern` in `crates/gram-codec/src/parser/mod.rs` to call the updated `annotations` combinator (rename reference from `annotation::annotation` to `annotation::annotations` or equivalent); annotation content continues to be dropped when constructing `Pattern<Subject>` (the pre-existing TODO is not resolved in this phase)
-- [ ] T011 Verify the 5 `extended_annotations.txt` failures are resolved: run `cargo test -p relateby-gram test_corpus_conformance -- --nocapture` and confirm `@@p (a)`, `@@r1 (a)-[r]->(b)`, `@@:L (a)`, `@@::Label (a)`, and `@@p:L (a)` all pass
+- [X] T008 Add `identified_annotation` parser function to `crates/gram-codec/src/parser/annotation.rs`: parse `@@` (two `@` chars using `tag("@@")`), then parse an optional identifier (`opt(identifier)`), then parse optional labels (`opt(many1(preceded(alt((char(':'), tag("::"))), identifier)))`); return a new `IdentifiedAnnotation { identity: Option<String>, labels: Vec<String> }` struct
+- [X] T009 Update the `annotations` combinator in `crates/gram-codec/src/parser/annotation.rs`: replace `repeat1(annotation)` with a choice that accepts either (a) one `identified_annotation` optionally followed by zero or more `property_annotation` entries, or (b) one or more `property_annotation` entries — mirroring the v0.3.4 grammar's `choice(seq(identified_annotation, repeat(property_annotation)), repeat1(property_annotation))`; rename the old `annotation` function to `property_annotation` for clarity
+- [X] T010 Update `annotated_pattern` in `crates/gram-codec/src/parser/mod.rs` to call the updated `annotations` combinator (rename reference from `annotation::annotation` to `annotation::annotations` or equivalent); annotation content continues to be dropped when constructing `Pattern<Subject>` (the pre-existing TODO is not resolved in this phase)
+- [X] T011 Verify the 5 `extended_annotations.txt` failures are resolved: run `cargo test -p relateby-gram test_corpus_conformance -- --nocapture` and confirm `@@p (a)`, `@@r1 (a)-[r]->(b)`, `@@:L (a)`, `@@::Label (a)`, and `@@p:L (a)` all pass
 
 **Checkpoint 0C**: All 5 `@@` failures resolved; corpus pass rate reaches 100% of runnable tests.
 
 ### Phase 0 Final Validation
 
-- [ ] T012 Run `cargo test -p relateby-gram` (all tests, no feature flags) and confirm zero regressions — existing non-corpus tests must all continue to pass
-- [ ] T013 Run `cargo clippy -p relateby-gram -- -D warnings` and resolve any new warnings introduced in Phase 0 changes
+- [X] T012 Run `cargo test -p relateby-gram` (all tests, no feature flags) and confirm zero regressions — existing non-corpus tests must all continue to pass
+- [X] T013 Run `cargo clippy -p relateby-gram -- -D warnings` and resolve any new warnings introduced in Phase 0 changes
 
 **Phase 0 Complete**: `test_corpus_conformance` reports 100% of runnable tests passing (`:error` tests explicitly skipped), zero regressions in existing test suite.
 
@@ -63,11 +63,11 @@ tree-sitter-gram v0.3.4. Three independent root causes; each has its own sub-gro
 
 **Purpose**: Wire the `cst` Cargo feature and create the module skeleton. No logic implemented yet.
 
-- [ ] T014 Add `cst` feature to `crates/gram-codec/Cargo.toml` with `tree-sitter = { version = "0.25", optional = true }` and `tree-sitter-gram = { path = "../../external/tree-sitter-gram", optional = true }` under `[features] cst = ["dep:tree-sitter", "dep:tree-sitter-gram"]` and `[dependencies]`
-- [ ] T015 Create `crates/gram-codec/src/cst/` with stub files: `mod.rs`, `syntax_node.rs`, `parser.rs`, `lowering.rs` (each file contains only a module-level comment and no code yet)
-- [ ] T016 Add `#[cfg(feature = "cst")] pub mod cst;` to `crates/gram-codec/src/lib.rs` and a `#[cfg(feature = "cst")] pub use cst::{parse_gram_cst, lower, CstParseResult};` re-export stub
-- [ ] T017 [P] Create `crates/gram-codec/tests/cst/` with `mod.rs` (empty), `parse_tests.rs`, `lowering_tests.rs`, `comment_tests.rs`, `error_recovery_tests.rs` (each file contains only a `#[cfg(test)]` block with one `todo!()` placeholder test); wire into the integration test entry point
-- [ ] T018 Verify the feature-gated skeleton compiles cleanly: `cargo check -p relateby-gram --features cst`
+- [X] T014 Add `cst` feature to `crates/gram-codec/Cargo.toml` with `tree-sitter = { version = "0.25", optional = true }` and `tree-sitter-gram = { path = "../../external/tree-sitter-gram", optional = true }` under `[features] cst = ["dep:tree-sitter", "dep:tree-sitter-gram"]` and `[dependencies]`
+- [X] T015 Create `crates/gram-codec/src/cst/` with stub files: `mod.rs`, `syntax_node.rs`, `parser.rs`, `lowering.rs` (each file contains only a module-level comment and no code yet)
+- [X] T016 Add `#[cfg(feature = "cst")] pub mod cst;` to `crates/gram-codec/src/lib.rs` and a `#[cfg(feature = "cst")] pub use cst::{parse_gram_cst, lower, CstParseResult};` re-export stub
+- [X] T017 [P] Create `crates/gram-codec/tests/cst/` with `mod.rs` (empty), `parse_tests.rs`, `lowering_tests.rs`, `comment_tests.rs`, `error_recovery_tests.rs` (each file contains only a `#[cfg(test)]` block with one `todo!()` placeholder test); wire into the integration test entry point
+- [X] T018 Verify the feature-gated skeleton compiles cleanly: `cargo check -p relateby-gram --features cst`
 
 **Checkpoint**: `cargo check --features cst` passes — scaffolding is in place.
 
@@ -79,12 +79,12 @@ tree-sitter-gram v0.3.4. Three independent root causes; each has its own sub-gro
 
 **⚠️ CRITICAL**: No user story implementation can begin until this phase is complete.
 
-- [ ] T019 Implement `SourceSpan { start: usize, end: usize }` and `ArrowKind { Right, Left, Bidirectional, Undirected }` with derives `Clone, Debug, PartialEq, Eq` in `crates/gram-codec/src/cst/syntax_node.rs`
-- [ ] T020 Implement `SyntaxKind` enum (`Document`, `Node`, `Relationship(ArrowKind)`, `Subject`, `Annotated`, `Comment`) with derives `Clone, Debug, PartialEq, Eq` in `crates/gram-codec/src/cst/syntax_node.rs`
-- [ ] T021 Implement `Annotation` enum (`Property { key: String, value: Value }`, `Identified { identity: Option<Symbol>, labels: Vec<String> }`) with derives `Clone, Debug` in `crates/gram-codec/src/cst/syntax_node.rs`; import `Value` from `crate::Value` and `Symbol` from `pattern_core::Symbol`
-- [ ] T022 Implement `SyntaxNode { kind: SyntaxKind, subject: Option<Subject>, span: SourceSpan, annotations: Vec<Annotation>, text: Option<String> }` and `CstParseResult { tree: Pattern<SyntaxNode>, errors: Vec<SourceSpan> }` with `impl CstParseResult { pub fn is_valid(&self) -> bool }` in `crates/gram-codec/src/cst/syntax_node.rs`
-- [ ] T023 Export all types from `crates/gram-codec/src/cst/mod.rs`: `pub use syntax_node::{SourceSpan, ArrowKind, SyntaxKind, Annotation, SyntaxNode, CstParseResult};`
-- [ ] T024 Verify all type definitions compile and exports resolve: `cargo check -p relateby-gram --features cst`
+- [X] T019 Implement `SourceSpan { start: usize, end: usize }` and `ArrowKind { Right, Left, Bidirectional, Undirected }` with derives `Clone, Debug, PartialEq, Eq` in `crates/gram-codec/src/cst/syntax_node.rs`
+- [X] T020 Implement `SyntaxKind` enum (`Document`, `Node`, `Relationship(ArrowKind)`, `Subject`, `Annotated`, `Comment`) with derives `Clone, Debug, PartialEq, Eq` in `crates/gram-codec/src/cst/syntax_node.rs`
+- [X] T021 Implement `Annotation` enum (`Property { key: String, value: Value }`, `Identified { identity: Option<Symbol>, labels: Vec<String> }`) with derives `Clone, Debug` in `crates/gram-codec/src/cst/syntax_node.rs`; import `Value` from `crate::Value` and `Symbol` from `pattern_core::Symbol`
+- [X] T022 Implement `SyntaxNode { kind: SyntaxKind, subject: Option<Subject>, span: SourceSpan, annotations: Vec<Annotation>, text: Option<String> }` and `CstParseResult { tree: Pattern<SyntaxNode>, errors: Vec<SourceSpan> }` with `impl CstParseResult { pub fn is_valid(&self) -> bool }` in `crates/gram-codec/src/cst/syntax_node.rs`
+- [X] T023 Export all types from `crates/gram-codec/src/cst/mod.rs`: `pub use syntax_node::{SourceSpan, ArrowKind, SyntaxKind, Annotation, SyntaxNode, CstParseResult};`
+- [X] T024 Verify all type definitions compile and exports resolve: `cargo check -p relateby-gram --features cst`
 
 **Checkpoint**: All types compile and are re-exported — user story phases can now begin.
 
@@ -101,20 +101,20 @@ interleaved in source order.
 
 ### Implementation
 
-- [ ] T025 [US1] Implement `parse_gram_cst(input: &str) -> CstParseResult` skeleton in `crates/gram-codec/src/cst/parser.rs`: create tree-sitter `Parser`, call `parser.set_language(&tree_sitter_gram::LANGUAGE.into())`, call `parser.parse(input, None)`, assert root node kind is `"gram_pattern"`, return placeholder `CstParseResult`
-- [ ] T026 [US1] Implement document-root traversal in `crates/gram-codec/src/cst/parser.rs`: iterate named children of the `gram_pattern` root; dispatch each to the appropriate conversion function (stubs initially); collect `ERROR` node byte ranges into `CstParseResult.errors` via `node.is_error()` and `node.has_error()`
-- [ ] T027 [US1] Implement `node_pattern` → `Pattern<SyntaxNode>` in `crates/gram-codec/src/cst/parser.rs`: extract optional subject fields (identifier, labels, record) into `Subject`; set `SyntaxKind::Node`; populate `span`; return `Pattern::point(syntax_node)`
-- [ ] T028 [US1] Implement `relationship_pattern` → `Pattern<SyntaxNode>` in `crates/gram-codec/src/cst/parser.rs`: extract `left`, `kind`, `right` fields; map `kind.kind()` string to `ArrowKind`; extract edge subject from the arrow node's optional fields; return `Pattern { value: SyntaxNode { kind: Relationship(arrow), .. }, elements: [left_pat, right_pat] }`
-- [ ] T029 [US1] Implement `subject_pattern` → `Pattern<SyntaxNode>` in `crates/gram-codec/src/cst/parser.rs`: extract subject fields and `subject_pattern_elements` children; return `Pattern { value: SyntaxNode { kind: Subject, .. }, elements }`
-- [ ] T030 [US1] Implement annotation extraction helpers in `crates/gram-codec/src/cst/parser.rs`: `extract_property_annotation` (matches `"property_annotation"`, reads `key` and `value` fields); `extract_identified_annotation` (matches `"identified_annotation"`, reads optional `identifier` and `labels` fields); `extract_annotations(annotations_node) -> Vec<Annotation>` dispatches both
-- [ ] T031 [US1] Implement `annotated_pattern` → `Pattern<SyntaxNode>` in `crates/gram-codec/src/cst/parser.rs`: call `extract_annotations`, recurse into `elements` field, return `Pattern { value: SyntaxNode { kind: Annotated, annotations, .. }, elements: [inner] }`
-- [ ] T032 [US1] Implement `comment` → `Pattern<SyntaxNode>` in `crates/gram-codec/src/cst/parser.rs`: read `node.utf8_text(input.as_bytes())` as `text`; return `Pattern::point(SyntaxNode { kind: Comment, text: Some(comment_text), span, .. })`
+- [X] T025 [US1] Implement `parse_gram_cst(input: &str) -> CstParseResult` skeleton in `crates/gram-codec/src/cst/parser.rs`: create tree-sitter `Parser`, call `parser.set_language(&tree_sitter_gram::LANGUAGE.into())`, call `parser.parse(input, None)`, assert root node kind is `"gram_pattern"`, return placeholder `CstParseResult`
+- [X] T026 [US1] Implement document-root traversal in `crates/gram-codec/src/cst/parser.rs`: iterate named children of the `gram_pattern` root; dispatch each to the appropriate conversion function (stubs initially); collect `ERROR` node byte ranges into `CstParseResult.errors` via `node.is_error()` and `node.has_error()`
+- [X] T027 [US1] Implement `node_pattern` → `Pattern<SyntaxNode>` in `crates/gram-codec/src/cst/parser.rs`: extract optional subject fields (identifier, labels, record) into `Subject`; set `SyntaxKind::Node`; populate `span`; return `Pattern::point(syntax_node)`
+- [X] T028 [US1] Implement `relationship_pattern` → `Pattern<SyntaxNode>` in `crates/gram-codec/src/cst/parser.rs`: extract `left`, `kind`, `right` fields; map `kind.kind()` string to `ArrowKind`; extract edge subject from the arrow node's optional fields; return `Pattern { value: SyntaxNode { kind: Relationship(arrow), .. }, elements: [left_pat, right_pat] }`
+- [X] T029 [US1] Implement `subject_pattern` → `Pattern<SyntaxNode>` in `crates/gram-codec/src/cst/parser.rs`: extract subject fields and `subject_pattern_elements` children; return `Pattern { value: SyntaxNode { kind: Subject, .. }, elements }`
+- [X] T030 [US1] Implement annotation extraction helpers in `crates/gram-codec/src/cst/parser.rs`: `extract_property_annotation` (matches `"property_annotation"`, reads `key` and `value` fields); `extract_identified_annotation` (matches `"identified_annotation"`, reads optional `identifier` and `labels` fields); `extract_annotations(annotations_node) -> Vec<Annotation>` dispatches both
+- [X] T031 [US1] Implement `annotated_pattern` → `Pattern<SyntaxNode>` in `crates/gram-codec/src/cst/parser.rs`: call `extract_annotations`, recurse into `elements` field, return `Pattern { value: SyntaxNode { kind: Annotated, annotations, .. }, elements: [inner] }`
+- [X] T032 [US1] Implement `comment` → `Pattern<SyntaxNode>` in `crates/gram-codec/src/cst/parser.rs`: read `node.utf8_text(input.as_bytes())` as `text`; return `Pattern::point(SyntaxNode { kind: Comment, text: Some(comment_text), span, .. })`
 
 ### Tests
 
-- [ ] T033 [P] [US1] Write parse fixture tests in `crates/gram-codec/tests/cst/parse_tests.rs`: for inline gram strings covering each construct, assert `is_valid()` returns true, and `&input[span.start..span.end]` reproduces the source text of each top-level node; assert all four arrow kinds map to the correct `ArrowKind` variant
-- [ ] T034 [P] [US1] Write comment tests in `crates/gram-codec/tests/cst/comment_tests.rs`: assert comment nodes appear in source order interleaved with patterns, `text` field contains the full `// …` text, and `span` is byte-accurate
-- [ ] T035 [P] [US1] Write error recovery tests in `crates/gram-codec/tests/cst/error_recovery_tests.rs`: assert malformed input returns `is_valid() == false` with a non-empty `errors` list; assert the partial `tree` is still present
+- [X] T033 [P] [US1] Write parse fixture tests in `crates/gram-codec/tests/cst/parse_tests.rs`: for inline gram strings covering each construct, assert `is_valid()` returns true, and `&input[span.start..span.end]` reproduces the source text of each top-level node; assert all four arrow kinds map to the correct `ArrowKind` variant
+- [X] T034 [P] [US1] Write comment tests in `crates/gram-codec/tests/cst/comment_tests.rs`: assert comment nodes appear in source order interleaved with patterns, `text` field contains the full `// …` text, and `span` is byte-accurate
+- [X] T035 [P] [US1] Write error recovery tests in `crates/gram-codec/tests/cst/error_recovery_tests.rs`: assert malformed input returns `is_valid() == false` with a non-empty `errors` list; assert the partial `tree` is still present
 
 **Checkpoint**: All US1 tests pass — `parse_gram_cst` is fully functional.
 
@@ -131,15 +131,15 @@ to `parse_gram(input)` for all valid input the current nom parser accepts.
 
 ### Implementation
 
-- [ ] T036 [US2] Implement `lower(tree: Pattern<SyntaxNode>) -> Vec<Pattern<Subject>>` skeleton in `crates/gram-codec/src/cst/lowering.rs`: assert root `kind == SyntaxKind::Document`, iterate `tree.elements`, dispatch each to `lower_node`, collect non-`None` results
-- [ ] T037 [US2] Implement `lower_node(node: Pattern<SyntaxNode>) -> Option<Pattern<Subject>>` in `crates/gram-codec/src/cst/lowering.rs`: handle `Node` → `Pattern::point(subject)`, `Subject` → `Pattern { value, elements }`, `Comment` → `None`
-- [ ] T038 [US2] Implement `Relationship` lowering in `crates/gram-codec/src/cst/lowering.rs`: `Right | Bidirectional | Undirected` → preserve element order; `Left` → reverse to `[lower(right), lower(left)]`
-- [ ] T039 [US2] Implement `Annotated` lowering in `crates/gram-codec/src/cst/lowering.rs`: build annotation `Subject` from `Property` annotations only; drop `Identified` entries; return `Pattern { value: annotation_subject, elements: [lower(inner)] }`
-- [ ] T040 [US2] Export `lower` from `crates/gram-codec/src/cst/mod.rs` and `crates/gram-codec/src/lib.rs` under `#[cfg(feature = "cst")]`
+- [X] T036 [US2] Implement `lower(tree: Pattern<SyntaxNode>) -> Vec<Pattern<Subject>>` skeleton in `crates/gram-codec/src/cst/lowering.rs`: assert root `kind == SyntaxKind::Document`, iterate `tree.elements`, dispatch each to `lower_node`, collect non-`None` results
+- [X] T037 [US2] Implement `lower_node(node: Pattern<SyntaxNode>) -> Option<Pattern<Subject>>` in `crates/gram-codec/src/cst/lowering.rs`: handle `Node` → `Pattern::point(subject)`, `Subject` → `Pattern { value, elements }`, `Comment` → `None`
+- [X] T038 [US2] Implement `Relationship` lowering in `crates/gram-codec/src/cst/lowering.rs`: `Right | Bidirectional | Undirected` → preserve element order; `Left` → reverse to `[lower(right), lower(left)]`
+- [X] T039 [US2] Implement `Annotated` lowering in `crates/gram-codec/src/cst/lowering.rs`: build annotation `Subject` from `Property` annotations only; drop `Identified` entries; return `Pattern { value: annotation_subject, elements: [lower(inner)] }`
+- [X] T040 [US2] Export `lower` from `crates/gram-codec/src/cst/mod.rs` and `crates/gram-codec/src/lib.rs` under `#[cfg(feature = "cst")]`
 
 ### Tests
 
-- [ ] T041 [US2] Write equivalence tests in `crates/gram-codec/tests/cst/lowering_tests.rs`: for every gram fixture (excluding `@@` input), assert `lower(parse_gram_cst(s).tree) == parse_gram(s).unwrap()` using `Pattern`'s `PartialEq`; cover node, relationship (all four arrow kinds), subject pattern, annotated pattern, header record
+- [X] T041 [US2] Write equivalence tests in `crates/gram-codec/tests/cst/lowering_tests.rs`: for every gram fixture (excluding `@@` input), assert `lower(parse_gram_cst(s).tree) == parse_gram(s).unwrap()` using `Pattern`'s `PartialEq`; cover node, relationship (all four arrow kinds), subject pattern, annotated pattern, header record
 
 **Checkpoint**: All US2 tests pass — `lower` is complete and equivalence verified.
 

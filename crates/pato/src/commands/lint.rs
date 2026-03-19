@@ -352,10 +352,11 @@ fn check_empty_arrays(
     for pattern in patterns {
         walk_property_values(&pattern.value.properties, &mut |value| {
             if matches!(value, Value::VArray(items) if items.is_empty()) {
-                let location = array_locations
-                    .is_empty()
-                    .then_some(Location::new(1, 1))
-                    .unwrap_or_else(|| array_locations.remove(0));
+                let location = if array_locations.is_empty() {
+                    Location::new(1, 1)
+                } else {
+                    array_locations.remove(0)
+                };
                 diagnostics.push(
                     Diagnostic::new(
                         DiagnosticCode::P006,
@@ -393,10 +394,11 @@ fn collect_empty_arrays_from_children(
     for pattern in patterns {
         walk_property_values(&pattern.value.properties, &mut |value| {
             if matches!(value, Value::VArray(items) if items.is_empty()) {
-                let location = array_locations
-                    .is_empty()
-                    .then_some(Location::new(1, 1))
-                    .unwrap_or_else(|| array_locations.remove(0));
+                let location = if array_locations.is_empty() {
+                    Location::new(1, 1)
+                } else {
+                    array_locations.remove(0)
+                };
                 diagnostics.push(
                     Diagnostic::new(
                         DiagnosticCode::P006,
@@ -735,7 +737,7 @@ impl<'a> CursorLocator<'a> {
 fn identifier_boundaries(source: &str, offset: usize, len: usize) -> bool {
     let before = source[..offset].chars().next_back();
     let after = source[offset + len..].chars().next();
-    before.is_none_or(|ch| !is_ident_char(ch)) && after.is_none_or(|ch| !is_ident_char(ch))
+    before.map_or(true, |ch| !is_ident_char(ch)) && after.map_or(true, |ch| !is_ident_char(ch))
 }
 
 trait DiagnosticExt {
