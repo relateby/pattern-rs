@@ -1,0 +1,167 @@
+openapi: 3.1.0
+info:
+  title: pato skill install contract
+  version: 0.1.0
+  description: >
+    Planning contract for the built-in `pato skill` workflow. This models the command's
+    observable install-target resolution and install execution behavior for testing and
+    implementation planning.
+servers:
+  - url: http://local.pato.invalid
+paths:
+  /skill/install-target:
+    get:
+      summary: Resolve the install target for a requested scope and convention
+      operationId: resolveSkillInstallTarget
+      parameters:
+        - in: query
+          name: scope
+          required: true
+          schema:
+            $ref: '#/components/schemas/InstallScope'
+        - in: query
+          name: target
+          required: true
+          schema:
+            $ref: '#/components/schemas/InstallConvention'
+      responses:
+        '200':
+          description: Resolved install target
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResolvedTarget'
+        '400':
+          description: Unsupported or invalid install combination
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResult'
+  /skill/install:
+    post:
+      summary: Install the bundled pato skill into the resolved target
+      operationId: installSkill
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/InstallRequest'
+      responses:
+        '201':
+          description: Skill created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InstallResult'
+        '200':
+          description: Existing skill replaced
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InstallResult'
+        '400':
+          description: Unsupported install combination or invalid request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResult'
+        '409':
+          description: Existing install present and replacement not allowed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResult'
+        '500':
+          description: Install failed before producing a usable result
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResult'
+components:
+  schemas:
+    InstallScope:
+      type: string
+      enum:
+        - project
+        - user
+    InstallConvention:
+      type: string
+      enum:
+        - interoperable
+        - client-native
+    InstallRequest:
+      type: object
+      required:
+        - scope
+        - target
+      properties:
+        scope:
+          $ref: '#/components/schemas/InstallScope'
+        target:
+          $ref: '#/components/schemas/InstallConvention'
+        replaceExisting:
+          type: boolean
+          default: false
+        printPath:
+          type: boolean
+          default: false
+    ResolvedTarget:
+      type: object
+      required:
+        - scope
+        - target
+        - resolvedPath
+        - vercelDiscoverable
+      properties:
+        scope:
+          $ref: '#/components/schemas/InstallScope'
+        target:
+          $ref: '#/components/schemas/InstallConvention'
+        resolvedPath:
+          type: string
+        vercelDiscoverable:
+          type: boolean
+        notes:
+          type: array
+          items:
+            type: string
+    InstallResult:
+      type: object
+      required:
+        - status
+        - skillName
+        - installedPath
+      properties:
+        status:
+          type: string
+          enum:
+            - created
+            - replaced
+        skillName:
+          type: string
+          enum:
+            - pato
+        installedPath:
+          type: string
+        replacedExisting:
+          type: boolean
+        sourceRoot:
+          type: string
+          enum:
+            - .agents/skills/pato/
+    ErrorResult:
+      type: object
+      required:
+        - code
+        - message
+      properties:
+        code:
+          type: string
+          enum:
+            - invalid-install-combination
+            - existing-install-present
+            - canonical-package-missing
+            - install-write-failed
+        message:
+          type: string
