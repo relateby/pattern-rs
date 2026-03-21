@@ -99,7 +99,9 @@ pub fn install_skill_with_context(
         });
     }
 
-    if target.resolved_path.exists() {
+    let had_existing = target.resolved_path.exists();
+
+    if had_existing {
         if !request.allow_replace {
             return Err(SkillInstallError::ExistingInstallPresent {
                 path: target.resolved_path,
@@ -121,14 +123,14 @@ pub fn install_skill_with_context(
     })?;
 
     Ok(InstallResult {
-        status: if request.allow_replace {
+        status: if had_existing {
             InstallStatus::Replaced
         } else {
             InstallStatus::Created
         },
         skill_name: "pato".to_string(),
         installed_path: target.resolved_path,
-        replaced_existing: request.allow_replace,
+        replaced_existing: had_existing,
         source_root,
         vercel_discoverable: target.vercel_discoverable,
     })
@@ -136,7 +138,13 @@ pub fn install_skill_with_context(
 
 fn copy_skill_tree(source: &Path, destination: &Path) -> io::Result<()> {
     if destination.exists() {
-        return Ok(());
+        return Err(io::Error::new(
+            io::ErrorKind::AlreadyExists,
+            format!(
+                "destination already exists: {}; remove it before calling copy_skill_tree",
+                destination.display()
+            ),
+        ));
     }
 
     fs::create_dir_all(destination)?;
