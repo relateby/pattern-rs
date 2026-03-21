@@ -68,22 +68,24 @@ import urllib.error
 import urllib.request
 
 version = sys.argv[1]
+TIMEOUT = 10
 
 def crates_io_has(crate: str) -> bool:
-    with urllib.request.urlopen(f"https://crates.io/api/v1/crates/{crate}") as response:
+    with urllib.request.urlopen(f"https://crates.io/api/v1/crates/{crate}", timeout=TIMEOUT) as response:
         payload = json.load(response)
     return version in {item["num"] for item in payload.get("versions", [])}
 
 def npm_has(package: str) -> bool:
     result = subprocess.run(
         ["npm", "view", f"{package}@{version}", "version"],
+        timeout=TIMEOUT,
         stdout=subprocess.DEVNULL,
         stderr=subprocess.DEVNULL,
     )
     return result.returncode == 0
 
 def pypi_has(package: str) -> bool:
-    with urllib.request.urlopen(f"https://pypi.org/pypi/{package}/json") as response:
+    with urllib.request.urlopen(f"https://pypi.org/pypi/{package}/json", timeout=TIMEOUT) as response:
         payload = json.load(response)
     return version in payload.get("releases", {})
 
@@ -101,7 +103,7 @@ try:
         if check():
             print(f"{registry}:{subject}:{version}")
             raise SystemExit(0)
-except Exception as exc:  # noqa: BLE001
+except (urllib.error.URLError, subprocess.TimeoutExpired, TimeoutError, OSError) as exc:
     print(f"release version lookup failed: {exc}", file=sys.stderr)
     raise SystemExit(2)
 

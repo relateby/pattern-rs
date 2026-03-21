@@ -76,6 +76,12 @@ else
     fi
 fi
 
+release_log "Verifying release-managed versions match $VERSION"
+if ! verify_release_versions "$VERSION" "$REPO_ROOT"; then
+    release_error "Release-managed files do not declare version $VERSION"
+    exit 1
+fi
+
 release_log "Running release validation"
 run_release_validation "$REPO_ROOT"
 
