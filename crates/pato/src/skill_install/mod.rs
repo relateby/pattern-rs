@@ -21,7 +21,6 @@ pub struct InstallRequest {
     pub scope: SkillScopeArg,
     pub target: SkillTargetArg,
     pub allow_replace: bool,
-    pub print_path_only: bool,
 }
 
 #[derive(Clone, Debug, Eq, PartialEq)]
@@ -99,7 +98,9 @@ pub fn install_skill_with_context(
         });
     }
 
-    if target.resolved_path.exists() {
+    let replaced_existing = target.resolved_path.exists();
+
+    if replaced_existing {
         if !request.allow_replace {
             return Err(SkillInstallError::ExistingInstallPresent {
                 path: target.resolved_path,
@@ -121,14 +122,14 @@ pub fn install_skill_with_context(
     })?;
 
     Ok(InstallResult {
-        status: if request.allow_replace {
+        status: if replaced_existing {
             InstallStatus::Replaced
         } else {
             InstallStatus::Created
         },
         skill_name: "pato".to_string(),
         installed_path: target.resolved_path,
-        replaced_existing: request.allow_replace,
+        replaced_existing,
         source_root,
         vercel_discoverable: target.vercel_discoverable,
     })

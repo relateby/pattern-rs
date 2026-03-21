@@ -103,11 +103,7 @@ fn cargo_package_includes_the_canonical_skill_tree() {
     let canonical_skill_root = repo_root.join(".agents/skills/pato");
     let packaged_skill_root = crate_root.join("skill-package/pato");
 
-    let canonical_skill = fs::read_to_string(canonical_skill_root.join("SKILL.md"))
-        .expect("canonical SKILL.md should load");
-    let packaged_skill = fs::read_to_string(packaged_skill_root.join("SKILL.md"))
-        .expect("packaged SKILL.md should load");
-    assert_eq!(packaged_skill, canonical_skill);
+    assert_skill_tree_matches(&canonical_skill_root, &packaged_skill_root);
 
     let output = Command::new("cargo")
         .current_dir(crate_root)
@@ -123,6 +119,39 @@ fn cargo_package_includes_the_canonical_skill_tree() {
     assert!(stdout.contains("skill-package/pato/references/workflows.md"));
     assert!(stdout.contains("skill-package/pato/references/output-contracts.md"));
     assert!(stdout.contains("skill-package/pato/assets/examples.md"));
+}
+
+fn assert_skill_tree_matches(canonical_root: &Path, packaged_root: &Path) {
+    let canonical_files = collect_skill_files(canonical_root);
+    let packaged_files = collect_skill_files(packaged_root);
+
+    assert_eq!(packaged_files, canonical_files);
+}
+
+fn collect_skill_files(root: &Path) -> Vec<(String, String)> {
+    let mut files = Vec::new();
+    collect_skill_files_recursive(root, root, &mut files);
+    files.sort();
+    files
+}
+
+fn collect_skill_files_recursive(root: &Path, current: &Path, files: &mut Vec<(String, String)>) {
+    for entry in fs::read_dir(current).expect("skill tree should be readable") {
+        let entry = entry.expect("skill tree entry should be readable");
+        let path = entry.path();
+
+        if path.is_dir() {
+            collect_skill_files_recursive(root, &path, files);
+        } else if path.is_file() {
+            let relative = path
+                .strip_prefix(root)
+                .expect("skill file should be under root")
+                .to_string_lossy()
+                .replace('\\', "/");
+            let contents = fs::read_to_string(&path).expect("skill file should be utf8");
+            files.push((relative, contents));
+        }
+    }
 }
 
 fn run_pato<I, S>(cwd: &Path, home: Option<&Path>, args: I) -> std::process::Output

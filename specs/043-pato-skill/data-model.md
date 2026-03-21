@@ -31,7 +31,6 @@ repository and bundled by the CLI for installation.
 - `scope`: `project` or `user`
 - `target_convention`: `interoperable` or `client-native`
 - `allow_replace`: whether an existing install may be replaced
-- `print_path_only`: whether the caller asked to print the resolved destination path
 
 **Validation Rules**:
 - `scope=project` requires a Vercel-discoverable install target

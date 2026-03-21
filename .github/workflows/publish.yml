@@ -218,7 +218,7 @@ jobs:
           import urllib.request
 
           version = os.environ["RELEASE_VERSION"]
-          for crate in ("relateby-pattern", "relateby-gram"):
+          for crate in ("relateby-pattern", "relateby-gram", "relateby-pato"):
               with urllib.request.urlopen(f"https://crates.io/api/v1/crates/{crate}") as response:
                   payload = json.load(response)
               versions = {item["num"] for item in payload.get("versions", [])}

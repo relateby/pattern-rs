@@ -3,7 +3,7 @@
 **Status:** Draft — for review and iteration  
 **Scope:** Publishable `pato` skill package + local skill instantiation via CLI  
 **Crate name:** `relateby-pato` (published), binary name: `pato`  
-**Location:** canonical skill bundled with `crates/pato/`; proposal captured in `proposals/`
+**Location:** canonical skill authored in `.agents/skills/pato/` with a packaged mirror in `crates/pato/skill-package/pato/`; proposal captured in `proposals/`
 
 ---
 
@@ -116,14 +116,15 @@ testable workflow that is genuinely better captured as an executable helper.
 
 ## 5. Canonical Location In-Repo
 
-The canonical skill package should live with the `pato` crate, for example:
+The canonical skill package should live in the repository's Agent Skills tree:
 
 ```text
-crates/pato/skills/pato/
+.agents/skills/pato/
 ```
 
-This keeps the bundled artifact close to the command it documents, versioned with the
-crate, and easy to package into releases or future registry artifacts.
+The crate keeps a packaged mirror of that tree under `crates/pato/skill-package/pato/`
+so release builds can bundle the same content without depending on the workspace
+source tree.
 
 The package should still use the published skill name `pato`, and its `SKILL.md`
 frontmatter should match the directory name exactly.
@@ -157,8 +158,11 @@ Defaults:
 |-------|--------|-------------|
 | project | `agents` | `.agents/skills/pato/` |
 | user | `agents` | `~/.agents/skills/pato/` |
-| project | `cursor` | `.cursor/skills/pato/` |
 | user | `cursor` | `~/.cursor/skills/pato/` |
+
+Project-scope installs are only supported for the interoperable `agents` target.
+`cursor` installs are user-scope only; `pato skill --scope project --target cursor`
+should be rejected.
 
 ### 6.3 Behavior
 

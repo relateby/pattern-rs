@@ -26,9 +26,10 @@ Validate the `pato skill` workflow end-to-end for the bundled canonical skill pa
 
 ## Run the default project install
 
-1. Build and run the command:
+1. Build and run the command from a clean throwaway project directory:
 
    ```bash
+   cd "$(mktemp -d)"
    cargo run -p relateby-pato -- skill
    ```
 
