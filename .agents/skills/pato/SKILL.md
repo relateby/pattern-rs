@@ -10,7 +10,9 @@ Use this skill when working with gram files through the `pato` CLI.
 ## Prerequisites
 
 - `pato` must already be installed and available on `PATH`
-- If `pato` is missing, install the CLI first before using the workflows below
+- If `pato` is missing, install it first:
+  - `cargo install relateby-pato`
+  - or download the `pato` GitHub Release asset from <https://github.com/relateby/pattern-rs/releases/latest> and put the binary on `PATH`
 
 ## When to use
 

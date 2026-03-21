@@ -12,6 +12,10 @@ cargo install relateby-pato
 
 The binary name is `pato`.
 
+If you do not want to use Cargo, download the `pato` GitHub Release artifact for
+your platform from <https://github.com/relateby/pattern-rs/releases/latest> and
+place the binary on `PATH`.
+
 ## Use
 
 After installation, make sure `pato` is on `PATH`, then run:
