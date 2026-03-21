@@ -16,11 +16,11 @@
 
 **Purpose**: Create the canonical skill package and prepare `relateby-pato` to bundle and test it.
 
-- [ ] T001 Create the canonical skill package entry file in `.agents/skills/pato/SKILL.md`
-- [ ] T002 [P] Create bundled skill reference content in `.agents/skills/pato/references/workflows.md` and `.agents/skills/pato/references/output-contracts.md`
-- [ ] T003 [P] Create bundled skill example content in `.agents/skills/pato/assets/examples.md`
-- [ ] T004 Update `crates/pato/Cargo.toml` to support bundling and packaging verification for the canonical skill package
-- [ ] T005 Create skill-specific test scaffolding in `crates/pato/tests/skill_tests.rs` and `crates/pato/tests/fixtures/skill/.gitkeep`
+- [X] T001 Create the canonical skill package entry file in `.agents/skills/pato/SKILL.md`
+- [X] T002 [P] Create bundled skill reference content in `.agents/skills/pato/references/workflows.md` and `.agents/skills/pato/references/output-contracts.md`
+- [X] T003 [P] Create bundled skill example content in `.agents/skills/pato/assets/examples.md`
+- [X] T004 Update `crates/pato/Cargo.toml` to support bundling and packaging verification for the canonical skill package
+- [X] T005 Create skill-specific test scaffolding in `crates/pato/tests/skill_tests.rs` and `crates/pato/tests/fixtures/skill/.gitkeep`
 
 ---
 
@@ -30,12 +30,12 @@
 
 **⚠️ CRITICAL**: No user story work can begin until this phase is complete.
 
-- [ ] T006 Add `Skill` command definitions and argument enums to `crates/pato/src/cli.rs`
-- [ ] T007 [P] Export the new skill command surface from `crates/pato/src/commands/mod.rs` and `crates/pato/src/lib.rs`
-- [ ] T008 Create install module structure and shared result/error types in `crates/pato/src/skill_install/mod.rs`
-- [ ] T009 [P] Implement canonical package enumeration and metadata validation in `crates/pato/src/skill_install/package.rs`
-- [ ] T010 [P] Implement install target resolution rules in `crates/pato/src/skill_install/target.rs`
-- [ ] T011 Implement shared filesystem install helpers, replace guards, and copy logic in `crates/pato/src/skill_install/mod.rs`
+- [X] T006 Add `Skill` command definitions and argument enums to `crates/pato/src/cli.rs`
+- [X] T007 [P] Export the new skill command surface from `crates/pato/src/commands/mod.rs` and `crates/pato/src/lib.rs`
+- [X] T008 Create install module structure and shared result/error types in `crates/pato/src/skill_install/mod.rs`
+- [X] T009 [P] Implement canonical package enumeration and metadata validation in `crates/pato/src/skill_install/package.rs`
+- [X] T010 [P] Implement install target resolution rules in `crates/pato/src/skill_install/target.rs`
+- [X] T011 Implement shared filesystem install helpers, replace guards, and copy logic in `crates/pato/src/skill_install/mod.rs`
 
 **Checkpoint**: Foundation ready — all user story phases can now begin.
 
@@ -49,13 +49,13 @@
 
 ### Tests for User Story 1
 
-- [ ] T012 [P] [US1] Add default project install and reported-path integration tests in `crates/pato/tests/skill_tests.rs`
+- [X] T012 [P] [US1] Add default project install and reported-path integration tests in `crates/pato/tests/skill_tests.rs`
 
 ### Implementation for User Story 1
 
-- [ ] T013 [US1] Implement default skill install flow in `crates/pato/src/commands/skill.rs`
-- [ ] T014 [US1] Wire `Commands::Skill` dispatch in `crates/pato/src/main.rs`
-- [ ] T015 [US1] Implement `--print-path` handling in `crates/pato/src/commands/skill.rs` and extend assertions in `crates/pato/tests/skill_tests.rs`
+- [X] T013 [US1] Implement default skill install flow in `crates/pato/src/commands/skill.rs`
+- [X] T014 [US1] Wire `Commands::Skill` dispatch in `crates/pato/src/main.rs`
+- [X] T015 [US1] Implement `--print-path` handling in `crates/pato/src/commands/skill.rs` and extend assertions in `crates/pato/tests/skill_tests.rs`
 
 **Checkpoint**: `pato skill` performs the default project install and is independently testable.
 
@@ -69,13 +69,13 @@
 
 ### Tests for User Story 2
 
-- [ ] T016 [P] [US2] Add install-target resolution coverage for supported scope/target combinations in `crates/pato/tests/skill_tests.rs`
+- [X] T016 [P] [US2] Add install-target resolution coverage for supported scope/target combinations in `crates/pato/tests/skill_tests.rs`
 
 ### Implementation for User Story 2
 
-- [ ] T017 [US2] Implement `--scope` and `--target` argument handling in `crates/pato/src/cli.rs` and `crates/pato/src/commands/skill.rs`
-- [ ] T018 [US2] Implement user-scope interoperable and client-native destination resolution in `crates/pato/src/skill_install/target.rs`
-- [ ] T019 [US2] Reject unsupported project-level client-native installs and surface clear errors in `crates/pato/src/commands/skill.rs` and `crates/pato/tests/skill_tests.rs`
+- [X] T017 [US2] Implement `--scope` and `--target` argument handling in `crates/pato/src/cli.rs` and `crates/pato/src/commands/skill.rs`
+- [X] T018 [US2] Implement user-scope interoperable and client-native destination resolution in `crates/pato/src/skill_install/target.rs`
+- [X] T019 [US2] Reject unsupported project-level client-native installs and surface clear errors in `crates/pato/src/commands/skill.rs` and `crates/pato/tests/skill_tests.rs`
 
 **Checkpoint**: Supported install combinations are selectable and independently testable.
 
@@ -89,13 +89,13 @@
 
 ### Tests for User Story 3
 
-- [ ] T020 [P] [US3] Add existing-install, no-replace, and explicit-replace integration tests in `crates/pato/tests/skill_tests.rs`
+- [X] T020 [P] [US3] Add existing-install, no-replace, and explicit-replace integration tests in `crates/pato/tests/skill_tests.rs`
 
 ### Implementation for User Story 3
 
-- [ ] T021 [US3] Add explicit replacement flag parsing to `crates/pato/src/cli.rs`
-- [ ] T022 [US3] Implement existing-install detection and guarded replacement behavior in `crates/pato/src/skill_install/mod.rs`
-- [ ] T023 [US3] Surface replace outcomes and conflict errors from `crates/pato/src/commands/skill.rs`
+- [X] T021 [US3] Add explicit replacement flag parsing to `crates/pato/src/cli.rs`
+- [X] T022 [US3] Implement existing-install detection and guarded replacement behavior in `crates/pato/src/skill_install/mod.rs`
+- [X] T023 [US3] Surface replace outcomes and conflict errors from `crates/pato/src/commands/skill.rs`
 
 **Checkpoint**: Overwrite protection and explicit replacement are independently testable.
 
@@ -106,10 +106,10 @@
 **Purpose**: Packaging verification, documentation alignment, and code-quality validation across all stories.
 
 - [ ] T024 [P] Add bundled asset packaging verification coverage in `crates/pato/tests/skill_tests.rs` and finalize package include rules in `crates/pato/Cargo.toml`
-- [ ] T025 Update `specs/043-pato-skill/quickstart.md` with the final `pato skill` flags and validation steps
-- [ ] T026 [P] Run `cargo fmt --all` and fix formatting issues across `.agents/skills/pato/` and `crates/pato/`
-- [ ] T027 [P] Run `cargo clippy --workspace -- -D warnings` and fix warnings affecting `crates/pato/`
-- [ ] T028 Run `cargo test -p relateby-pato` and validate the end-to-end quickstart flow in `specs/043-pato-skill/quickstart.md`
+- [X] T025 Update `specs/043-pato-skill/quickstart.md` with the final `pato skill` flags and validation steps
+- [X] T026 [P] Run `cargo fmt --all` and fix formatting issues across `.agents/skills/pato/` and `crates/pato/`
+- [X] T027 [P] Run `cargo clippy --workspace -- -D warnings` and fix warnings affecting `crates/pato/`
+- [X] T028 Run `cargo test -p relateby-pato` and validate the end-to-end quickstart flow in `specs/043-pato-skill/quickstart.md`
 
 ---
 

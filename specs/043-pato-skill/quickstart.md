@@ -61,7 +61,13 @@ Validate the `pato skill` workflow end-to-end for the bundled canonical skill pa
 1. Run an install once.
 2. Run the same install again without replacement enabled and confirm the command
    fails without modifying the existing install.
-3. Re-run with explicit replacement enabled and confirm the install succeeds.
+3. Re-run with explicit replacement enabled:
+
+   ```bash
+   cargo run -p relateby-pato -- skill --force
+   ```
+
+4. Confirm the install succeeds and the destination stays valid.
 
 ## Validation commands
 
@@ -73,5 +79,5 @@ cargo fmt --all -- --check
 cargo clippy --workspace -- -D warnings
 ```
 
-If asset bundling logic depends on packaging configuration, also run the relevant
-packaging verification step for `relateby-pato`.
+If you need to validate the packaged artifact path, run a packaging dry run for
+`relateby-pato` and confirm the bundle contains the canonical skill files.

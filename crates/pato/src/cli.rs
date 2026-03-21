@@ -29,6 +29,18 @@ pub enum RuleOutputFormatArg {
     Json,
 }
 
+#[derive(Clone, Copy, Debug, Eq, PartialEq, ValueEnum)]
+pub enum SkillScopeArg {
+    Project,
+    User,
+}
+
+#[derive(Clone, Copy, Debug, Eq, PartialEq, ValueEnum)]
+pub enum SkillTargetArg {
+    Interoperable,
+    Cursor,
+}
+
 #[derive(Debug, Subcommand)]
 pub enum Commands {
     Lint(LintArgs),
@@ -36,6 +48,7 @@ pub enum Commands {
     Parse(ParseArgs),
     Rule(RuleArgs),
     Check(CheckArgs),
+    Skill(SkillArgs),
     #[command(external_subcommand)]
     External(Vec<String>),
 }
@@ -88,4 +101,19 @@ pub struct CheckArgs {
 
     #[arg(required = true)]
     pub files: Vec<PathBuf>,
+}
+
+#[derive(Debug, clap::Args)]
+pub struct SkillArgs {
+    #[arg(long, value_enum, default_value_t = SkillScopeArg::Project)]
+    pub scope: SkillScopeArg,
+
+    #[arg(long, value_enum, default_value_t = SkillTargetArg::Interoperable)]
+    pub target: SkillTargetArg,
+
+    #[arg(long)]
+    pub force: bool,
+
+    #[arg(long)]
+    pub print_path: bool,
 }

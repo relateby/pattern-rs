@@ -6,4 +6,5 @@ pub mod editor;
 pub mod extensions;
 pub mod output;
 pub mod schema;
+pub mod skill_install;
 pub mod source_map;
