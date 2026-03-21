@@ -14,7 +14,21 @@ fn main() {
         "cargo:rustc-env=PATO_SKILL_BUNDLE_DIR={}",
         bundle_root.display()
     );
-    println!("cargo:rerun-if-changed={}", source_root.display());
+    emit_rerun_if_changed(&source_root);
+}
+
+fn emit_rerun_if_changed(root: &Path) {
+    println!("cargo:rerun-if-changed={}", root.display());
+    if let Ok(entries) = fs::read_dir(root) {
+        for entry in entries.flatten() {
+            let path = entry.path();
+            if path.is_dir() {
+                emit_rerun_if_changed(&path);
+            } else {
+                println!("cargo:rerun-if-changed={}", path.display());
+            }
+        }
+    }
 }
 
 fn canonical_skill_root(manifest_dir: &Path) -> PathBuf {
