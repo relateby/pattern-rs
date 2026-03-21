@@ -47,4 +47,4 @@ if [[ -n "${GITHUB_OUTPUT:-}" ]]; then
     } >> "$GITHUB_OUTPUT"
 fi
 
-release_log "Verified $TAG at $COMMIT_SHA on origin/main"
+release_log "Verified finalized release tag $TAG at $COMMIT_SHA on origin/main"

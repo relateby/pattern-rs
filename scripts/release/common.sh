@@ -31,6 +31,86 @@ release_tag_for_version() {
     printf 'v%s\n' "$1"
 }
 
+release_branch_for_version() {
+    printf 'release/v%s\n' "$1"
+}
+
+release_branch_exists() {
+    local branch repo_root
+    branch="$1"
+    repo_root="${2:-$(release_repo_root)}"
+    if git -C "$repo_root" show-ref --verify --quiet "refs/heads/$branch"; then
+        return 0
+    fi
+    git -C "$repo_root" ls-remote --exit-code --heads origin "$branch" >/dev/null 2>&1
+}
+
+release_tag_exists() {
+    local tag repo_root
+    tag="$1"
+    repo_root="${2:-$(release_repo_root)}"
+    if git -C "$repo_root" show-ref --verify --quiet "refs/tags/$tag"; then
+        return 0
+    fi
+    git -C "$repo_root" ls-remote --exit-code --tags origin "$tag" >/dev/null 2>&1
+}
+
+release_version_published() {
+    local version
+    version="$1"
+    python3 - "$version" <<'PY'
+from __future__ import annotations
+
+import json
+import subprocess
+import sys
+import urllib.error
+import urllib.request
+
+version = sys.argv[1]
+TIMEOUT = 10
+
+def crates_io_has(crate: str) -> bool:
+    with urllib.request.urlopen(f"https://crates.io/api/v1/crates/{crate}", timeout=TIMEOUT) as response:
+        payload = json.load(response)
+    return version in {item["num"] for item in payload.get("versions", [])}
+
+def npm_has(package: str) -> bool:
+    result = subprocess.run(
+        ["npm", "view", f"{package}@{version}", "version"],
+        timeout=TIMEOUT,
+        stdout=subprocess.DEVNULL,
+        stderr=subprocess.DEVNULL,
+    )
+    return result.returncode == 0
+
+def pypi_has(package: str) -> bool:
+    with urllib.request.urlopen(f"https://pypi.org/pypi/{package}/json", timeout=TIMEOUT) as response:
+        payload = json.load(response)
+    return version in payload.get("releases", {})
+
+checks = [
+    ("crates.io", "relateby-pattern", lambda: crates_io_has("relateby-pattern")),
+    ("crates.io", "relateby-gram", lambda: crates_io_has("relateby-gram")),
+    ("npm", "@relateby/pattern", lambda: npm_has("@relateby/pattern")),
+    ("npm", "@relateby/graph", lambda: npm_has("@relateby/graph")),
+    ("npm", "@relateby/gram", lambda: npm_has("@relateby/gram")),
+    ("PyPI", "relateby-pattern", lambda: pypi_has("relateby-pattern")),
+]
+
+try:
+    for registry, subject, check in checks:
+        if check():
+            print(f"{registry}:{subject}:{version}")
+            raise SystemExit(0)
+except (urllib.error.URLError, subprocess.TimeoutExpired, TimeoutError, OSError) as exc:
+    print(f"release version lookup failed: {exc}", file=sys.stderr)
+    raise SystemExit(2)
+
+raise SystemExit(1)
+PY
+}
+
 release_typescript_pattern_dir() {
     local repo_root
     repo_root="${1:-$(release_repo_root)}"
