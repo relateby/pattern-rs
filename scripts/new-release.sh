@@ -6,19 +6,20 @@ SCRIPT_DIR="$(CDPATH="" cd "$(dirname "$0")" && pwd)"
 REPO_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
 
 # shellcheck source=./release/common.sh
+# shellcheck disable=SC1091
 source "$REPO_ROOT/scripts/release/common.sh"
 
 usage() {
     cat <<'EOF'
 Usage: ./scripts/new-release.sh [--push] <version>
 
-Prepare a stable release from main by:
+Prepare a stable release branch from main by:
   - verifying branch, cleanliness, and origin/main sync
-  - updating release-managed versions
-  - running release validation
-  - creating a release commit and annotated tag
+  - creating a versioned release branch
+  - running the prerelease version bump and verification
+  - creating a release commit on the branch
 
-Use --push to push main and the new tag after preparation succeeds.
+Use --push to push the release branch after preparation succeeds.
 EOF
 }
 
@@ -53,23 +54,39 @@ if ! validate_stable_semver "$VERSION"; then
 fi
 
 TAG="$(release_tag_for_version "$VERSION")"
+BRANCH="$(release_branch_for_version "$VERSION")"
 
-release_log "Preparing release $TAG"
+release_log "Preparing release branch $BRANCH for $TAG"
 require_branch "main" "$REPO_ROOT"
 require_clean_worktree "$REPO_ROOT"
 ensure_main_synced "$REPO_ROOT"
 
-if git -C "$REPO_ROOT" rev-parse "$TAG" >/dev/null 2>&1; then
+if release_branch_exists "$BRANCH" "$REPO_ROOT"; then
+    release_error "Branch $BRANCH already exists"
+    exit 1
+fi
+
+if release_tag_exists "$TAG" "$REPO_ROOT"; then
     release_error "Tag $TAG already exists"
     exit 1
 fi
 
-release_log "Updating release-managed versions"
-update_release_versions "$VERSION" "$REPO_ROOT"
-verify_release_versions "$VERSION" "$REPO_ROOT"
+if release_version_published "$VERSION"; then
+    release_error "Version $VERSION is already published"
+    exit 1
+else
+    status=$?
+    if [[ $status -eq 2 ]]; then
+        release_error "Unable to verify whether $VERSION is already published"
+        exit 1
+    fi
+fi
 
-release_log "Running release validation"
-run_release_validation "$REPO_ROOT"
+release_log "Creating release branch $BRANCH"
+git -C "$REPO_ROOT" checkout -b "$BRANCH"
+
+release_log "Running prerelease version bump"
+"$REPO_ROOT/scripts/release/prerelease.sh" "$VERSION"
 
 release_log "Creating release commit"
 MANIFESTS=()
@@ -79,18 +96,15 @@ done < <(release_manifests "$REPO_ROOT")
 git -C "$REPO_ROOT" add "${MANIFESTS[@]}"
 git -C "$REPO_ROOT" commit -m "release: prepare $TAG"
 
-release_log "Creating annotated tag $TAG"
-git -C "$REPO_ROOT" tag -a "$TAG" -m "Release $TAG"
-
 if [[ $PUSH -eq 1 ]]; then
-    release_log "Pushing main and tags"
-    git -C "$REPO_ROOT" push origin main --follow-tags
+    release_log "Pushing release branch $BRANCH"
+    git -C "$REPO_ROOT" push -u origin "$BRANCH"
 fi
 
 cat <<EOF
 Release preparation complete.
   Version: $VERSION
+  Branch: $BRANCH
   Commit: $(git -C "$REPO_ROOT" rev-parse HEAD)
-  Tag: $TAG
   Pushed: $([[ $PUSH -eq 1 ]] && echo yes || echo no)
 EOF

@@ -31,6 +31,86 @@ release_tag_for_version() {
     printf 'v%s\n' "$1"
 }
 
+release_branch_for_version() {
+    printf 'release/v%s\n' "$1"
+}
+
+release_branch_exists() {
+    local branch repo_root
+    branch="$1"
+    repo_root="${2:-$(release_repo_root)}"
+    if git -C "$repo_root" show-ref --verify --quiet "refs/heads/$branch"; then
+        return 0
+    fi
+    git -C "$repo_root" ls-remote --exit-code --heads origin "$branch" >/dev/null 2>&1
+}
+
+release_tag_exists() {
+    local tag repo_root
+    tag="$1"
+    repo_root="${2:-$(release_repo_root)}"
+    if git -C "$repo_root" show-ref --verify --quiet "refs/tags/$tag"; then
+        return 0
+    fi
+    git -C "$repo_root" ls-remote --exit-code --tags origin "$tag" >/dev/null 2>&1
+}
+
+release_version_published() {
+    local version
+    version="$1"
+    python3 - "$version" <<'PY'
+from __future__ import annotations
+
+import json
+import subprocess
+import sys
+import urllib.error
+import urllib.request
+
+version = sys.argv[1]
+TIMEOUT = 10
+
+def crates_io_has(crate: str) -> bool:
+    with urllib.request.urlopen(f"https://crates.io/api/v1/crates/{crate}", timeout=TIMEOUT) as response:
+        payload = json.load(response)
+    return version in {item["num"] for item in payload.get("versions", [])}
+
+def npm_has(package: str) -> bool:
+    result = subprocess.run(
+        ["npm", "view", f"{package}@{version}", "version"],
+        timeout=TIMEOUT,
+        stdout=subprocess.DEVNULL,
+        stderr=subprocess.DEVNULL,
+    )
+    return result.returncode == 0
+
+def pypi_has(package: str) -> bool:
+    with urllib.request.urlopen(f"https://pypi.org/pypi/{package}/json", timeout=TIMEOUT) as response:
+        payload = json.load(response)
+    return version in payload.get("releases", {})
+
+checks = [
+    ("crates.io", "relateby-pattern", lambda: crates_io_has("relateby-pattern")),
+    ("crates.io", "relateby-gram", lambda: crates_io_has("relateby-gram")),
+    ("npm", "@relateby/pattern", lambda: npm_has("@relateby/pattern")),
+    ("npm", "@relateby/graph", lambda: npm_has("@relateby/graph")),
+    ("npm", "@relateby/gram", lambda: npm_has("@relateby/gram")),
+    ("PyPI", "relateby-pattern", lambda: pypi_has("relateby-pattern")),
+]
+
+try:
+    for registry, subject, check in checks:
+        if check():
+            print(f"{registry}:{subject}:{version}")
+            raise SystemExit(0)
+except (urllib.error.URLError, subprocess.TimeoutExpired, TimeoutError, OSError) as exc:
+    print(f"release version lookup failed: {exc}", file=sys.stderr)
+    raise SystemExit(2)
+
+raise SystemExit(1)
+PY
+}
+
 release_typescript_pattern_dir() {
     local repo_root
     repo_root="${1:-$(release_repo_root)}"
@@ -101,9 +181,12 @@ release_manifests() {
     cat <<EOF
 $repo_root/Cargo.toml
 $repo_root/crates/gram-codec/Cargo.toml
+$repo_root/crates/pato/Cargo.toml
 $ts_pattern_dir/package.json
 $ts_graph_dir/package.json
 $ts_gram_dir/package.json
+$repo_root/package-lock.json
+$repo_root/examples/typescript/graph/package-lock.json
 $python_pkg_dir/pyproject.toml
 EOF
 }
@@ -142,6 +225,30 @@ def replace(pattern: str, replacement: str, path: Path) -> None:
         raise SystemExit(f"pattern not found in {path}")
     path.write_text(new_text, encoding="utf-8")
 
+def update_package_json(path: Path, *, depends_on_pattern: bool = False) -> None:
+    pkg = json.loads(path.read_text(encoding="utf-8"))
+    pkg["version"] = version
+    if depends_on_pattern:
+        pkg.setdefault("dependencies", {})["@relateby/pattern"] = version
+    path.write_text(json.dumps(pkg, indent=2) + "\n", encoding="utf-8")
+
+def update_lockfile(path: Path, workspace_paths, pattern_dependency_owner=None):
+    lock = json.loads(path.read_text(encoding="utf-8"))
+    packages = lock.get("packages", {})
+    for workspace_path in workspace_paths:
+        package = packages.get(workspace_path)
+        if package is None:
+            raise SystemExit(f"workspace entry not found in {path}: {workspace_path}")
+        package["version"] = version
+        if workspace_path.endswith("/gram"):
+            package.setdefault("dependencies", {})["@relateby/pattern"] = version
+    if pattern_dependency_owner is not None:
+        dependency = lock.get("dependencies", {}).get(pattern_dependency_owner)
+        if dependency is None:
+            raise SystemExit(f"dependency entry not found in {path}: {pattern_dependency_owner}")
+        dependency.setdefault("requires", {})["@relateby/pattern"] = version
+    path.write_text(json.dumps(lock, indent=2) + "\n", encoding="utf-8")
+
 replace(
     r'(^\[workspace\.package\]\n(?:.*\n)*?version = ")[^"]+(")',
     rf'\g<1>{version}\2',
@@ -152,19 +259,38 @@ replace(
     rf'\g<1>{version}\2',
     repo / "crates" / "gram-codec" / "Cargo.toml",
 )
+replace(
+    r'(pattern_core = \{ package = "relateby-pattern", path = "\.\./pattern-core", version = ")[^"]+(" \})',
+    rf'\g<1>{version}\2',
+    repo / "crates" / "pato" / "Cargo.toml",
+)
+replace(
+    r'(gram_codec = \{ package = "relateby-gram", path = "\.\./gram-codec", version = ")[^"]+(")',
+    rf'\g<1>{version}\2',
+    repo / "crates" / "pato" / "Cargo.toml",
+)
 
-package_paths = {
-    "pattern": repo / "typescript" / "packages" / "pattern" / "package.json",
-    "graph": repo / "typescript" / "packages" / "graph" / "package.json",
-    "gram": repo / "typescript" / "packages" / "gram" / "package.json",
-}
+update_package_json(repo / "typescript" / "packages" / "pattern" / "package.json")
+update_package_json(repo / "typescript" / "packages" / "graph" / "package.json")
+update_package_json(repo / "typescript" / "packages" / "gram" / "package.json", depends_on_pattern=True)
 
-for name, pkg_path in package_paths.items():
-    pkg = json.loads(pkg_path.read_text(encoding="utf-8"))
-    pkg["version"] = version
-    if name == "gram":
-        pkg.setdefault("dependencies", {})["@relateby/pattern"] = version
-    pkg_path.write_text(json.dumps(pkg, indent=2) + "\n", encoding="utf-8")
+update_lockfile(
+    repo / "package-lock.json",
+    [
+        "typescript/packages/pattern",
+        "typescript/packages/graph",
+        "typescript/packages/gram",
+    ],
+    pattern_dependency_owner="@relateby/gram",
+)
+
+update_lockfile(
+    repo / "examples" / "typescript" / "graph" / "package-lock.json",
+    [
+        "../../../typescript/packages/pattern",
+        "../../../typescript/packages/graph",
+    ],
+)
 
 pyproject_path = repo / "python" / "packages" / "relateby" / "pyproject.toml"
 replace(
@@ -202,6 +328,23 @@ gram_dep = re.search(
 if not gram_dep or gram_dep.group(1) != version:
     errors.append("gram-codec dependency version mismatch")
 
+proto = (repo / "crates" / "pato" / "Cargo.toml").read_text(encoding="utf-8")
+pato_pattern_dep = re.search(
+    r'^pattern_core = \{[^}]*version = "([^"]+)"[^}]*\}$',
+    proto,
+    re.M,
+)
+if not pato_pattern_dep or pato_pattern_dep.group(1) != version:
+    errors.append("pato dependency on relateby-pattern version mismatch")
+
+pato_gram_dep = re.search(
+    r'^gram_codec = \{[^}]*version = "([^"]+)"[^}]*\}$',
+    proto,
+    re.M,
+)
+if not pato_gram_dep or pato_gram_dep.group(1) != version:
+    errors.append("pato dependency on relateby-gram version mismatch")
+
 package_paths = {
     "pattern": repo / "typescript" / "packages" / "pattern" / "package.json",
     "graph": repo / "typescript" / "packages" / "graph" / "package.json",
@@ -214,6 +357,39 @@ for name, pkg_path in package_paths.items():
         errors.append(f"@relateby/{name} package version mismatch")
     if name == "gram" and pkg.get("dependencies", {}).get("@relateby/pattern") != version:
         errors.append("@relateby/gram dependency on @relateby/pattern version mismatch")
+
+def verify_lockfile(path: Path, workspace_paths, pattern_dependency_owner=None):
+    lock = json.loads(path.read_text(encoding="utf-8"))
+    packages = lock.get("packages", {})
+    for workspace_path in workspace_paths:
+        package = packages.get(workspace_path)
+        if package is None or package.get("version") != version:
+            errors.append(f"{path}: workspace entry version mismatch for {workspace_path}")
+        if workspace_path.endswith("/gram"):
+            if package is None or package.get("dependencies", {}).get("@relateby/pattern") != version:
+                errors.append(f"{path}: @relateby/gram dependency on @relateby/pattern version mismatch")
+    if pattern_dependency_owner is not None:
+        dependency = lock.get("dependencies", {}).get(pattern_dependency_owner)
+        if dependency is None or dependency.get("requires", {}).get("@relateby/pattern") != version:
+            errors.append(f"{path}: top-level dependency on @relateby/pattern version mismatch")
+
+verify_lockfile(
+    repo / "package-lock.json",
+    [
+        "typescript/packages/pattern",
+        "typescript/packages/graph",
+        "typescript/packages/gram",
+    ],
+    pattern_dependency_owner="@relateby/gram",
+)
+
+verify_lockfile(
+    repo / "examples" / "typescript" / "graph" / "package-lock.json",
+    [
+        "../../../typescript/packages/pattern",
+        "../../../typescript/packages/graph",
+    ],
+)
 
 pyproject_path = repo / "python" / "packages" / "relateby" / "pyproject.toml"
 pyproject = pyproject_path.read_text(encoding="utf-8")
