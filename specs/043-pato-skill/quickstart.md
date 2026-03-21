@@ -26,10 +26,23 @@ Validate the `pato skill` workflow end-to-end for the bundled canonical skill pa
 
 ## Run the default project install
 
-1. Build and run the command:
+When running from the repository root, `.agents/skills/pato/` already exists (the
+canonical source). The first `pato skill` invocation will succeed, but the project
+install target is the same directory, so you may see an "already exists" error if you
+run the command a second time. Use a separate temporary project directory or pass
+`--force` to replace.
+
+1. Run from the repository root (installs to `.agents/skills/pato/`; use `--force` to
+   overwrite if the directory already exists):
 
    ```bash
-   cargo run -p relateby-pato -- skill
+   cargo run -p relateby-pato -- skill --force
+   ```
+
+   Or run from a clean project directory:
+
+   ```bash
+   mkdir /tmp/my-project && cargo run -p relateby-pato -- skill
    ```
 
 2. Verify the installed project path exists and contains `SKILL.md`:

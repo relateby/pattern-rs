@@ -43,7 +43,6 @@ pub fn execute_with_context(
         scope: args.scope,
         target: args.target,
         allow_replace: args.force,
-        print_path_only: args.print_path,
     };
     let result = install_skill_with_context(&request, project_root, home_dir)?;
     let rendered = if args.print_path {

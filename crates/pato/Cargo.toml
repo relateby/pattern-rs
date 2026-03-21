@@ -13,6 +13,7 @@ keywords = ["cli", "gram", "skills"]
 categories = ["command-line-utilities"]
 include = [
     "/Cargo.toml",
+    "/README.md",
     "/build.rs",
     "/src/**",
     "/tests/**",

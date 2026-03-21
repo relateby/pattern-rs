@@ -116,14 +116,16 @@ testable workflow that is genuinely better captured as an executable helper.
 
 ## 5. Canonical Location In-Repo
 
-The canonical skill package should live with the `pato` crate, for example:
+The canonical skill package lives at the repository root:
 
 ```text
-crates/pato/skills/pato/
+.agents/skills/pato/
 ```
 
-This keeps the bundled artifact close to the command it documents, versioned with the
-crate, and easy to package into releases or future registry artifacts.
+This makes it Vercel-discoverable and keeps it alongside other agent skills in the
+repository. The `pato` crate mirrors this tree under `crates/pato/skill-package/pato/`
+for packaging (so published crates are self-contained), but `.agents/skills/pato/` is
+the single authoritative source of truth that `build.rs` reads at build time.
 
 The package should still use the published skill name `pato`, and its `SKILL.md`
 frontmatter should match the directory name exactly.
@@ -157,8 +159,11 @@ Defaults:
 |-------|--------|-------------|
 | project | `agents` | `.agents/skills/pato/` |
 | user | `agents` | `~/.agents/skills/pato/` |
-| project | `cursor` | `.cursor/skills/pato/` |
 | user | `cursor` | `~/.cursor/skills/pato/` |
+
+Project-scope installs are only supported for the `agents` target to preserve Vercel
+discoverability. Invoking `pato skill --scope project --target cursor` is rejected
+with an error.
 
 ### 6.3 Behavior
 
