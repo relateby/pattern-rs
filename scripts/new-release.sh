@@ -74,6 +74,12 @@ fi
 if release_version_published "$VERSION"; then
     release_error "Version $VERSION is already published"
     exit 1
+else
+    status=$?
+    if [[ $status -eq 2 ]]; then
+        release_error "Unable to verify whether $VERSION is already published"
+        exit 1
+    fi
 fi
 
 release_log "Creating release branch $BRANCH"
