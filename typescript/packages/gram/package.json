@@ -1,6 +1,6 @@
 {
   "name": "@relateby/gram",
-  "version": "0.2.7",
+  "version": "0.2.8",
   "description": "Gram notation codec for relateby",
   "license": "BSD-3-Clause",
   "repository": {
@@ -30,7 +30,7 @@
     "test:watch": "vitest"
   },
   "dependencies": {
-    "@relateby/pattern": "0.2.7"
+    "@relateby/pattern": "0.2.8"
   },
   "devDependencies": {
     "typescript": "^5.0.0",
