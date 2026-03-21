@@ -1,6 +1,6 @@
 {
   "name": "@relateby/pattern",
-  "version": "0.2.6",
+  "version": "0.2.7",
   "description": "Native TypeScript pattern and graph APIs for relateby",
   "license": "BSD-3-Clause",
   "repository": {
