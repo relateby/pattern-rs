@@ -6,6 +6,7 @@ SCRIPT_DIR="$(CDPATH="" cd "$(dirname "$0")" && pwd)"
 REPO_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
 
 # shellcheck source=./release/common.sh
+# shellcheck disable=SC1091
 source "$REPO_ROOT/scripts/release/common.sh"
 
 usage() {
@@ -14,7 +15,7 @@ Usage: ./scripts/new-release.sh [--push] <version>
 
 Prepare a stable release from main by:
   - verifying branch, cleanliness, and origin/main sync
-  - updating release-managed versions
+  - running the prerelease version bump and verification
   - running release validation
   - creating a release commit and annotated tag
 
@@ -64,9 +65,8 @@ if git -C "$REPO_ROOT" rev-parse "$TAG" >/dev/null 2>&1; then
     exit 1
 fi
 
-release_log "Updating release-managed versions"
-update_release_versions "$VERSION" "$REPO_ROOT"
-verify_release_versions "$VERSION" "$REPO_ROOT"
+release_log "Running prerelease version bump"
+"$REPO_ROOT/scripts/release/prerelease.sh" "$VERSION"
 
 release_log "Running release validation"
 run_release_validation "$REPO_ROOT"

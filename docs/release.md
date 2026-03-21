@@ -20,7 +20,7 @@ The `pattern-wasm` crate remains a discoverable adapter at `adapters/wasm/patter
    ```
 2. The script:
    - verifies `main`, a clean worktree, and `origin/main` sync
-   - updates release-managed versions
+   - runs `./scripts/release/prerelease.sh 0.2.0`
    - runs `./scripts/ci-local.sh --release`
    - creates a release commit
    - creates annotated tag `v0.2.0`
@@ -32,13 +32,16 @@ The `pattern-wasm` crate remains a discoverable adapter at `adapters/wasm/patter
 
 ## Release-managed versions
 
-The release script treats these files as the authoritative version set:
+The release scripts treat these files as the authoritative version set. The list is centralized in `scripts/release/common.sh` and shared by the prerelease and tagging steps:
 
 - `Cargo.toml`
 - `crates/gram-codec/Cargo.toml`
+- `crates/pato/Cargo.toml`
 - `typescript/packages/pattern/package.json`
 - `typescript/packages/graph/package.json`
 - `typescript/packages/gram/package.json`
+- `package-lock.json`
+- `examples/typescript/graph/package-lock.json`
 - `python/packages/relateby/pyproject.toml`
 
 ## Local validation

@@ -12,6 +12,7 @@ if [[ "${1:-}" == "--release" ]]; then
 fi
 
 # shellcheck source=./release/common.sh
+# shellcheck disable=SC1091
 source "$REPO_ROOT/scripts/release/common.sh"
 
 echo "🔨 Running local CI checks..."
@@ -218,9 +219,10 @@ echo ""
 
 if rustup target list --installed 2>/dev/null | grep -q wasm32-unknown-unknown; then
     if [[ $RELEASE_MODE -eq 1 ]]; then
-        run_check "WASM build" cargo build --target wasm32-unknown-unknown --workspace || true
+        # Only validate crates that are meant to compile for wasm.
+        run_check "WASM build" cargo build --target wasm32-unknown-unknown -p relateby-pattern -p relateby-gram -p pattern-wasm || true
     else
-        run_optional_check "WASM build" cargo build --target wasm32-unknown-unknown --workspace
+        run_optional_check "WASM build" cargo build --target wasm32-unknown-unknown -p relateby-pattern -p relateby-gram -p pattern-wasm
     fi
 else
     echo -e "${YELLOW}⚠${NC} wasm32-unknown-unknown target not installed"
