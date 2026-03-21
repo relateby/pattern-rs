@@ -123,8 +123,12 @@ The canonical skill package should live in the repository's Agent Skills tree:
 ```
 
 The crate keeps a packaged mirror of that tree under `crates/pato/skill-package/pato/`
-so release builds can bundle the same content without depending on the workspace
-source tree.
+for packaging, so release builds can bundle the same content without depending on the
+workspace source tree.
+This keeps it Vercel-discoverable and alongside other agent skills in the repository.
+The `pato` crate mirrors this tree under `crates/pato/skill-package/pato/`, but
+`.agents/skills/pato/` is the single authoritative source of truth that `build.rs`
+reads at build time.
 
 The package should still use the published skill name `pato`, and its `SKILL.md`
 frontmatter should match the directory name exactly.
@@ -160,9 +164,9 @@ Defaults:
 | user | `agents` | `~/.agents/skills/pato/` |
 | user | `cursor` | `~/.cursor/skills/pato/` |
 
-Project-scope installs are only supported for the interoperable `agents` target.
-`cursor` installs are user-scope only; `pato skill --scope project --target cursor`
-should be rejected.
+Project-scope installs are only supported for the interoperable `agents` target to
+preserve Vercel discoverability. Invoking `pato skill --scope project --target cursor`
+is rejected with an error.
 
 ### 6.3 Behavior
 

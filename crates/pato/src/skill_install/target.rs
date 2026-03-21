@@ -51,11 +51,9 @@ pub fn home_dir() -> Result<PathBuf, SkillInstallError> {
             return Ok(PathBuf::from(home));
         }
         if let (Some(drive), Some(path)) = (env::var_os("HOMEDRIVE"), env::var_os("HOMEPATH")) {
-            return Ok(PathBuf::from(format!(
-                "{}{}",
-                drive.to_string_lossy(),
-                path.to_string_lossy()
-            )));
+            let mut home = std::ffi::OsString::from(drive);
+            home.push(path);
+            return Ok(PathBuf::from(home));
         }
     }
 

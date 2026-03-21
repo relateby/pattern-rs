@@ -1,22 +1,84 @@
 use std::env;
-use std::fs::{self, File};
-use std::io::{self, Write};
+use std::fs;
 use std::path::{Path, PathBuf};
 
 fn main() {
-    let manifest_dir = PathBuf::from(env::var_os("CARGO_MANIFEST_DIR").expect("manifest dir"));
+    let manifest_dir =
+        PathBuf::from(env::var_os("CARGO_MANIFEST_DIR").expect("CARGO_MANIFEST_DIR not set"));
     let source_root = canonical_skill_root(&manifest_dir);
-    let out_dir = PathBuf::from(env::var_os("OUT_DIR").expect("out dir"));
-    let bundle_source = out_dir.join("skill_bundle.rs");
+    let out_dir = PathBuf::from(env::var_os("OUT_DIR").expect("OUT_DIR not set"));
 
-    let mut files = Vec::new();
-    collect_skill_files(&source_root, &source_root, &mut files)
-        .expect("canonical skill package should be readable");
-    files.sort_by(|left, right| left.0.cmp(&right.0));
-    write_bundle_source(&bundle_source, &files).expect("canonical skill package should embed");
-    emit_rerun_if_changed(&source_root).expect("rerun metadata should be writable");
+    // Collect files under the canonical skill root
+    let mut entries: Vec<(String, PathBuf)> = Vec::new();
+    collect_files(&source_root, &source_root, &mut entries);
+    entries.sort_by(|a, b| a.0.cmp(&b.0));
+
+    // Emit a Rust source file that statically embeds the bundle using include_bytes!
+    let mut code = String::from("pub static SKILL_BUNDLE: &[(&str, &[u8])] = &[\n");
+    for (rel_path, abs_path) in &entries {
+        // Use debug formatting for the include_bytes! argument so the generated code has a valid
+        // string literal (quotes and escapes included).
+        let abs_path_str = abs_path.to_str().expect("skill path must be valid UTF-8");
+        code.push_str(&format!(
+            "    ({:?}, include_bytes!({:?})),\n",
+            rel_path, abs_path_str
+        ));
+    }
+    code.push_str("];\n");
+
+    let bundle_path = out_dir.join("skill_bundle.rs");
+    fs::write(&bundle_path, code).expect("failed to write skill_bundle.rs");
+
+    // Tell cargo to re-run the build script if anything in the source tree changes
+    emit_rerun_if_changed(&source_root);
 }
 
+/// Recursively collect files under `current`, recording their path relative to `root`
+/// and the absolute path to the file.
+fn collect_files(root: &Path, current: &Path, entries: &mut Vec<(String, PathBuf)>) {
+    let read_dir = match fs::read_dir(current) {
+        Ok(rd) => rd,
+        Err(_) => return,
+    };
+    for entry in read_dir.flatten() {
+        let path = entry.path();
+        if path.is_dir() {
+            collect_files(root, &path, entries);
+        } else if path.is_file() {
+            let rel = match path.strip_prefix(root) {
+                Ok(r) => r,
+                Err(_) => continue,
+            };
+            let rel_str = rel
+                .to_str()
+                .expect("skill path must be valid UTF-8")
+                .replace('\\', "/");
+            entries.push((rel_str, path));
+        }
+    }
+}
+
+/// Emit cargo:rerun-if-changed for a path and all children so the build script runs
+/// when anything in the skill tree changes.
+fn emit_rerun_if_changed(root: &Path) {
+    println!("cargo:rerun-if-changed={}", root.display());
+
+    if let Ok(mut entries) = fs::read_dir(root) {
+        while let Some(Ok(entry)) = entries.next() {
+            let path = entry.path();
+            if path.is_dir() {
+                emit_rerun_if_changed(&path);
+            } else {
+                println!("cargo:rerun-if-changed={}", path.display());
+            }
+        }
+    }
+}
+
+/// Determine the canonical skill root to embed. Preference order:
+/// 1. workspace `.agents/skills/pato` (if present)
+/// 2. `skill-package/pato` in the crate (if present)
+/// 3. fallback to `skill-package/pato` (even if absent) so build errors are clear
 fn canonical_skill_root(manifest_dir: &Path) -> PathBuf {
     let workspace_root = manifest_dir
         .ancestors()
@@ -32,73 +94,6 @@ fn canonical_skill_root(manifest_dir: &Path) -> PathBuf {
         return packaged_root;
     }
 
+    // Fallback: return the packaged path so build errors later surface clearly
     packaged_root
-}
-
-fn collect_skill_files(
-    root: &Path,
-    current: &Path,
-    files: &mut Vec<(PathBuf, String)>,
-) -> io::Result<()> {
-    for entry in fs::read_dir(current)? {
-        let entry = entry?;
-        let path = entry.path();
-
-        if path.is_dir() {
-            collect_skill_files(root, &path, files)?;
-        } else if path.is_file() {
-            let relative = path
-                .strip_prefix(root)
-                .expect("source file should be under skill root")
-                .to_path_buf();
-            let contents = fs::read_to_string(&path)?;
-            files.push((relative, contents));
-        }
-    }
-
-    Ok(())
-}
-
-fn write_bundle_source(path: &Path, files: &[(PathBuf, String)]) -> io::Result<()> {
-    let mut output = File::create(path)?;
-    writeln!(
-        output,
-        "pub fn materialize_embedded_skill_bundle(root: &std::path::Path) -> std::io::Result<()> {{"
-    )?;
-    writeln!(output, "    use std::fs;")?;
-    writeln!(output, "    fs::create_dir_all(root)?;")?;
-    writeln!(output, "    for (relative_path, contents) in [")?;
-
-    for (relative_path, contents) in files {
-        writeln!(
-            output,
-            "        ({:?}, {:?}),",
-            relative_path.to_string_lossy().replace('\\', "/"),
-            contents
-        )?;
-    }
-
-    writeln!(output, "    ] {{")?;
-    writeln!(output, "        let path = root.join(relative_path);")?;
-    writeln!(output, "        if let Some(parent) = path.parent() {{")?;
-    writeln!(output, "            fs::create_dir_all(parent)?;")?;
-    writeln!(output, "        }}")?;
-    writeln!(output, "        fs::write(path, contents)?;")?;
-    writeln!(output, "    }}")?;
-    writeln!(output, "    Ok(())")?;
-    writeln!(output, "}}")?;
-    Ok(())
-}
-
-fn emit_rerun_if_changed(path: &Path) -> io::Result<()> {
-    println!("cargo:rerun-if-changed={}", path.display());
-
-    if path.is_dir() {
-        for entry in fs::read_dir(path)? {
-            let entry = entry?;
-            emit_rerun_if_changed(&entry.path())?;
-        }
-    }
-
-    Ok(())
 }

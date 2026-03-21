@@ -27,7 +27,9 @@ fn print_path_only_outputs_resolved_path() {
     let stdout = String::from_utf8(output.stdout).expect("stdout should be utf8");
     let installed_path = fs::canonicalize(project_root.join(".agents/skills/pato"))
         .expect("installed path should exist");
-    assert_eq!(stdout.trim(), installed_path.display().to_string());
+    let printed_path =
+        fs::canonicalize(Path::new(stdout.trim())).expect("printed path should resolve");
+    assert_eq!(printed_path, installed_path);
 }
 
 #[test]
@@ -115,10 +117,17 @@ fn cargo_package_includes_the_canonical_skill_tree() {
 
     let stdout = String::from_utf8(output.stdout).expect("stdout should be utf8");
     assert!(stdout.contains("README.md"));
-    assert!(stdout.contains("skill-package/pato/SKILL.md"));
-    assert!(stdout.contains("skill-package/pato/references/workflows.md"));
-    assert!(stdout.contains("skill-package/pato/references/output-contracts.md"));
-    assert!(stdout.contains("skill-package/pato/assets/examples.md"));
+    for relative_path in &[
+        "SKILL.md",
+        "references/workflows.md",
+        "references/output-contracts.md",
+        "assets/examples.md",
+    ] {
+        assert!(
+            stdout.contains(&format!("skill-package/pato/{relative_path}")),
+            "cargo package list should include skill-package/pato/{relative_path}"
+        );
+    }
 }
 
 fn assert_skill_tree_matches(canonical_root: &Path, packaged_root: &Path) {

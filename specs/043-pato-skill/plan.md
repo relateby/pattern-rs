@@ -1,7 +1,7 @@
 # Implementation Plan: `pato skill`
 
-**Branch**: `043-pato-skill` | **Date**: 2026-03-20 | **Spec**: [`/Users/akollegger/Developer/gram-data/pattern-rs/specs/043-pato-skill/spec.md`](/Users/akollegger/Developer/gram-data/pattern-rs/specs/043-pato-skill/spec.md)
-**Input**: Feature specification from `/specs/043-pato-skill/spec.md`
+**Branch**: `043-pato-skill` | **Date**: 2026-03-20 | **Spec**: [`specs/043-pato-skill/spec.md`](specs/043-pato-skill/spec.md)
+**Input**: Feature specification from `specs/043-pato-skill/spec.md`
 
 ## Summary
 

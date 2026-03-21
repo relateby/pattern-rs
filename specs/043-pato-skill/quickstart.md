@@ -26,11 +26,13 @@ Validate the `pato skill` workflow end-to-end for the bundled canonical skill pa
 
 ## Run the default project install
 
-1. Build and run the command from a clean throwaway project directory:
+1. Build and run the command from a clean throwaway project directory, using the
+   repository manifest path:
 
    ```bash
+   repo_root="$(git rev-parse --show-toplevel)"
    cd "$(mktemp -d)"
-   cargo run -p relateby-pato -- skill
+   cargo run --manifest-path "$repo_root/Cargo.toml" -p relateby-pato -- skill
    ```
 
 2. Verify the installed project path exists and contains `SKILL.md`:
@@ -40,6 +42,13 @@ Validate the `pato skill` workflow end-to-end for the bundled canonical skill pa
    ```
 
 3. Confirm the command reports the resolved install destination.
+
+If you want to run from the repository root instead, pass `--force` because the
+canonical source tree already exists there:
+
+```bash
+cargo run -p relateby-pato -- skill --force
+```
 
 ## Run user-scope installs
 
