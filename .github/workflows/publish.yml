@@ -82,7 +82,6 @@ jobs:
           node-version: '22'
           cache: 'npm'
           cache-dependency-path: package-lock.json
-          registry-url: 'https://registry.npmjs.org'
       - name: Install wasm-pack
         run: cargo install wasm-pack
       - name: Install dependencies
@@ -136,7 +135,6 @@ jobs:
       - uses: actions/setup-node@v6
         with:
           node-version: '20'
-          registry-url: 'https://registry.npmjs.org'
       - uses: actions/setup-python@v6
         with:
           python-version: '3.12'

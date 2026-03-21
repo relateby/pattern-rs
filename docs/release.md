@@ -95,10 +95,10 @@ Maintainer notes:
 Do not commit credentials. Configure GitHub Actions secrets instead:
 
 - `CARGO_REGISTRY_TOKEN`
-- `NPM_TOKEN`
 - `PYPI_API_TOKEN`
 
-The publish workflow reads tokens from Actions secrets and performs all registry writes remotely.
+The npm publish workflow uses GitHub Actions trusted publishing with OIDC for `@relateby/*` and does not require an `NPM_TOKEN` secret.
+The crates.io and PyPI publish steps still read their tokens from Actions secrets.
 
 ## Publish order
 
