@@ -7,7 +7,17 @@ authors.workspace = true
 license.workspace = true
 description = "CLI tooling for gram files"
 repository.workspace = true
+readme = "README.md"
 build = "build.rs"
+keywords = ["cli", "gram", "skills"]
+categories = ["command-line-utilities"]
+include = [
+    "/Cargo.toml",
+    "/build.rs",
+    "/src/**",
+    "/tests/**",
+    "/skill-package/pato/**",
+]
 
 [[bin]]
 name = "pato"

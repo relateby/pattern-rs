@@ -105,7 +105,7 @@
 
 **Purpose**: Packaging verification, documentation alignment, and code-quality validation across all stories.
 
-- [ ] T024 [P] Add bundled asset packaging verification coverage in `crates/pato/tests/skill_tests.rs` and finalize package include rules in `crates/pato/Cargo.toml`
+- [X] T024 [P] Add bundled asset packaging verification coverage in `crates/pato/tests/skill_tests.rs` and finalize package include rules in `crates/pato/Cargo.toml`
 - [X] T025 Update `specs/043-pato-skill/quickstart.md` with the final `pato skill` flags and validation steps
 - [X] T026 [P] Run `cargo fmt --all` and fix formatting issues across `.agents/skills/pato/` and `crates/pato/`
 - [X] T027 [P] Run `cargo clippy --workspace -- -D warnings` and fix warnings affecting `crates/pato/`

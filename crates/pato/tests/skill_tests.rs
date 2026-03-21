@@ -96,6 +96,35 @@ fn canonical_package_has_skill_metadata_and_support_files() {
     assert!(skill_root.join("assets/examples.md").exists());
 }
 
+#[test]
+fn cargo_package_includes_the_canonical_skill_tree() {
+    let repo_root = repo_root();
+    let crate_root = Path::new(env!("CARGO_MANIFEST_DIR"));
+    let canonical_skill_root = repo_root.join(".agents/skills/pato");
+    let packaged_skill_root = crate_root.join("skill-package/pato");
+
+    let canonical_skill = fs::read_to_string(canonical_skill_root.join("SKILL.md"))
+        .expect("canonical SKILL.md should load");
+    let packaged_skill = fs::read_to_string(packaged_skill_root.join("SKILL.md"))
+        .expect("packaged SKILL.md should load");
+    assert_eq!(packaged_skill, canonical_skill);
+
+    let output = Command::new("cargo")
+        .current_dir(crate_root)
+        .args(["package", "--allow-dirty", "--no-verify", "--list"])
+        .output()
+        .expect("cargo package should run");
+
+    assert_eq!(output.status.code(), Some(0));
+
+    let stdout = String::from_utf8(output.stdout).expect("stdout should be utf8");
+    assert!(stdout.contains("README.md"));
+    assert!(stdout.contains("skill-package/pato/SKILL.md"));
+    assert!(stdout.contains("skill-package/pato/references/workflows.md"));
+    assert!(stdout.contains("skill-package/pato/references/output-contracts.md"));
+    assert!(stdout.contains("skill-package/pato/assets/examples.md"));
+}
+
 fn run_pato<I, S>(cwd: &Path, home: Option<&Path>, args: I) -> std::process::Output
 where
     I: IntoIterator<Item = S>,
