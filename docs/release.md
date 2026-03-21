@@ -20,15 +20,19 @@ The `pattern-wasm` crate remains a discoverable adapter at `adapters/wasm/patter
    ```
 2. The script:
    - verifies `main`, a clean worktree, and `origin/main` sync
+   - creates `release/v0.2.0`
    - runs `./scripts/release/prerelease.sh 0.2.0`
-   - runs `./scripts/ci-local.sh --release`
-   - creates a release commit
-   - creates annotated tag `v0.2.0`
-3. Push the prepared release:
+   - creates a release commit on the branch
+3. Push the prepared release branch:
    ```bash
-   git push origin main --follow-tags
+   git push -u origin release/v0.2.0
    ```
-4. GitHub Actions validates the release again and publishes automatically.
+4. Open a PR from `release/v0.2.0` to `main` and merge it after review and validation.
+5. Finalize the release from a clean `main` checkout:
+   ```bash
+   ./scripts/release/finalize-release.sh 0.2.0 --push
+   ```
+6. GitHub Actions validates the final tag and publishes automatically.
 
 ## Release-managed versions
 
@@ -68,6 +72,12 @@ Release mode checks:
 - packed-artifact smoke install covering the public npm package surface
 - combined Python wheel build, public stub validation, metadata check, packaged-stub verification, and wheel smoke install
 
+Release preparation checks:
+
+- release branch creation and version bump happen before the stable tag exists
+- release finalization runs from `main` only after the release branch is merged
+- stable tags are created only after the final validation pass and only for unpublished versions
+
 Maintainer notes:
 
 - Native Rust validation excludes `pattern-wasm`; that crate is validated in the dedicated WASM build because it is a wasm-target package.
@@ -76,6 +86,7 @@ Maintainer notes:
 ## Stable tags only
 
 - Valid publish tags are `v<major>.<minor>.<patch>`
+- Create the stable tag only after the release branch has been merged and validation has passed
 - npm publishing is stable-only
 - non-stable tags must not publish
 
@@ -132,6 +143,7 @@ Release validation is expected to fail if docs, stubs, runtime exports, or smoke
 
 ## Recovery
 
-- If local release preparation fails, fix the issue and rerun `./scripts/new-release.sh <version>`.
-- If remote validation fails, no registry publish should occur; fix forward and cut a new tag.
+- If local release branch preparation fails, fix the issue on the release branch and rerun the branch validation.
+- If finalization fails before tagging, correct the issue and rerun `./scripts/release/finalize-release.sh <version>`.
+- If remote validation fails, no registry publish should occur; fix forward on the release branch and re-finalize.
 - If one immutable registry publish succeeds and a later publish step fails, do not attempt to republish the same version. Follow up with a new patch release.
