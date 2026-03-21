@@ -105,11 +105,23 @@ fn cargo_package_includes_the_canonical_skill_tree() {
     let canonical_skill_root = repo_root.join(".agents/skills/pato");
     let packaged_skill_root = crate_root.join("skill-package/pato");
 
-    let canonical_skill = fs::read_to_string(canonical_skill_root.join("SKILL.md"))
-        .expect("canonical SKILL.md should load");
-    let packaged_skill = fs::read_to_string(packaged_skill_root.join("SKILL.md"))
-        .expect("packaged SKILL.md should load");
-    assert_eq!(packaged_skill, canonical_skill);
+    let skill_files = [
+        "SKILL.md",
+        "references/workflows.md",
+        "references/output-contracts.md",
+        "assets/examples.md",
+    ];
+
+    for relative_path in &skill_files {
+        let canonical_content = fs::read_to_string(canonical_skill_root.join(relative_path))
+            .unwrap_or_else(|_| panic!("canonical {relative_path} should load"));
+        let packaged_content = fs::read_to_string(packaged_skill_root.join(relative_path))
+            .unwrap_or_else(|_| panic!("packaged {relative_path} should load"));
+        assert_eq!(
+            packaged_content, canonical_content,
+            "packaged {relative_path} must match canonical"
+        );
+    }
 
     let output = Command::new("cargo")
         .current_dir(crate_root)
@@ -121,10 +133,12 @@ fn cargo_package_includes_the_canonical_skill_tree() {
 
     let stdout = String::from_utf8(output.stdout).expect("stdout should be utf8");
     assert!(stdout.contains("README.md"));
-    assert!(stdout.contains("skill-package/pato/SKILL.md"));
-    assert!(stdout.contains("skill-package/pato/references/workflows.md"));
-    assert!(stdout.contains("skill-package/pato/references/output-contracts.md"));
-    assert!(stdout.contains("skill-package/pato/assets/examples.md"));
+    for relative_path in &skill_files {
+        assert!(
+            stdout.contains(&format!("skill-package/pato/{relative_path}")),
+            "cargo package list should include skill-package/pato/{relative_path}"
+        );
+    }
 }
 
 fn run_pato<I, S>(cwd: &Path, home: Option<&Path>, args: I) -> std::process::Output

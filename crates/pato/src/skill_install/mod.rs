@@ -2,7 +2,7 @@ pub mod package;
 pub mod target;
 
 pub use crate::cli::{SkillScopeArg, SkillTargetArg};
-use crate::skill_install::package::{canonical_repository_skill_root, validate_canonical_package};
+use crate::skill_install::package::{install_skill_from_bundle, validate_canonical_bundle};
 use crate::skill_install::target::{home_dir, resolve_install_target};
 use std::fs;
 use std::io;
@@ -21,7 +21,6 @@ pub struct InstallRequest {
     pub scope: SkillScopeArg,
     pub target: SkillTargetArg,
     pub allow_replace: bool,
-    pub print_path_only: bool,
 }
 
 #[derive(Clone, Debug, Eq, PartialEq)]
@@ -30,7 +29,6 @@ pub struct InstallResult {
     pub skill_name: String,
     pub installed_path: PathBuf,
     pub replaced_existing: bool,
-    pub source_root: PathBuf,
     pub vercel_discoverable: bool,
 }
 
@@ -83,21 +81,9 @@ pub fn install_skill_with_context(
     project_root: &Path,
     home_dir: &Path,
 ) -> Result<InstallResult, SkillInstallError> {
-    let source_root = canonical_repository_skill_root();
-    validate_canonical_package(&source_root)?;
+    validate_canonical_bundle()?;
 
     let target = resolve_install_target(project_root, home_dir, request.scope, request.target)?;
-
-    if same_path(&source_root, &target.resolved_path)? {
-        return Ok(InstallResult {
-            status: InstallStatus::Created,
-            skill_name: "pato".to_string(),
-            installed_path: target.resolved_path,
-            replaced_existing: false,
-            source_root,
-            vercel_discoverable: target.vercel_discoverable,
-        });
-    }
 
     let had_existing = target.resolved_path.exists();
 
@@ -115,7 +101,7 @@ pub fn install_skill_with_context(
         })?;
     }
 
-    copy_skill_tree(&source_root, &target.resolved_path).map_err(|source| {
+    install_skill_from_bundle(&target.resolved_path).map_err(|source| {
         SkillInstallError::InstallWriteFailed {
             path: target.resolved_path.clone(),
             source,
@@ -131,57 +117,6 @@ pub fn install_skill_with_context(
         skill_name: "pato".to_string(),
         installed_path: target.resolved_path,
         replaced_existing: had_existing,
-        source_root,
         vercel_discoverable: target.vercel_discoverable,
     })
-}
-
-fn copy_skill_tree(source: &Path, destination: &Path) -> io::Result<()> {
-    if destination.exists() {
-        return Err(io::Error::new(
-            io::ErrorKind::AlreadyExists,
-            format!(
-                "destination already exists: {}; remove it before calling copy_skill_tree",
-                destination.display()
-            ),
-        ));
-    }
-
-    fs::create_dir_all(destination)?;
-    for entry in fs::read_dir(source)? {
-        let entry = entry?;
-        let source_path = entry.path();
-        let destination_path = destination.join(entry.file_name());
-
-        if source_path.is_dir() {
-            copy_skill_tree(&source_path, &destination_path)?;
-        } else if source_path.is_file() {
-            if let Some(parent) = destination_path.parent() {
-                fs::create_dir_all(parent)?;
-            }
-            fs::copy(&source_path, &destination_path)?;
-        }
-    }
-
-    Ok(())
-}
-
-fn same_path(left: &Path, right: &Path) -> Result<bool, SkillInstallError> {
-    if !left.exists() || !right.exists() {
-        return Ok(false);
-    }
-
-    let left = left
-        .canonicalize()
-        .map_err(|source| SkillInstallError::InstallInspectFailed {
-            path: left.to_path_buf(),
-            source,
-        })?;
-    let right = right
-        .canonicalize()
-        .map_err(|source| SkillInstallError::InstallInspectFailed {
-            path: right.to_path_buf(),
-            source,
-        })?;
-    Ok(left == right)
 }
