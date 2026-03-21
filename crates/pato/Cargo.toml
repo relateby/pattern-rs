@@ -15,7 +15,7 @@ include = [
     "/Cargo.toml",
     "/README.md",
     "/build.rs",
-    "/README.md",
+    "/build.rs",
     "/src/**",
     "/tests/**",
     "/skill-package/pato/**",
