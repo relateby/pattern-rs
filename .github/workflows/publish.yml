@@ -152,6 +152,8 @@ jobs:
           node-version: '22'
           cache: 'npm'
           cache-dependency-path: package-lock.json
+      - name: Update npm for trusted publishing
+        run: npm install -g npm@latest
       - name: Install wasm-pack
         run: cargo install wasm-pack
       - name: Install dependencies
