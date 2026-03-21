@@ -62,6 +62,76 @@ jobs:
         env:
           CARGO_REGISTRY_TOKEN: ${{ secrets.CARGO_REGISTRY_TOKEN }}
         run: cargo publish -p relateby-gram
+      - name: Wait for crates.io indexing
+        run: sleep 30
+      - name: Publish relateby-pato
+        env:
+          CARGO_REGISTRY_TOKEN: ${{ secrets.CARGO_REGISTRY_TOKEN }}
+        run: cargo publish -p relateby-pato
+
+  build-release-assets:
+    name: Build GitHub Release assets
+    runs-on: ${{ matrix.runner }}
+    needs: validate
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - runner: ubuntu-latest
+            artifact_name: pato-linux-x86_64
+            archive_suffix: linux-x86_64
+          - runner: macos-latest
+            artifact_name: pato-macos
+            archive_suffix: macos
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          submodules: true
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          components: rustfmt
+      - name: Build release binary
+        run: cargo build --release -p relateby-pato
+      - name: Package release artifact
+        env:
+          RELEASE_VERSION: ${{ needs.validate.outputs.version }}
+          ARCHIVE_SUFFIX: ${{ matrix.archive_suffix }}
+          ARTIFACT_NAME: ${{ matrix.artifact_name }}
+        run: |
+          mkdir -p "target/release-assets/pato-${RELEASE_VERSION}-${ARCHIVE_SUFFIX}"
+          cp "target/release/pato" "target/release-assets/pato-${RELEASE_VERSION}-${ARCHIVE_SUFFIX}/"
+          cp "crates/pato/README.md" "target/release-assets/pato-${RELEASE_VERSION}-${ARCHIVE_SUFFIX}/"
+          cp "LICENSE" "target/release-assets/pato-${RELEASE_VERSION}-${ARCHIVE_SUFFIX}/"
+          tar -C target/release-assets -czf "target/pato-${RELEASE_VERSION}-${ARCHIVE_SUFFIX}.tar.gz" "pato-${RELEASE_VERSION}-${ARCHIVE_SUFFIX}"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: ${{ matrix.artifact_name }}
+          path: target/pato-${{ needs.validate.outputs.version }}-${{ matrix.archive_suffix }}.tar.gz
+
+  publish-github-release:
+    name: Publish GitHub Release
+    runs-on: ubuntu-latest
+    needs: [validate, publish-crates, publish-npm, publish-python, build-release-assets]
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          name: pato-linux-x86_64
+          path: target/release-assets/linux
+      - uses: actions/download-artifact@v4
+        with:
+          name: pato-macos
+          path: target/release-assets/macos
+      - name: Create GitHub release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: |
+            target/release-assets/linux/pato-${{ needs.validate.outputs.version }}-linux-x86_64.tar.gz
+            target/release-assets/macos/pato-${{ needs.validate.outputs.version }}-macos.tar.gz
+          generate_release_notes: true
 
   publish-npm:
     name: Publish npm artifacts
@@ -127,7 +197,7 @@ jobs:
   verify-release:
     name: Verify published artifacts
     runs-on: ubuntu-latest
-    needs: [validate, publish-crates, publish-npm, publish-python]
+    needs: [validate, publish-crates, publish-npm, publish-python, publish-github-release]
     steps:
       - uses: actions/checkout@v6
         with:
@@ -148,7 +218,7 @@ jobs:
           import urllib.request
 
           version = os.environ["RELEASE_VERSION"]
-          for crate in ("relateby-pattern", "relateby-gram"):
+          for crate in ("relateby-pattern", "relateby-gram", "relateby-pato"):
               with urllib.request.urlopen(f"https://crates.io/api/v1/crates/{crate}") as response:
                   payload = json.load(response)
               versions = {item["num"] for item in payload.get("versions", [])}

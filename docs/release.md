@@ -4,6 +4,8 @@ This repository publishes stable release artifacts from the same release tag, ce
 
 - `relateby-pattern` on crates.io
 - `relateby-gram` on crates.io
+- `relateby-pato` on crates.io
+- GitHub Release assets for `pato` on Linux and macOS
 - `@relateby/pattern` on npm
 - `@relateby/graph` on npm
 - `@relateby/gram` on npm
@@ -66,7 +68,8 @@ Release mode checks:
 
 - Rust fmt, clippy, build, tests, docs
 - WASM workspace build
-- `cargo publish --dry-run` for both crates
+- `cargo publish --dry-run` for the Rust crates
+- `cargo build --release -p relateby-pato` plus packaged GitHub Release artifacts for Linux and macOS
 - `@relateby/pattern`, `@relateby/graph`, and `@relateby/gram` build and test validation
 - `@relateby/pattern` public export inventory and public consumer typecheck
 - packed-artifact smoke install covering the public npm package surface
@@ -106,16 +109,19 @@ The publish workflow validates first, then publishes:
 
 1. `relateby-pattern` crate
 2. `relateby-gram` crate
-3. `@relateby/pattern`
-4. `@relateby/graph`
-5. `@relateby/gram`
-6. `relateby-pattern` Python wheel
+3. `relateby-pato` crate
+4. `@relateby/pattern`
+5. `@relateby/graph`
+6. `@relateby/gram`
+7. `relateby-pattern` Python wheel
 
 ## Verification
 
 After publish:
 
-- Verify crates.io and docs.rs for `relateby-pattern` and `relateby-gram`
+- Verify crates.io and docs.rs for `relateby-pattern`, `relateby-gram`, and `relateby-pato`
+- Verify `cargo install relateby-pato` or the release artifact installs the `pato` binary cleanly
+- Verify the GitHub Release includes the `pato` download artifacts for Linux and macOS
 - Verify npm:
   ```bash
   npm view @relateby/pattern@0.2.0

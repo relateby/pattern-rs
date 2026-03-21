@@ -1,0 +1,198 @@
+use std::fs;
+use std::path::{Path, PathBuf};
+use std::process::Command;
+use std::time::{SystemTime, UNIX_EPOCH};
+
+#[test]
+fn default_project_install_creates_skill_and_reports_path() {
+    let project_root = unique_temp_dir("pato-skill-project");
+    let output = run_pato(&project_root, None, ["skill"]);
+
+    assert_eq!(output.status.code(), Some(0));
+
+    let stdout = String::from_utf8(output.stdout).expect("stdout should be utf8");
+    let installed_path = project_root.join(".agents/skills/pato");
+    assert!(stdout.contains(&installed_path.display().to_string()));
+    assert!(installed_path.join("SKILL.md").exists());
+    assert!(stdout.contains("installed pato skill"));
+}
+
+#[test]
+fn print_path_only_outputs_resolved_path() {
+    let project_root = unique_temp_dir("pato-skill-print-path");
+    let output = run_pato(&project_root, None, ["skill", "--print-path"]);
+
+    assert_eq!(output.status.code(), Some(0));
+
+    let stdout = String::from_utf8(output.stdout).expect("stdout should be utf8");
+    let installed_path = fs::canonicalize(project_root.join(".agents/skills/pato"))
+        .expect("installed path should exist");
+    let printed_path =
+        fs::canonicalize(Path::new(stdout.trim())).expect("printed path should resolve");
+    assert_eq!(printed_path, installed_path);
+}
+
+#[test]
+fn supported_scope_and_target_combinations_install_to_expected_locations() {
+    let project_root = unique_temp_dir("pato-skill-combos-project");
+    let home_root = unique_temp_dir("pato-skill-combos-home");
+
+    let user_interoperable = run_pato(
+        &project_root,
+        Some(&home_root),
+        ["skill", "--scope", "user"],
+    );
+    assert_eq!(user_interoperable.status.code(), Some(0));
+    assert!(home_root.join(".agents/skills/pato/SKILL.md").exists());
+
+    let user_cursor = run_pato(
+        &project_root,
+        Some(&home_root),
+        ["skill", "--scope", "user", "--target", "cursor", "--force"],
+    );
+    assert_eq!(user_cursor.status.code(), Some(0));
+    assert!(home_root.join(".cursor/skills/pato/SKILL.md").exists());
+}
+
+#[test]
+fn project_cursor_install_is_rejected() {
+    let project_root = unique_temp_dir("pato-skill-project-cursor");
+    let output = run_pato(
+        &project_root,
+        None,
+        ["skill", "--scope", "project", "--target", "cursor"],
+    );
+
+    assert_eq!(output.status.code(), Some(3));
+
+    let stderr = String::from_utf8(output.stderr).expect("stderr should be utf8");
+    assert!(stderr.contains("project installs must use"));
+}
+
+#[test]
+fn repeated_install_requires_force_to_replace_existing_skill() {
+    let project_root = unique_temp_dir("pato-skill-replace");
+
+    let first = run_pato(&project_root, None, ["skill"]);
+    assert_eq!(first.status.code(), Some(0));
+
+    let second = run_pato(&project_root, None, ["skill"]);
+    assert_eq!(second.status.code(), Some(3));
+    let stderr = String::from_utf8(second.stderr).expect("stderr should be utf8");
+    assert!(stderr.contains("replacement was not requested"));
+
+    let forced = run_pato(&project_root, None, ["skill", "--force"]);
+    assert_eq!(forced.status.code(), Some(0));
+}
+
+#[test]
+fn canonical_package_has_skill_metadata_and_support_files() {
+    let repo_root = repo_root();
+    let skill_root = repo_root.join(".agents/skills/pato");
+
+    let contents = fs::read_to_string(skill_root.join("SKILL.md")).expect("SKILL.md should load");
+    assert!(contents.contains("name: pato"));
+    assert!(contents.contains("description:"));
+    assert!(skill_root.join("references/workflows.md").exists());
+    assert!(skill_root.join("references/output-contracts.md").exists());
+    assert!(skill_root.join("assets/examples.md").exists());
+}
+
+#[test]
+fn cargo_package_includes_the_canonical_skill_tree() {
+    let repo_root = repo_root();
+    let crate_root = Path::new(env!("CARGO_MANIFEST_DIR"));
+    let canonical_skill_root = repo_root.join(".agents/skills/pato");
+    let packaged_skill_root = crate_root.join("skill-package/pato");
+
+    assert_skill_tree_matches(&canonical_skill_root, &packaged_skill_root);
+
+    let output = Command::new("cargo")
+        .current_dir(crate_root)
+        .args(["package", "--allow-dirty", "--no-verify", "--list"])
+        .output()
+        .expect("cargo package should run");
+
+    assert_eq!(output.status.code(), Some(0));
+
+    let stdout = String::from_utf8(output.stdout).expect("stdout should be utf8");
+    assert!(stdout.contains("README.md"));
+    for relative_path in &[
+        "SKILL.md",
+        "references/workflows.md",
+        "references/output-contracts.md",
+        "assets/examples.md",
+    ] {
+        assert!(
+            stdout.contains(&format!("skill-package/pato/{relative_path}")),
+            "cargo package list should include skill-package/pato/{relative_path}"
+        );
+    }
+}
+
+fn assert_skill_tree_matches(canonical_root: &Path, packaged_root: &Path) {
+    let canonical_files = collect_skill_files(canonical_root);
+    let packaged_files = collect_skill_files(packaged_root);
+
+    assert_eq!(packaged_files, canonical_files);
+}
+
+fn collect_skill_files(root: &Path) -> Vec<(String, String)> {
+    let mut files = Vec::new();
+    collect_skill_files_recursive(root, root, &mut files);
+    files.sort();
+    files
+}
+
+fn collect_skill_files_recursive(root: &Path, current: &Path, files: &mut Vec<(String, String)>) {
+    for entry in fs::read_dir(current).expect("skill tree should be readable") {
+        let entry = entry.expect("skill tree entry should be readable");
+        let path = entry.path();
+
+        if path.is_dir() {
+            collect_skill_files_recursive(root, &path, files);
+        } else if path.is_file() {
+            let relative = path
+                .strip_prefix(root)
+                .expect("skill file should be under root")
+                .to_string_lossy()
+                .replace('\\', "/");
+            let contents = fs::read_to_string(&path).expect("skill file should be utf8");
+            files.push((relative, contents));
+        }
+    }
+}
+
+fn run_pato<I, S>(cwd: &Path, home: Option<&Path>, args: I) -> std::process::Output
+where
+    I: IntoIterator<Item = S>,
+    S: AsRef<std::ffi::OsStr>,
+{
+    let mut command = Command::new(env!("CARGO_BIN_EXE_pato"));
+    command.current_dir(cwd).args(args);
+
+    if let Some(home) = home {
+        command.env("HOME", home);
+        command.env("USERPROFILE", home);
+    }
+
+    command.output().expect("pato command should run")
+}
+
+fn repo_root() -> PathBuf {
+    Path::new(env!("CARGO_MANIFEST_DIR"))
+        .ancestors()
+        .nth(2)
+        .expect("workspace root should exist")
+        .to_path_buf()
+}
+
+fn unique_temp_dir(prefix: &str) -> PathBuf {
+    let nonce = SystemTime::now()
+        .duration_since(UNIX_EPOCH)
+        .expect("clock should be after epoch")
+        .as_nanos();
+    let path = std::env::temp_dir().join(format!("{prefix}-{nonce}"));
+    fs::create_dir_all(&path).expect("temp dir should be created");
+    path
+}

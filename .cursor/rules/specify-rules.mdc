@@ -50,6 +50,8 @@ Auto-generated from all feature plans. Last updated: 2025-12-27
 - N/A (in-memory library bindings and generated package artifacts) (038-bindings-surface-fix)
 - Rust 1.70.0 workspace, TypeScript 5.x workspace packages, Python 3.8+ packaging, Bash automation, Markdown documentation + Cargo workspaces, npm workspaces, wasm-pack, maturin, pytest, vitest, GitHub Actions, repository documentation and release scripts (040-restructure-multilang-layout)
 - Rust 1.70.0 workspace, TypeScript 5.x workspace packages, Python 3.8+ packaging, Bash automation, Markdown documentation + Cargo workspaces, npm workspaces, wasm-pack, maturin, pytest, vitest, GitHub Actions, release scripts, repository documentation (040-restructure-multilang-layout)
+- Rust 1.70.0+ (workspace MSRV), Edition 2021 + `clap`, `std::fs`, `std::path`, existing `relateby-pato` crate modules; one asset-embedding helper may be added if needed to bundle the canonical skill tree from `.agents/skills/pato/` without duplicating source files (043-pato-skill)
+- Local filesystem only (043-pato-skill)
 - Bash scripts, GitHub Actions YAML, repo documentation; existing Rust/Node/Python toolchain remains unchanged + `git`, `cargo`, `npm`, `uv`, `maturin`, `twine`, `wasm-pack`, GitHub Actions, `gh` for maintainer-facing release operations (044-release-branch-flow)
 - Git refs, annotated tags, and GitHub repository metadata; no new application datastore (044-release-branch-flow)
 
@@ -71,6 +73,7 @@ cargo test [ONLY COMMANDS FOR ACTIVE TECHNOLOGIES][ONLY COMMANDS FOR ACTIVE TECH
 Rust (MSRV: 1.70.0, edition: 2021): Follow standard conventions
 
 ## Recent Changes
+- 043-pato-skill: Added Rust 1.70.0+ (workspace MSRV), Edition 2021 + `clap`, `std::fs`, `std::path`, existing `relateby-pato` crate modules; one asset-embedding helper may be added if needed to bundle the canonical skill tree from `.agents/skills/pato/` without duplicating source files
 - 044-release-branch-flow: Added Bash scripts, GitHub Actions YAML, repo documentation; existing Rust/Node/Python toolchain remains unchanged + `git`, `cargo`, `npm`, `uv`, `maturin`, `twine`, `wasm-pack`, GitHub Actions, `gh` for maintainer-facing release operations
 - 040-restructure-multilang-layout: Added Rust 1.70.0 workspace, TypeScript 5.x workspace packages, Python 3.8+ packaging, Bash automation, Markdown documentation + Cargo workspaces, npm workspaces, wasm-pack, maturin, pytest, vitest, GitHub Actions, release scripts, repository documentation
 - 040-restructure-multilang-layout: Added Rust 1.70.0 workspace, TypeScript 5.x workspace packages, Python 3.8+ packaging, Bash automation, Markdown documentation + Cargo workspaces, npm workspaces, wasm-pack, maturin, pytest, vitest, GitHub Actions, repository documentation and release scripts

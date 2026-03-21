@@ -1,0 +1,93 @@
+# Quickstart: `pato skill`
+
+## Goal
+
+Validate the `pato skill` workflow end-to-end for the bundled canonical skill package.
+
+## Preconditions
+
+- The canonical skill package exists at `.agents/skills/pato/`
+- The `pato` crate builds successfully
+- You are on branch `043-pato-skill`
+
+## Validate the canonical package
+
+1. Confirm the canonical package root exists:
+
+   ```bash
+   ls ".agents/skills/pato"
+   ```
+
+2. Confirm the required entry file exists:
+
+   ```bash
+   ls ".agents/skills/pato/SKILL.md"
+   ```
+
+## Run the default project install
+
+1. Build and run the command from a clean throwaway project directory, using the
+   repository manifest path:
+
+   ```bash
+   repo_root="$(git rev-parse --show-toplevel)"
+   cd "$(mktemp -d)"
+   cargo run --manifest-path "$repo_root/Cargo.toml" -p relateby-pato -- skill
+   ```
+
+2. Verify the installed project path exists and contains `SKILL.md`:
+
+   ```bash
+   ls ".agents/skills/pato"
+   ```
+
+3. Confirm the command reports the resolved install destination.
+
+If you want to run from the repository root instead, pass `--force` because the
+canonical source tree already exists there:
+
+```bash
+cargo run -p relateby-pato -- skill --force
+```
+
+## Run user-scope installs
+
+1. Interoperable user install:
+
+   ```bash
+   cargo run -p relateby-pato -- skill --scope user
+   ```
+
+2. Client-native user install:
+
+   ```bash
+   cargo run -p relateby-pato -- skill --scope user --target cursor
+   ```
+
+3. Verify each command writes only to its selected destination.
+
+## Validate overwrite protection
+
+1. Run an install once.
+2. Run the same install again without replacement enabled and confirm the command
+   fails without modifying the existing install.
+3. Re-run with explicit replacement enabled:
+
+   ```bash
+   cargo run -p relateby-pato -- skill --force
+   ```
+
+4. Confirm the install succeeds and the destination stays valid.
+
+## Validation commands
+
+Run the feature's core checks:
+
+```bash
+cargo test -p relateby-pato skill_tests
+cargo fmt --all -- --check
+cargo clippy --workspace -- -D warnings
+```
+
+If you need to validate the packaged artifact path, run a packaging dry run for
+`relateby-pato` and confirm the bundle contains the canonical skill files.
