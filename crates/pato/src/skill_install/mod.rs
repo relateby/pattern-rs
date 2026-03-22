@@ -40,13 +40,18 @@ pub enum SkillInstallError {
         target: SkillTargetArg,
         reason: String,
     },
-    #[error("canonical skill package missing at {path}: {source}")]
-    CanonicalPackageMissing { path: PathBuf, source: io::Error },
-    #[error("canonical skill package invalid at {path}: {reason}")]
-    InvalidCanonicalPackage { path: PathBuf, reason: String },
+    #[error("embedded skill bundle missing required file at {path}")]
+    EmbeddedBundleMissing { path: PathBuf },
+    #[error("embedded skill bundle contained invalid UTF-8 at {path}: {source}")]
+    EmbeddedBundleInvalidUtf8 {
+        path: PathBuf,
+        source: std::str::Utf8Error,
+    },
+    #[error("embedded skill bundle invalid at {path}: {reason}")]
+    InvalidEmbeddedBundle { path: PathBuf, reason: String },
     #[error("home directory unavailable")]
     HomeDirectoryUnavailable,
-    #[error("install target already exists at {path} and replacement was not requested")]
+    #[error("install target already exists at {path}; re-run with --force to replace it")]
     ExistingInstallPresent { path: PathBuf },
     #[error("failed to write install target {path}: {source}")]
     InstallWriteFailed { path: PathBuf, source: io::Error },
@@ -62,8 +67,9 @@ impl SkillInstallError {
             SkillInstallError::ExistingInstallPresent { .. }
             | SkillInstallError::UnsupportedInstallCombination { .. }
             | SkillInstallError::HomeDirectoryUnavailable => 3,
-            SkillInstallError::CanonicalPackageMissing { .. }
-            | SkillInstallError::InvalidCanonicalPackage { .. }
+            SkillInstallError::EmbeddedBundleMissing { .. }
+            | SkillInstallError::EmbeddedBundleInvalidUtf8 { .. }
+            | SkillInstallError::InvalidEmbeddedBundle { .. }
             | SkillInstallError::InstallWriteFailed { .. }
             | SkillInstallError::ExistingInstallRemoveFailed { .. }
             | SkillInstallError::InstallInspectFailed { .. } => 3,

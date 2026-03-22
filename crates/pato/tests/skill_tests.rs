@@ -15,6 +15,7 @@ fn default_project_install_creates_skill_and_reports_path() {
     assert!(stdout.contains(&installed_path.display().to_string()));
     assert!(installed_path.join("SKILL.md").exists());
     assert!(stdout.contains("installed pato skill"));
+    assert_install_matches_bundle(&installed_path);
 }
 
 #[test]
@@ -79,7 +80,7 @@ fn repeated_install_requires_force_to_replace_existing_skill() {
     let second = run_pato(&project_root, None, ["skill"]);
     assert_eq!(second.status.code(), Some(3));
     let stderr = String::from_utf8(second.stderr).expect("stderr should be utf8");
-    assert!(stderr.contains("replacement was not requested"));
+    assert!(stderr.contains("--force"));
 
     let forced = run_pato(&project_root, None, ["skill", "--force"]);
     assert_eq!(forced.status.code(), Some(0));
@@ -96,6 +97,19 @@ fn canonical_package_has_skill_metadata_and_support_files() {
     assert!(skill_root.join("references/workflows.md").exists());
     assert!(skill_root.join("references/output-contracts.md").exists());
     assert!(skill_root.join("assets/examples.md").exists());
+    assert!(skill_root.join("reference/gram.md").exists());
+    assert!(skill_root.join("reference/gram-patterns.md").exists());
+    assert!(skill_root.join("reference/gram-values.md").exists());
+    assert!(skill_root.join("reference/gram-records.md").exists());
+    assert!(skill_root.join("reference/gram-annotations.md").exists());
+    assert!(skill_root.join("reference/gram-graph_elements.md").exists());
+    assert!(skill_root
+        .join("reference/gram-path_equivalences.md")
+        .exists());
+    assert!(skill_root.join("reference/gram-graph_gram.md").exists());
+    assert!(skill_root
+        .join("reference/stdout-stderr-contracts.md")
+        .exists());
 }
 
 #[test]
@@ -104,7 +118,7 @@ fn cargo_package_includes_the_canonical_skill_tree() {
     let crate_root = Path::new(env!("CARGO_MANIFEST_DIR"));
     let canonical_skill_root = repo_root.join(".agents/skills/pato");
     let packaged_skill_root = crate_root.join("skill-package/pato");
-
+    assert_skill_bundle_matches_tree(&canonical_skill_root);
     assert_skill_tree_matches(&canonical_skill_root, &packaged_skill_root);
 
     let output = Command::new("cargo")
@@ -122,6 +136,15 @@ fn cargo_package_includes_the_canonical_skill_tree() {
         "references/workflows.md",
         "references/output-contracts.md",
         "assets/examples.md",
+        "reference/gram.md",
+        "reference/gram-patterns.md",
+        "reference/gram-values.md",
+        "reference/gram-records.md",
+        "reference/gram-annotations.md",
+        "reference/gram-graph_elements.md",
+        "reference/gram-path_equivalences.md",
+        "reference/gram-graph_gram.md",
+        "reference/stdout-stderr-contracts.md",
     ] {
         assert!(
             stdout.contains(&format!("skill-package/pato/{relative_path}")),
@@ -137,14 +160,54 @@ fn assert_skill_tree_matches(canonical_root: &Path, packaged_root: &Path) {
     assert_eq!(packaged_files, canonical_files);
 }
 
-fn collect_skill_files(root: &Path) -> Vec<(String, String)> {
+fn assert_skill_bundle_matches_tree(tree_root: &Path) {
+    let bundle_files = collect_skill_bundle_files();
+    let tree_files = collect_skill_files(tree_root);
+
+    assert_eq!(tree_files, bundle_files);
+}
+
+fn assert_install_matches_bundle(installed_root: &Path) {
+    let installed_files = collect_skill_files(installed_root);
+    let bundle_files = collect_skill_bundle_files();
+
+    assert_eq!(installed_files, bundle_files);
+    assert!(installed_root.join("reference/gram.md").exists());
+    assert!(installed_root.join("reference/gram-patterns.md").exists());
+    assert!(installed_root.join("reference/gram-values.md").exists());
+    assert!(installed_root.join("reference/gram-records.md").exists());
+    assert!(installed_root
+        .join("reference/gram-annotations.md")
+        .exists());
+    assert!(installed_root
+        .join("reference/gram-graph_elements.md")
+        .exists());
+    assert!(installed_root
+        .join("reference/gram-path_equivalences.md")
+        .exists());
+    assert!(installed_root.join("reference/gram-graph_gram.md").exists());
+    assert!(installed_root
+        .join("reference/stdout-stderr-contracts.md")
+        .exists());
+}
+
+fn collect_skill_bundle_files() -> Vec<(String, Vec<u8>)> {
+    let mut files = Vec::new();
+    for (relative, content) in relateby_pato::SKILL_BUNDLE {
+        files.push((relative.to_string(), content.to_vec()));
+    }
+    files.sort_by(|a, b| a.0.cmp(&b.0));
+    files
+}
+
+fn collect_skill_files(root: &Path) -> Vec<(String, Vec<u8>)> {
     let mut files = Vec::new();
     collect_skill_files_recursive(root, root, &mut files);
     files.sort();
     files
 }
 
-fn collect_skill_files_recursive(root: &Path, current: &Path, files: &mut Vec<(String, String)>) {
+fn collect_skill_files_recursive(root: &Path, current: &Path, files: &mut Vec<(String, Vec<u8>)>) {
     for entry in fs::read_dir(current).expect("skill tree should be readable") {
         let entry = entry.expect("skill tree entry should be readable");
         let path = entry.path();
@@ -157,7 +220,7 @@ fn collect_skill_files_recursive(root: &Path, current: &Path, files: &mut Vec<(S
                 .expect("skill file should be under root")
                 .to_string_lossy()
                 .replace('\\', "/");
-            let contents = fs::read_to_string(&path).expect("skill file should be utf8");
+            let contents = fs::read(&path).expect("skill file should be readable");
             files.push((relative, contents));
         }
     }

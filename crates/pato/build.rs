@@ -5,12 +5,37 @@ use std::path::{Path, PathBuf};
 fn main() {
     let manifest_dir =
         PathBuf::from(env::var_os("CARGO_MANIFEST_DIR").expect("CARGO_MANIFEST_DIR not set"));
-    let source_root = canonical_skill_root(&manifest_dir);
+    let source_root = authoritative_skill_root(&manifest_dir);
+    let packaged_root = manifest_dir.join("skill-package/pato");
+    let reference_root = packaged_root.join("reference");
     let out_dir = PathBuf::from(env::var_os("OUT_DIR").expect("OUT_DIR not set"));
 
-    // Collect files under the canonical skill root
+    // Collect topic files under the canonical reference root.
+    let mut topics: Vec<(String, PathBuf)> = Vec::new();
+    collect_markdown_files(&reference_root, &mut topics);
+    if topics.is_empty() {
+        panic!(
+            "no topic markdown files found under {}",
+            reference_root.display()
+        );
+    }
+    topics.sort_by(|a, b| a.0.cmp(&b.0));
+
+    let mut topic_catalog = String::from("pub static TOPICS: &[TopicEntry] = &[\n");
+    for (name, abs_path) in &topics {
+        let abs_path_str = abs_path.to_str().expect("topic path must be valid UTF-8");
+        topic_catalog.push_str(&format!(
+            "    TopicEntry {{ name: {:?}, content: include_str!({:?}) }},\n",
+            name, abs_path_str
+        ));
+    }
+    topic_catalog.push_str("];\n");
+    fs::write(out_dir.join("topic_catalog.rs"), topic_catalog)
+        .expect("failed to write topic_catalog.rs");
+
+    // Collect files under the canonical skill root for the install bundle.
     let mut entries: Vec<(String, PathBuf)> = Vec::new();
-    collect_files(&source_root, &source_root, &mut entries);
+    collect_files(&packaged_root, &packaged_root, &mut entries);
     entries.sort_by(|a, b| a.0.cmp(&b.0));
 
     // Emit a Rust source file that statically embeds the bundle using include_bytes!
@@ -31,6 +56,40 @@ fn main() {
 
     // Tell cargo to re-run the build script if anything in the source tree changes
     emit_rerun_if_changed(&source_root);
+    if source_root != packaged_root {
+        emit_rerun_if_changed(&packaged_root);
+    }
+}
+
+/// Collect markdown topic files directly under the reference directory.
+fn collect_markdown_files(root: &Path, entries: &mut Vec<(String, PathBuf)>) {
+    let read_dir = match fs::read_dir(root) {
+        Ok(rd) => rd,
+        Err(_) => return,
+    };
+
+    for entry in read_dir.flatten() {
+        let path = entry.path();
+        if !path.is_file() {
+            continue;
+        }
+
+        let is_markdown = path
+            .extension()
+            .and_then(|ext| ext.to_str())
+            .map(|ext| ext == "md")
+            .unwrap_or(false);
+        if !is_markdown {
+            continue;
+        }
+
+        let stem = match path.file_stem().and_then(|s| s.to_str()) {
+            Some(name) if !name.is_empty() => name.to_string(),
+            _ => continue,
+        };
+
+        entries.push((stem, path));
+    }
 }
 
 /// Recursively collect files under `current`, recording their path relative to `root`
@@ -75,11 +134,12 @@ fn emit_rerun_if_changed(root: &Path) {
     }
 }
 
-/// Determine the canonical skill root to embed. Preference order:
-/// 1. workspace `.agents/skills/pato` (if present)
-/// 2. `skill-package/pato` in the crate (if present)
-/// 3. fallback to `skill-package/pato` (even if absent) so build errors are clear
-fn canonical_skill_root(manifest_dir: &Path) -> PathBuf {
+/// Determine the authoritative source skill root.
+///
+/// Preference order:
+/// 1. workspace `.agents/skills/pato` (authoritative in this repo)
+/// 2. packaged `skill-package/pato` tree (used by published source packages)
+fn authoritative_skill_root(manifest_dir: &Path) -> PathBuf {
     let workspace_root = manifest_dir
         .ancestors()
         .nth(2)
@@ -94,6 +154,5 @@ fn canonical_skill_root(manifest_dir: &Path) -> PathBuf {
         return packaged_root;
     }
 
-    // Fallback: return the packaged path so build errors later surface clearly
     packaged_root
 }

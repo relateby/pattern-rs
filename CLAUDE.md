@@ -305,6 +305,8 @@ Key cursor rule highlights:
 - Local filesystem — gram files read/written in-place. Atomic writes (temp-file + rename). No database. (041-pato-cli)
 - Rust 1.70.0 (workspace MSRV), Edition 2021 + `tree-sitter` 0.25, `tree-sitter-gram` 0.3.4 (via path: `external/tree-sitter-gram/`), `pattern-core` (workspace), `nom` (retained for existing parser) (042-gram-cst-parser)
 - N/A — in-memory only (042-gram-cst-parser)
+- Rust 1.70.0 (workspace MSRV), Edition 2021 + `clap` v4 with derive (existing), no new dependencies (045-pato-help)
+- Topic content embedded in binary via `include_str!` (compile-time static) (045-pato-help)
 
 ## Recent Changes
 - 030-graph-classifier: Added Rust 1.70.0 (MSRV), Edition 2021 + std (HashMap, Vec, HashSet) — no new external crates required

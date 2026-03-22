@@ -2,7 +2,13 @@ use clap::{Parser, Subcommand, ValueEnum};
 use std::path::PathBuf;
 
 #[derive(Debug, Parser)]
-#[command(name = "pato", version, about = "CLI tooling for gram files")]
+#[command(
+    name = "pato",
+    version,
+    disable_help_subcommand = true,
+    about = "CLI tooling for gram files",
+    long_about = "CLI tooling for gram files.\n\nExamples:\n  pato --help\n  pato skill\n  pato help gram"
+)]
 pub struct Cli {
     #[command(subcommand)]
     pub command: Commands,
@@ -43,12 +49,41 @@ pub enum SkillTargetArg {
 
 #[derive(Debug, Subcommand)]
 pub enum Commands {
+    #[command(
+        about = "Lint gram files",
+        long_about = "Lint gram files and optionally apply fixes."
+    )]
     Lint(LintArgs),
+    #[command(
+        about = "Format gram files",
+        long_about = "Format gram files in place or check formatting without writing changes."
+    )]
     Fmt(FmtArgs),
+    #[command(
+        about = "Parse gram files",
+        long_about = "Parse gram files and render the result in a chosen output format."
+    )]
     Parse(ParseArgs),
+    #[command(
+        about = "Render grammar rules",
+        long_about = "Render grammar rules from gram code or from the current input stream."
+    )]
     Rule(RuleArgs),
+    #[command(
+        about = "Check gram files",
+        long_about = "Check gram files against an optional schema and report diagnostics."
+    )]
     Check(CheckArgs),
+    #[command(
+        about = "Manage the installed skill tree",
+        long_about = "Install or update the pato skill tree for the current scope."
+    )]
     Skill(SkillArgs),
+    #[command(
+        about = "Show help for a topic",
+        long_about = "Show the embedded help topic for a given subject."
+    )]
+    Help(HelpArgs),
     #[command(external_subcommand)]
     External(Vec<String>),
 }
@@ -116,4 +151,11 @@ pub struct SkillArgs {
 
     #[arg(long)]
     pub print_path: bool,
+}
+
+#[derive(Debug, clap::Args)]
+/// Help topic arguments.
+pub struct HelpArgs {
+    /// The topic name to show, such as `gram`.
+    pub topic: Option<String>,
 }

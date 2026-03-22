@@ -1,6 +1,6 @@
 use clap::{CommandFactory, FromArgMatches};
 use relateby_pato::cli::{Cli, Commands};
-use relateby_pato::commands::{check, fmt, lint, parse, rule, skill};
+use relateby_pato::commands::{check, fmt, help, lint, parse, rule, skill};
 use relateby_pato::diagnostic_gram;
 use relateby_pato::extensions;
 use relateby_pato::output::{OutputContext, OutputFormat};
@@ -63,6 +63,7 @@ fn main() -> ExitCode {
             ExitCode::from(outcome.exit_code() as u8)
         }
         Commands::Skill(args) => skill::run(args),
+        Commands::Help(args) => help::run(&args),
         Commands::External(args) => {
             let Some((subcommand, forwarded)) = args.split_first() else {
                 eprintln!("unknown subcommand: <unknown>");
