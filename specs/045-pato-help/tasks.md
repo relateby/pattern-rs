@@ -16,7 +16,7 @@
 
 **Purpose**: Create the topic corpus directory that all subsequent phases depend on.
 
-- [ ] T001 Create `crates/pato/skill-package/pato/reference/` directory. If `.agents/skills/pato/` already exists on this machine, also create `.agents/skills/pato/reference/` so that `build.rs` (which prefers the installed location) picks up the new topic files during compilation.
+- [X] T001 Create `crates/pato/skill-package/pato/reference/` directory. If `.agents/skills/pato/` already exists on this machine, also create `.agents/skills/pato/reference/` so that `build.rs` (which prefers the installed location) picks up the new topic files during compilation.
 
 ---
 
@@ -26,10 +26,10 @@
 
 **⚠️ CRITICAL**: No user story work can begin until this phase is complete.
 
-- [ ] T002 [P] Author topic file `crates/pato/skill-package/pato/reference/gram-notation.md` — include: one-sentence definition, syntax rules, semantic rules, 2–4 examples, related topics section
-- [ ] T003 [P] Author topic file `crates/pato/skill-package/pato/reference/stdout-stderr-contracts.md` — adapt from `crates/pato/skill-package/pato/references/output-contracts.md`; include: rule summary, rationale, what goes to stdout vs stderr, examples
-- [ ] T004 Create `crates/pato/src/topic_catalog.rs` with `TopicEntry` struct, `TOPICS: &[TopicEntry]` static using `include_str!` for each topic file, `find_topic(name: &str) -> Option<&'static TopicEntry>`, and `topic_names() -> impl Iterator<Item = &'static str>` (depends on T002, T003)
-- [ ] T005 Register `pub mod topic_catalog;` in `crates/pato/src/lib.rs` and verify `cargo build -p relateby-pato` compiles cleanly (proves embed paths resolve)
+- [X] T002 [P] Author topic file `crates/pato/skill-package/pato/reference/gram-notation.md` — include: one-sentence definition, syntax rules, semantic rules, 2–4 examples, related topics section
+- [X] T003 [P] Author topic file `crates/pato/skill-package/pato/reference/stdout-stderr-contracts.md` — adapt from `crates/pato/skill-package/pato/references/output-contracts.md`; include: rule summary, rationale, what goes to stdout vs stderr, examples
+- [X] T004 Create `crates/pato/src/topic_catalog.rs` with `TopicEntry` struct, `TOPICS: &[TopicEntry]` static using `include_str!` for each topic file, `find_topic(name: &str) -> Option<&'static TopicEntry>`, and `topic_names() -> impl Iterator<Item = &'static str>` (depends on T002, T003)
+- [X] T005 Register `pub mod topic_catalog;` in `crates/pato/src/lib.rs` and verify `cargo build -p relateby-pato` compiles cleanly (proves embed paths resolve)
 
 **Checkpoint**: `cargo build -p relateby-pato` succeeds — topic content is embedded in the binary.
 
@@ -43,8 +43,8 @@
 
 ### Implementation for User Story 1
 
-- [ ] T006 [US1] Update `crates/pato/src/cli.rs`: set concise `about` strings on all `Commands` enum variants so `-h` output is compact; set `long_about` on variants that need extended description for `--help`
-- [ ] T007 [US1] Add `Commands::Help(HelpArgs)` variant to the `Commands` enum in `crates/pato/src/cli.rs` with `about = "Show help for a topic"` so the help subcommand appears in `-h` output (depends on T006)
+- [X] T006 [US1] Update `crates/pato/src/cli.rs`: set concise `about` strings on all `Commands` enum variants so `-h` output is compact; set `long_about` on variants that need extended description for `--help`
+- [X] T007 [US1] Add `Commands::Help(HelpArgs)` variant to the `Commands` enum in `crates/pato/src/cli.rs` with `about = "Show help for a topic"` so the help subcommand appears in `-h` output (depends on T006)
 
 **Checkpoint**: `pato -h` shows a compact command list including `help`; `pato --help` shows full usage. User Story 1 is independently testable.
 
@@ -58,11 +58,11 @@
 
 ### Implementation for User Story 2
 
-- [ ] T008 [US2] Add `HelpArgs` struct to `crates/pato/src/cli.rs` with `topic: Option<String>` field and doc comment (depends on T007)
-- [ ] T009 [US2] Create `crates/pato/src/commands/help.rs` implementing `pub fn run(args: &HelpArgs) -> ExitCode` — known topic prints content to stdout and returns `ExitCode::SUCCESS`; no topic or unknown topic prints error and topic list to stderr and returns `ExitCode::FAILURE` (depends on T004, T008)
-- [ ] T010 [US2] Register `pub mod help;` in `crates/pato/src/commands/mod.rs` (depends on T009)
-- [ ] T011 [US2] Add `Commands::Help(args) => commands::help::run(&args)` dispatch arm in `crates/pato/src/main.rs` (depends on T010)
-- [ ] T012 [US2] Write integration tests in `crates/pato/tests/help_tests.rs` covering: known topic exits 0 and stdout contains content; unknown topic exits 1 and stderr contains error + topic list; no topic exits 1 and stderr contains topic list; all catalog entries resolve to non-empty content; stdout for a topic containing a fenced code block includes the opening fence (` ``` `) intact and untruncated (depends on T011)
+- [X] T008 [US2] Add `HelpArgs` struct to `crates/pato/src/cli.rs` with `topic: Option<String>` field and doc comment (depends on T007)
+- [X] T009 [US2] Create `crates/pato/src/commands/help.rs` implementing `pub fn run(args: &HelpArgs) -> ExitCode` — known topic prints content to stdout and returns `ExitCode::SUCCESS`; no topic or unknown topic prints error and topic list to stderr and returns `ExitCode::FAILURE` (depends on T004, T008)
+- [X] T010 [US2] Register `pub mod help;` in `crates/pato/src/commands/mod.rs` (depends on T009)
+- [X] T011 [US2] Add `Commands::Help(args) => commands::help::run(&args)` dispatch arm in `crates/pato/src/main.rs` (depends on T010)
+- [X] T012 [US2] Write integration tests in `crates/pato/tests/help_tests.rs` covering: known topic exits 0 and stdout contains content; unknown topic exits 1 and stderr contains error + topic list; no topic exits 1 and stderr contains topic list; all catalog entries resolve to non-empty content; stdout for a topic containing a fenced code block includes the opening fence (` ``` `) intact and untruncated (depends on T011)
 
 **Checkpoint**: `pato help gram-notation` works end-to-end. `pato help` and `pato help bad-topic` fail clearly with topic list. User Story 2 is independently testable.
 
@@ -76,10 +76,10 @@
 
 ### Implementation for User Story 3
 
-- [ ] T013 [US3] Wire the generated bundle into `crates/pato/src/lib.rs`: add `include!(concat!(env!("OUT_DIR"), "/skill_bundle.rs"));` to expose the `SKILL_BUNDLE: &[(&str, &[u8])]` constant generated by `build.rs`
-- [ ] T014 [US3] Rewrite `crates/pato/src/skill_install/package.rs`: replace `locate_canonical_bundle()` and the filesystem directory-copy logic with a function that iterates `SKILL_BUNDLE` and writes each embedded `(&str path, &[u8] content)` entry to the resolved install target directory, creating subdirectories as needed (depends on T013)
-- [ ] T015 [US3] Remove or guard behind a dev-only feature flag the `locate_canonical_bundle()` fallback paths that search for `skill-package/pato/` on disk, so the production binary is fully self-contained (depends on T014). Also verify the `ExistingInstallPresent` error message in `crates/pato/src/skill_install/mod.rs` explicitly tells the user to re-run with `--force` (FR-010); update the message if it does not.
-- [ ] T016 [US3] Update `crates/pato/tests/skill_tests.rs`: assert that after a simulated install the installed files are present AND their content matches the corresponding `SKILL_BUNDLE` entries byte-for-byte; include an assertion for `reference/gram-notation.md` and `reference/stdout-stderr-contracts.md` specifically (depends on T015)
+- [X] T013 [US3] Wire the generated bundle into `crates/pato/src/lib.rs`: add `include!(concat!(env!("OUT_DIR"), "/skill_bundle.rs"));` to expose the `SKILL_BUNDLE: &[(&str, &[u8])]` constant generated by `build.rs`
+- [X] T014 [US3] Rewrite `crates/pato/src/skill_install/package.rs`: replace `locate_canonical_bundle()` and the filesystem directory-copy logic with a function that iterates `SKILL_BUNDLE` and writes each embedded `(&str path, &[u8] content)` entry to the resolved install target directory, creating subdirectories as needed (depends on T013)
+- [X] T015 [US3] Remove or guard behind a dev-only feature flag the `locate_canonical_bundle()` fallback paths that search for `skill-package/pato/` on disk, so the production binary is fully self-contained (depends on T014). Also verify the `ExistingInstallPresent` error message in `crates/pato/src/skill_install/mod.rs` explicitly tells the user to re-run with `--force` (FR-010); update the message if it does not.
+- [X] T016 [US3] Update `crates/pato/tests/skill_tests.rs`: assert that after a simulated install the installed files are present AND their content matches the corresponding `SKILL_BUNDLE` entries byte-for-byte; include an assertion for `reference/gram-notation.md` and `reference/stdout-stderr-contracts.md` specifically (depends on T015)
 
 **Checkpoint**: Skill install includes reference topic files. User Story 3 is independently testable.
 
@@ -89,11 +89,11 @@
 
 **Purpose**: Code quality, CI compliance, and final validation across all stories.
 
-- [ ] T017 Update `crates/pato/skill-package/pato/SKILL.md` to note that re-running `pato skill --force` after a binary upgrade re-syncs the installed skill tree with the new binary's embedded content
-- [ ] T018 Run `cargo test -p relateby-pato` and fix any failures
-- [ ] T019 [P] Run `cargo clippy --workspace -- -D warnings` and fix all warnings
-- [ ] T020 [P] Run `cargo fmt --all` and commit formatting fixes
-- [ ] T021 Run `scripts/ci-local.sh` and confirm full CI pass
+- [X] T017 Update `crates/pato/skill-package/pato/SKILL.md` to note that re-running `pato skill --force` after a binary upgrade re-syncs the installed skill tree with the new binary's embedded content
+- [X] T018 Run `cargo test -p relateby-pato` and fix any failures
+- [X] T019 [P] Run `cargo clippy --workspace -- -D warnings` and fix all warnings
+- [X] T020 [P] Run `cargo fmt --all` and commit formatting fixes
+- [X] T021 Run `scripts/ci-local.sh` and confirm full CI pass
 
 ---
 

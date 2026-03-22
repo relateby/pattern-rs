@@ -1,5 +1,6 @@
 pub mod check;
 pub mod fmt;
+pub mod help;
 pub mod lint;
 pub mod parse;
 pub mod rule;

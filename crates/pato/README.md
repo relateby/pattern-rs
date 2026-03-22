@@ -29,5 +29,4 @@ That installs or updates the local skill from the bundled canonical package.
 ## Packaging notes
 
 - The canonical skill source lives at `.agents/skills/pato/`
-- The packaged mirror lives under `crates/pato/skill-package/pato/`
-- The crate bundle includes the packaged mirror so published releases stay self-contained
+- The build copies the canonical tree into `skill-package/pato/` before embedding and packaging it

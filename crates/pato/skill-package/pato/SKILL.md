@@ -32,6 +32,7 @@ Use this skill when working with gram files through the `pato` CLI.
 1. Run `pato skill`.
 2. Use `--scope user` for a user-level install.
 3. Use `--target cursor` only for user-scope client-native installs.
+4. After upgrading the `pato` binary, re-run `pato skill --force` to re-sync the installed skill tree with the embedded content.
 
 ## Notes
 
