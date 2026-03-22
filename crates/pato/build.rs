@@ -187,8 +187,7 @@ fn copy_tree(source_root: &Path, destination_root: &Path) {
         let source_path = entry.path();
         let destination_path = destination_root.join(entry.file_name());
         if source_path.is_dir() {
-            fs::create_dir_all(&destination_path)
-                .expect("failed to create destination directory");
+            fs::create_dir_all(&destination_path).expect("failed to create destination directory");
             copy_tree(&source_path, &destination_path);
         } else if source_path.is_file() {
             if let Some(parent) = destination_path.parent() {

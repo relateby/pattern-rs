@@ -26,7 +26,7 @@ Examples in this directory use tags such as:
 - `ts` for TypeScript-like type signatures
 - `re` for regular expressions
 - `zod` for runtime-validator-style expressions
-- `cypher` for graph-pattern assertions
+- `cypher` for graph-type assertions (see https://neo4j.com/docs/cypher-manual/current/schema/graph-types/)
 - `pydantic` for Python-model-style constraints
 - `gram` for gram-native value forms such as ranges, measurements, and tagged strings
 
