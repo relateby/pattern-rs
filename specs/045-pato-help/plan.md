@@ -5,7 +5,7 @@
 
 ## Summary
 
-Add `pato help <topic>` as a new built-in subcommand. Topic markdown files are embedded into the binary at compile time via `include_str!` and serve as the single source of truth. `pato skill` installs these same files to `.agents/skills/pato/reference/` as a derived artifact. Initial topic set: `gram-notation` and `stdout-stderr-contracts`.
+Add `pato help <topic>` as a new built-in subcommand. Topic markdown files are embedded into the binary at compile time and the topic catalog is generated from the corpus at build time. `pato skill` installs the same files from the embedded bundle. Initial topic set: `gram`, `gram-patterns`, `gram-values`, `gram-records`, `gram-annotations`, `gram-graph_elements`, `gram-path_equivalences`, `gram-graph_gram`, and `stdout-stderr-contracts`.
 
 ## Technical Context
 
@@ -60,7 +60,14 @@ crates/pato/
 │   │   ├── output-contracts.md
 │   │   └── workflows.md
 │   └── reference/               # NEW: topic docs for pato help
-│       ├── gram-notation.md
+│       ├── gram.md
+│       ├── gram-patterns.md
+│       ├── gram-values.md
+│       ├── gram-records.md
+│       ├── gram-annotations.md
+│       ├── gram-graph_elements.md
+│       ├── gram-path_equivalences.md
+│       ├── gram-graph_gram.md
 │       └── stdout-stderr-contracts.md
 └── src/
     ├── lib.rs                   # add: pub mod topic_catalog;
@@ -81,15 +88,12 @@ tests/
 
 ### Phase 1: Topic corpus
 
-1. Create `crates/pato/skill-package/pato/reference/` directory
-2. Author `gram-notation.md` — definition, syntax, semantics, 2–4 examples
-3. Author `stdout-stderr-contracts.md` — adapted from existing `references/output-contracts.md`
+1. Populate `crates/pato/skill-package/pato/reference/` with the shipped topic markdown files
+2. Review each topic for definition, syntax, semantics, 2–4 examples, and related topics
+3. Keep the topic names aligned with the filenames exactly
 4. Verify each file opens with `# Topic Name` and is under ~150 lines
 
-**Dev bootstrapping note**: `build.rs` prefers embedding from `.agents/skills/pato/` (the workspace-installed location) over `skill-package/pato/` when the former exists. If `.agents/skills/pato/` is present on a developer's machine and does not yet contain `reference/`, the `SKILL_BUNDLE` embedded during that build will not include the new topic files. Before Phase 4 (wiring `SKILL_BUNDLE`), developers must either:
-- Delete `.agents/skills/pato/` so `build.rs` falls through to `skill-package/pato/`, or
-- Copy the new `reference/` files into `.agents/skills/pato/reference/` manually.
-After Phase 5 is complete, running `pato skill --force` will keep the two in sync automatically.
+**Dev bootstrapping note**: `build.rs` prefers embedding from `.agents/skills/pato/` when that workspace copy exists and falls back to `skill-package/pato/` for packaged builds. It does not rewrite either tree, so keep the two copies aligned before packaging. After upgrades, `pato skill --force` re-syncs the installed skill tree from the embedded bundle.
 
 ### Phase 2: Embedded catalog
 
@@ -106,7 +110,7 @@ After Phase 5 is complete, running `pato skill --force` will keep the two in syn
 
 ### Phase 4: Embedded skill install
 
-`build.rs` already generates `$OUT_DIR/skill_bundle.rs` containing `SKILL_BUNDLE: &[(&str, &[u8])]` via `include_bytes!` for all files under `skill-package/pato/`. This generated file is currently not referenced anywhere. This phase wires it in to replace the runtime filesystem lookup.
+`build.rs` already generates `$OUT_DIR/skill_bundle.rs` containing `SKILL_BUNDLE: &[(&str, &[u8])]` via `include_bytes!` for all files under `skill-package/pato/`, and `lib.rs` includes it for the install path. This phase verifies the binary installation path stays fully embedded and does not depend on runtime filesystem lookup.
 
 12. Add `include!(concat!(env!("OUT_DIR"), "/skill_bundle.rs"));` to `lib.rs` to expose `SKILL_BUNDLE`
 13. Rewrite `skill_install/package.rs`: replace `locate_canonical_bundle()` + filesystem copy with a function that iterates `SKILL_BUNDLE` and writes each embedded file to the install target path

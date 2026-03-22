@@ -12,12 +12,12 @@ A single help topic embedded in the binary.
 
 | Field | Type | Description |
 |-------|------|-------------|
-| `name` | `&'static str` | Stable public identifier (e.g., `"gram-notation"`). Maps directly to the markdown filename without extension. |
+| `name` | `&'static str` | Stable public identifier (e.g., `"gram"` or `"gram-graph_elements"`). Maps directly to the markdown filename without extension. |
 | `content` | `&'static str` | Full markdown content, embedded at compile time via `include_str!`. |
 
 **Invariants**:
-- `name` is lowercase, hyphen-separated, no spaces or special characters.
 - `name` exactly matches the basename of the source file: `reference/<name>.md`.
+- `name` is case-sensitive and may include hyphens and underscores.
 - `content` is non-empty (enforced by `include_str!` compile-time check — missing file is a compile error).
 
 **Lifetime**: `'static` — all topic content is embedded in the binary.
@@ -52,7 +52,16 @@ names() -> impl Iterator<Item = &'static str>
 crates/pato/
 └── skill-package/pato/
     └── reference/               ← canonical topic corpus
-        ├── gram-notation.md     → TopicEntry { name: "gram-notation", ... }
+        ├── gram.md              → TopicEntry { name: "gram", ... }
+        ├── gram-patterns.md     → TopicEntry { name: "gram-patterns", ... }
+        ├── gram-values.md       → TopicEntry { name: "gram-values", ... }
+        ├── gram-records.md      → TopicEntry { name: "gram-records", ... }
+        ├── gram-annotations.md  → TopicEntry { name: "gram-annotations", ... }
+        ├── gram-graph_elements.md
+        │                        → TopicEntry { name: "gram-graph_elements", ... }
+        ├── gram-path_equivalences.md
+        │                        → TopicEntry { name: "gram-path_equivalences", ... }
+        ├── gram-graph_gram.md   → TopicEntry { name: "gram-graph_gram", ... }
         └── stdout-stderr-contracts.md
                                  → TopicEntry { name: "stdout-stderr-contracts", ... }
 ```

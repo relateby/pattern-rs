@@ -32,7 +32,7 @@ As a user or agent, I want to ask `pato` for help on a specific topic so I can g
 
 **Acceptance Scenarios**:
 
-1. **Given** a known topic exists, **When** a user runs `pato help gram-notation`, **Then** the command prints the matching topic content in a readable terminal form.
+1. **Given** a known topic exists, **When** a user runs `pato help gram`, **Then** the command prints the matching topic content in a readable terminal form.
 2. **Given** the topic content contains definitions, caveats, and examples, **When** the user views the help output, **Then** those sections are preserved and easy to copy into another prompt or terminal session.
 3. **Given** a topic name maps to a file name, **When** the user requests that topic, **Then** the same topic name always resolves to the same document.
 
@@ -64,7 +64,7 @@ As a maintainer, I want the reference help corpus to ship with `pato` and be ins
 
 ## Assumptions
 
-- Topic names are lowercase, hyphenated identifiers that map exactly to markdown file basenames.
+- Topic names are exact markdown basenames and may include hyphens or underscores.
 - The topic corpus is intentionally small at first and can grow over time without changing the topic contract.
 - Topic help is written for terminal use and prompt reuse, not as a full manual.
 - The installed skill tree is derived from the canonical repository content rather than maintained separately.
@@ -78,7 +78,7 @@ As a maintainer, I want the reference help corpus to ship with `pato` and be ins
 - **FR-003**: `pato help <topic>` MUST resolve the topic name to a single canonical markdown topic document embedded in the binary.
 - **FR-004**: `pato help <topic>` MUST display the topic content in a readable terminal format that preserves the meaning of headings, lists, code blocks, and examples. Raw markdown output is acceptable for v1.
 - **FR-005**: `pato help` with no topic or an unknown topic MUST fail clearly and MUST enumerate the valid topic names so the user can choose the correct one.
-- **FR-006**: Each supported topic MUST have a stable public name that maps exactly to one markdown file name.
+- **FR-006**: Each supported topic MUST have a stable public name that maps exactly to one markdown file name, with the published name matching the file basename exactly.
 - **FR-007**: The topic corpus MUST be embedded in the `pato` binary and is the single source of truth. `pato help <topic>` reads exclusively from this embedded corpus, not from the installed skill tree.
 - **FR-008**: `pato skill` MUST install the skill tree (including reference topic files) by extracting content embedded in the binary. The installed files MUST match the binary's embedded content exactly. The binary MUST be self-sufficient: `pato skill` MUST work correctly after `cargo install relateby-pato` with no source tree present on disk.
 - **FR-010**: If a skill tree is already present at the install target (e.g., installed by a separate skills management system), `pato skill` MUST fail clearly with an actionable error message and MUST tell the user to re-run with `--force` to replace it. `pato skill --force` MUST always succeed and bring the installed tree into exact alignment with the binary's embedded content, regardless of what was previously installed.

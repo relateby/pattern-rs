@@ -7,9 +7,6 @@ fn main() {
         PathBuf::from(env::var_os("CARGO_MANIFEST_DIR").expect("CARGO_MANIFEST_DIR not set"));
     let source_root = authoritative_skill_root(&manifest_dir);
     let packaged_root = manifest_dir.join("skill-package/pato");
-    if source_root != packaged_root {
-        sync_tree(&source_root, &packaged_root);
-    }
     let reference_root = packaged_root.join("reference");
     let out_dir = PathBuf::from(env::var_os("OUT_DIR").expect("OUT_DIR not set"));
 
@@ -158,42 +155,4 @@ fn authoritative_skill_root(manifest_dir: &Path) -> PathBuf {
     }
 
     packaged_root
-}
-
-/// Copy the authoritative tree into the packaged tree, replacing any stale files.
-fn sync_tree(source_root: &Path, packaged_root: &Path) {
-    if packaged_root.exists() {
-        if let Ok(entries) = fs::read_dir(packaged_root) {
-            for entry in entries.flatten() {
-                let path = entry.path();
-                if path.is_dir() {
-                    fs::remove_dir_all(&path).expect("failed to remove stale packaged directory");
-                } else {
-                    fs::remove_file(&path).expect("failed to remove stale packaged file");
-                }
-            }
-        }
-    } else {
-        fs::create_dir_all(packaged_root).expect("failed to create packaged skill root");
-    }
-
-    copy_tree(source_root, packaged_root);
-}
-
-/// Recursively copy a directory tree from `source_root` to `destination_root`.
-fn copy_tree(source_root: &Path, destination_root: &Path) {
-    let read_dir = fs::read_dir(source_root).expect("failed to read authoritative skill root");
-    for entry in read_dir.flatten() {
-        let source_path = entry.path();
-        let destination_path = destination_root.join(entry.file_name());
-        if source_path.is_dir() {
-            fs::create_dir_all(&destination_path).expect("failed to create destination directory");
-            copy_tree(&source_path, &destination_path);
-        } else if source_path.is_file() {
-            if let Some(parent) = destination_path.parent() {
-                fs::create_dir_all(parent).expect("failed to create parent directory");
-            }
-            fs::copy(&source_path, &destination_path).expect("failed to copy packaged file");
-        }
-    }
 }

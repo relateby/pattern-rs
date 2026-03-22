@@ -9,7 +9,7 @@
 
 **Decision**: Use `include_str!` macros in a `topic_catalog.rs` module to embed topic markdown files directly into the binary at compile time.
 
-**Rationale**: `include_str!` is a stable Rust built-in that requires no new dependencies. It embeds UTF-8 text at compile time and panics at compile time if the file is missing, making the corpus–binary alignment enforced by the compiler. The file path is relative to the source file, so `include_str!("../../skill-package/pato/reference/gram-notation.md")` works directly.
+**Rationale**: `include_str!` is a stable Rust built-in that requires no new dependencies. It embeds UTF-8 text at compile time and panics at compile time if the file is missing, making the corpus–binary alignment enforced by the compiler. The file paths are generated from the markdown corpus so the build stays in sync without a hand-maintained topic list.
 
 **Alternatives considered**:
 
@@ -23,9 +23,9 @@
 
 ## Decision 2: Topic file location (canonical source)
 
-**Decision**: `crates/pato/skill-package/pato/reference/<topic>.md` is the canonical location for topic files in the repository. These are the files embedded by `include_str!` and also installed by `pato skill`.
+**Decision**: The repository keeps matching copies of the topic corpus in `.agents/skills/pato/reference/` and `crates/pato/skill-package/pato/reference/`. `build.rs` reads from the workspace copy when it exists and falls back to the packaged copy for source distributions, but it does not rewrite either tree.
 
-**Rationale**: The `skill-package/pato/` tree is already the source for `pato skill` installation (via runtime copy in `skill_install/package.rs`). Adding `reference/` as a subdirectory keeps all skill content in one place. The `.agents/skills/pato/` workspace copy is a derived artifact (installed via `pato skill`); it must not be the embed source.
+**Rationale**: The workspace copy is convenient for local development and `pato skill` installs, while the packaged copy is what ships in source distributions. Keeping both trees aligned preserves build reproducibility without making the build script mutate tracked files.
 
 **Note on existing `references/` directory**: `skill-package/pato/references/` (plural) contains `output-contracts.md` and `workflows.md` — general skill reference docs. The new `reference/` (singular) holds the topic docs for `pato help <topic>`. These are distinct: `references/` is for agent context, `reference/` is for CLI topic lookup.
 
@@ -57,17 +57,22 @@
 
 ## Decision 6: Initial topic set (resolves Proposal §5.3)
 
-**Decision**: Start with two topics that have existing content or immediate need:
+**Decision**: Start with the shipped grammar-oriented topic set and the stdout/stderr contract topic:
 
-- `gram-notation` — notation format, most-requested
+- `gram` — notation overview
+- `gram-patterns` — pattern shapes
+- `gram-values` — value forms
+- `gram-records` — record forms
+- `gram-annotations` — annotation syntax
+- `gram-graph_elements` — graph element notation
+- `gram-path_equivalences` — notation equivalences
+- `gram-graph_gram` — graph grammar subset
 - `stdout-stderr-contracts` — already partially documented in `references/output-contracts.md`
 
-Add `gram-annotation` and `skill-installation` once their content is written; these are registered in the catalog as stubs or omitted until authored.
-
-**Rationale**: The spec assumption says "intentionally small at first." Two topics with real content are better than four with placeholder text. Topic names are part of the public contract once shipped, so only ship topics with complete content.
+**Rationale**: The spec assumption says "intentionally small at first," but the shipped corpus now includes the core gram reference topics needed for `pato help`. Topic names are part of the public contract once shipped, so only ship complete topics.
 
 ---
 
 ## Key finding: build.rs must be wired in for pato skill to work
 
-The `build.rs` generates `OUT_DIR/skill_bundle.rs` with `include_bytes!` for all files under `skill-package/pato/`. This output is not currently `include!`'d anywhere. After `cargo install relateby-pato`, the `skill-package/pato/` source tree is NOT present on the user's filesystem — only the binary. This means the current runtime filesystem resolution in `skill_install/package.rs` is broken for `cargo install` users. This feature wires in the generated bundle so that `pato skill` extracts embedded content from the binary instead of reading from disk.
+The `build.rs` generates `OUT_DIR/skill_bundle.rs` with `include_bytes!` for all files under `skill-package/pato/`, and `lib.rs` includes it for the install path. `pato skill` therefore extracts embedded content from the binary instead of reading from disk, which keeps `cargo install relateby-pato` self-sufficient.

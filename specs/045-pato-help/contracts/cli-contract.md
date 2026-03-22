@@ -25,7 +25,7 @@ pato help [<topic>]
 **Case 1: Known topic**
 
 ```
-$ pato help gram-notation
+$ pato help gram
 ```
 
 - Prints the full markdown content of the topic to **stdout**.
@@ -59,21 +59,21 @@ Follows the existing `pato` stdout/stderr convention:
 
 ---
 
-## Topic Name Registry (v1)
+## Topic Name Registry
 
-The following topic names are part of the stable public contract. Once published, a topic name MUST NOT be removed or renamed without a major version bump.
+The current shipped topic names are part of the public contract. Once published, a topic name MUST NOT be removed or renamed without a major version bump.
 
 | Topic Name | Source File |
 |------------|-------------|
-| `gram-notation` | `skill-package/pato/reference/gram-notation.md` |
+| `gram` | `skill-package/pato/reference/gram.md` |
+| `gram-patterns` | `skill-package/pato/reference/gram-patterns.md` |
+| `gram-values` | `skill-package/pato/reference/gram-values.md` |
+| `gram-records` | `skill-package/pato/reference/gram-records.md` |
+| `gram-annotations` | `skill-package/pato/reference/gram-annotations.md` |
+| `gram-graph_elements` | `skill-package/pato/reference/gram-graph_elements.md` |
+| `gram-path_equivalences` | `skill-package/pato/reference/gram-path_equivalences.md` |
+| `gram-graph_gram` | `skill-package/pato/reference/gram-graph_gram.md` |
 | `stdout-stderr-contracts` | `skill-package/pato/reference/stdout-stderr-contracts.md` |
-
-Topics to be added in follow-on work (content must be authored before shipping):
-
-| Topic Name | Source File |
-|------------|-------------|
-| `gram-annotation` | `skill-package/pato/reference/gram-annotation.md` |
-| `skill-installation` | `skill-package/pato/reference/skill-installation.md` |
 
 ---
 
@@ -82,7 +82,14 @@ Topics to be added in follow-on work (content must be authored before shipping):
 `pato skill` already installs the full `skill-package/pato/` tree. With this feature, that tree gains a `reference/` subdirectory. After installation, the following paths MUST exist:
 
 ```
-.agents/skills/pato/reference/gram-notation.md
+.agents/skills/pato/reference/gram.md
+.agents/skills/pato/reference/gram-patterns.md
+.agents/skills/pato/reference/gram-values.md
+.agents/skills/pato/reference/gram-records.md
+.agents/skills/pato/reference/gram-annotations.md
+.agents/skills/pato/reference/gram-graph_elements.md
+.agents/skills/pato/reference/gram-path_equivalences.md
+.agents/skills/pato/reference/gram-graph_gram.md
 .agents/skills/pato/reference/stdout-stderr-contracts.md
 ```
 
@@ -92,7 +99,8 @@ These files are derived from the embedded corpus and MUST match the binary's emb
 
 ## Stability Guarantees
 
-- Topic names are stable once published (semver-protected).
+- Topic names are stable once published (semver-protected) and match the markdown file basenames exactly.
+- Topic names are case-sensitive and may include hyphens and underscores.
 - Topic file content MAY be updated across patch releases (corrections, examples).
 - Topic content structure (headings, code blocks) SHOULD remain stable across minor releases.
 - The `topic` argument is case-sensitive and must be the exact registered name.
