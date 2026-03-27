@@ -18,7 +18,11 @@ use pattern_core::{RangeValue, Value};
 /// Parse an identifier: symbol, backtick-quoted name, or integer
 /// Per grammar: _identifier = symbol | quoted_name | integer
 pub fn identifier(input: &str) -> ParseResult<'_, String> {
-    alt((backtick_quoted_string, map(integer, |n| n.to_string()), unquoted_identifier))(input)
+    alt((
+        backtick_quoted_string,
+        map(integer, |n| n.to_string()),
+        unquoted_identifier,
+    ))(input)
 }
 
 /// Parse a property or map key name: symbol, backtick-quoted name, or double-quoted name
