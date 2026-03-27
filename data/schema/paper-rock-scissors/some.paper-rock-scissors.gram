@@ -1,0 +1,25 @@
+// This is a comment.
+
+// Generally, a sequence of lines which are all comments
+// form a multi-line comment body. There is no syntax for
+// begin/end markers enclosing a comment.
+//
+// The following paragraph introduces the content of this file.
+//
+// A collection of graphs which follow paper-rock-scissors schema.
+
+{   // Comments can be end-of-line. This `{` begins a top-level record
+    kind: "paper-rock-scissors",     // conforms to paper-rock-scissors.schema.gram
+}
+
+[:PaperRockScissors { name: "Hunter, Bear, Ninja" } |
+    (:Hunter)-[:KILLS]->(:Bear),
+    (:Bear)-[:KILLS]->(:Ninja),
+    (:Ninja)-[:KILLS]->(:Hunter)
+]
+
+[:PaperRockScissors { name: "Elephant, Human, Ant" } |
+    (:Elephant)-[:AVOIDS]->(:Ant),
+    (:Ant)-[:AVOIDS]->(:Human),
+    (:Human)-[:AVOIDS]->(:Elephant)
+]

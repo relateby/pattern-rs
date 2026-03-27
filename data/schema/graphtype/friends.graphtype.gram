@@ -1,0 +1,198 @@
+// friends.graphtype.gram
+//
+// Graph
+// Archetype file for a Neo4j graph type schema expressed in gram notation.
+//
+// CONVENTIONS FOR .graphtype.gram FILES
+// ======================================
+//
+// A .graphtype.gram file uses gram's existing syntax to describe a Neo4j
+// graph type — a named, open schema that constrains nodes, relationships,
+// and properties in a database.
+//
+// This file is both human-readable documentation and a machine-parseable
+// gram document. Downstream tooling can read it to generate Cypher
+// `ALTER CURRENT GRAPH TYPE SET { ... }` statements, validate instance
+// data, or drive code generation.
+//
+// Key conventions used throughout:
+//
+//   1. DOCUMENT HEADER
+//      A leading record declares the file's kind and metadata.
+//      The `kind` key identifies this as a graph type archetype.
+//
+//   2. NODE ELEMENT TYPES
+//      Each node element type is a gram pattern where:
+//        - The pattern identity is the identifying label  (e.g. `Person`)
+//        - The first `::` label repeats that identity     (e.g. `::Person`)
+//        - Remaining `:` labels are implied labels        (e.g. `:Resident`)
+//        - The record holds property type declarations    (e.g. `name:: cypher\`STRING\``)
+//
+//      The `::` vs `:` distinction is intentional:
+//        ::Label  marks the identifying label (schema/type intent)
+//        :Label   marks an implied label (regular label, must co-exist)
+//
+//   3. PROPERTY TYPE DECLARATIONS
+//      Property types are declared using gram's `::` record separator
+//      with a `cypher` tagged string as the value. The content is a
+//      valid Cypher property type expression, including the `!` shorthand
+//      for NOT NULL (equivalent to Cypher's `NOT NULL`).
+//
+//        name:: cypher`STRING`          // typed, optional
+//        name:: cypher`STRING!`         // typed, existence required
+//
+//   4. RELATIONSHIP ELEMENT TYPES
+//      Expressed as fat-arrow (`==...=>`) path patterns, which gram
+//      already reserves for schema/ontology intent. The relationship
+//      identity and its identifying type are the same symbol.
+//      Source and target node labels are the identifying labels of
+//      the respective node element types (or their shared implied label).
+//
+//        (SourceLabel)==[REL_TYPE::REL_TYPE { prop:: cypher`TYPE!` }]=>(TargetLabel)
+//
+//   5. CONSTRAINTS
+//      Single-property key and uniqueness constraints are expressed as
+//      property annotations on the node element type pattern:
+//
+//        @key(propertyName)     — property key constraint (IS KEY)
+//        @unique(propertyName)  — property uniqueness constraint (IS UNIQUE)
+//
+//      Composite key constraints (more than one property) use an
+//      identified annotation (`@@`) wrapping the node element type.
+//      The `@@name:ConstraintType` form gives the constraint its own
+//      identity, supporting named constraints in Neo4j.
+//
+//        @@constraint-name:KeyConstraint @require(cypher`(p.name, p.ssn) IS KEY`)
+//        (Person::Person:Resident { ... })
+//
+//   6. THE GRAPH TYPE PATTERN
+//      A named N-arity subject pattern groups all element types and
+//      constraints into the graph type unit. Its identity is the schema
+//      name; its `::GraphType` label marks its kind.
+//
+//   7. OPEN TYPE SEMANTICS
+//      Neo4j graph types are open: only declared elements are constrained.
+//      The `open: true` property on the graph type pattern documents this.
+//      No gram encoding is needed for the unconstrained remainder.
+//
+// LANGUAGE INJECTION
+//      Editors with tree-sitter injection support will highlight the
+//      content of `cypher\`...\`` tagged strings as Cypher. The tag
+//      `cypher` should map to the Cypher tree-sitter parser in
+//      `queries/injections.scm`.
+//
+// CYPHER GENERATION
+//      To generate the equivalent Cypher statement:
+//
+//        ALTER CURRENT GRAPH TYPE SET {
+//          (:Person => :Resident { name :: STRING, ssn :: INTEGER }),
+//          (:Pet => :Resident&Animal { ... }),
+//          (:Resident)-[:LIVES_IN => { since :: DATE NOT NULL }]->(:City)
+//        }
+//
+//      Tooling should:
+//        - Emit each node element type pattern as a `(:Id => :Implied* { props })` clause
+//        - Emit `::` property separators as `::`, `:` values from tagged strings as types
+//        - Translate `cypher\`TYPE!\`` → `TYPE NOT NULL` in the Cypher output
+//        - Emit each fat-arrow path pattern as a relationship element type clause
+//        - Emit `@@...KeyConstraint` annotations as REQUIRE ... IS KEY clauses
+//        - Wrap everything in `ALTER CURRENT GRAPH TYPE SET { ... }`
+//
+// =============================================================================
+
+{ kind: "graph-type", name: "community-graph", neo4j-version: "2026.02" }
+
+
+// -----------------------------------------------------------------------------
+// NODE ELEMENT TYPES
+//
+// Each pattern defines one node element type.
+// Identity = identifying label; ::Identity repeats it; :Label = implied label.
+// Property records use :: with cypher`...` tagged strings for type declarations.
+// -----------------------------------------------------------------------------
+
+// Person nodes must also carry the Resident label.
+// The composite key on (name, ssn) is expressed as an identified annotation
+// so it can be referenced by name when dropping or altering the constraint.
+@@person-key:KeyConstraint @require(cypher`(p.name, p.ssn) IS KEY`)
+(Person::Person:Resident {
+  name:: cypher`STRING`,
+  ssn::  cypher`INTEGER`
+})
+
+// Pet nodes must carry both Resident and Animal labels.
+// insuranceNumber is a single-property key; healthCertificate must be unique.
+// Neither requires existence — only that if present, it matches the declared type.
+@key(insuranceNumber) @unique(healthCertificate)
+(Pet::Pet:Resident:Animal {
+  insuranceNumber::   cypher`INTEGER`,
+  healthCertificate:: cypher`STRING`,
+  name::              cypher`STRING`
+})
+
+// City nodes have no implied labels.
+// name is required (STRING!); population is typed but optional.
+(City::City {
+  name::       cypher`STRING!`,
+  population:: cypher`INTEGER`
+})
+
+// Robot nodes must also carry the Resident label.
+// application is required on every Robot node.
+(Robot::Robot:Resident {
+  application:: cypher`STRING!`
+})
+
+
+// -----------------------------------------------------------------------------
+// RELATIONSHIP ELEMENT TYPES
+//
+// Fat-arrow (==...=>) path patterns express relationship element types.
+// Source and target are the identifying (or shared implied) node labels.
+// The rel identity and identifying type are the same symbol.
+// -----------------------------------------------------------------------------
+
+// Any Resident (Person, Pet, or Robot) may live in a City.
+// The `since` property is required on every LIVES_IN relationship.
+(Resident)==[LIVES_IN::LIVES_IN { since:: cypher`DATE!` }]=>(City)
+
+
+// -----------------------------------------------------------------------------
+// CONSTRAINTS ON NON-IDENTIFYING LABELS
+//
+// These constrain labels that appear only as implied labels or are otherwise
+// independent of any node element type's identifying label.
+// Each is an identified annotation wrapping a bare constraint pattern.
+// -----------------------------------------------------------------------------
+
+// Company nodes (not part of any element type) must have a unique name key.
+@@company-name:KeyConstraint @on(Company) @property(name)
+[company-name-constraint::Constraint]
+
+// Animal nodes (implied label of Pet) must have a unique id if present.
+@@animal-id:UniqueConstraint @on(Animal) @property(id)
+[animal-id-constraint::Constraint]
+
+// Resident nodes (shared implied label) may have an address; if present, STRING.
+@@resident-address:TypeConstraint @on(Resident) @property(address) @type(cypher`STRING`)
+[resident-address-constraint::Constraint]
+
+
+// -----------------------------------------------------------------------------
+// THE GRAPH TYPE
+//
+// A named N-arity pattern grouping all element types and constraints.
+// `open: true` documents that this is an open graph type — only declared
+// elements are constrained; all other nodes, relationships, and properties
+// are unconstrained.
+// -----------------------------------------------------------------------------
+
+[community-graph::GraphType {
+  open:            true,
+  neo4j-version:   "2026.02",
+  description:     "Persons, pets, and robots residing in cities"
+} |
+  Person, Pet, City, Robot,
+  LIVES_IN,
+  company-name-constraint, animal-id-constraint, resident-address-constraint
+]

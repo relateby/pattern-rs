@@ -1,0 +1,31 @@
+// This is a comment.
+
+// Generally, a sequence of lines which are all comments
+// form a multi-line comment body. There is no syntax for
+// begin/end markers enclosing a comment.
+//
+// The following paragraph introduces the content of this file.
+//
+// This file is an archetypal schema for sonnets.
+// It shows canonical example structures. The examples are not merely illustrative —
+// they define the contract at three levels:
+// 1. **Structure**: which nodes, relationships, annotations, patterns and properties are present
+// 2. **Surface form**: which syntax choices are canonical (`:` vs `::`, arrow family,
+//    annotation style)
+// 3. **Value constraints**: how property types and value restrictions are expressed
+//
+// This schema builds on the work from the sonnet.v3.schema.gram
+// and applies the same techniques to graph patterns.
+
+// The following structure is a top-level record.
+{
+    kind: "schema",     // contains conventions for archetypal schema
+    target: "paper-rock-scissors",   // the kind for instances of this schema
+    version: "v1"       // version of the schema
+}
+
+[:PaperRockScissors { name: gram`string_literal` } |
+    (:`$Paper`)-[:`$BEATS`]->(:`$Rock`)
+    (:`$Rock`)-[:`$BEATS`]->(:`$Scissors`)
+    (:`$Scissors`)-[:`$BEATS`]->(:`$Paper`)
+]

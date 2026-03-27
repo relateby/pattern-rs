@@ -6,7 +6,7 @@ This directory captures an early exploration of what a gram-native schema story 
 
 The goal is to test an archetypal schema approach:
 
-- the schema itself is a `.gram` file
+- the schema itself is a `schema.gram` file
 - the file shows canonical example structures rather than an external meta-format
 - comments explain semantics that are not obvious from shape alone
 - `::` is used for type/schema slots
