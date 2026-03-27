@@ -6,7 +6,7 @@
 //
 // The following paragraph introduces the content of this file.
 //
-// Bond street is a small social graph of people, as  an example
+// Bond street is a small social graph of people, as an example
 // instance of the social.schema.gram
 
 {   // Comments can be end-of-line. This `{` begins a top-level record

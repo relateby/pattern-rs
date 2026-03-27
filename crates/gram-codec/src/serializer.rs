@@ -390,9 +390,18 @@ fn needs_quoting(s: &str) -> bool {
     }
 
     if first.is_ascii_digit() || first == '-' {
-        // Integer: optional leading '-' followed by pure digits
+        // Integer: -?(0|[1-9]\d*)
         let digits_part = if first == '-' { &s[1..] } else { s };
-        return digits_part.is_empty() || !digits_part.chars().all(|c| c.is_ascii_digit());
+        if digits_part.is_empty() {
+            return true;
+        }
+        if !digits_part.chars().all(|c| c.is_ascii_digit()) {
+            return true;
+        }
+        if digits_part.len() > 1 && digits_part.starts_with('0') {
+            return true;
+        }
+        return false;
     }
 
     // Anything else (unicode, @, special char at start) needs quoting

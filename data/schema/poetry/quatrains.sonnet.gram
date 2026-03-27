@@ -10,7 +10,7 @@
 // a sonnet -- a stanza with specific rhyme scheme.
 
 {   // Comments can be end-of-line. This `{` begins a top-level record
-    kind: "sonnet",     // conforms to social.schema.gram
+    kind: "sonnet",     // conforms to sonnet.schema.gram
 }
 
 [scarborough:Quatrain { author: "Simon & Garfunkel"} |

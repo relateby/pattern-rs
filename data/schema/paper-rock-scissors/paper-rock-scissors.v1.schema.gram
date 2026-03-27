@@ -6,7 +6,7 @@
 //
 // The following paragraph introduces the content of this file.
 //
-// This file is an archetypal schema for sonnets.
+// This file is an archetypal schema for the paper-rock-scissors game.
 // It shows canonical example structures. The examples are not merely illustrative —
 // they define the contract at three levels:
 // 1. **Structure**: which nodes, relationships, annotations, patterns and properties are present
@@ -14,8 +14,8 @@
 //    annotation style)
 // 3. **Value constraints**: how property types and value restrictions are expressed
 //
-// This schema builds on the work from the sonnet.v3.schema.gram
-// and applies the same techniques to graph patterns.
+// This schema follows the same conventions as the sonnet schema examples
+// and applies them to graph patterns for the paper-rock-scissors domain.
 
 // The following structure is a top-level record.
 {

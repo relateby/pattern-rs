@@ -18,7 +18,7 @@ use pattern_core::{RangeValue, Value};
 /// Parse an identifier: symbol, backtick-quoted name, or integer
 /// Per grammar: _identifier = symbol | quoted_name | integer
 pub fn identifier(input: &str) -> ParseResult<'_, String> {
-    alt((backtick_quoted_string, unquoted_identifier))(input)
+    alt((backtick_quoted_string, map(integer, |n| n.to_string()), unquoted_identifier))(input)
 }
 
 /// Parse a property or map key name: symbol, backtick-quoted name, or double-quoted name
@@ -33,12 +33,12 @@ pub fn key_name(input: &str) -> ParseResult<'_, String> {
 
 /// Parse an unquoted identifier (symbol)
 /// Supports: letters, digits, underscore, hyphen, @, . (not first char)
-/// Can start with: letter, underscore, or digit
+/// Can start with: letter or underscore (per grammar: /[a-zA-Z_][0-9a-zA-Z_.\-@]*/)
 pub fn unquoted_identifier(input: &str) -> ParseResult<'_, String> {
     map(
         recognize(pair(
-            // First character: letter, underscore, or digit
-            take_while1(|c: char| c.is_alphanumeric() || c == '_'),
+            // First character: letter or underscore only (not digit — use integer branch for those)
+            take_while1(|c: char| c.is_ascii_alphabetic() || c == '_'),
             // Subsequent characters: letters, digits, underscore, hyphen, @, .
             take_while(|c: char| {
                 c.is_alphanumeric() || c == '_' || c == '-' || c == '@' || c == '.'
