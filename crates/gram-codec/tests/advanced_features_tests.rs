@@ -91,8 +91,8 @@ fn test_round_trip_simple_path() {
 
 #[test]
 fn test_parse_unicode_identifier() {
-    // Unicode identifiers must be quoted in gram notation
-    let input = "(\"hello世界\")";
+    // Unicode identifiers must be backtick-quoted in gram notation
+    let input = "(`hello世界`)";
     let result = parse_gram_notation(input);
     assert!(result.is_ok(), "Failed to parse: {:?}", result.err());
     let patterns = result.unwrap();
@@ -101,8 +101,8 @@ fn test_parse_unicode_identifier() {
 
 #[test]
 fn test_parse_emoji_identifier() {
-    // Emoji identifiers must be quoted in gram notation
-    let input = "(\"node🚀\")";
+    // Emoji identifiers must be backtick-quoted in gram notation
+    let input = "(`node🚀`)";
     let result = parse_gram_notation(input);
     assert!(result.is_ok(), "Failed to parse: {:?}", result.err());
 }
@@ -130,8 +130,8 @@ fn test_parse_cyrillic_text() {
 
 #[test]
 fn test_round_trip_unicode() {
-    // Unicode identifiers must be quoted
-    let input = "(\"世界\")";
+    // Unicode identifiers must be backtick-quoted
+    let input = "(`世界`)";
     let parsed = parse_gram_notation(input).unwrap();
     let serialized = to_gram_pattern(&parsed[0]).unwrap();
     let reparsed = parse_gram_notation(&serialized).unwrap();
@@ -163,7 +163,8 @@ fn test_serialize_unicode_identifier() {
 
 #[test]
 fn test_parse_quoted_identifier_needs_quoting() {
-    let input = "(\"hello-world\")";
+    // hello-world is a valid symbol (hyphens allowed after first char)
+    let input = "(hello-world)";
     let result = parse_gram_notation(input);
     assert!(result.is_ok());
     let patterns = result.unwrap();
@@ -194,8 +195,8 @@ fn test_serialize_identifier_with_special_chars() {
     let result = to_gram_pattern(&pattern);
     assert!(result.is_ok());
     let output = result.unwrap();
-    // Should be quoted because of hyphen
-    assert!(output.contains("\"node-123\""));
+    // node-123 is a valid symbol (hyphen allowed after first char), no quoting needed
+    assert!(output.contains("node-123"));
 }
 
 // ============================================================================

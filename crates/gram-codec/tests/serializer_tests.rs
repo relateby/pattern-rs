@@ -170,8 +170,8 @@ fn test_serialize_identifier_with_special_chars_needs_quoting() {
     let result = to_gram_pattern(&pattern);
     assert!(result.is_ok());
     let output = result.unwrap();
-    // Should be quoted because it contains a space
-    assert!(output.contains("\"hello world\""));
+    // Should be backtick-quoted because it contains a space
+    assert!(output.contains("`hello world`"));
 }
 
 #[test]
@@ -180,8 +180,8 @@ fn test_serialize_identifier_starting_with_digit_needs_quoting() {
     let result = to_gram_pattern(&pattern);
     assert!(result.is_ok());
     let output = result.unwrap();
-    // Should be quoted because it starts with a digit
-    assert!(output.contains("\"42node\""));
+    // Should be backtick-quoted because it starts with a digit followed by letters
+    assert!(output.contains("`42node`"));
 }
 
 #[test]

@@ -427,8 +427,13 @@ fn extract_label_list(node: Node<'_>, input: &str) -> Vec<String> {
     let mut cursor = node.walk();
 
     for child in node.children(&mut cursor) {
-        if child.is_named() && child.kind() == "symbol" {
-            labels.push(node_text(child, input).to_string());
+        if !child.is_named() {
+            continue;
+        }
+        match child.kind() {
+            "symbol" => labels.push(node_text(child, input).to_string()),
+            "quoted_name" => labels.push(extract_identifier(child, input)),
+            _ => {}
         }
     }
 

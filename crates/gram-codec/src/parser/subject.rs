@@ -2,7 +2,7 @@
 
 use super::combinators::ws;
 use super::types::ParseResult;
-use super::value::{identifier, value_parser};
+use super::value::{identifier, key_name, value_parser};
 use nom::{
     branch::alt,
     bytes::complete::tag,
@@ -47,7 +47,7 @@ pub fn record(input: &str) -> ParseResult<'_, HashMap<String, Value>> {
 fn property_pair(input: &str) -> ParseResult<'_, (String, Value)> {
     map(
         tuple((
-            delimited(ws, identifier, ws),
+            delimited(ws, key_name, ws),
             alt((
                 tag("::"), // Declare separator (must come before single :)
                 tag(":"),  // Regular separator
@@ -102,6 +102,13 @@ mod tests {
     }
 
     #[test]
+    fn test_label_backtick() {
+        let (remaining, lbl) = label(":`Role Label`").unwrap();
+        assert_eq!(lbl, "Role Label");
+        assert_eq!(remaining, "");
+    }
+
+    #[test]
     fn test_labels_multiple() {
         let (remaining, lbls) = labels("Person:User").unwrap();
         assert_eq!(lbls, vec!["Person", "User"]);
@@ -114,6 +121,28 @@ mod tests {
         assert_eq!(key, "name");
         match val {
             Value::VString(s) => assert_eq!(s, "Alice"),
+            _ => panic!("Expected string value"),
+        }
+        assert_eq!(remaining, "");
+    }
+
+    #[test]
+    fn test_property_pair_backtick_key() {
+        let (remaining, (key, val)) = property_pair(r#"`title name`: "Alpha""#).unwrap();
+        assert_eq!(key, "title name");
+        match val {
+            Value::VString(s) => assert_eq!(s, "Alpha"),
+            _ => panic!("Expected string value"),
+        }
+        assert_eq!(remaining, "");
+    }
+
+    #[test]
+    fn test_property_pair_double_quoted_key() {
+        let (remaining, (key, val)) = property_pair(r#""display title": "Beta""#).unwrap();
+        assert_eq!(key, "display title");
+        match val {
+            Value::VString(s) => assert_eq!(s, "Beta"),
             _ => panic!("Expected string value"),
         }
         assert_eq!(remaining, "");
