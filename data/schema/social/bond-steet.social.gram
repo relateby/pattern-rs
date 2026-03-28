@@ -1,0 +1,16 @@
+// This is a comment.
+
+// Generally, a sequence of lines which are all comments
+// form a multi-line comment body. There is no syntax for
+// begin/end markers enclosing a comment.
+//
+// The following paragraph introduces the content of this file.
+//
+// Bond street is a small social graph of people, as an example
+// instance of the social.schema.gram
+
+{   // Comments can be end-of-line. This `{` begins a top-level record
+    kind: "social", // conforms to social.schema.gram
+    name: "friends",
+    description: "A handful of friends with explicit relationships."
+}

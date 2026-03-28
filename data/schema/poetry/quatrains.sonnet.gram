@@ -1,0 +1,60 @@
+// This is a comment.
+
+// Generally, a sequence of lines which are all comments
+// form a multi-line comment body. There is no syntax for
+// begin/end markers enclosing a comment.
+//
+// The following paragraph introduces the content of this file.
+//
+// A collection of quatrains which illustrate one component of
+// a sonnet -- a stanza with specific rhyme scheme.
+
+{   // Comments can be end-of-line. This `{` begins a top-level record
+    kind: "sonnet",     // conforms to sonnet.schema.gram
+}
+
+[scarborough:Quatrain { author: "Simon & Garfunkel"} |
+    [:A { line: "Are you going to Scarborough Fair?" }],
+    [:B { line: "Parsley, sage, rosemary, and thyme" }],
+    [:A { line: "Remember me to one who lives there" }],
+    [:B { line: "For once she was a true love of mine" }]
+]
+
+[sonnet18:Quatrain { author: "William Shakespeare"} |
+    [:A { line: "Shall I compare thee to a summer’s day?", }],
+    [:B { line: "Thou art more lovely and more temperate:", }],
+    [:A { line: "Rough winds do shake the darling buds of May,", }],
+    [:B { line: "And summer’s lease hath all too short a date;", }]
+]
+
+[solsburyHill:Quatrain { author: "Peter Gabriel"} |
+    [:A { line: "Climbing up on Solsbury Hill", }],
+    [:B { line: "I could see the city light", }],
+    [:A { line: "Wind was blowing, time stood still", }],
+    [:B { line: "Eagle flew out of the night", }]
+]
+
+[fullOzy:Sonnet { author: "Percy Shelley", title: "Ozymandias" } |
+    [:Quatrain |
+        [:A { line: "I met a traveller from an antique land" }],
+        [:B { line: "Who said: Two vast and trunkless legs of stone" }],
+        [:A { line: "Stand in the desart.[d] Near them, on the sand," }],
+        [:B { line: "Half sunk, a shattered visage lies, whose frown," }],
+    ],
+    [:Quatrain |
+        [:A { line: "And wrinkled lip, and sneer of cold command," }],
+        [:C { line: "Tell that its sculptor well those passions read" }],
+        [:D { line: "Which yet survive, stamped on these lifeless things," }],
+        [:C { line: "The hand that mocked them and the heart that fed:" }],
+    ],
+    [:Triplet |
+        [:E { line: "And on the pedestal these words appear:" }],
+        [:D { line: "'My name is Ozymandias, King of Kings:" }],
+        [:E { line: "Look on my works, ye Mighty, and despair!'" }],
+    ],
+    [:Triplet |
+        [:F { line: "Nothing beside remains. Round the decay" }],
+        [:D { line: "Of that colossal wreck, boundless and bare" }],
+        [:F { line: "The lone and level sands stretch far away." }]
+    ]
+]

@@ -362,40 +362,56 @@ fn value_from_pattern_value(value: &pattern_core::Value) -> Result<Value, Serial
 }
 
 /// Quote identifier if needed (contains spaces, special chars, or starts with digit)
+/// Uses backtick quoting per grammar: identifiers, labels, and keys use quoted_name (`)
 fn quote_identifier(s: &str) -> String {
     if needs_quoting(s) {
-        format!("\"{}\"", escape_string(s))
+        format!("`{}`", escape_backtick_string(s))
     } else {
         s.to_string()
     }
 }
 
-/// Determine if identifier needs quoting
+/// Determine if identifier needs backtick quoting
+/// Valid unquoted forms per grammar:
+///   symbol:  /[a-zA-Z_][0-9a-zA-Z_.\-@]*/
+///   integer: /-?(0|[1-9]\d*)/
 fn needs_quoting(s: &str) -> bool {
     if s.is_empty() {
         return true;
     }
 
-    // Check if starts with digit
-    if s.chars().next().is_some_and(|c| c.is_ascii_digit()) {
-        return true;
+    let first = s.chars().next().unwrap();
+
+    if first.is_ascii_alphabetic() || first == '_' {
+        // Symbol: first=[a-zA-Z_], rest=[0-9a-zA-Z_.-@]*
+        return s[first.len_utf8()..]
+            .chars()
+            .any(|c| !c.is_ascii_alphanumeric() && !matches!(c, '_' | '.' | '-' | '@'));
     }
 
-    // Check for non-ASCII characters (Unicode), special characters, or whitespace
-    s.chars().any(|c| {
-        !c.is_ascii()
-            || c.is_whitespace()
-            || matches!(
-                c,
-                '{' | '}' | '[' | ']' | '(' | ')' | ':' | ',' | '@' | '#' | '-' | '~' | '"'
-            )
-    })
+    if first.is_ascii_digit() || first == '-' {
+        // Integer: -?(0|[1-9]\d*)
+        let digits_part = if first == '-' { &s[1..] } else { s };
+        if digits_part.is_empty() {
+            return true;
+        }
+        if !digits_part.chars().all(|c| c.is_ascii_digit()) {
+            return true;
+        }
+        if digits_part.len() > 1 && digits_part.starts_with('0') {
+            return true;
+        }
+        return false;
+    }
+
+    // Anything else (unicode, @, special char at start) needs quoting
+    true
 }
 
-/// Escape special characters in strings
-fn escape_string(s: &str) -> String {
+/// Escape special characters in backtick-quoted identifiers
+fn escape_backtick_string(s: &str) -> String {
     s.replace('\\', "\\\\")
-        .replace('"', "\\\"")
+        .replace('`', "\\`")
         .replace('\n', "\\n")
         .replace('\r', "\\r")
         .replace('\t', "\\t")

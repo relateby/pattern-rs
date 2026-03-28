@@ -1,0 +1,43 @@
+// This is a comment.
+
+// Generally, a sequence of lines which are all comments
+// form a multi-line comment body. There is no syntax for
+// begin/end markers enclosing a comment.
+//
+// The following paragraph introduces the content of this file.
+//
+// This file is an archetypal schema for sonnets.
+// It shows canonical example structures. The examples are not merely illustrative —
+// they define the contract at three levels:
+// 1. **Structure**: which nodes, relationships, annotations, patterns and properties are present
+// 2. **Surface form**: which syntax choices are canonical (`:` vs `::`, arrow family,
+//    annotation style)
+// 3. **Value constraints**: how property types and value restrictions are expressed
+
+// The following structure is a top-level record.
+{
+    kind: "schema",     // contains conventions for archetypal schema
+    target: "sonnet",   // the kind for instances of this schema
+    version: "v2"       // version of the schema
+}
+
+
+[:Triplet { author: gram`string_literal`} |
+    [a1:`$A` { line: gram`string_literal` }],
+    [b1:`$B` { line: gram`string_literal` }],
+    [a2:`$A` { line: gram`string_literal` }]
+]
+
+[:Quatrain { author: gram`string_literal`} |
+    [a1:`$A` { line: gram`string_literal` }],
+    [b1:`$B` { line: gram`string_literal` }],
+    [a2:`$A` { line: gram`string_literal` }],
+    [b2:`$B` { line: gram`string_literal` }]
+]
+
+[:Sonnet { author: gram`string_literal`, title: gram`string_literal` } |
+    [:Quatrain],
+    [:Quatrain],
+    [:Triplet],
+    [:Triplet]
+]

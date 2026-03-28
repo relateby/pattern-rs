@@ -15,19 +15,34 @@ use nom::{
 };
 use pattern_core::{RangeValue, Value};
 
-/// Parse an identifier (symbol or quoted string)
+/// Parse an identifier: symbol, backtick-quoted name, or integer
+/// Per grammar: _identifier = symbol | quoted_name | integer
 pub fn identifier(input: &str) -> ParseResult<'_, String> {
-    alt((quoted_identifier, unquoted_identifier))(input)
+    alt((
+        backtick_quoted_string,
+        map(integer, |n| n.to_string()),
+        unquoted_identifier,
+    ))(input)
+}
+
+/// Parse a property or map key name: symbol, backtick-quoted name, or double-quoted name
+/// Per grammar: _key_name = symbol | quoted_name | double_quoted_name
+pub fn key_name(input: &str) -> ParseResult<'_, String> {
+    alt((
+        backtick_quoted_string,
+        double_quoted_string,
+        unquoted_identifier,
+    ))(input)
 }
 
 /// Parse an unquoted identifier (symbol)
 /// Supports: letters, digits, underscore, hyphen, @, . (not first char)
-/// Can start with: letter, underscore, or digit
+/// Can start with: letter or underscore (per grammar: /[a-zA-Z_][0-9a-zA-Z_.\-@]*/)
 pub fn unquoted_identifier(input: &str) -> ParseResult<'_, String> {
     map(
         recognize(pair(
-            // First character: letter, underscore, or digit
-            take_while1(|c: char| c.is_alphanumeric() || c == '_'),
+            // First character: letter or underscore only (not digit — use integer branch for those)
+            take_while1(|c: char| c.is_ascii_alphabetic() || c == '_'),
             // Subsequent characters: letters, digits, underscore, hyphen, @, .
             take_while(|c: char| {
                 c.is_alphanumeric() || c == '_' || c == '-' || c == '@' || c == '.'
@@ -35,11 +50,6 @@ pub fn unquoted_identifier(input: &str) -> ParseResult<'_, String> {
         )),
         |s: &str| s.to_string(),
     )(input)
-}
-
-/// Parse a quoted identifier (quoted string)
-fn quoted_identifier(input: &str) -> ParseResult<'_, String> {
-    string_value(input)
 }
 
 /// Parse a string value - supports multiple quote styles
@@ -430,7 +440,7 @@ fn map_value(input: &str) -> ParseResult<'_, Value> {
                 separated_list0(
                     delimited(ws, char(','), ws),
                     separated_pair(
-                        delimited(ws, unquoted_identifier, ws),
+                        delimited(ws, key_name, ws),
                         char(':'),
                         value_parser, // Recursive call for nested values
                     ),
@@ -509,10 +519,50 @@ mod tests {
     }
 
     #[test]
-    fn test_quoted_identifier() {
-        let (remaining, id) = quoted_identifier(r#""hello world""#).unwrap();
-        assert_eq!(id, "hello world");
+    fn test_identifier_backtick() {
+        let (remaining, id) = identifier("`+1`").unwrap();
+        assert_eq!(id, "+1");
         assert_eq!(remaining, "");
+
+        let (remaining, id) = identifier("`Role Label`").unwrap();
+        assert_eq!(id, "Role Label");
+        assert_eq!(remaining, "");
+    }
+
+    #[test]
+    fn test_identifier_rejects_double_quoted() {
+        assert!(identifier(r#""hello world""#).is_err());
+    }
+
+    #[test]
+    fn test_identifier_rejects_single_quoted() {
+        assert!(identifier("'hello'").is_err());
+    }
+
+    #[test]
+    fn test_key_name_symbol() {
+        let (remaining, key) = key_name("name").unwrap();
+        assert_eq!(key, "name");
+        assert_eq!(remaining, "");
+    }
+
+    #[test]
+    fn test_key_name_backtick() {
+        let (remaining, key) = key_name("`title name`").unwrap();
+        assert_eq!(key, "title name");
+        assert_eq!(remaining, "");
+    }
+
+    #[test]
+    fn test_key_name_double_quoted() {
+        let (remaining, key) = key_name(r#""display title""#).unwrap();
+        assert_eq!(key, "display title");
+        assert_eq!(remaining, "");
+    }
+
+    #[test]
+    fn test_key_name_rejects_single_quoted() {
+        assert!(key_name("'key'").is_err());
     }
 
     #[test]

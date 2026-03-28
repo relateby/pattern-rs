@@ -52,7 +52,8 @@ fn test_mixed_element_types_in_subject_pattern() {
 
 #[test]
 fn test_quoted_identifier_with_spaces() {
-    let input = "(\"hello world\")";
+    // Identifiers with spaces must use backtick quoting
+    let input = "(`hello world`)";
     let result = parse_gram_notation(input);
     assert!(result.is_ok(), "Failed to parse: {:?}", result.err());
     let patterns = result.unwrap();
@@ -61,14 +62,16 @@ fn test_quoted_identifier_with_spaces() {
 
 #[test]
 fn test_quoted_identifier_with_special_chars() {
-    let input = "(\"node-123\")";
+    // node-123 is a valid unquoted symbol (hyphen allowed after first char)
+    let input = "(node-123)";
     let result = parse_gram_notation(input);
     assert!(result.is_ok(), "Failed to parse: {:?}", result.err());
 }
 
 #[test]
 fn test_numeric_identifier() {
-    let input = "(\"42\")";
+    // Integers are valid unquoted identifiers
+    let input = "(42)";
     let result = parse_gram_notation(input);
     assert!(result.is_ok(), "Failed to parse: {:?}", result.err());
 }
