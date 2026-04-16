@@ -52,6 +52,11 @@ An **Annotation** is a way to wrap a pattern with additional metadata. Conceptua
 
 Annotations are powerful for adding context (like timestamps, source info, or weights) to any pattern without changing the pattern's own elements.
 
+> **Known limitation — annotation syntax on round-trip**  
+> Annotation body content (the annotating subject’s identity, labels, and properties) is currently stored as **properties on the wrapping subject**, not as a separate dedicated annotation field. Because of that, a **parse-then-serialize** round-trip **may not** reproduce the original annotation syntax, even when the underlying data is preserved.  
+>  
+> **Future work:** configurable annotation serialization at serialize time—either **inline unary** notation (for example `@@a:L @k(37) (x)`) or **property-map** notation (for example `[a:L {k:37} | x]`), chosen by the caller when serializing.
+
 ## Nesting and Paths
 
 Because Patterns are recursive, Gram notation can express complex nested structures and paths.

@@ -307,6 +307,7 @@ Key cursor rule highlights:
 - N/A — in-memory only (042-gram-cst-parser)
 - Rust 1.70.0 (workspace MSRV), Edition 2021 + `clap` v4 with derive (existing), no new dependencies (045-pato-help)
 - Topic content embedded in binary via `include_str!` (compile-time static) (045-pato-help)
+- TypeScript 5.x (all three changes), Markdown (documentation) + `vitest` (existing test runner), `@relateby/pattern` (existing), `effect >= 3.0.0` (peer) (046-ts-downstream-polish)
 
 ## Recent Changes
 - 030-graph-classifier: Added Rust 1.70.0 (MSRV), Edition 2021 + std (HashMap, Vec, HashSet) — no new external crates required
