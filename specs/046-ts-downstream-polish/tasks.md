@@ -22,7 +22,7 @@ All paths are from the repository root.
 
 **Purpose**: Confirm the test suite is green before making any changes.
 
-- [ ] T001 Run `npm test` in `typescript/packages/pattern` and `typescript/packages/gram` to confirm baseline passes (no changes made in this phase)
+- [X] T001 Run `npm test` in `typescript/packages/pattern` and `typescript/packages/gram` to confirm baseline passes (no changes made in this phase)
 
 ---
 
@@ -40,7 +40,7 @@ All paths are from the repository root.
 
 ### Implementation for User Story 1
 
-- [ ] T002 [US1] Replace entire contents of `typescript/packages/pattern/src/wasm-types.d.ts` with accurate fallback declarations matching `typescript/packages/pattern/wasm/pattern_wasm.d.ts`: declare `Gram` class (`parseToJson`, `stringifyFromJson`, `validate`, `free`, `[Symbol.dispose]`), `ParseResult` class (`identifiers`, `pattern_count`, `free`, `[Symbol.dispose]`), and free functions (`parse_gram`, `parse_to_ast`, `round_trip`, `validate_gram`, `version`) — for both the `"../wasm/pattern_wasm.js"` and `"../wasm-node/pattern_wasm.js"` module blocks; remove all legacy interface types and declarations
+- [X] T002 [US1] Replace entire contents of `typescript/packages/pattern/src/wasm-types.d.ts` with accurate fallback declarations matching `typescript/packages/pattern/wasm/pattern_wasm.d.ts`: declare `Gram` class (`parseToJson`, `stringifyFromJson`, `validate`, `free`, `[Symbol.dispose]`), `ParseResult` class (`identifiers`, `pattern_count`, `free`, `[Symbol.dispose]`), and free functions (`parse_gram`, `parse_to_ast`, `round_trip`, `validate_gram`, `version`) — for both the `"../wasm/pattern_wasm.js"` and `"../wasm-node/pattern_wasm.js"` module blocks; remove all legacy interface types and declarations
 
 **Checkpoint**: `wasm-types.d.ts` now matches the actual WASM adapter surface. Read it alongside `wasm/pattern_wasm.d.ts` — they should be structurally identical.
 
@@ -54,13 +54,13 @@ All paths are from the repository root.
 
 ### Implementation for User Story 2
 
-- [ ] T003 [US2] In `typescript/packages/gram/tests/public-api.test.ts`, add import of `Effect` from `"effect"` and `GramParseError` from `"@relateby/pattern"`; add a `describe("Gram.parse")` block with two tests: (1) parsing `"(a)"` resolves to a single-element array, and (2) parsing `"(a)-->(b)"` resolves to a pattern with two elements
+- [X] T003 [US2] In `typescript/packages/gram/tests/public-api.test.ts`, add import of `Effect` from `"effect"` and `GramParseError` from `"@relateby/pattern"`; add a `describe("Gram.parse")` block with two tests: (1) parsing `"(a)"` resolves to a single-element array, and (2) parsing `"(a)-->(b)"` resolves to a pattern with two elements
 
-- [ ] T004 [US2] In `typescript/packages/gram/tests/public-api.test.ts`, add a `describe("Gram.stringify")` block with one test: parsing `"(a:Person)"` then stringifying the result resolves to a non-empty string
+- [X] T004 [US2] In `typescript/packages/gram/tests/public-api.test.ts`, add a `describe("Gram.stringify")` block with one test: parsing `"(a:Person)"` then stringifying the result resolves to a non-empty string
 
-- [ ] T005 [US2] In `typescript/packages/gram/tests/public-api.test.ts`, add a `describe("Gram.validate")` block with two tests: (1) validating `"(a)"` succeeds (Effect resolves), and (2) validating `"(unclosed"` fails with a `GramParseError`
+- [X] T005 [US2] In `typescript/packages/gram/tests/public-api.test.ts`, add a `describe("Gram.validate")` block with two tests: (1) validating `"(a)"` succeeds (Effect resolves), and (2) validating `"(unclosed"` fails with a `GramParseError`
 
-- [ ] T006 [US2] In `typescript/packages/gram/tests/public-api.test.ts`, add a `describe("init()")` block with two tests: (1) calling `init()` resolves without error, and (2) calling `init()` a second time also resolves without error (idempotent)
+- [X] T006 [US2] In `typescript/packages/gram/tests/public-api.test.ts`, add a `describe("init()")` block with two tests: (1) calling `init()` resolves without error, and (2) calling `init()` a second time also resolves without error (idempotent)
 
 **Checkpoint**: Run `npm test` in `typescript/packages/gram` — all new tests pass alongside the existing surface-existence test.
 
@@ -74,7 +74,7 @@ All paths are from the repository root.
 
 ### Implementation for User Story 3
 
-- [ ] T007 [P] [US3] In `docs/gram-notation.md`, directly after the existing annotation example and explanation (after the paragraph beginning "Annotations are powerful for adding context"), add a **Known Limitation** blockquote noting: (1) annotation body content is currently stored as properties on the wrapping subject; (2) a parse-then-serialize round-trip may not reproduce the original annotation syntax; (3) future work will add configurable serialization — either inline unary notation (`@@a:L @k(37) (x)`) or property-map notation (`[a:L {k:37} | x]`), selectable at serialize time
+- [X] T007 [P] [US3] In `docs/gram-notation.md`, directly after the existing annotation example and explanation (after the paragraph beginning "Annotations are powerful for adding context"), add a **Known Limitation** blockquote noting: (1) annotation body content is currently stored as properties on the wrapping subject; (2) a parse-then-serialize round-trip may not reproduce the original annotation syntax; (3) future work will add configurable serialization — either inline unary notation (`@@a:L @k(37) (x)`) or property-map notation (`[a:L {k:37} | x]`), selectable at serialize time
 
 **Checkpoint**: Read the Annotations section — the limitation note is clearly visible before the summary table, written in plain language accessible to downstream TypeScript consumers.
 
@@ -84,9 +84,9 @@ All paths are from the repository root.
 
 **Purpose**: Verify all changes integrate cleanly and the full CI gate would pass.
 
-- [ ] T008 [P] Run `npm test` in `typescript/packages/pattern` to confirm no regressions from `wasm-types.d.ts` replacement
-- [ ] T009 [P] Run `npm test` in `typescript/packages/gram` to confirm all new tests pass
-- [ ] T010 Run `tsc --noEmit` in `typescript/packages/pattern` to confirm no type errors after `wasm-types.d.ts` replacement
+- [X] T008 [P] Run `npm test` in `typescript/packages/pattern` to confirm no regressions from `wasm-types.d.ts` replacement
+- [X] T009 [P] Run `npm test` in `typescript/packages/gram` to confirm all new tests pass
+- [X] T010 Run `tsc --noEmit` in `typescript/packages/pattern` to confirm no type errors after `wasm-types.d.ts` replacement
 
 ---
 
