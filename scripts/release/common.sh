@@ -79,10 +79,10 @@ def npm_has(package: str) -> bool:
     result = subprocess.run(
         ["npm", "view", f"{package}@{version}", "version"],
         timeout=TIMEOUT,
-        stdout=subprocess.DEVNULL,
-        stderr=subprocess.DEVNULL,
+        capture_output=True,
+        text=True,
     )
-    return result.returncode == 0
+    return result.returncode == 0 and bool(result.stdout.strip())
 
 def pypi_has(package: str) -> bool:
     with urllib.request.urlopen(f"https://pypi.org/pypi/{package}/json", timeout=TIMEOUT) as response:
