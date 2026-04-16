@@ -71,6 +71,24 @@ run_optional_check() {
     return 0
 }
 
+npm_workspace_node_major() {
+    node -p "Number(process.versions.node.split('.')[0])" 2>/dev/null || echo ""
+}
+
+expect_node_20_for_npm_workspaces() {
+    local major
+    major="$(npm_workspace_node_major)"
+    if [[ -z "$major" ]]; then
+        echo "node is required for npm workspace checks" >&2
+        return 1
+    fi
+    if [[ "$major" -ne 20 ]]; then
+        echo "npm workspaces in this repo are validated on Node.js 20.x (see .nvmrc). Current: $(node --version 2>/dev/null || echo unknown)" >&2
+        return 1
+    fi
+    return 0
+}
+
 npm_pack_smoke() {
     local smoke_dir="$REPO_ROOT/scripts/release/npm-smoke"
     local pack_dir="$REPO_ROOT/target/npm-packages"
@@ -231,6 +249,15 @@ fi
 echo ""
 
 if command -v npm >/dev/null 2>&1 && command -v wasm-pack >/dev/null 2>&1; then
+    if [[ $RELEASE_MODE -eq 1 ]]; then
+        run_check "Node.js 20.x (npm workspaces)" expect_node_20_for_npm_workspaces || true
+        echo ""
+    else
+        if ! expect_node_20_for_npm_workspaces >/dev/null 2>&1; then
+            echo -e "${YELLOW}⚠${NC} npm workspace checks expect Node 20.x (see .nvmrc); current $(node --version 2>/dev/null || echo node missing)"
+        fi
+        echo ""
+    fi
     run_check "npm install" npm ci || true
     echo ""
     run_check "Pattern package build" npm run build --workspace=@relateby/pattern || true

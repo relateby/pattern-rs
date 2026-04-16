@@ -149,11 +149,12 @@ jobs:
           targets: wasm32-unknown-unknown
       - uses: actions/setup-node@v6
         with:
-          node-version: '22'
+          node-version: '20'
           cache: 'npm'
           cache-dependency-path: package-lock.json
+      # Pin npm: Node 22.22.2 bundled npm breaks `npm i -g npm@latest` (missing promise-retry; nodejs/node#62425).
       - name: Update npm for trusted publishing
-        run: npm install -g npm@latest
+        run: npm install -g npm@11.11.0
       - name: Install wasm-pack
         run: cargo install wasm-pack
       - name: Install dependencies
