@@ -62,7 +62,7 @@ By making pattern concepts explicit, `pattern-rs` allows you to:
 | **Pattern** | The core recursive data structure, consisting of a Value and a sequence of Elements. |
 | **Value** | The decoration or metadata associated with a pattern concept. |
 | **Elements** | The sequence of sub-patterns that form the pattern concept. |
-| **Atomic Pattern** | A pattern with zero elements. Often conceptually represents a "node" or "leaf". |
-| **Nested Pattern** | A pattern whose elements are themselves patterns, allowing for hierarchical or recursive structures. |
+| **Atomic Pattern** | A pattern with zero elements — a value with no constituents. |
+| **Nested Pattern** | A pattern whose elements are themselves patterns, allowing for recursive composition. |
 | **Gram Notation** | The standard textual representation for Pattern structures. |
 | **Explicit Pattern** | A representation where the sequence of elements and their decoration are first-class entities. |

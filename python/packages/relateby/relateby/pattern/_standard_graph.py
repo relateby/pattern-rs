@@ -14,6 +14,17 @@ from ._subject import Subject
 
 
 class StandardGraph:
+    """An immutable-style graph built by classifying ``Pattern[Subject]`` values.
+
+    Patterns are classified into nodes, relationships, annotations,
+    walks, and other according to the same shape rules used by the
+    gram-hs reference implementation.  Once ingested, elements are
+    accessible via identity-keyed lookups or typed iterators.
+
+    Use the class methods ``from_patterns`` or ``from_gram`` to
+    construct a graph rather than calling ``__init__`` directly.
+    """
+
     def __init__(self) -> None:
         self._nodes: dict[str, Pattern[Subject]] = {}
         self._relationships: dict[str, dict[str, object]] = {}
@@ -23,6 +34,17 @@ class StandardGraph:
 
     @classmethod
     def from_patterns(cls, patterns: list[Pattern[Subject]]) -> "StandardGraph":
+        """Build a StandardGraph from a list of ``Pattern[Subject]`` values.
+
+        Each pattern is classified (node, relationship, annotation,
+        walk, or other) and its components are recursively ingested.
+
+        Args:
+            patterns: The patterns to ingest.
+
+        Returns:
+            A new StandardGraph containing all classified elements.
+        """
         graph = cls()
         for pattern in patterns:
             graph._ingest(pattern)
@@ -30,26 +52,39 @@ class StandardGraph:
 
     @classmethod
     def from_gram(cls, input: str) -> "StandardGraph":
+        """Parse Gram notation and build a StandardGraph.
+
+        Args:
+            input: A string of Gram notation.
+
+        Returns:
+            A new StandardGraph built from the parsed patterns.
+        """
         return cls.from_patterns(parse_gram(input))
 
     @property
     def node_count(self) -> int:
+        """Number of node patterns currently stored in the graph."""
         return len(self._nodes)
 
     @property
     def relationship_count(self) -> int:
+        """Number of relationship patterns currently stored in the graph."""
         return len(self._relationships)
 
     @property
     def annotation_count(self) -> int:
+        """Number of annotation patterns currently stored in the graph."""
         return len(self._annotations)
 
     @property
     def walk_count(self) -> int:
+        """Number of walk patterns currently stored in the graph."""
         return len(self._walks)
 
     @property
     def is_empty(self) -> bool:
+        """True when the graph contains no classified or other elements."""
         return (
             self.node_count == 0
             and self.relationship_count == 0
@@ -60,48 +95,120 @@ class StandardGraph:
 
     @property
     def has_conflicts(self) -> bool:
+        """True when the graph contains conflicting elements (always False in this implementation)."""
         return False
 
     def nodes(self) -> Iterator[tuple[str, Pattern[Subject]]]:
+        """Iterate over ``(identity, pattern)`` pairs for all node elements."""
         return iter(self._nodes.items())
 
     def relationships(self) -> Iterator[tuple[str, dict[str, object]]]:
+        """Iterate over ``(identity, rel_data)`` pairs for all relationship elements.
+
+        Each ``rel_data`` dict has keys ``"pattern"``, ``"source"``, and
+        ``"target"``.
+        """
         return iter(self._relationships.items())
 
     def annotations(self) -> Iterator[tuple[str, Pattern[Subject]]]:
+        """Iterate over ``(identity, pattern)`` pairs for all annotation elements."""
         return iter(self._annotations.items())
 
     def walks(self) -> Iterator[tuple[str, Pattern[Subject]]]:
+        """Iterate over ``(identity, pattern)`` pairs for all walk elements."""
         return iter(self._walks.items())
 
     def other(self) -> list[Pattern[Subject]]:
+        """Return a list of patterns that did not match any standard classification."""
         return list(self._other.values())
 
     def node(self, id: str) -> Optional[Pattern[Subject]]:
+        """Look up a node pattern by identity.
+
+        Args:
+            id: The identity of the node to retrieve.
+
+        Returns:
+            The matching node Pattern, or None if not found.
+        """
         return self._nodes.get(id)
 
     def relationship(self, id: str) -> Optional[dict[str, object]]:
+        """Look up relationship data by identity.
+
+        Args:
+            id: The identity of the relationship to retrieve.
+
+        Returns:
+            A dict with keys ``"pattern"``, ``"source"``, and
+            ``"target"``, or None if not found.
+        """
         return self._relationships.get(id)
 
     def annotation(self, id: str) -> Optional[Pattern[Subject]]:
+        """Look up an annotation pattern by identity.
+
+        Args:
+            id: The identity of the annotation to retrieve.
+
+        Returns:
+            The matching annotation Pattern, or None if not found.
+        """
         return self._annotations.get(id)
 
     def walk(self, id: str) -> Optional[Pattern[Subject]]:
+        """Look up a walk pattern by identity.
+
+        Args:
+            id: The identity of the walk to retrieve.
+
+        Returns:
+            The matching walk Pattern, or None if not found.
+        """
         return self._walks.get(id)
 
     def source(self, rel_id: str) -> Optional[Pattern[Subject]]:
+        """Return the source node pattern of a relationship.
+
+        Args:
+            rel_id: The identity of the relationship.
+
+        Returns:
+            The source node Pattern, or None if the relationship or its
+            source node is not found.
+        """
         relationship = self.relationship(rel_id)
         if relationship is None:
             return None
         return self.node(str(relationship["source"]))
 
     def target(self, rel_id: str) -> Optional[Pattern[Subject]]:
+        """Return the target node pattern of a relationship.
+
+        Args:
+            rel_id: The identity of the relationship.
+
+        Returns:
+            The target node Pattern, or None if the relationship or its
+            target node is not found.
+        """
         relationship = self.relationship(rel_id)
         if relationship is None:
             return None
         return self.node(str(relationship["target"]))
 
     def neighbors(self, node_id: str) -> list[Pattern[Subject]]:
+        """Return all node patterns adjacent to the given node (undirected).
+
+        A node is considered adjacent if it appears as the source or
+        target of any relationship whose other endpoint is ``node_id``.
+
+        Args:
+            node_id: The identity of the node whose neighbors are wanted.
+
+        Returns:
+            A list of adjacent node Patterns (may be empty).
+        """
         neighbors: list[Pattern[Subject]] = []
         for relationship in self._relationships.values():
             if relationship["source"] == node_id:
@@ -115,6 +222,15 @@ class StandardGraph:
         return neighbors
 
     def degree(self, node_id: str) -> int:
+        """Return the number of adjacent nodes (undirected degree).
+
+        Args:
+            node_id: The identity of the node.
+
+        Returns:
+            The count of distinct neighbors (incident relationship
+            endpoints on the other side).
+        """
         return len(self.neighbors(node_id))
 
     def _ingest(self, pattern: Pattern[Subject]) -> None:

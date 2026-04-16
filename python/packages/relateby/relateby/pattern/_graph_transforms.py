@@ -21,10 +21,17 @@ Substitution = Union[str, tuple[str, "Pattern[Subject]"]]
 
 
 class GraphQuery:
-    """Frozen snapshot of StandardGraph query state.
+    """Frozen snapshot of StandardGraph query state for use inside transforms.
 
-    Created once at the start of a transform; does not reflect mutations
-    made during the transform (snapshot semantics).
+    Created once at the start of a transform function; it captures the
+    nodes and relationships as they existed at that moment and does not
+    reflect any mutations made during the transform (snapshot semantics).
+    This allows transform functions to safely query graph topology while
+    building the output.
+
+    Attributes:
+        _nodes: Snapshot of node patterns keyed by identity.
+        _rels: Snapshot of relationship data dicts keyed by identity.
     """
 
     def __init__(self, graph: StandardGraph) -> None:
@@ -34,24 +41,62 @@ class GraphQuery:
         }
 
     def nodes(self) -> list[Pattern[Subject]]:
+        """Return all node patterns captured in this snapshot.
+
+        Returns:
+            A list of node Patterns.
+        """
         return list(self._nodes.values())
 
     def relationships(self) -> list[Pattern[Subject]]:
+        """Return all relationship patterns captured in this snapshot.
+
+        Returns:
+            A list of relationship Patterns.
+        """
         return [r["pattern"] for r in self._rels.values()]  # type: ignore[misc]
 
     def source(self, rel: Pattern[Subject]) -> Optional[Pattern[Subject]]:
+        """Return the source node pattern for a relationship pattern.
+
+        Args:
+            rel: A relationship Pattern whose identity is used for
+                the lookup.
+
+        Returns:
+            The source node Pattern, or None if the relationship or its
+            source node is not found in the snapshot.
+        """
         r = self._rels.get(rel.value.identity)
         if r is None:
             return None
         return self._nodes.get(str(r["source"]))
 
     def target(self, rel: Pattern[Subject]) -> Optional[Pattern[Subject]]:
+        """Return the target node pattern for a relationship pattern.
+
+        Args:
+            rel: A relationship Pattern whose identity is used for
+                the lookup.
+
+        Returns:
+            The target node Pattern, or None if the relationship or its
+            target node is not found in the snapshot.
+        """
         r = self._rels.get(rel.value.identity)
         if r is None:
             return None
         return self._nodes.get(str(r["target"]))
 
     def incident_rels(self, node: Pattern[Subject]) -> list[Pattern[Subject]]:
+        """Return all relationship patterns that include the given node as source or target.
+
+        Args:
+            node: A node Pattern whose identity is used for the lookup.
+
+        Returns:
+            A list of incident relationship Patterns.
+        """
         node_id = node.value.identity
         return [
             r["pattern"]  # type: ignore[misc]
@@ -60,12 +105,36 @@ class GraphQuery:
         ]
 
     def degree(self, node: Pattern[Subject]) -> int:
+        """Return the number of relationships incident to the given node.
+
+        Args:
+            node: A node Pattern whose identity is used for the lookup.
+
+        Returns:
+            The count of incident relationships (undirected degree).
+        """
         return len(self.incident_rels(node))
 
     def node_by_id(self, identity: str) -> Optional[Pattern[Subject]]:
+        """Look up a node pattern by its string identity.
+
+        Args:
+            identity: The identity of the node to retrieve.
+
+        Returns:
+            The matching node Pattern, or None if not found.
+        """
         return self._nodes.get(identity)
 
     def relationship_by_id(self, identity: str) -> Optional[Pattern[Subject]]:
+        """Look up a relationship pattern by its string identity.
+
+        Args:
+            identity: The identity of the relationship to retrieve.
+
+        Returns:
+            The matching relationship Pattern, or None if not found.
+        """
         r = self._rels.get(identity)
         if r is None:
             return None
@@ -111,8 +180,16 @@ def map_graph(
 ) -> StandardGraph:
     """Transform each element by its graph class.
 
-    mappers keys: "node", "relationship", "annotation", "walk", "other".
-    Elements whose class has no mapper pass through unchanged.
+    Args:
+        graph: The source graph whose elements will be transformed.
+        mappers: A dict whose keys are graph-class names (``"node"``,
+            ``"relationship"``, ``"annotation"``, ``"walk"``,
+            ``"other"``) and whose values are transformation functions
+            ``Pattern[Subject] -> Pattern[Subject]``.  Elements whose
+            class has no entry in ``mappers`` pass through unchanged.
+
+    Returns:
+        A new StandardGraph with transformed elements.
     """
     node_fn = mappers.get("node")
     rel_fn = mappers.get("relationship")
@@ -141,7 +218,16 @@ def map_all_graph(
     graph: StandardGraph,
     f: Callable[[Pattern[Subject]], Pattern[Subject]],
 ) -> StandardGraph:
-    """Apply the same transformation to all elements regardless of class."""
+    """Apply the same transformation to every element regardless of its class.
+
+    Args:
+        graph: The source graph.
+        f: A function ``Pattern[Subject] -> Pattern[Subject]`` applied
+            uniformly to every element.
+
+    Returns:
+        A new StandardGraph with every element replaced by ``f(element)``.
+    """
     return map_graph(graph, {
         "node": f, "relationship": f, "annotation": f, "walk": f, "other": f,
     })
@@ -152,12 +238,30 @@ def filter_graph(
     predicate: Callable[[str, Pattern[Subject]], bool],
     substitution: Substitution,
 ) -> StandardGraph:
-    """Remove elements where predicate(class_name, pattern) returns False.
+    """Remove elements where ``predicate(class_name, pattern)`` returns False.
 
-    substitution controls what happens to containers whose children are removed:
-    - "delete_container": remove the entire container
-    - "splice_gap": remove the child, keep the container with remaining children
-    - ("replace_with_surrogate", surrogate): replace removed child with surrogate
+    When a removed element is referenced by a container (e.g. a node
+    that is the source of a relationship), the ``substitution`` strategy
+    determines how to handle the container:
+
+    - ``"delete_container"``: remove the container entirely.
+    - ``"splice_gap"``: drop the removed child but keep the container
+      with its remaining children.
+    - ``("replace_with_surrogate", surrogate)``: replace the removed
+      child with the provided ``surrogate`` Pattern.
+
+    Args:
+        graph: The source graph.
+        predicate: A function ``(class_name, pattern) -> bool`` where
+            ``class_name`` is one of ``"node"``, ``"relationship"``,
+            ``"annotation"``, ``"walk"``, or ``"other"``.  Return False
+            to remove the element.
+        substitution: Strategy for handling containers whose children
+            are removed.  One of the three forms described above.
+
+    Returns:
+        A new StandardGraph with failing elements removed or replaced
+        according to ``substitution``.
     """
     removed: set[str] = set()
     for node_id, p in graph._nodes.items():
@@ -244,8 +348,22 @@ def fold_graph(
 ) -> R:
     """Reduce all classified elements to a single value.
 
-    f receives (class_name, pattern) for each element.
-    Results are combined left-to-right with combine.
+    Iterates over nodes, relationships, annotations, walks, and other
+    elements in that order, accumulating results left-to-right.
+
+    Args:
+        graph: The source graph.
+        f: A function ``(class_name, pattern) -> R`` applied to each
+            element, where ``class_name`` is one of ``"node"``,
+            ``"relationship"``, ``"annotation"``, ``"walk"``, or
+            ``"other"``.
+        empty: The initial accumulator value (returned as-is when the
+            graph is empty).
+        combine: A function ``(accumulator, element_result) ->
+            new_accumulator`` used to fold results left-to-right.
+
+    Returns:
+        The final accumulated value after visiting every element.
     """
     acc = empty
     for p in graph._nodes.values():
@@ -268,8 +386,19 @@ def map_with_context(
 ) -> StandardGraph:
     """Transform each element with access to a frozen GraphQuery snapshot.
 
-    The snapshot is captured at transform start and is not updated
-    as elements are transformed.
+    A ``GraphQuery`` snapshot is captured once before any transformation
+    begins and passed to ``f`` for every element.  Because the snapshot
+    is immutable, queries inside ``f`` always reflect the original graph
+    topology, not the intermediate results being built.
+
+    Args:
+        graph: The source graph.
+        f: A function ``(query, pattern) -> Pattern[Subject]`` applied
+            to every element.  ``query`` is the frozen snapshot.
+
+    Returns:
+        A new StandardGraph with every element replaced by
+        ``f(query, element)``.
     """
     query = GraphQuery(graph)
 
@@ -293,11 +422,39 @@ def para_graph(
     graph: StandardGraph,
     f: Callable[[GraphQuery, Pattern[Subject], dict[str, R]], R],
 ) -> dict[str, R]:
-    """Bottom-up fold over all graph elements in topological order.
+    """Bottom-up paramorphism over all graph elements in topological order.
 
-    f receives (query, pattern, sub_results) where sub_results maps
-    the identity of already-processed child elements to their results.
-    Returns dict mapping each element identity to its fold result.
+    Elements are visited leaves-first (nodes, then relationships, then
+    annotations, walks, and other).  When ``f`` is called for an
+    element, the results for all of its direct children are already
+    available in ``sub_results``, enabling fold functions that combine
+    child results with the current element's structure.
+
+    Args:
+        graph: The source graph.
+        f: A function ``(query, pattern, sub_results) -> R`` where:
+
+            - ``query`` is a frozen ``GraphQuery`` snapshot.
+            - ``pattern`` is the current element Pattern.
+            - ``sub_results`` is a ``dict[str, R]`` mapping the
+              identities of already-processed direct children to their
+              fold results.
+
+    Returns:
+        A ``dict[str, R]`` mapping every element's identity to its
+        computed fold result.
+
+    Example:
+        >>> # Count the total number of nodes reachable from each element
+        >>> from relateby.pattern import StandardGraph
+        >>> from relateby.pattern._graph_transforms import para_graph
+        >>> g = StandardGraph.from_gram("(a)-[r]->(b)")
+        >>> def count_nodes(query, pat, sub):
+        ...     own = 1 if query.node_by_id(pat.value.identity) else 0
+        ...     return own + sum(sub.values())
+        >>> results = para_graph(g, count_nodes)
+        >>> results["r"]  # relationship sees both endpoint results
+        2
     """
     query = GraphQuery(graph)
     results: dict[str, R] = {}
