@@ -1,5 +1,8 @@
 {
   "private": true,
+  "engines": {
+    "node": ">=20.0.0 <21.0.0"
+  },
   "scripts": {
     "build:release:npm": "npm run build --workspace=@relateby/pattern && npm run build --workspace=@relateby/graph && npm run build --workspace=@relateby/gram",
     "test:release:npm": "npm run test --workspace=@relateby/pattern && npm run test --workspace=@relateby/graph && npm run test --workspace=@relateby/gram"
