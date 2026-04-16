@@ -30,8 +30,8 @@ name = "relateby_pato"
 path = "src/lib.rs"
 
 [dependencies]
-pattern_core = { package = "relateby-pattern", path = "../pattern-core", version = "0.3.0" }
-gram_codec = { package = "relateby-gram", path = "../gram-codec", version = "0.3.0", features = ["cst"] }
+pattern_core = { package = "relateby-pattern", path = "../pattern-core", version = "0.3.1" }
+gram_codec = { package = "relateby-gram", path = "../gram-codec", version = "0.3.1", features = ["cst"] }
 clap = { workspace = true }
 serde = { workspace = true }
 serde_json = { workspace = true }
