@@ -84,17 +84,13 @@ pipe(3, countdown)
 ### Pattern combination / Semigroup (NEW)
 
 ```typescript
-import { pipe } from "effect"
 import { combine } from "@relateby/pattern"
 
 const pat1 = Pattern.pattern("hello", [Pattern.point("a")])
 const pat2 = Pattern.pattern(" world", [Pattern.point("b")])
 
 // combine(combineValues)(a)(b)
-const merged = pipe(
-  pat1,
-  combine((x: string, y: string) => x + y)(pat2)
-)
+const merged = combine((x: string, y: string) => x + y)(pat1)(pat2)
 // Pattern("hello world", [Pattern("a"), Pattern("b")])
 ```
 

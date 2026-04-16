@@ -3,7 +3,7 @@
 // All operations are pure standalone functions (not methods) so they compose
 // with effect-ts pipe() and can be tree-shaken independently.
 
-import { Data, Option, pipe } from "effect"
+import { Data, Equal, Option, pipe } from "effect"
 import { Pattern } from "./pattern.js"
 
 // --- Functor ---
@@ -61,6 +61,79 @@ export const duplicate = <V>(p: Pattern<V>): Pattern<Pattern<V>> =>
   new Pattern({ value: p, elements: Data.array(p.elements.map(duplicate)) })
 
 // --- Extra utility ---
+
+// --- Structural predicates ---
+
+/** Return true if any value satisfies the predicate. Short-circuits pre-order. */
+export const anyValue =
+  <V>(pred: (v: V) => boolean) =>
+  (p: Pattern<V>): boolean => {
+    if (pred(p.value)) return true
+    return p.elements.some(anyValue(pred))
+  }
+
+/** Return true if every value satisfies the predicate. Short-circuits pre-order. */
+export const allValues =
+  <V>(pred: (v: V) => boolean) =>
+  (p: Pattern<V>): boolean => {
+    if (!pred(p.value)) return false
+    return p.elements.every(allValues(pred))
+  }
+
+/** Structural equality — true if both patterns have the same shape and values. */
+export const matches = <V>(a: Pattern<V>, b: Pattern<V>): boolean =>
+  Equal.equals(a, b)
+
+/** Return true if needle appears anywhere in haystack (including at root). Curried: needle => haystack. */
+export const contains =
+  <V>(needle: Pattern<V>) =>
+  (haystack: Pattern<V>): boolean =>
+    Equal.equals(haystack, needle) || haystack.elements.some(contains(needle))
+
+// --- Paramorphism ---
+
+/** Structure-aware fold: fn receives both the current sub-pattern and pre-computed child results. Bottom-up. */
+export const para =
+  <V, R>(f: (p: Pattern<V>, childResults: ReadonlyArray<R>) => R) =>
+  (p: Pattern<V>): R =>
+    f(p, p.elements.map(para(f)))
+
+// --- Semigroup combination ---
+
+/** Combine two patterns: merge root values via combineValues, concatenate elements. */
+export const combine =
+  <V>(combineValues: (a: V, b: V) => V) =>
+  (a: Pattern<V>) =>
+  (b: Pattern<V>): Pattern<V> =>
+    new Pattern({ value: combineValues(a.value, b.value), elements: Data.array([...a.elements, ...b.elements]) })
+
+// --- Anamorphism ---
+
+/** Expand a seed value into a Pattern<V> tree. Terminates when expand returns empty children. */
+export const unfold =
+  <A, V>(expand: (seed: A) => readonly [V, ReadonlyArray<A>]) =>
+  (seed: A): Pattern<V> => {
+    const [value, childSeeds] = expand(seed)
+    const inner = unfold<A, V>(expand)
+    return new Pattern<V>({ value, elements: Data.array([...childSeeds].map(inner)) })
+  }
+
+// --- Comonad position helpers ---
+
+/** Annotate every position with its depth (0 for leaves). */
+export const depthAt = <V>(p: Pattern<V>): Pattern<number> =>
+  extend((sub: Pattern<V>) => sub.depth)(p)
+
+/** Annotate every position with its subtree size (1 for leaves). */
+export const sizeAt = <V>(p: Pattern<V>): Pattern<number> =>
+  extend((sub: Pattern<V>) => sub.size)(p)
+
+/** Annotate every position with its root-path index list ([] for root). */
+export const indicesAt = <V>(p: Pattern<V>): Pattern<number[]> => {
+  const go = (indices: number[]) => (sub: Pattern<V>): Pattern<number[]> =>
+    new Pattern({ value: indices, elements: Data.array(sub.elements.map((e, i) => go([...indices, i])(e))) })
+  return go([])(p)
+}
 
 /** Return all values in pre-order traversal order. */
 export const values = <V>(p: Pattern<V>): ReadonlyArray<V> => {

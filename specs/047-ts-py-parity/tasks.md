@@ -17,8 +17,8 @@
 
 **Purpose**: Establish a clean test baseline before adding new operations.
 
-- [ ] T001 Run TypeScript test suite to confirm clean baseline: `cd typescript/packages/pattern && npx vitest run`
-- [ ] T002 [P] Run Python test suite to confirm clean baseline: `cd python/packages/relateby && pytest tests/`
+- [x] T001 Run TypeScript test suite to confirm clean baseline: `cd typescript/packages/pattern && npx vitest run`
+- [x] T002 [P] Run Python test suite to confirm clean baseline: `cd python/packages/relateby && pytest tests/`
 
 **Checkpoint**: Both test suites pass before any modifications.
 
@@ -40,23 +40,23 @@
 
 ### TypeScript Implementation
 
-- [ ] T003 [P] [US1] Add `anyValue` (short-circuit pre-order predicate) to `typescript/packages/pattern/src/ops.ts`
-- [ ] T004 [P] [US1] Add `allValues` (short-circuit pre-order predicate) to `typescript/packages/pattern/src/ops.ts`
-- [ ] T005 [P] [US1] Add `matches` (structural equality via `Equal.equals`) to `typescript/packages/pattern/src/ops.ts`
-- [ ] T006 [P] [US1] Add `contains` (recursive subpattern search, curried `needle => haystack`) to `typescript/packages/pattern/src/ops.ts`
-- [ ] T007 [US1] Export `anyValue`, `allValues`, `matches`, `contains` from `typescript/packages/pattern/src/index.ts`
+- [x] T003 [P] [US1] Add `anyValue` (short-circuit pre-order predicate) to `typescript/packages/pattern/src/ops.ts`
+- [x] T004 [P] [US1] Add `allValues` (short-circuit pre-order predicate) to `typescript/packages/pattern/src/ops.ts`
+- [x] T005 [P] [US1] Add `matches` (structural equality via `Equal.equals`) to `typescript/packages/pattern/src/ops.ts`
+- [x] T006 [P] [US1] Add `contains` (recursive subpattern search, curried `needle => haystack`) to `typescript/packages/pattern/src/ops.ts`
+- [x] T007 [US1] Export `anyValue`, `allValues`, `matches`, `contains` from `typescript/packages/pattern/src/index.ts`
 
 ### Python Implementation
 
-- [ ] T008 [P] [US1] Add `any_value(predicate)` method to `python/packages/relateby/relateby/pattern/_pattern.py`
-- [ ] T009 [P] [US1] Add `all_values(predicate)` method to `python/packages/relateby/relateby/pattern/_pattern.py`
-- [ ] T010 [P] [US1] Add `matches(other)` method to `python/packages/relateby/relateby/pattern/_pattern.py`
-- [ ] T011 [P] [US1] Add `contains(needle)` method to `python/packages/relateby/relateby/pattern/_pattern.py`
+- [x] T008 [P] [US1] Add `any_value(predicate)` method to `python/packages/relateby/relateby/pattern/_pattern.py`
+- [x] T009 [P] [US1] Add `all_values(predicate)` method to `python/packages/relateby/relateby/pattern/_pattern.py`
+- [x] T010 [P] [US1] Add `matches(other)` method to `python/packages/relateby/relateby/pattern/_pattern.py`
+- [x] T011 [P] [US1] Add `contains(needle)` method to `python/packages/relateby/relateby/pattern/_pattern.py`
 
 ### Tests
 
-- [ ] T012 [P] [US1] Add `anyValue`, `allValues`, `matches`, `contains` tests (including all spec acceptance scenarios and Haskell equivalence cases) to `typescript/packages/pattern/tests/pattern-ops.test.ts`
-- [ ] T013 [P] [US1] Add `any_value`, `all_values`, `matches`, `contains` tests (including all spec acceptance scenarios) to `python/packages/relateby/tests/test_pattern_ops.py`
+- [x] T012 [P] [US1] Add `anyValue`, `allValues`, `matches`, `contains` tests (including all spec acceptance scenarios and Haskell equivalence cases) to `typescript/packages/pattern/tests/pattern-ops.test.ts`
+- [x] T013 [P] [US1] Add `any_value`, `all_values`, `matches`, `contains` tests (including all spec acceptance scenarios) to `python/packages/relateby/tests/test_pattern_ops.py`
 
 **Checkpoint**: All US1 acceptance scenarios pass; `anyValue(const true)(p)` always `true`; `matches(p, p)` always `true`; `contains(p, p)` always `true` (reflexivity).
 
@@ -70,17 +70,17 @@
 
 ### TypeScript Implementation
 
-- [ ] T014 [P] [US2] Add `para` (curried paramorphism, bottom-up) to `typescript/packages/pattern/src/ops.ts`
-- [ ] T015 [US2] Export `para` from `typescript/packages/pattern/src/index.ts`
+- [x] T014 [P] [US2] Add `para` (curried paramorphism, bottom-up) to `typescript/packages/pattern/src/ops.ts`
+- [x] T015 [US2] Export `para` from `typescript/packages/pattern/src/index.ts`
 
 ### Python Implementation
 
-- [ ] T016 [P] [US2] Add `para(f)` method to `python/packages/relateby/relateby/pattern/_pattern.py`
+- [x] T016 [P] [US2] Add `para(f)` method to `python/packages/relateby/relateby/pattern/_pattern.py`
 
 ### Tests
 
-- [ ] T017 [P] [US2] Add `para` tests (leaf case, nested case, height computation, value-sum matching `fold` result) to `typescript/packages/pattern/tests/pattern-ops.test.ts`
-- [ ] T018 [P] [US2] Add `para` tests to `python/packages/relateby/tests/test_pattern_ops.py`
+- [x] T017 [P] [US2] Add `para` tests (leaf case, nested case, height computation, value-sum matching `fold` result) to `typescript/packages/pattern/tests/pattern-ops.test.ts`
+- [x] T018 [P] [US2] Add `para` tests to `python/packages/relateby/tests/test_pattern_ops.py`
 
 **Checkpoint**: `para` produces same result as equivalent Haskell `para` on matching test cases.
 
@@ -94,22 +94,22 @@
 
 ### TypeScript Implementation
 
-- [ ] T019 [P] [US3] Add `static pattern<V>(value, elements)` to the `Pattern` class in `typescript/packages/pattern/src/pattern.ts`
-- [ ] T020 [P] [US3] Add `static fromList<V>(value, values)` to the `Pattern` class in `typescript/packages/pattern/src/pattern.ts`
-- [ ] T021 [P] [US3] Add `unfold` (anamorphism, curried `expand => seed => Pattern<V>`) to `typescript/packages/pattern/src/ops.ts`
-- [ ] T022 [US3] Export `unfold` from `typescript/packages/pattern/src/index.ts`
+- [x] T019 [P] [US3] Add `static pattern<V>(value, elements)` to the `Pattern` class in `typescript/packages/pattern/src/pattern.ts`
+- [x] T020 [P] [US3] Add `static fromList<V>(value, values)` to the `Pattern` class in `typescript/packages/pattern/src/pattern.ts`
+- [x] T021 [P] [US3] Add `unfold` (anamorphism, curried `expand => seed => Pattern<V>`) to `typescript/packages/pattern/src/ops.ts`
+- [x] T022 [US3] Export `unfold` from `typescript/packages/pattern/src/index.ts`
 
 ### Python Implementation
 
-- [ ] T023 [P] [US3] Add `Pattern.pattern(value, elements)` classmethod to `python/packages/relateby/relateby/pattern/_pattern.py`
-- [ ] T024 [P] [US3] Add `Pattern.from_list(value, values)` classmethod to `python/packages/relateby/relateby/pattern/_pattern.py`
-- [ ] T025 [P] [US3] Add `Pattern.unfold(expand, seed)` classmethod to `python/packages/relateby/relateby/pattern/_pattern.py`
-- [ ] T026 [US3] Export module-level `unfold` alias from `python/packages/relateby/relateby/pattern/__init__.py`
+- [x] T023 [P] [US3] Add `Pattern.pattern(value, elements)` classmethod to `python/packages/relateby/relateby/pattern/_pattern.py`
+- [x] T024 [P] [US3] Add `Pattern.from_list(value, values)` classmethod to `python/packages/relateby/relateby/pattern/_pattern.py`
+- [x] T025 [P] [US3] Add `Pattern.unfold(expand, seed)` classmethod to `python/packages/relateby/relateby/pattern/_pattern.py`
+- [x] T026 [US3] Export module-level `unfold` alias from `python/packages/relateby/relateby/pattern/__init__.py`
 
 ### Tests
 
-- [ ] T027 [P] [US3] Add construction and unfold tests (including `fromList` empty list = `point`, `unfold` countdown, `unfold` binary tree) to `typescript/packages/pattern/tests/pattern-ops.test.ts`
-- [ ] T028 [P] [US3] Add construction and unfold tests to `python/packages/relateby/tests/test_pattern_ops.py`
+- [x] T027 [P] [US3] Add construction and unfold tests (including `fromList` empty list = `point`, `unfold` countdown, `unfold` binary tree) to `typescript/packages/pattern/tests/pattern-ops.test.ts`
+- [x] T028 [P] [US3] Add construction and unfold tests to `python/packages/relateby/tests/test_pattern_ops.py`
 
 **Checkpoint**: `Pattern.pattern(v, [])` equals `Pattern.point(v)`; `Pattern.fromList(v, vals).elements.length == vals.length`; `unfold` terminates on empty-children expand.
 
@@ -123,17 +123,17 @@
 
 ### TypeScript Implementation
 
-- [ ] T029 [P] [US4] Add `combine` (curried `combineValues => a => b => Pattern<V>`) to `typescript/packages/pattern/src/ops.ts`
-- [ ] T030 [US4] Export `combine` from `typescript/packages/pattern/src/index.ts`
+- [x] T029 [P] [US4] Add `combine` (curried `combineValues => a => b => Pattern<V>`) to `typescript/packages/pattern/src/ops.ts`
+- [x] T030 [US4] Export `combine` from `typescript/packages/pattern/src/index.ts`
 
 ### Python Implementation
 
-- [ ] T031 [P] [US4] Add `combine(other, combine_values)` method to `python/packages/relateby/relateby/pattern/_pattern.py`
+- [x] T031 [P] [US4] Add `combine(other, combine_values)` method to `python/packages/relateby/relateby/pattern/_pattern.py`
 
 ### Tests
 
-- [ ] T032 [P] [US4] Add `combine` tests (string concat, identity, associativity law) to `typescript/packages/pattern/tests/pattern-ops.test.ts`
-- [ ] T033 [P] [US4] Add `combine` tests to `python/packages/relateby/tests/test_pattern_ops.py`
+- [x] T032 [P] [US4] Add `combine` tests (string concat, identity, associativity law) to `typescript/packages/pattern/tests/pattern-ops.test.ts`
+- [x] T033 [P] [US4] Add `combine` tests to `python/packages/relateby/tests/test_pattern_ops.py`
 
 **Checkpoint**: `combine(f)(p, empty)` equals `p` (identity law); `combine` is associative with an associative `f`.
 
@@ -147,21 +147,21 @@
 
 ### TypeScript Implementation
 
-- [ ] T034 [P] [US5] Add `depthAt` (via `extend(sub => sub.depth)`) to `typescript/packages/pattern/src/ops.ts`
-- [ ] T035 [P] [US5] Add `sizeAt` (via `extend(sub => sub.size)`) to `typescript/packages/pattern/src/ops.ts`
-- [ ] T036 [P] [US5] Add `indicesAt` (position-aware recursive helper — cannot use `extend`) to `typescript/packages/pattern/src/ops.ts`
-- [ ] T037 [US5] Export `depthAt`, `sizeAt`, `indicesAt` from `typescript/packages/pattern/src/index.ts`
+- [x] T034 [P] [US5] Add `depthAt` (via `extend(sub => sub.depth)`) to `typescript/packages/pattern/src/ops.ts`
+- [x] T035 [P] [US5] Add `sizeAt` (via `extend(sub => sub.size)`) to `typescript/packages/pattern/src/ops.ts`
+- [x] T036 [P] [US5] Add `indicesAt` (position-aware recursive helper — cannot use `extend`) to `typescript/packages/pattern/src/ops.ts`
+- [x] T037 [US5] Export `depthAt`, `sizeAt`, `indicesAt` from `typescript/packages/pattern/src/index.ts`
 
 ### Python Implementation
 
-- [ ] T038 [P] [US5] Add `depth_at()` method (via `self.extend(lambda s: s.depth)`) to `python/packages/relateby/relateby/pattern/_pattern.py`
-- [ ] T039 [P] [US5] Add `size_at()` method (via `self.extend(lambda s: s.size)`) to `python/packages/relateby/relateby/pattern/_pattern.py`
-- [ ] T040 [P] [US5] Add `indices_at()` method (position-aware recursive helper) to `python/packages/relateby/relateby/pattern/_pattern.py`
+- [x] T038 [P] [US5] Add `depth_at()` method (via `self.extend(lambda s: s.depth)`) to `python/packages/relateby/relateby/pattern/_pattern.py`
+- [x] T039 [P] [US5] Add `size_at()` method (via `self.extend(lambda s: s.size)`) to `python/packages/relateby/relateby/pattern/_pattern.py`
+- [x] T040 [P] [US5] Add `indices_at()` method (position-aware recursive helper) to `python/packages/relateby/relateby/pattern/_pattern.py`
 
 ### Tests
 
-- [ ] T041 [P] [US5] Add `depthAt`, `sizeAt`, `indicesAt` tests (leaf invariants, nested tree, path correctness) to `typescript/packages/pattern/tests/pattern-ops.test.ts`
-- [ ] T042 [P] [US5] Add `depth_at`, `size_at`, `indices_at` tests to `python/packages/relateby/tests/test_pattern_ops.py`
+- [x] T041 [P] [US5] Add `depthAt`, `sizeAt`, `indicesAt` tests (leaf invariants, nested tree, path correctness) to `typescript/packages/pattern/tests/pattern-ops.test.ts`
+- [x] T042 [P] [US5] Add `depth_at`, `size_at`, `indices_at` tests to `python/packages/relateby/tests/test_pattern_ops.py`
 
 **Checkpoint**: All comonad helper invariants hold; `indicesAt` root path is always `[]`; child at index `i` has path `[..., i]`.
 
@@ -175,17 +175,17 @@
 
 ### Implementation
 
-- [ ] T043 [US6] Create `python/packages/relateby/relateby/pattern/_graph_transforms.py` with `Substitution` type alias, internal `_build_graph_query` adapter that wraps `StandardGraph` state into a frozen query snapshot, and `_topological_sort` helper for `para_graph`
-- [ ] T044 [US6] Add `map_graph(graph, mappers)` and `map_all_graph(graph, f)` to `_graph_transforms.py` (depends on T043)
-- [ ] T045 [US6] Add `filter_graph(graph, pred, substitution)` with `delete_container`, `splice_gap`, and `replace_with_surrogate` substitution handling to `_graph_transforms.py` (depends on T043)
-- [ ] T046 [US6] Add `fold_graph(graph, f, empty, combine)` to `_graph_transforms.py` (depends on T043)
-- [ ] T047 [US6] Add `map_with_context(graph, f)` using frozen GraphQuery snapshot to `_graph_transforms.py` (depends on T043)
-- [ ] T048 [US6] Add `para_graph(graph, f)` processing elements bottom-up in topological order, returning `dict[str, R]` to `_graph_transforms.py` (depends on T043, T047 for pattern)
-- [ ] T049 [US6] Export `map_graph`, `map_all_graph`, `filter_graph`, `fold_graph`, `map_with_context`, `para_graph` from `python/packages/relateby/relateby/pattern/__init__.py`
+- [x] T043 [US6] Create `python/packages/relateby/relateby/pattern/_graph_transforms.py` with `Substitution` type alias, internal `_build_graph_query` adapter that wraps `StandardGraph` state into a frozen query snapshot, and `_topological_sort` helper for `para_graph`
+- [x] T044 [US6] Add `map_graph(graph, mappers)` and `map_all_graph(graph, f)` to `_graph_transforms.py` (depends on T043)
+- [x] T045 [US6] Add `filter_graph(graph, pred, substitution)` with `delete_container`, `splice_gap`, and `replace_with_surrogate` substitution handling to `_graph_transforms.py` (depends on T043)
+- [x] T046 [US6] Add `fold_graph(graph, f, empty, combine)` to `_graph_transforms.py` (depends on T043)
+- [x] T047 [US6] Add `map_with_context(graph, f)` using frozen GraphQuery snapshot to `_graph_transforms.py` (depends on T043)
+- [x] T048 [US6] Add `para_graph(graph, f)` processing elements bottom-up in topological order, returning `dict[str, R]` to `_graph_transforms.py` (depends on T043, T047 for pattern)
+- [x] T049 [US6] Export `map_graph`, `map_all_graph`, `filter_graph`, `fold_graph`, `map_with_context`, `para_graph` from `python/packages/relateby/relateby/pattern/__init__.py`
 
 ### Tests
 
-- [ ] T050 [US6] Create `python/packages/relateby/tests/test_graph_transforms.py` with tests for all 6 transform functions, including: map_graph preserves non-node elements; filter_graph + splice_gap collapses containers; fold_graph reduces to single value; map_with_context snapshot is frozen; para_graph processes in topo order
+- [x] T050 [US6] Create `python/packages/relateby/tests/test_graph_transforms.py` with tests for all 6 transform functions, including: map_graph preserves non-node elements; filter_graph + splice_gap collapses containers; fold_graph reduces to single value; map_with_context snapshot is frozen; para_graph processes in topo order
 
 **Checkpoint**: All 6 Python transform functions produce results equivalent to their TypeScript counterparts on matching `StandardGraph` inputs.
 
@@ -195,12 +195,12 @@
 
 **Purpose**: Final validation, API surface audit, and cross-language equivalence confirmation.
 
-- [ ] T051 [P] Verify TypeScript export inventory: run `npx vitest run tests/public-api/export_inventory.test.ts` and confirm all 12 new ops appear in `typescript/packages/pattern/tests/public-api/export_inventory.test.ts`; add missing entries
-- [ ] T052 [P] Update Python public API inventory if `tests/test_public_api.py` tracks exported names: `python/packages/relateby/tests/test_public_api.py`
-- [ ] T053 [P] Run TypeScript type-check to confirm no `any` leaks: `cd typescript/packages/pattern && npx tsc --noEmit`
-- [ ] T054 [P] Run full TypeScript test suite: `cd typescript/packages/pattern && npx vitest run`
-- [ ] T055 [P] Run full Python test suite with coverage: `cd python/packages/relateby && pytest tests/ -v`
-- [ ] T056 Verify quickstart.md code examples run correctly in both languages: test each snippet in `specs/047-ts-py-parity/quickstart.md` manually
+- [x] T051 [P] Verify TypeScript export inventory: run `npx vitest run tests/public-api/export_inventory.test.ts` and confirm all 12 new ops appear in `typescript/packages/pattern/tests/public-api/export_inventory.test.ts`; add missing entries
+- [x] T052 [P] Update Python public API inventory if `tests/test_public_api.py` tracks exported names: `python/packages/relateby/tests/test_public_api.py`
+- [x] T053 [P] Run TypeScript type-check to confirm no `any` leaks: `cd typescript/packages/pattern && npx tsc --noEmit`
+- [x] T054 [P] Run full TypeScript test suite: `cd typescript/packages/pattern && npx vitest run`
+- [x] T055 [P] Run full Python test suite with coverage: `cd python/packages/relateby && pytest tests/ -v`
+- [x] T056 Verify quickstart.md code examples run correctly in both languages: test each snippet in `specs/047-ts-py-parity/quickstart.md` manually
 
 ---
 

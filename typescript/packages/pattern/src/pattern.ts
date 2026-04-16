@@ -18,6 +18,16 @@ export class Pattern<V> extends Data.Class<{
     return Pattern.point(value)
   }
 
+  /** Create a non-atomic pattern with explicit children. */
+  static pattern<V>(value: V, elements: ReadonlyArray<Pattern<V>>): Pattern<V> {
+    return new Pattern({ value, elements: Data.array([...elements]) })
+  }
+
+  /** Create a pattern whose children are atomic patterns over a list of values. */
+  static fromList<V>(value: V, values: ReadonlyArray<V>): Pattern<V> {
+    return new Pattern({ value, elements: Data.array([...values].map(v => Pattern.point(v))) })
+  }
+
   get isAtomic(): boolean {
     return this.elements.length === 0
   }
