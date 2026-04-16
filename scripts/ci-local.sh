@@ -249,8 +249,11 @@ fi
 echo ""
 
 if command -v npm >/dev/null 2>&1 && command -v wasm-pack >/dev/null 2>&1; then
+    RUN_NPM_WORKSPACE_CHECKS=1
     if [[ $RELEASE_MODE -eq 1 ]]; then
-        run_check "Node.js 20.x (npm workspaces)" expect_node_20_for_npm_workspaces || true
+        if ! run_check "Node.js 20.x (npm workspaces)" expect_node_20_for_npm_workspaces; then
+            RUN_NPM_WORKSPACE_CHECKS=0
+        fi
         echo ""
     else
         if ! expect_node_20_for_npm_workspaces >/dev/null 2>&1; then
@@ -258,25 +261,30 @@ if command -v npm >/dev/null 2>&1 && command -v wasm-pack >/dev/null 2>&1; then
         fi
         echo ""
     fi
-    run_check "npm install" npm ci || true
-    echo ""
-    run_check "Pattern package build" npm run build --workspace=@relateby/pattern || true
-    echo ""
-    run_check "Pattern package tests" npm run test --workspace=@relateby/pattern || true
-    echo ""
-    run_check "Graph package build" npm run build --workspace=@relateby/graph || true
-    echo ""
-    run_check "Graph package tests" npm run test --workspace=@relateby/graph || true
-    echo ""
-    run_check "Gram package build" npm run build --workspace=@relateby/gram || true
-    echo ""
-    run_check "Gram package tests" npm run test --workspace=@relateby/gram || true
-    echo ""
-    run_check "Pattern package public export test" npm run test:public-api --workspace=@relateby/pattern || true
-    echo ""
-    run_check "Pattern package public typecheck" npm run test:public-api:types --workspace=@relateby/pattern || true
-    echo ""
-    if [[ $RELEASE_MODE -eq 1 ]]; then
+    if [[ $RUN_NPM_WORKSPACE_CHECKS -eq 1 ]]; then
+        run_check "npm install" npm ci || true
+        echo ""
+        run_check "Pattern package build" npm run build --workspace=@relateby/pattern || true
+        echo ""
+        run_check "Pattern package tests" npm run test --workspace=@relateby/pattern || true
+        echo ""
+        run_check "Graph package build" npm run build --workspace=@relateby/graph || true
+        echo ""
+        run_check "Graph package tests" npm run test --workspace=@relateby/graph || true
+        echo ""
+        run_check "Gram package build" npm run build --workspace=@relateby/gram || true
+        echo ""
+        run_check "Gram package tests" npm run test --workspace=@relateby/gram || true
+        echo ""
+        run_check "Pattern package public export test" npm run test:public-api --workspace=@relateby/pattern || true
+        echo ""
+        run_check "Pattern package public typecheck" npm run test:public-api:types --workspace=@relateby/pattern || true
+        echo ""
+    elif [[ $RELEASE_MODE -eq 1 ]]; then
+        echo -e "${YELLOW}⚠${NC} Skipping npm workspace checks because Node.js 20.x is required in --release mode"
+        echo ""
+    fi
+    if [[ $RELEASE_MODE -eq 1 && $RUN_NPM_WORKSPACE_CHECKS -eq 1 ]]; then
         run_check "npm packed artifact smoke test" npm_pack_smoke || true
         echo ""
     fi
@@ -326,4 +334,3 @@ fi
 
 echo -e "${RED}Some checks failed. See output above.${NC}"
 exit 1
-
