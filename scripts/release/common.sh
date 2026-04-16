@@ -58,22 +58,62 @@ release_tag_exists() {
 release_version_published() {
     local version
     version="$1"
+    require_command curl
     python3 - "$version" <<'PY'
 from __future__ import annotations
 
 import json
+import os
 import subprocess
 import sys
-import urllib.error
-import urllib.request
+import tempfile
 
 version = sys.argv[1]
 TIMEOUT = 10
 
+
+def curl_json(url: str) -> dict:
+    """Fetch JSON over HTTPS without Python's ssl stack (avoids broken hashlib on some builds)."""
+    fd, path = tempfile.mkstemp()
+    os.close(fd)
+    try:
+        result = subprocess.run(
+            [
+                "curl",
+                "-sS",
+                "-o",
+                path,
+                "-w",
+                "%{http_code}",
+                "--connect-timeout",
+                str(TIMEOUT),
+                "--max-time",
+                str(TIMEOUT),
+                url,
+            ],
+            capture_output=True,
+            text=True,
+            timeout=TIMEOUT + 2,
+        )
+        if result.returncode != 0:
+            raise OSError(result.stderr.strip() or f"curl exit {result.returncode}")
+        status_s = result.stdout.strip()
+        status = int(status_s) if status_s else 0
+        body = open(path, encoding="utf-8").read()
+        if status != 200:
+            raise OSError(f"HTTP {status}: {body[:200]!r}")
+        return json.loads(body)
+    finally:
+        try:
+            os.unlink(path)
+        except OSError:
+            pass
+
+
 def crates_io_has(crate: str) -> bool:
-    with urllib.request.urlopen(f"https://crates.io/api/v1/crates/{crate}", timeout=TIMEOUT) as response:
-        payload = json.load(response)
+    payload = curl_json(f"https://crates.io/api/v1/crates/{crate}")
     return version in {item["num"] for item in payload.get("versions", [])}
+
 
 def npm_has(package: str) -> bool:
     result = subprocess.run(
@@ -84,10 +124,11 @@ def npm_has(package: str) -> bool:
     )
     return result.returncode == 0 and bool(result.stdout.strip())
 
+
 def pypi_has(package: str) -> bool:
-    with urllib.request.urlopen(f"https://pypi.org/pypi/{package}/json", timeout=TIMEOUT) as response:
-        payload = json.load(response)
+    payload = curl_json(f"https://pypi.org/pypi/{package}/json")
     return version in payload.get("releases", {})
+
 
 checks = [
     ("crates.io", "relateby-pattern", lambda: crates_io_has("relateby-pattern")),
@@ -103,7 +144,7 @@ try:
         if check():
             print(f"{registry}:{subject}:{version}")
             raise SystemExit(0)
-except (urllib.error.URLError, subprocess.TimeoutExpired, TimeoutError, OSError) as exc:
+except (subprocess.TimeoutExpired, TimeoutError, OSError, ValueError) as exc:
     print(f"release version lookup failed: {exc}", file=sys.stderr)
     raise SystemExit(2)
 
