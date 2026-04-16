@@ -197,21 +197,23 @@ def map_graph(
     walk_fn = mappers.get("walk")
     other_fn = mappers.get("other")
 
-    nodes = {k: node_fn(v) if node_fn else v for k, v in graph._nodes.items()}
+    # Rebuild via from_patterns so relationship source/target metadata and dict
+    # keys stay consistent with transformed pattern shapes (identities, endpoints).
+    # Ingest containers (relationships, annotations, walks, other) before top-level
+    # nodes so embedded endpoint copies do not overwrite mapped node patterns.
+    patterns: list[Pattern[Subject]] = []
 
-    rels: dict[str, dict[str, object]] = {}
-    for k, rel_data in graph._relationships.items():
+    for rel_data in graph._relationships.values():
         p: Pattern[Subject] = rel_data["pattern"]  # type: ignore[assignment]
-        new_p = rel_fn(p) if rel_fn else p
-        new_data = dict(rel_data)
-        new_data["pattern"] = new_p
-        rels[k] = new_data
+        patterns.append(rel_fn(p) if rel_fn else p)
 
-    annotations = {k: ann_fn(v) if ann_fn else v for k, v in graph._annotations.items()}
-    walks = {k: walk_fn(v) if walk_fn else v for k, v in graph._walks.items()}
-    other = {k: other_fn(v) if other_fn else v for k, v in graph._other.items()}
+    patterns.extend(ann_fn(v) if ann_fn else v for v in graph._annotations.values())
+    patterns.extend(walk_fn(v) if walk_fn else v for v in graph._walks.values())
+    patterns.extend(other_fn(v) if other_fn else v for v in graph._other.values())
 
-    return _make_graph(nodes, rels, annotations, walks, other)
+    patterns.extend(node_fn(v) if node_fn else v for v in graph._nodes.values())
+
+    return StandardGraph.from_patterns(patterns)
 
 
 def map_all_graph(
@@ -296,6 +298,11 @@ def filter_graph(
                 new_els = [surrogate if e.value.identity in removed else e for e in p.elements]
                 new_data = dict(rel_data)
                 new_data["pattern"] = Pattern(value=p.value, elements=new_els)
+                new_data["source"] = new_els[0].value.identity
+                new_data["target"] = new_els[1].value.identity
+                for ep in new_els:
+                    if len(ep.elements) == 0:
+                        nodes.setdefault(ep.value.identity, ep)
                 rels[rel_id] = new_data
             # "delete_container" and "splice_gap": skip relationship (binary container cannot gap)
         else:
@@ -402,20 +409,17 @@ def map_with_context(
     """
     query = GraphQuery(graph)
 
-    nodes = {k: f(query, v) for k, v in graph._nodes.items()}
-
-    rels: dict[str, dict[str, object]] = {}
-    for k, rel_data in graph._relationships.items():
+    patterns: list[Pattern[Subject]] = []
+    for rel_data in graph._relationships.values():
         p: Pattern[Subject] = rel_data["pattern"]  # type: ignore[assignment]
-        new_data = dict(rel_data)
-        new_data["pattern"] = f(query, p)
-        rels[k] = new_data
+        patterns.append(f(query, p))
 
-    annotations = {k: f(query, v) for k, v in graph._annotations.items()}
-    walks = {k: f(query, v) for k, v in graph._walks.items()}
-    other = {k: f(query, v) for k, v in graph._other.items()}
+    patterns.extend(f(query, v) for v in graph._annotations.values())
+    patterns.extend(f(query, v) for v in graph._walks.values())
+    patterns.extend(f(query, v) for v in graph._other.values())
+    patterns.extend(f(query, v) for v in graph._nodes.values())
 
-    return _make_graph(nodes, rels, annotations, walks, other)
+    return StandardGraph.from_patterns(patterns)
 
 
 def para_graph(

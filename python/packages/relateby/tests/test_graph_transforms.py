@@ -117,6 +117,27 @@ def test_map_graph_transforms_relationship():
     assert "TAGGED" in r1["pattern"].value.labels  # type: ignore[index]
 
 
+def test_map_graph_rebuilds_relationship_source_target_when_endpoints_change():
+    """Relationship metadata must match pattern elements after mapping."""
+    graph = make_simple_graph()
+
+    def rewire_rel(p: Pattern[Subject]) -> Pattern[Subject]:
+        left = make_node("src2")
+        right = make_node("tgt2")
+        return Pattern(value=p.value, elements=[left, right])
+
+    result = map_graph(graph, {"relationship": rewire_rel})
+    r1 = result.relationship("r1")
+    assert r1 is not None
+    assert str(r1["source"]) == "src2"
+    assert str(r1["target"]) == "tgt2"
+    src = result.source("r1")
+    tgt = result.target("r1")
+    assert src is not None and tgt is not None
+    assert src.value.identity == "src2"
+    assert tgt.value.identity == "tgt2"
+
+
 # ---------------------------------------------------------------------------
 # map_all_graph
 # ---------------------------------------------------------------------------
@@ -255,6 +276,24 @@ def test_filter_graph_replace_with_surrogate_in_annotation():
     ann = result.annotation("ann1")
     assert ann is not None
     assert ann.elements[0].value.identity == "REMOVED"
+
+
+def test_filter_graph_replace_with_surrogate_in_relationship_updates_endpoints():
+    graph = make_simple_graph()
+    surrogate = make_node("REMOVED")
+    result = filter_graph(
+        graph,
+        lambda cls, p: p.value.identity != "n1",
+        ("replace_with_surrogate", surrogate),
+    )
+    assert result.relationship_count == 1
+    r1 = result.relationship("r1")
+    assert r1 is not None
+    assert str(r1["source"]) == "REMOVED"
+    assert str(r1["target"]) == "n2"
+    src = result.source("r1")
+    assert src is not None
+    assert src.value.identity == "REMOVED"
 
 
 def test_filter_graph_keeps_all_when_predicate_always_true():
