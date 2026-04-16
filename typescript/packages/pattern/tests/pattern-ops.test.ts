@@ -125,12 +125,6 @@ describe("para", () => {
   })
 
   it("computes same value-sum as fold when f only uses child results", () => {
-    const sumViaFold = (p: Pattern<number>) =>
-      p.elements.reduce(
-        (acc: number, _e: Pattern<number>, i: number) => acc,
-        // use fold for reference
-        0
-      )
     // para sum: f(p, rs) = p.value + sum(rs)
     const paraSum = para<number, number>((p, rs) => p.value + rs.reduce((a, b) => a + b, 0))
     // fold sum: same accumulation

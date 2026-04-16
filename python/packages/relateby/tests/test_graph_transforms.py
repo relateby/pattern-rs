@@ -1,7 +1,6 @@
 """Tests for graph transform functions: map_graph, map_all_graph, filter_graph,
 fold_graph, map_with_context, para_graph.
 """
-import pytest
 from relateby.pattern import (
     Pattern,
     Subject,
@@ -108,7 +107,6 @@ def test_map_graph_empty_mappers_is_identity():
 
 def test_map_graph_transforms_relationship():
     graph = make_simple_graph()
-    tagged_rel = None
 
     def tag_rel(p: Pattern[Subject]) -> Pattern[Subject]:
         return Pattern(value=p.value.with_label("TAGGED"), elements=list(p.elements))

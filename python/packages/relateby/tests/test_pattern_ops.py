@@ -1,4 +1,3 @@
-import pytest
 from relateby.pattern import Pattern, Subject
 
 
