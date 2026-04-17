@@ -22,6 +22,26 @@ def test_public_stub_files_describe_supported_symbols():
     assert "class StandardGraph" in pattern_stub
     assert "def values" in pattern_stub
     assert "def from_gram" in pattern_stub
+    # New operations from 047-ts-py-parity:
+    assert "def pattern" in pattern_stub
+    assert "def from_list" in pattern_stub
+    assert "def unfold" in pattern_stub
+    assert "def any_value" in pattern_stub
+    assert "def all_values" in pattern_stub
+    assert "def matches" in pattern_stub
+    assert "def contains" in pattern_stub
+    assert "def para" in pattern_stub
+    assert "def combine" in pattern_stub
+    assert "def depth_at" in pattern_stub
+    assert "def size_at" in pattern_stub
+    assert "def indices_at" in pattern_stub
+    assert "class GraphQuery" in pattern_stub
+    assert "def map_graph" in pattern_stub
+    assert "def map_all_graph" in pattern_stub
+    assert "def filter_graph" in pattern_stub
+    assert "def fold_graph" in pattern_stub
+    assert "def map_with_context" in pattern_stub
+    assert "def para_graph" in pattern_stub
     assert "class GramParseError" in gram_stub
     assert "def parse_gram" in gram_stub
     assert "def gram_validate" in gram_stub

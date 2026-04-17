@@ -6,7 +6,7 @@ This crate provides the foundational `Pattern<V>` type and `Subject` type, porte
 
 ## Features
 
-- **Pattern<V>**: A recursive, nested structure (s-expression-like) that is generic over value type `V`
+- **Pattern<V>**: A value paired with an ordered list of elements, each itself a `Pattern<V>` — a *decorated sequence* where elements form the pattern concept and the value decorates it
 - **Functor Instance**: Transform pattern values while preserving structure with the `map` method
 - **Combinable Trait**: Associative combination operations for composing patterns
 - **Subject**: A self-descriptive value type with identity, labels, and properties
@@ -42,13 +42,13 @@ let subject = Subject {
 let pattern_with_subject: Pattern<Subject> = Pattern::point(subject);
 
 // Transform pattern values (Functor)
-let pattern = Pattern::pattern("root", vec![
-    Pattern::point("child1"),
-    Pattern::point("child2"),
+let pattern = Pattern::pattern("stanza", vec![
+    Pattern::point("line_a"),
+    Pattern::point("line_b"),
 ]);
 let upper = pattern.map(|s| s.to_uppercase());
-assert_eq!(upper.value, "ROOT");
-assert_eq!(upper.elements[0].value, "CHILD1");
+assert_eq!(upper.value, "STANZA");
+assert_eq!(upper.elements[0].value, "LINE_A");
 
 // Combine patterns (Combinable)
 let p1 = Pattern::point("hello".to_string());

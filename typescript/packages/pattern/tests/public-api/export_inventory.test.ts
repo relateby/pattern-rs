@@ -11,6 +11,17 @@ const expectedTopLevelExports = [
   "findFirst",
   "fold",
   "toGraphView",
+  // New ops from 047-ts-py-parity:
+  "anyValue",
+  "allValues",
+  "matches",
+  "contains",
+  "para",
+  "unfold",
+  "combine",
+  "depthAt",
+  "sizeAt",
+  "indicesAt",
 ] as const
 
 describe("@relateby/pattern public export inventory", () => {
@@ -25,5 +36,10 @@ describe("@relateby/pattern public export inventory", () => {
     expect(typeof PublicApi.Gram.parse).toBe("function")
     expect(typeof PublicApi.Gram.stringify).toBe("function")
     expect(typeof PublicApi.Gram.validate).toBe("function")
+  })
+
+  it("exposes Pattern.pattern and Pattern.fromList static constructors", () => {
+    expect(typeof PublicApi.Pattern.pattern).toBe("function")
+    expect(typeof PublicApi.Pattern.fromList).toBe("function")
   })
 })

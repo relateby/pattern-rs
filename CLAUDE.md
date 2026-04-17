@@ -18,11 +18,11 @@ When porting features, study the Haskell source in `../pattern-hs/libs/` as auth
 
 ## Core Concepts
 
-**Pattern<V>**: A recursive, nested structure (s-expression-like) generic over value type `V`. The foundational data structure for representing hierarchical data interpretable as graphs.
+**Pattern<V>**: A value paired with an ordered list of elements, each itself a `Pattern<V>`. This is the *decorated sequence* model: elements form the pattern concept; the value decorates it. An atomic pattern has no elements. Graph elements (nodes, relationships, walks) are one specialisation of this structure; see `docs/introduction.md` for the full model. Do not describe Pattern as a "tree", "hierarchical data", or frame graphs as its primary purpose — these lead to the wrong mental model.
 
-**Subject**: A self-descriptive value type with identity, labels, and properties. Commonly used as `Pattern<Subject>` for object-graph replacements.
+**Subject**: A self-descriptive value type with identity, labels, and properties. Commonly used as `Pattern<Subject>` for property-graph data.
 
-**Gram Notation**: A human-readable notation for patterns, handled by the gram-codec crate (bidirectional serialization/deserialization).
+**Gram Notation**: A human-readable serialisation for patterns. The square-bracket form `["decoration" | element, element, ...]` is the general pattern notation; the parenthesis/arrow forms `(node)`, `(a)-[:rel]->(b)` are syntactic sugar for common graph-element shapes. Handled by the gram-codec crate (bidirectional serialisation/deserialisation).
 
 ## Common Commands
 
