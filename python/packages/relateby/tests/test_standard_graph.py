@@ -74,3 +74,73 @@ def test_from_gram_composes_parse_and_classify():
     assert graph.node_count == 2
     assert graph.relationship_count == 1
     assert graph.node("a") is not None
+
+
+# ============================================================================
+# Back-reference label preservation tests
+# ============================================================================
+
+
+def labelled_node(identity: str, label: str) -> Pattern[Subject]:
+    return Pattern.point(Subject(identity=identity, labels={label}, properties={}))
+
+
+def test_from_patterns_back_reference_preserves_labels():
+    # Pattern 1: (red:Red)-[:GO]->(blue:Blue)
+    p1 = Pattern(
+        value=Subject.from_id("go1"),
+        elements=[labelled_node("red", "Red"), labelled_node("blue", "Blue")],
+    )
+    # Pattern 2: (blue)-[:GO]->(red) — back-references, no labels
+    p2 = Pattern(
+        value=Subject.from_id("go2"),
+        elements=[node("blue"), node("red")],
+    )
+
+    graph = StandardGraph.from_patterns([p1, p2])
+
+    red = graph.node("red")
+    blue = graph.node("blue")
+
+    assert red is not None
+    assert "Red" in red.value.labels, "red should keep label Red"
+    assert blue is not None
+    assert "Blue" in blue.value.labels, "blue should keep label Blue"
+    assert graph.relationship_count == 2
+
+
+def test_from_patterns_label_union_across_occurrences():
+    p1 = labelled_node("n", "First")
+    p2 = labelled_node("n", "Second")
+
+    graph = StandardGraph.from_patterns([p1, p2])
+
+    n = graph.node("n")
+    assert n is not None
+    assert "First" in n.value.labels
+    assert "Second" in n.value.labels
+
+
+def test_from_patterns_three_node_cycle_preserves_all_labels():
+    # (green:Green)-[:go1]->(red:Red)
+    p1 = Pattern(
+        value=Subject.from_id("go1"),
+        elements=[labelled_node("green", "Green"), labelled_node("red", "Red")],
+    )
+    # (red)-[:go2]->(blue:Blue)
+    p2 = Pattern(
+        value=Subject.from_id("go2"),
+        elements=[node("red"), labelled_node("blue", "Blue")],
+    )
+    # (blue)-[:go3]->(green)
+    p3 = Pattern(
+        value=Subject.from_id("go3"),
+        elements=[node("blue"), node("green")],
+    )
+
+    graph = StandardGraph.from_patterns([p1, p2, p3])
+
+    assert "Green" in graph.node("green").value.labels
+    assert "Red" in graph.node("red").value.labels
+    assert "Blue" in graph.node("blue").value.labels
+    assert graph.relationship_count == 3

@@ -494,3 +494,119 @@ fn scale_1000_nodes_5000_relationships() {
     let neighbors = g.neighbors(&"n0".into());
     assert!(!neighbors.is_empty());
 }
+
+// ============================================================================
+// Back-reference label preservation tests (issue: overwrite bug)
+// ============================================================================
+
+/// A relationship pattern whose endpoint nodes are back-references (no labels)
+/// must not overwrite labels established by an earlier pattern.
+#[test]
+fn from_patterns_back_reference_preserves_labels() {
+    // Pattern 1: (red:Red)-[:GO]->(blue:Blue)
+    let red_labeled = Subject::build("red").label("Red").done();
+    let blue_labeled = Subject::build("blue").label("Blue").done();
+    let p1 = Pattern::pattern(
+        Subject::build("go1").label("GO").done(),
+        vec![Pattern::point(red_labeled), Pattern::point(blue_labeled)],
+    );
+    // Pattern 2: (blue)-[:GO]->(red)  — back-references, no labels
+    let p2 = Pattern::pattern(
+        Subject::build("go2").label("GO").done(),
+        vec![
+            Pattern::point(Subject::from_id("blue")),
+            Pattern::point(Subject::from_id("red")),
+        ],
+    );
+
+    let g = StandardGraph::from_patterns(vec![p1, p2]);
+
+    let red = g.node(&"red".into()).unwrap();
+    let blue = g.node(&"blue".into()).unwrap();
+
+    assert!(
+        red.value.labels.contains("Red"),
+        "red should keep label Red"
+    );
+    assert!(
+        blue.value.labels.contains("Blue"),
+        "blue should keep label Blue"
+    );
+    assert_eq!(g.relationship_count(), 2);
+}
+
+/// add_pattern should apply the same union semantics as from_patterns.
+#[test]
+fn add_pattern_back_reference_preserves_labels() {
+    let mut g = StandardGraph::new();
+
+    let p1 = Pattern::pattern(
+        Subject::build("r1").label("LINK").done(),
+        vec![
+            Pattern::point(Subject::build("a").label("A").done()),
+            Pattern::point(Subject::build("b").label("B").done()),
+        ],
+    );
+    let p2 = Pattern::pattern(
+        Subject::build("r2").label("LINK").done(),
+        vec![
+            Pattern::point(Subject::from_id("b")),
+            Pattern::point(Subject::from_id("a")),
+        ],
+    );
+
+    g.add_pattern(p1);
+    g.add_pattern(p2);
+
+    let a = g.node(&"a".into()).unwrap();
+    let b = g.node(&"b".into()).unwrap();
+
+    assert!(a.value.labels.contains("A"), "a should keep label A");
+    assert!(b.value.labels.contains("B"), "b should keep label B");
+}
+
+/// Three-node cycle: every node has its label only in the first pattern.
+#[test]
+fn from_patterns_three_node_cycle_preserves_all_labels() {
+    // (green:Green)-[:GO]->(red:Red)
+    let p1 = Pattern::pattern(
+        Subject::build("go1").label("GO").done(),
+        vec![
+            Pattern::point(Subject::build("green").label("Green").done()),
+            Pattern::point(Subject::build("red").label("Red").done()),
+        ],
+    );
+    // (red)-[:GO]->(blue:Blue)
+    let p2 = Pattern::pattern(
+        Subject::build("go2").label("GO").done(),
+        vec![
+            Pattern::point(Subject::from_id("red")),
+            Pattern::point(Subject::build("blue").label("Blue").done()),
+        ],
+    );
+    // (blue)-[:GO]->(green)
+    let p3 = Pattern::pattern(
+        Subject::build("go3").label("GO").done(),
+        vec![
+            Pattern::point(Subject::from_id("blue")),
+            Pattern::point(Subject::from_id("green")),
+        ],
+    );
+
+    let g = StandardGraph::from_patterns(vec![p1, p2, p3]);
+
+    assert!(g
+        .node(&"green".into())
+        .unwrap()
+        .value
+        .labels
+        .contains("Green"));
+    assert!(g.node(&"red".into()).unwrap().value.labels.contains("Red"));
+    assert!(g
+        .node(&"blue".into())
+        .unwrap()
+        .value
+        .labels
+        .contains("Blue"));
+    assert_eq!(g.relationship_count(), 3);
+}
