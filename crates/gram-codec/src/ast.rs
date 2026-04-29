@@ -210,29 +210,7 @@ impl AstPattern {
     /// ```
     /// Convert from AST back to native `Pattern<Subject>`.
     pub fn to_pattern(&self) -> Result<Pattern<Subject>, String> {
-        use pattern_core::Symbol;
-        use std::collections::{HashMap, HashSet};
-
-        let subject = Subject {
-            identity: Symbol(self.subject.identity.clone()),
-            labels: self.subject.labels.iter().cloned().collect::<HashSet<_>>(),
-            properties: self
-                .subject
-                .properties
-                .iter()
-                .map(|(k, v)| json_to_value(v).map(|val| (k.clone(), val)))
-                .collect::<Result<HashMap<_, _>, _>>()?,
-        };
-        let elements: Vec<Pattern<Subject>> = self
-            .elements
-            .iter()
-            .map(AstPattern::to_pattern)
-            .collect::<Result<Vec<_>, _>>()?;
-        if elements.is_empty() {
-            Ok(Pattern::point(subject))
-        } else {
-            Ok(Pattern::pattern(subject, elements))
-        }
+        crate::json::ast_to_pattern(self)
     }
 
     pub fn from_pattern(pattern: &Pattern<Subject>) -> Self {
@@ -333,8 +311,13 @@ pub(crate) fn json_to_value(v: &serde_json::Value) -> Result<Value, String> {
         serde_json::Value::Number(n) => {
             if let Some(i) = n.as_i64() {
                 Ok(Value::VInteger(i))
+            } else if let Some(f) = n.as_f64() {
+                Ok(Value::VDecimal(f))
             } else {
-                Ok(Value::VDecimal(n.as_f64().unwrap_or(0.0)))
+                Err(format!(
+                    "JSON number is not representable as a gram decimal value: {}",
+                    n
+                ))
             }
         }
         serde_json::Value::Array(arr) => {

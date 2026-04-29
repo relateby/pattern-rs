@@ -109,7 +109,7 @@ pub fn gram_validate_to_json(input: &str) -> String {
 }
 
 /// Convert an `AstPattern` back to a native `Pattern<Subject>`.
-fn ast_to_pattern(ast: &AstPattern) -> Result<Pattern<Subject>, String> {
+pub fn ast_to_pattern(ast: &AstPattern) -> Result<Pattern<Subject>, String> {
     let subject = Subject {
         identity: Symbol(ast.subject.identity.clone()),
         labels: ast.subject.labels.iter().cloned().collect::<HashSet<_>>(),
@@ -143,8 +143,13 @@ fn json_to_value(v: &serde_json::Value) -> Result<Value, String> {
         serde_json::Value::Number(n) => {
             if let Some(i) = n.as_i64() {
                 Ok(Value::VInteger(i))
+            } else if let Some(f) = n.as_f64() {
+                Ok(Value::VDecimal(f))
             } else {
-                Ok(Value::VDecimal(n.as_f64().unwrap_or(0.0)))
+                Err(format!(
+                    "JSON number is not representable as a gram decimal value: {}",
+                    n
+                ))
             }
         }
         serde_json::Value::Array(arr) => {

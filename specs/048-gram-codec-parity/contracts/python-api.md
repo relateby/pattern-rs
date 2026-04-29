@@ -2,7 +2,7 @@
 
 Module: `relateby.gram`
 
-All functions raise `GramParseError` on parse failure and `ValueError` on serialization failure.
+All functions raise `GramParseError` on both parse failure and serialization failure.
 
 ---
 
@@ -38,7 +38,7 @@ gram_text: str = stringify(patterns)
 
 **Input**: list of `Pattern[Subject]` (may be empty)
 **Output**: gram notation string; patterns joined by newlines
-**Errors**: raises `ValueError` if a pattern contains values not representable in gram notation (e.g. nested maps)
+**Errors**: raises `GramParseError` if a pattern contains values not representable in gram notation (e.g. nested maps)
 
 **Alias**: `gram_stringify` (retained for backwards compatibility)
 
@@ -86,7 +86,7 @@ gram_text = stringify_with_header({"version": 1}, [])
 
 **Input**: `header` (`dict | None`), `patterns` (list of `Pattern[Subject]`)
 **Output**: gram notation string with header (if non-None) as the first line, followed by patterns
-**Errors**: raises `ValueError` if header contains values not representable in gram notation
+**Errors**: raises `GramParseError` if header or patterns contain values not representable in gram notation
 
 ---
 
