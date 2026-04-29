@@ -37,7 +37,7 @@ impl Gram {
             .iter()
             .map(|ast| ast.to_pattern())
             .collect::<Result<Vec<_>, _>>()
-            .map_err(|e| JsValue::from_str(&e))?;
+            .map_err(|e| JsValue::from_str(&e.to_string()))?;
         gram_codec::to_gram(&patterns).map_err(|e| JsValue::from_str(&e.to_string()))
     }
 
@@ -74,14 +74,14 @@ impl Gram {
             serde_wasm_bindgen::from_value(input).map_err(|e| JsValue::from_str(&e.to_string()))?;
         let header = result
             .header_to_record()
-            .map_err(|e| JsValue::from_str(&e))?
+            .map_err(|e| JsValue::from_str(&e.to_string()))?
             .unwrap_or_default();
         let patterns: Vec<gram_codec::Pattern<gram_codec::Subject>> = result
             .patterns
             .iter()
             .map(|ast| ast.to_pattern())
             .collect::<Result<Vec<_>, _>>()
-            .map_err(|e| JsValue::from_str(&e))?;
+            .map_err(|e| JsValue::from_str(&e.to_string()))?;
         gram_codec::to_gram_with_header(header, &patterns)
             .map_err(|e| JsValue::from_str(&e.to_string()))
     }
