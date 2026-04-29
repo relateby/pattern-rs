@@ -137,10 +137,16 @@ impl StandardGraph {
 
     /// Adds a single pattern, classifying it by shape and inserting into the
     /// appropriate bucket.
+    ///
+    /// When a node with the same identity already exists, labels and properties
+    /// are merged using union semantics rather than overwriting. This preserves
+    /// labels declared in earlier patterns when a later back-reference omits them.
     pub fn add_pattern(&mut self, pattern: Pattern<Subject>) -> &mut Self {
         let classifier = canonical_classifier();
-        self.inner = crate::pattern_graph::merge(
+        let policy = pattern_merge_policy();
+        self.inner = crate::pattern_graph::merge_with_policy(
             &classifier,
+            &policy,
             pattern,
             std::mem::replace(&mut self.inner, PatternGraph::empty()),
         );
@@ -148,23 +154,34 @@ impl StandardGraph {
     }
 
     /// Adds multiple patterns, classifying each by shape.
+    ///
+    /// When a node with the same identity already exists, labels and properties
+    /// are merged using union semantics rather than overwriting. This preserves
+    /// labels declared in earlier patterns when a later back-reference omits them.
     pub fn add_patterns(
         &mut self,
         patterns: impl IntoIterator<Item = Pattern<Subject>>,
     ) -> &mut Self {
         let classifier = canonical_classifier();
+        let policy = pattern_merge_policy();
         let mut graph = std::mem::replace(&mut self.inner, PatternGraph::empty());
         for pattern in patterns {
-            graph = crate::pattern_graph::merge(&classifier, pattern, graph);
+            graph = crate::pattern_graph::merge_with_policy(&classifier, &policy, pattern, graph);
         }
         self.inner = graph;
         self
     }
 
     /// Creates a StandardGraph from an iterator of patterns.
+    ///
+    /// When the same identity appears multiple times (back-references), labels and
+    /// properties are merged using union semantics so that labels declared in an
+    /// earlier pattern are preserved even when a later occurrence omits them.
     pub fn from_patterns(patterns: impl IntoIterator<Item = Pattern<Subject>>) -> Self {
         let classifier = canonical_classifier();
-        let inner = crate::pattern_graph::from_patterns(&classifier, patterns);
+        let policy = pattern_merge_policy();
+        let inner =
+            crate::pattern_graph::from_patterns_with_policy(&classifier, &policy, patterns);
         StandardGraph { inner }
     }
 
@@ -420,4 +437,18 @@ impl Default for StandardGraph {
     fn default() -> Self {
         Self::new()
     }
+}
+
+/// Returns the reconciliation policy used by `add_pattern`, `add_patterns`, and
+/// `from_patterns`.
+///
+/// Union label semantics ensure that back-references (node occurrences without
+/// labels that refer to an earlier labelled declaration) do not silently discard
+/// the labels established by the first declaration.
+fn pattern_merge_policy(
+) -> crate::reconcile::ReconciliationPolicy<crate::reconcile::SubjectMergeStrategy> {
+    crate::reconcile::ReconciliationPolicy::Merge(
+        crate::reconcile::ElementMergeStrategy::UnionElements,
+        crate::reconcile::default_subject_merge_strategy(),
+    )
 }

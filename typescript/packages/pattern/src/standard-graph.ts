@@ -1,4 +1,4 @@
-import { Effect, Option, pipe } from "effect"
+import { Effect, HashMap, HashSet, Option, pipe } from "effect"
 import { Gram } from "./gram.js"
 import { GramParseError } from "./errors.js"
 import { Pattern } from "./pattern.js"
@@ -127,9 +127,31 @@ export class StandardGraph {
 
   private ingest(pattern: Pattern<Subject>): void {
     switch (classifyPattern(pattern)) {
-      case "node":
-        this._nodes.set(pattern.value.identity, pattern)
+      case "node": {
+        const existing = this._nodes.get(pattern.value.identity)
+        if (existing !== undefined) {
+          // Union semantics: merge labels and properties so that a back-reference
+          // (same identity without labels) does not overwrite labels established
+          // by an earlier occurrence.
+          let mergedLabels = existing.value.labels
+          for (const label of HashSet.values(pattern.value.labels)) {
+            mergedLabels = HashSet.add(mergedLabels, label)
+          }
+          let mergedProperties = existing.value.properties
+          for (const [key, value] of HashMap.entries(pattern.value.properties)) {
+            mergedProperties = HashMap.set(mergedProperties, key, value)
+          }
+          const mergedSubject = new Subject({
+            identity: pattern.value.identity,
+            labels: mergedLabels,
+            properties: mergedProperties,
+          })
+          this._nodes.set(pattern.value.identity, Pattern.point(mergedSubject))
+        } else {
+          this._nodes.set(pattern.value.identity, pattern)
+        }
         break
+      }
       case "relationship": {
         const [sourcePattern, targetPattern] = pattern.elements
         if (sourcePattern && targetPattern) {

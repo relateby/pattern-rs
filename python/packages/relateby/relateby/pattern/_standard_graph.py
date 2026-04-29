@@ -236,7 +236,19 @@ class StandardGraph:
     def _ingest(self, pattern: Pattern[Subject]) -> None:
         classification = classify_pattern(pattern)
         if classification == "node":
-            self._nodes[pattern.value.identity] = pattern
+            existing = self._nodes.get(pattern.value.identity)
+            if existing is not None:
+                # Union semantics: merge labels and properties so that a back-reference
+                # (same identity without labels) does not overwrite labels established
+                # by an earlier occurrence.
+                merged_subject = Subject(
+                    identity=pattern.value.identity,
+                    labels=existing.value.labels | pattern.value.labels,
+                    properties={**existing.value.properties, **pattern.value.properties},
+                )
+                self._nodes[pattern.value.identity] = Pattern.point(merged_subject)
+            else:
+                self._nodes[pattern.value.identity] = pattern
         elif classification == "relationship":
             source_pattern = pattern.elements[0]
             target_pattern = pattern.elements[1]

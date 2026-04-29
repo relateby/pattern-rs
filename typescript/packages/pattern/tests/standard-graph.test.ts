@@ -1,4 +1,4 @@
-import { Effect, Option } from "effect"
+import { Effect, HashSet, Option } from "effect"
 import { describe, expect, it } from "vitest"
 import { GramParseError } from "../src/errors.js"
 import { Pattern } from "../src/pattern.js"
@@ -9,10 +9,27 @@ function node(id: string): Pattern<Subject> {
   return Pattern.point(Subject.fromId(id))
 }
 
+function labelledNode(id: string, label: string): Pattern<Subject> {
+  return Pattern.point(Subject.fromId(id).withLabel(label))
+}
+
 function relationship(id: string, source: string, target: string): Pattern<Subject> {
   return new Pattern({
     value: Subject.fromId(id),
     elements: [node(source), node(target)],
+  })
+}
+
+function labelledRelationship(
+  id: string,
+  sourceId: string,
+  sourceLabel: string,
+  targetId: string,
+  targetLabel: string,
+): Pattern<Subject> {
+  return new Pattern({
+    value: Subject.fromId(id),
+    elements: [labelledNode(sourceId, sourceLabel), labelledNode(targetId, targetLabel)],
   })
 }
 
@@ -75,5 +92,66 @@ describe("StandardGraph", () => {
     if (result._tag === "Left") {
       expect(result.left).toBeInstanceOf(GramParseError)
     }
+  })
+
+  describe("back-reference label preservation", () => {
+    it("preserves node labels when a later back-reference omits them", () => {
+      // Pattern 1 establishes red:Red and blue:Blue.
+      // Pattern 2 uses back-references (same ids, no labels).
+      // The labels from Pattern 1 must survive.
+      const p1 = labelledRelationship("go1", "red", "Red", "blue", "Blue")
+      const p2 = new Pattern({
+        value: Subject.fromId("go2"),
+        elements: [node("blue"), node("red")],
+      })
+
+      const graph = StandardGraph.fromPatterns([p1, p2])
+
+      const red = Option.getOrThrow(graph.node("red"))
+      const blue = Option.getOrThrow(graph.node("blue"))
+
+      expect(HashSet.has(red.value.labels, "Red")).toBe(true)
+      expect(HashSet.has(blue.value.labels, "Blue")).toBe(true)
+      expect(graph.relationshipCount).toBe(2)
+    })
+
+    it("accumulates labels when different occurrences contribute different labels", () => {
+      const p1 = labelledNode("n", "First")
+      const p2 = labelledNode("n", "Second")
+
+      const graph = StandardGraph.fromPatterns([p1, p2])
+
+      const n = Option.getOrThrow(graph.node("n"))
+      expect(HashSet.has(n.value.labels, "First")).toBe(true)
+      expect(HashSet.has(n.value.labels, "Second")).toBe(true)
+    })
+
+    it("three-node cycle preserves all labels", () => {
+      // (green:Green)-[:go1]->(red:Red)
+      const p1 = new Pattern({
+        value: Subject.fromId("go1"),
+        elements: [labelledNode("green", "Green"), labelledNode("red", "Red")],
+      })
+      // (red)-[:go2]->(blue:Blue)
+      const p2 = new Pattern({
+        value: Subject.fromId("go2"),
+        elements: [node("red"), labelledNode("blue", "Blue")],
+      })
+      // (blue)-[:go3]->(green)
+      const p3 = new Pattern({
+        value: Subject.fromId("go3"),
+        elements: [node("blue"), node("green")],
+      })
+
+      const graph = StandardGraph.fromPatterns([p1, p2, p3])
+
+      const green = Option.getOrThrow(graph.node("green"))
+      const red = Option.getOrThrow(graph.node("red"))
+      const blue = Option.getOrThrow(graph.node("blue"))
+
+      expect(HashSet.has(green.value.labels, "Green")).toBe(true)
+      expect(HashSet.has(red.value.labels, "Red")).toBe(true)
+      expect(HashSet.has(blue.value.labels, "Blue")).toBe(true)
+    })
   })
 })
