@@ -228,6 +228,18 @@ mod tests {
     }
 
     #[test]
+    fn test_mid_document_record_is_error() {
+        // A bare record mid-document is illegal syntax — parse_gram should
+        // reject it via UnexpectedInput (the `{` is unparseable after a node).
+        let result = super::super::parse_gram("(a) {k: 'v'} (b)");
+        assert!(
+            result.is_err(),
+            "expected error for mid-document bare record, got: {:?}",
+            result
+        );
+    }
+
+    #[test]
     fn test_gram_patterns_with_leading_record() {
         let (remaining, patterns) = gram_patterns("{k:'v'} (a)").unwrap();
         assert_eq!(patterns.len(), 2);

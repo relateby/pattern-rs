@@ -30,6 +30,7 @@ js-sys = { version = "0.3", optional = true }
 
 # Python support
 pyo3 = { version = "0.23", optional = true, features = ["extension-module"] }
+pythonize = { version = "0.23", optional = true }
 
 [dev-dependencies]
 insta.workspace = true
@@ -39,7 +40,7 @@ proptest = "1.0"
 [features]
 default = []
 wasm = ["wasm-bindgen", "js-sys"]
-python = ["pyo3"]
+python = ["pyo3", "pythonize"]
 cst = ["dep:tree-sitter", "dep:tree-sitter-gram"]
 
 [lib]

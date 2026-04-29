@@ -172,7 +172,9 @@ ensure_python_venv() {
         return 1
     fi
     mkdir -p "$PYTHON_PACKAGE_DIR"
-    "$UV_EXE" venv --python "$PYTHON_EXE" "$PYTHON_VENV" >/dev/null
+    if [[ ! -x "$PYTHON_VENV/bin/python" ]]; then
+        "$UV_EXE" venv --python "$PYTHON_EXE" "$PYTHON_VENV" >/dev/null
+    fi
     "$UV_EXE" pip install --python "$PYTHON_VENV/bin/python" --quiet pytest twine maturin "tomli>=2.0; python_version<'3.11'" >/dev/null
 }
 

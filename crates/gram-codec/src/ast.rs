@@ -141,6 +141,48 @@ impl AstPattern {
     }
 }
 
+/// Wire type for parse_with_header across FFI boundaries (WASM and PyO3).
+///
+/// Serialized with `serde-wasm-bindgen json_compatible()` to produce
+/// `{ header: Record<string, unknown> | null, patterns: AstPattern[] }` in JS,
+/// or with `pythonize` to produce `{"header": dict | None, "patterns": [...]}` in Python.
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct ParseWithHeaderResult {
+    pub header: Option<HashMap<String, serde_json::Value>>,
+    pub patterns: Vec<AstPattern>,
+}
+
+impl ParseWithHeaderResult {
+    /// Build from the output of `gram_codec::parse_gram_with_header`.
+    pub fn from_parts(
+        header: Option<pattern_core::PropertyRecord>,
+        patterns: Vec<pattern_core::Pattern<pattern_core::Subject>>,
+    ) -> Self {
+        ParseWithHeaderResult {
+            header: header.map(|h| {
+                h.iter()
+                    .map(|(k, v)| (k.clone(), value_to_json(v)))
+                    .collect()
+            }),
+            patterns: patterns.iter().map(AstPattern::from_pattern).collect(),
+        }
+    }
+
+    /// Reconstruct the header as a `PropertyRecord` for `to_gram_with_header`.
+    pub fn header_to_record(&self) -> Result<Option<pattern_core::PropertyRecord>, String> {
+        match &self.header {
+            None => Ok(None),
+            Some(map) => {
+                let record: pattern_core::PropertyRecord = map
+                    .iter()
+                    .map(|(k, v)| json_to_value(v).map(|val| (k.clone(), val)))
+                    .collect::<Result<_, _>>()?;
+                Ok(Some(record))
+            }
+        }
+    }
+}
+
 // Conversion from Pattern<Subject> to AST
 use pattern_core::{Pattern, Subject, Value};
 
@@ -166,6 +208,33 @@ impl AstPattern {
     /// let ast = AstPattern::from_pattern(&pattern);
     /// assert_eq!(ast.subject.identity, "alice");
     /// ```
+    /// Convert from AST back to native `Pattern<Subject>`.
+    pub fn to_pattern(&self) -> Result<Pattern<Subject>, String> {
+        use pattern_core::Symbol;
+        use std::collections::{HashMap, HashSet};
+
+        let subject = Subject {
+            identity: Symbol(self.subject.identity.clone()),
+            labels: self.subject.labels.iter().cloned().collect::<HashSet<_>>(),
+            properties: self
+                .subject
+                .properties
+                .iter()
+                .map(|(k, v)| json_to_value(v).map(|val| (k.clone(), val)))
+                .collect::<Result<HashMap<_, _>, _>>()?,
+        };
+        let elements: Vec<Pattern<Subject>> = self
+            .elements
+            .iter()
+            .map(AstPattern::to_pattern)
+            .collect::<Result<Vec<_>, _>>()?;
+        if elements.is_empty() {
+            Ok(Pattern::point(subject))
+        } else {
+            Ok(Pattern::pattern(subject, elements))
+        }
+    }
+
     pub fn from_pattern(pattern: &Pattern<Subject>) -> Self {
         let subject = pattern.value();
 
@@ -249,6 +318,83 @@ fn value_to_json(value: &Value) -> serde_json::Value {
             "tag": tag,
             "content": content
         }),
+    }
+}
+
+/// Convert a `serde_json::Value` to a `pattern_core::Value`.
+pub(crate) fn json_to_value(v: &serde_json::Value) -> Result<Value, String> {
+    use pattern_core::RangeValue;
+    match v {
+        serde_json::Value::String(s) => Ok(Value::VString(s.clone())),
+        serde_json::Value::Bool(b) => Ok(Value::VBoolean(*b)),
+        serde_json::Value::Null => {
+            Err("JSON null is not representable as a gram value".to_string())
+        }
+        serde_json::Value::Number(n) => {
+            if let Some(i) = n.as_i64() {
+                Ok(Value::VInteger(i))
+            } else {
+                Ok(Value::VDecimal(n.as_f64().unwrap_or(0.0)))
+            }
+        }
+        serde_json::Value::Array(arr) => {
+            let items: Vec<Value> = arr
+                .iter()
+                .map(json_to_value)
+                .collect::<Result<Vec<_>, _>>()?;
+            Ok(Value::VArray(items))
+        }
+        serde_json::Value::Object(obj) => {
+            if let Some(type_tag) = obj.get("type").and_then(|t| t.as_str()) {
+                match type_tag {
+                    "symbol" => {
+                        let val = obj
+                            .get("value")
+                            .and_then(|v| v.as_str())
+                            .ok_or_else(|| "symbol value must be a string".to_string())?
+                            .to_string();
+                        Ok(Value::VSymbol(val))
+                    }
+                    "range" => {
+                        let lower = obj.get("lower").and_then(|v| v.as_f64());
+                        let upper = obj.get("upper").and_then(|v| v.as_f64());
+                        Ok(Value::VRange(RangeValue { lower, upper }))
+                    }
+                    "measurement" => {
+                        let unit = obj
+                            .get("unit")
+                            .and_then(|v| v.as_str())
+                            .ok_or_else(|| "measurement unit must be a string".to_string())?
+                            .to_string();
+                        let value = obj
+                            .get("value")
+                            .and_then(|v| v.as_f64())
+                            .ok_or_else(|| "measurement value must be a number".to_string())?;
+                        Ok(Value::VMeasurement { unit, value })
+                    }
+                    "tagged" => {
+                        let tag = obj
+                            .get("tag")
+                            .and_then(|v| v.as_str())
+                            .ok_or_else(|| "tagged value tag must be a string".to_string())?
+                            .to_string();
+                        let content = obj
+                            .get("content")
+                            .and_then(|v| v.as_str())
+                            .ok_or_else(|| "tagged value content must be a string".to_string())?
+                            .to_string();
+                        Ok(Value::VTaggedString { tag, content })
+                    }
+                    _ => Err(format!("unknown tagged value type: {}", type_tag)),
+                }
+            } else {
+                let map: std::collections::HashMap<String, Value> = obj
+                    .iter()
+                    .map(|(k, v)| json_to_value(v).map(|val| (k.clone(), val)))
+                    .collect::<Result<std::collections::HashMap<_, _>, _>>()?;
+                Ok(Value::VMap(map))
+            }
+        }
     }
 }
 

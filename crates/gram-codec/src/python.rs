@@ -22,7 +22,7 @@
 //! print(f"Serialized: {serialized}")
 //! ```
 
-use crate::ast::AstPattern;
+use crate::ast::{AstPattern, ParseWithHeaderResult};
 use pyo3::exceptions::PyValueError;
 use pyo3::prelude::*;
 use std::collections::HashMap;
@@ -251,47 +251,101 @@ fn parse_patterns_as_dicts(py: Python, input: &str) -> PyResult<PyObject> {
     loads.call1((json_array,)).map(|obj| obj.into())
 }
 
-/// Parse gram notation and return a JSON array string of pattern objects.
+/// Parse gram notation, returning a Python list of AstPattern dicts.
 ///
-/// This is the primary interchange function for the native TypeScript/Python
-/// reimplementations. The JSON format uses the "subject" key and canonical
-/// value encoding (see data-model.md JSON Interchange Format).
+/// Each dict has structure `{"subject": {"identity": str, "labels": [...],
+/// "properties": {...}}, "elements": [...]}`.
 ///
 /// Args:
 ///     input (str): Gram notation string
 ///
 /// Returns:
-///     str: JSON array string of AstPattern objects
+///     list[dict]: One dict per top-level pattern
 ///
 /// Raises:
 ///     ValueError: If parsing fails
-///
-/// Example:
-///     >>> import gram_codec
-///     >>> json_str = gram_codec.gram_parse_to_json("(alice:Person)")
-///     >>> import json
-///     >>> patterns = json.loads(json_str)
-///     >>> patterns[0]['subject']['identity']
-///     'alice'
-#[pyfunction(name = "gram_parse_to_json")]
-fn gram_parse_to_json_py(input: &str) -> PyResult<String> {
-    crate::json::gram_parse_to_json(input)
-        .map_err(|e| PyValueError::new_err(format!("Parse error: {}", e)))
+#[pyfunction(name = "parse")]
+fn parse_py(py: Python, input: &str) -> PyResult<PyObject> {
+    if input.trim().is_empty() {
+        return Ok(pyo3::types::PyList::empty(py).into());
+    }
+    let patterns = crate::parse_gram(input)
+        .map_err(|e| PyValueError::new_err(format!("Parse error: {}", e)))?;
+    let asts: Vec<AstPattern> = patterns.iter().map(AstPattern::from_pattern).collect();
+    pythonize::pythonize(py, &asts)
+        .map(|b| b.unbind())
+        .map_err(|e| PyValueError::new_err(format!("Serialization error: {}", e)))
 }
 
-/// Serialize a JSON array of pattern objects back to gram notation.
+/// Serialize a Python list of AstPattern dicts to gram notation.
 ///
 /// Args:
-///     input (str): JSON array string of AstPattern objects
+///     patterns_obj: Python list of AstPattern dicts
 ///
 /// Returns:
 ///     str: Gram notation string
 ///
 /// Raises:
 ///     ValueError: If deserialization or serialization fails
-#[pyfunction(name = "gram_stringify_from_json")]
-fn gram_stringify_from_json_py(input: &str) -> PyResult<String> {
-    crate::json::gram_stringify_from_json(input)
+#[pyfunction(name = "stringify")]
+fn stringify_py(py: Python, patterns_obj: Bound<'_, PyAny>) -> PyResult<String> {
+    let asts: Vec<AstPattern> = pythonize::depythonize(&patterns_obj)
+        .map_err(|e| PyValueError::new_err(format!("Deserialization error: {}", e)))?;
+    let patterns: Vec<crate::Pattern<crate::Subject>> = asts
+        .iter()
+        .map(|ast| ast.to_pattern())
+        .collect::<Result<Vec<_>, _>>()
+        .map_err(|e| PyValueError::new_err(format!("Conversion error: {}", e)))?;
+    let _ = py;
+    crate::to_gram(&patterns).map_err(|e| PyValueError::new_err(format!("Stringify error: {}", e)))
+}
+
+/// Parse gram notation, returning `{"header": dict | None, "patterns": [...]}`
+///
+/// Args:
+///     input (str): Gram notation string
+///
+/// Returns:
+///     dict: `{"header": dict | None, "patterns": list[dict]}`
+///
+/// Raises:
+///     ValueError: If parsing fails
+#[pyfunction(name = "parse_with_header")]
+fn parse_with_header_py(py: Python, input: &str) -> PyResult<PyObject> {
+    let (header, patterns) = crate::parse_gram_with_header(input)
+        .map_err(|e| PyValueError::new_err(format!("Parse error: {}", e)))?;
+    let result = ParseWithHeaderResult::from_parts(header, patterns);
+    pythonize::pythonize(py, &result)
+        .map(|b| b.unbind())
+        .map_err(|e| PyValueError::new_err(format!("Serialization error: {}", e)))
+}
+
+/// Serialize `{"header": dict | None, "patterns": [...]}` to gram notation.
+///
+/// Args:
+///     result_obj: dict with "header" and "patterns" keys
+///
+/// Returns:
+///     str: Gram notation string
+///
+/// Raises:
+///     ValueError: If deserialization or serialization fails
+#[pyfunction(name = "stringify_with_header")]
+fn stringify_with_header_py(py: Python, result_obj: Bound<'_, PyAny>) -> PyResult<String> {
+    let result: ParseWithHeaderResult = pythonize::depythonize(&result_obj)
+        .map_err(|e| PyValueError::new_err(format!("Deserialization error: {}", e)))?;
+    let header = result
+        .header_to_record()
+        .map_err(|e| PyValueError::new_err(format!("Conversion error: {}", e)))?
+        .unwrap_or_default();
+    let patterns: Vec<crate::Pattern<crate::Subject>> = result
+        .patterns
+        .iter()
+        .map(|ast| ast.to_pattern())
+        .collect::<Result<Vec<_>, _>>()
+        .map_err(|e| PyValueError::new_err(format!("Conversion error: {}", e)))?;
+    let _ = py;
+    crate::to_gram_with_header(header, &patterns)
         .map_err(|e| PyValueError::new_err(format!("Stringify error: {}", e)))
 }
 
@@ -302,13 +356,6 @@ fn gram_stringify_from_json_py(input: &str) -> PyResult<String> {
 ///
 /// Returns:
 ///     list[str]: Empty list if valid, list of error strings if invalid
-///
-/// Example:
-///     >>> import gram_codec
-///     >>> gram_codec.gram_validate("(alice:Person)")
-///     []
-///     >>> gram_codec.gram_validate("(unclosed")
-///     ['Parse error at ...']
 #[pyfunction(name = "gram_validate")]
 fn gram_validate_py(input: &str) -> Vec<String> {
     match crate::validate_gram(input) {
@@ -320,16 +367,19 @@ fn gram_validate_py(input: &str) -> Vec<String> {
 /// Python module initialization
 #[pymodule]
 fn gram_codec(m: &Bound<'_, PyModule>) -> PyResult<()> {
+    // New pythonize-based FFI functions (canonical names)
+    m.add_function(wrap_pyfunction!(parse_py, m)?)?;
+    m.add_function(wrap_pyfunction!(stringify_py, m)?)?;
+    m.add_function(wrap_pyfunction!(parse_with_header_py, m)?)?;
+    m.add_function(wrap_pyfunction!(stringify_with_header_py, m)?)?;
+    m.add_function(wrap_pyfunction!(gram_validate_py, m)?)?;
+    // Legacy functions retained for compatibility
     m.add_function(wrap_pyfunction!(parse_gram, m)?)?;
     m.add_function(wrap_pyfunction!(parse_to_ast, m)?)?;
     m.add_function(wrap_pyfunction!(parse_patterns_as_dicts, m)?)?;
     m.add_function(wrap_pyfunction!(validate_gram, m)?)?;
     m.add_function(wrap_pyfunction!(round_trip, m)?)?;
     m.add_function(wrap_pyfunction!(version, m)?)?;
-    // New JSON interchange functions
-    m.add_function(wrap_pyfunction!(gram_parse_to_json_py, m)?)?;
-    m.add_function(wrap_pyfunction!(gram_stringify_from_json_py, m)?)?;
-    m.add_function(wrap_pyfunction!(gram_validate_py, m)?)?;
     m.add_class::<ParseResult>()?;
 
     // Add module metadata

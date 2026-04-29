@@ -13,9 +13,11 @@ import { decodePayload, patternFromRaw } from "./schema.js"
 // --- WASM module loader ---
 
 interface WasmGram {
-  parseToJson(input: string): string
-  stringifyFromJson(input: string): string
+  parse(input: string): unknown
+  stringify(patterns: unknown): string
   validate(input: string): string[]
+  parseWithHeader(input: string): unknown
+  stringifyWithHeader(input: unknown): string
 }
 
 let wasmGram: WasmGram | null = null
@@ -70,9 +72,11 @@ async function loadWasm(): Promise<WasmGram> {
     )
   }
   wasmGram = {
-    parseToJson: unavailable,
-    stringifyFromJson: unavailable,
+    parse: unavailable,
+    stringify: unavailable,
     validate: () => unavailable(),
+    parseWithHeader: unavailable,
+    stringifyWithHeader: unavailable,
   }
   return wasmGram
 }
@@ -81,20 +85,35 @@ async function loadWasm(): Promise<WasmGram> {
 
 export const Gram = {
   /**
-   * Parse gram notation into an array of Pattern<Subject>.
+   * Parse gram notation into an array of `Pattern<Subject>`.
    *
-   * Returns Effect<ReadonlyArray<Pattern<Subject>>, GramParseError>.
-   * Use Effect.runPromise to convert to a Promise.
+   * Each top-level element in the gram document becomes one entry in the
+   * returned array.  An empty string returns an empty array.
+   *
+   * @param input - Gram notation string, e.g. `"(alice:Person)-[:KNOWS]->(bob:Person)"`.
+   * @returns `Effect<ReadonlyArray<Pattern<Subject>>, GramParseError>`.
+   *   Use `Effect.runPromise` to convert to a `Promise`.
    *
    * @example
-   * const patterns = await Effect.runPromise(Gram.parse("(a)-->(b)"))
+   * ```ts
+   * import { Gram } from "@relateby/pattern"
+   * import { Effect } from "effect"
+   *
+   * const patterns = await Effect.runPromise(
+   *   Gram.parse("(alice:Person)-[:KNOWS]->(bob:Person)")
+   * )
+   * // patterns[0].value.identity === "alice" (via the walk's subject)
+   *
+   * // round-trip
+   * const gram = await Effect.runPromise(Gram.stringify(patterns))
+   * ```
    */
   parse(input: string): Effect.Effect<ReadonlyArray<Pattern<Subject>>, GramParseError> {
     return pipe(
       Effect.tryPromise({
         try:   async () => {
           const wasm = await loadWasm()
-          return JSON.parse(wasm.parseToJson(input)) as unknown
+          return wasm.parse(input) as unknown
         },
         catch: (cause) => new GramParseError({ input, cause }),
       }),
@@ -108,9 +127,21 @@ export const Gram = {
   },
 
   /**
-   * Serialize an array of Pattern<Subject> to gram notation.
+   * Serialize an array of `Pattern<Subject>` to gram notation.
    *
-   * Returns Effect<string, GramParseError>.
+   * @param patterns - Patterns to serialize, typically the result of
+   *   {@link Gram.parse} or {@link Gram.parseWithHeader}.
+   * @returns `Effect<string, GramParseError>`.
+   *
+   * @example
+   * ```ts
+   * import { Gram } from "@relateby/pattern"
+   * import { Effect } from "effect"
+   *
+   * const patterns = await Effect.runPromise(Gram.parse("(a)-->(b)"))
+   * const gram     = await Effect.runPromise(Gram.stringify(patterns))
+   * // "(a)-->(b)"
+   * ```
    */
   stringify(
     patterns: ReadonlyArray<Pattern<Subject>>
@@ -118,18 +149,30 @@ export const Gram = {
     return Effect.tryPromise({
       try:   async () => {
         const wasm = await loadWasm()
-        // Build minimal AstPattern JSON from native Pattern<Subject> objects
         const raw = patterns.map(patternToRaw)
-        return wasm.stringifyFromJson(JSON.stringify(raw))
+        return wasm.stringify(raw)
       },
       catch: (cause) => new GramParseError({ input: "", cause }),
     })
   },
 
   /**
-   * Validate gram notation syntax.
+   * Validate gram notation syntax without constructing patterns.
    *
-   * Returns Effect<void, GramParseError>. Succeeds silently if valid.
+   * @param input - Gram notation string to validate.
+   * @returns `Effect<void, GramParseError>`. Succeeds silently when *input*
+   *   is valid; fails with {@link GramParseError} otherwise.
+   *
+   * @example
+   * ```ts
+   * import { Gram } from "@relateby/pattern"
+   * import { Effect, Either } from "effect"
+   *
+   * const result = await Effect.runPromise(
+   *   Effect.either(Gram.validate("(alice:Person)"))
+   * )
+   * // Either.isRight(result) === true
+   * ```
    */
   validate(input: string): Effect.Effect<void, GramParseError> {
     return pipe(
@@ -146,6 +189,120 @@ export const Gram = {
           : Effect.fail(new GramParseError({ input, cause: errors.join("; ") }))
       )
     )
+  },
+
+  /**
+   * Parse gram notation, separating an optional leading header record from
+   * the patterns.
+   *
+   * A *header* is a bare record — a `{key: value, ...}` block that appears
+   * before any graph elements and has no identity or labels.  It is commonly
+   * used to store document-level metadata such as schema version or provenance.
+   *
+   * @param input - Gram notation string, optionally starting with a bare
+   *   record header, e.g. `"{version: 1} (alice)-[:KNOWS]->(bob)"`.
+   * @returns `Effect<{ header: Record<string, unknown> | undefined, patterns: ReadonlyArray<Pattern<Subject>> }, GramParseError>`.
+   *   `header` is `undefined` when no leading bare record is present.
+   *
+   * @example
+   * ```ts
+   * import { Gram } from "@relateby/pattern"
+   * import { Effect } from "effect"
+   *
+   * // Document with a header
+   * const { header, patterns } = await Effect.runPromise(
+   *   Gram.parseWithHeader("{version: 1, source: 'export'} (alice)-[:KNOWS]->(bob)")
+   * )
+   * // header   → { version: 1, source: "export" }
+   * // patterns → [Pattern<Subject>]
+   *
+   * // Document without a header
+   * const { header: h2 } = await Effect.runPromise(
+   *   Gram.parseWithHeader("(alice)-[:KNOWS]->(bob)")
+   * )
+   * // h2 → undefined
+   * ```
+   */
+  parseWithHeader(
+    input: string
+  ): Effect.Effect<
+    { header: Record<string, unknown> | undefined; patterns: ReadonlyArray<Pattern<Subject>> },
+    GramParseError
+  > {
+    return pipe(
+      Effect.tryPromise({
+        try:   async () => {
+          const wasm = await loadWasm()
+          return wasm.parseWithHeader(input) as { header: Record<string, unknown> | null; patterns: unknown[] }
+        },
+        catch: (cause) => new GramParseError({ input, cause }),
+      }),
+      Effect.flatMap((result) =>
+        Effect.try({
+          try: () => {
+            const header: Record<string, unknown> | undefined =
+              result.header == null ? undefined : result.header
+            const patterns = decodePayload(result.patterns).map(patternFromRaw)
+            return { header, patterns }
+          },
+          catch: (cause) => new GramParseError({ input, cause }),
+        })
+      )
+    )
+  },
+
+  /**
+   * Serialize a header record and `Pattern<Subject>` array to gram notation.
+   *
+   * Produces a gram document whose first element is the header bare record
+   * followed by the serialized patterns.  Pass `undefined` as *header* to
+   * produce output identical to {@link Gram.stringify}.
+   *
+   * @param header - Plain object of scalar values to write as the leading
+   *   bare record, or `undefined` to omit the header entirely.
+   * @param patterns - Patterns to serialize.
+   * @returns `Effect<string, GramParseError>`.
+   *
+   * @example
+   * ```ts
+   * import { Gram } from "@relateby/pattern"
+   * import { Effect } from "effect"
+   *
+   * const patterns = await Effect.runPromise(Gram.parse("(alice)-[:KNOWS]->(bob)"))
+   *
+   * const gram = await Effect.runPromise(
+   *   Gram.stringifyWithHeader({ version: 1 }, patterns)
+   * )
+   * // "{version: 1}\n(alice)-[:KNOWS]->(bob)"
+   *
+   * // Omitting the header is equivalent to plain stringify
+   * const gramNoHeader = await Effect.runPromise(
+   *   Gram.stringifyWithHeader(undefined, patterns)
+   * )
+   * // "(alice)-[:KNOWS]->(bob)"
+   *
+   * // Full round-trip
+   * const { header: h2, patterns: p2 } = await Effect.runPromise(
+   *   Gram.parseWithHeader(gram)
+   * )
+   * // h2 → { version: 1 }
+   * ```
+   */
+  stringifyWithHeader(
+    header: Record<string, unknown> | undefined,
+    patterns: ReadonlyArray<Pattern<Subject>>
+  ): Effect.Effect<string, GramParseError> {
+    return Effect.tryPromise({
+      try:   async () => {
+        const wasm = await loadWasm()
+        const raw = {
+          header: header ?? null,
+          patterns: patterns.map(patternToRaw),
+        }
+        return wasm.stringifyWithHeader(raw)
+      },
+      catch: (cause) => new GramParseError({ input: "", cause }),
+    })
   },
 }
 
