@@ -43,10 +43,14 @@ def test_public_stub_files_describe_supported_symbols():
     assert "def map_with_context" in pattern_stub
     assert "def para_graph" in pattern_stub
     assert "class GramParseError" in gram_stub
-    assert "def parse_gram" in gram_stub
+    assert "def parse" in gram_stub
+    assert "def stringify" in gram_stub
+    assert "def parse_with_header" in gram_stub
+    assert "def stringify_with_header" in gram_stub
     assert "def gram_validate" in gram_stub
-    assert "def gram_stringify" in gram_stub
     assert "def round_trip" in gram_stub
+    assert "parse_gram" in gram_stub      # legacy alias still present
+    assert "gram_stringify" in gram_stub  # legacy alias still present
 
 if _NATIVE_IMPORT_ERROR is not None:
     @pytest.mark.skip(reason="relateby native modules are only available from a built wheel or dev install")

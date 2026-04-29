@@ -84,9 +84,30 @@ uv venv --python 3.13 .venv
 source .venv/bin/activate
 uv pip install '.[dev]'
 
-# Build unified wheel (from the combined Python package root)
-CARGO_TARGET_DIR=../../../target uv build --wheel --python 3.13 --out-dir dist
+# Build unified wheel (CARGO_TARGET_DIR must be absolute)
+CARGO_TARGET_DIR="$(pwd)/../../../target" uv build --wheel --python 3.13 --out-dir dist
 ```
+
+### After Changing Rust FFI Code
+
+After editing `crates/gram-codec/src/python.rs`, `crates/pattern-core/src/python.rs`, or `adapters/wasm/pattern-wasm/src/`, the compiled artifacts must be rebuilt before language tests will pick up the changes. Use the dev build script:
+
+```bash
+# Rebuild everything (WASM + Python)
+./scripts/build-dev.sh
+
+# WASM only (after changing adapters/wasm/)
+./scripts/build-dev.sh --wasm
+
+# Python only (after changing crates/*/src/python.rs)
+./scripts/build-dev.sh --python
+```
+
+**Why this is needed:**
+
+- **TypeScript/WASM**: `npx vitest run` loads pre-built `.js`/`.wasm` files from `typescript/packages/pattern/wasm-node/`. If you change `gram.rs` and don't rebuild, tests run against stale binaries — wrong method names cause `GramParseError` at runtime.
+
+- **Python**: `pytest` adds `.` to `sys.path` (via `pythonpath = ["."]` in `pyproject.toml`). The source `relateby/_native/` only contains `__init__.py`; the compiled `.so` files live in the wheel. The script builds the wheel and extracts the `.so` files into the source tree so pytest can find them. Without this step, all native-dependent tests silently skip.
 
 ### Code Quality
 
@@ -308,6 +329,7 @@ Key cursor rule highlights:
 - Rust 1.70.0 (workspace MSRV), Edition 2021 + `clap` v4 with derive (existing), no new dependencies (045-pato-help)
 - Topic content embedded in binary via `include_str!` (compile-time static) (045-pato-help)
 - TypeScript 5.x (all three changes), Markdown (documentation) + `vitest` (existing test runner), `@relateby/pattern` (existing), `effect >= 3.0.0` (peer) (046-ts-downstream-polish)
+- Rust 1.70.0 (MSRV), Edition 2021 · Python 3.8+ · TypeScript 5.x + PyO3 (existing), wasm-bindgen (existing), effect ≥3.0 (existing), nom (existing) (048-gram-codec-parity)
 
 ## Recent Changes
 - 030-graph-classifier: Added Rust 1.70.0 (MSRV), Edition 2021 + std (HashMap, Vec, HashSet) — no new external crates required

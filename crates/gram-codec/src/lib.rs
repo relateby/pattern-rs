@@ -63,7 +63,7 @@ mod wasm;
 mod python;
 
 // Public API exports
-pub use ast::{AstPattern, AstSubject};
+pub use ast::{AstPattern, AstSubject, ParseWithHeaderResult};
 pub use error::{Location, SerializeError};
 pub use json::{gram_parse_to_json, gram_stringify_from_json, gram_validate_to_json};
 // Use the new nom-based ParseError from the parser module
