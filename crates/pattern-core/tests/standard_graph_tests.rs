@@ -508,10 +508,7 @@ fn from_patterns_back_reference_preserves_labels() {
     let blue_labeled = Subject::build("blue").label("Blue").done();
     let p1 = Pattern::pattern(
         Subject::build("go1").label("GO").done(),
-        vec![
-            Pattern::point(red_labeled),
-            Pattern::point(blue_labeled),
-        ],
+        vec![Pattern::point(red_labeled), Pattern::point(blue_labeled)],
     );
     // Pattern 2: (blue)-[:GO]->(red)  — back-references, no labels
     let p2 = Pattern::pattern(
@@ -527,8 +524,14 @@ fn from_patterns_back_reference_preserves_labels() {
     let red = g.node(&"red".into()).unwrap();
     let blue = g.node(&"blue".into()).unwrap();
 
-    assert!(red.value.labels.contains("Red"), "red should keep label Red");
-    assert!(blue.value.labels.contains("Blue"), "blue should keep label Blue");
+    assert!(
+        red.value.labels.contains("Red"),
+        "red should keep label Red"
+    );
+    assert!(
+        blue.value.labels.contains("Blue"),
+        "blue should keep label Blue"
+    );
     assert_eq!(g.relationship_count(), 2);
 }
 
@@ -592,8 +595,18 @@ fn from_patterns_three_node_cycle_preserves_all_labels() {
 
     let g = StandardGraph::from_patterns(vec![p1, p2, p3]);
 
-    assert!(g.node(&"green".into()).unwrap().value.labels.contains("Green"));
+    assert!(g
+        .node(&"green".into())
+        .unwrap()
+        .value
+        .labels
+        .contains("Green"));
     assert!(g.node(&"red".into()).unwrap().value.labels.contains("Red"));
-    assert!(g.node(&"blue".into()).unwrap().value.labels.contains("Blue"));
+    assert!(g
+        .node(&"blue".into())
+        .unwrap()
+        .value
+        .labels
+        .contains("Blue"));
     assert_eq!(g.relationship_count(), 3);
 }

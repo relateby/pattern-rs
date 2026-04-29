@@ -180,8 +180,7 @@ impl StandardGraph {
     pub fn from_patterns(patterns: impl IntoIterator<Item = Pattern<Subject>>) -> Self {
         let classifier = canonical_classifier();
         let policy = pattern_merge_policy();
-        let inner =
-            crate::pattern_graph::from_patterns_with_policy(&classifier, &policy, patterns);
+        let inner = crate::pattern_graph::from_patterns_with_policy(&classifier, &policy, patterns);
         StandardGraph { inner }
     }
 
