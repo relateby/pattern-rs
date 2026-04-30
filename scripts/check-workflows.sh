@@ -79,9 +79,16 @@ RUBY
             continue
         fi
 
-        if ! git ls-remote --exit-code --refs "https://github.com/${repo_spec}.git" "refs/tags/${ref}" "refs/heads/${ref}" >/dev/null 2>&1; then
-            echo "[check-workflows] ERROR: could not resolve action ref ${repo_spec}@${ref}" >&2
-            status=1
+        local ls_remote_output ls_remote_exit
+        ls_remote_exit=0
+        ls_remote_output=$(git ls-remote --exit-code --refs "https://github.com/${repo_spec}.git" "refs/tags/${ref}" "refs/heads/${ref}" 2>&1) || ls_remote_exit=$?
+        if [[ $ls_remote_exit -ne 0 ]]; then
+            if echo "$ls_remote_output" | grep -qiE "could not resolve|unable to connect|network|timeout|SSL"; then
+                echo "[check-workflows] SKIP: network unavailable, cannot verify ${repo_spec}@${ref}" >&2
+            else
+                echo "[check-workflows] ERROR: could not resolve action ref ${repo_spec}@${ref}" >&2
+                status=1
+            fi
         fi
     done
 

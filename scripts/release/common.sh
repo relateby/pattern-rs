@@ -284,10 +284,10 @@ def update_lockfile(path: Path, workspace_paths, pattern_dependency_owner=None):
         if workspace_path.endswith("/gram"):
             package.setdefault("dependencies", {})["@relateby/pattern"] = version
     if pattern_dependency_owner is not None:
+        # lockfile v3 uses "packages" only; v1/v2 had a top-level "dependencies" section
         dependency = lock.get("dependencies", {}).get(pattern_dependency_owner)
-        if dependency is None:
-            raise SystemExit(f"dependency entry not found in {path}: {pattern_dependency_owner}")
-        dependency.setdefault("requires", {})["@relateby/pattern"] = version
+        if dependency is not None:
+            dependency.setdefault("requires", {})["@relateby/pattern"] = version
     path.write_text(json.dumps(lock, indent=2) + "\n", encoding="utf-8")
 
 replace(
@@ -314,6 +314,15 @@ replace(
 update_package_json(repo / "typescript" / "packages" / "pattern" / "package.json")
 update_package_json(repo / "typescript" / "packages" / "graph" / "package.json")
 update_package_json(repo / "typescript" / "packages" / "gram" / "package.json", depends_on_pattern=True)
+
+# Keep the smoke test package.json in sync so npm install can resolve the built tgz files
+smoke_pkg = json.loads((repo / "scripts" / "release" / "npm-smoke" / "package.json").read_text())
+smoke_pkg["dependencies"] = {
+    "@relateby/gram":    f"file:../../../target/npm-packages/relateby-gram-{version}.tgz",
+    "@relateby/graph":   f"file:../../../target/npm-packages/relateby-graph-{version}.tgz",
+    "@relateby/pattern": f"file:../../../target/npm-packages/relateby-pattern-{version}.tgz",
+}
+(repo / "scripts" / "release" / "npm-smoke" / "package.json").write_text(json.dumps(smoke_pkg, indent=2) + "\n")
 
 update_lockfile(
     repo / "package-lock.json",
@@ -410,8 +419,9 @@ def verify_lockfile(path: Path, workspace_paths, pattern_dependency_owner=None):
             if package is None or package.get("dependencies", {}).get("@relateby/pattern") != version:
                 errors.append(f"{path}: @relateby/gram dependency on @relateby/pattern version mismatch")
     if pattern_dependency_owner is not None:
+        # lockfile v3 has no top-level "dependencies"; only check if the key exists (v1/v2 compat)
         dependency = lock.get("dependencies", {}).get(pattern_dependency_owner)
-        if dependency is None or dependency.get("requires", {}).get("@relateby/pattern") != version:
+        if dependency is not None and dependency.get("requires", {}).get("@relateby/pattern") != version:
             errors.append(f"{path}: top-level dependency on @relateby/pattern version mismatch")
 
 verify_lockfile(
