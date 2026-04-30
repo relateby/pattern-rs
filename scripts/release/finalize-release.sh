@@ -77,6 +77,15 @@ else
 fi
 
 release_log "Verifying release-managed versions match $VERSION"
+# Apply updates first (idempotent). If the worktree changes, prerelease was
+# incomplete and the newly changed files must be committed before finalizing.
+update_release_versions "$VERSION" "$REPO_ROOT"
+if [[ -n "$(git -C "$REPO_ROOT" status --porcelain)" ]]; then
+    release_error "update_release_versions changed files that were not committed:"
+    git -C "$REPO_ROOT" diff --name-only >&2
+    release_error "Run: ./scripts/release/prerelease.sh $VERSION && git add -u && git commit -m 'chore: bump version to $VERSION' && git push"
+    exit 1
+fi
 if ! verify_release_versions "$VERSION" "$REPO_ROOT"; then
     release_error "Release-managed files do not declare version $VERSION"
     exit 1
