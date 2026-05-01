@@ -9,7 +9,7 @@ export default defineConfig({
 
   // Reference sub-sites are generated static dirs, not VitePress pages.
   // contributor/** docs are for internal use only and not published.
-  ignoreDeadLinks: [/^\/reference\//],
+  ignoreDeadLinks: [/^\/reference\//, /^http:\/\/localhost/],
 
   srcExclude: [
     'public/**',
