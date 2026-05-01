@@ -32,21 +32,52 @@ async function loadWasm(): Promise<WasmGram> {
 
   try {
     if (isNode) {
-      const { createRequire } = await import("module")
-      const { fileURLToPath } = await import("url")
-      const { dirname, resolve } = await import("path")
-      const __filename = fileURLToPath(import.meta.url)
-      const __dirname = dirname(__filename)
-      const require = createRequire(import.meta.url)
-      const candidatePaths = [
-        resolve(__dirname, "./wasm-node/pattern_wasm.js"),
-        resolve(__dirname, "../wasm-node/pattern_wasm.js"),
-      ]
-      for (const wasmPath of candidatePaths) {
+      // Primary path: CJS require() — works in pure Node.js without Vite.
+      try {
+        const { createRequire } = await import("module")
+        const { fileURLToPath } = await import("url")
+        const { dirname, resolve } = await import("path")
+        const __filename = fileURLToPath(import.meta.url)
+        const __dirname = dirname(__filename)
+        const require = createRequire(import.meta.url)
+        const candidatePaths = [
+          resolve(__dirname, "./wasm-node/pattern_wasm.js"),
+          resolve(__dirname, "../wasm-node/pattern_wasm.js"),
+        ]
+        for (const wasmPath of candidatePaths) {
+          try {
+            const mod = require(wasmPath) as { Gram?: WasmGram }
+            if (mod.Gram) {
+              wasmGram = mod.Gram as WasmGram
+              return wasmGram
+            }
+          } catch {
+            // try the next candidate path
+          }
+        }
+      } catch {
+        // fileURLToPath failed because Vite transformed import.meta.url to a
+        // non-file URL (e.g. an HTTP URL in dev mode, or a Vite dep-cache URL).
+        // Fall through to the ESM-based fallback below.
+      }
+
+      // Fallback path: ESM dynamic import — works in Vite/vitest environments
+      // where createRequire/fileURLToPath cannot resolve the wasm-node module.
+      // Vite correctly resolves relative imports against the original source
+      // location even when import.meta.url has been transformed.
+      for (const relPath of [
+        "./wasm-node/pattern_wasm.js",
+        "../wasm-node/pattern_wasm.js",
+      ]) {
         try {
-          const mod = require(wasmPath) as { Gram?: WasmGram }
-          if (mod.Gram) {
-            wasmGram = mod.Gram as WasmGram
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          const mod = await import(/* @vite-ignore */ relPath as string) as any
+          // CJS interop: Vite exposes named exports directly (mod.Gram);
+          // pure Node.js ESM puts module.exports on .default (mod.default.Gram).
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          const gram = (mod?.Gram ?? (mod?.default as any)?.Gram) as WasmGram | undefined
+          if (gram) {
+            wasmGram = gram
             return wasmGram
           }
         } catch {
@@ -56,6 +87,14 @@ async function loadWasm(): Promise<WasmGram> {
     } else {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const mod = await import(/* @vite-ignore */ "./wasm/pattern_wasm.js" as string) as any
+      // wasm-pack bundler-target modules export an async init() as the default
+      // export.  Call it explicitly to ensure the WASM binary is instantiated
+      // in environments where the bundler did not auto-initialize it
+      // (e.g. vitest + vite-plugin-wasm, or any env where isNode evaluated to
+      // false due to Vite replacing process.versions.node for a browser build).
+      if (typeof mod.default === "function") {
+        await (mod.default as () => Promise<unknown>)()
+      }
       if (mod.Gram) {
         wasmGram = mod.Gram as WasmGram
         return wasmGram
