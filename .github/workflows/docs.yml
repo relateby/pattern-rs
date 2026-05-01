@@ -48,6 +48,9 @@ jobs:
         run: npm install
         working-directory: docs
 
+      - name: Build TypeScript declarations for @relateby/pattern
+        run: npm run build:ts --workspace=@relateby/pattern
+
       - name: Build documentation
         run: ./docs/scripts/build.sh
 
