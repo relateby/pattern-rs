@@ -39,7 +39,10 @@ jobs:
           pip install pdoc
           pip install -e "python/packages/relateby[dev]"
 
-      - name: Install Node.js dependencies
+      - name: Install root Node.js dependencies
+        run: npm install
+
+      - name: Install docs Node.js dependencies
         run: npm install
         working-directory: docs
 

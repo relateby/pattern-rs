@@ -1,8 +1,10 @@
 import { defineConfig } from 'vitepress'
 
+const base = process.env.GITHUB_ACTIONS === 'true' ? '/pattern-rs/' : '/'
+
 export default defineConfig({
   title: 'pattern-rs',
-  base: '/',
+  base,
   description: 'Pattern<V> — a decorated sequence for Rust, Python, and TypeScript',
 
   // Reference sub-sites are generated static dirs, not VitePress pages.

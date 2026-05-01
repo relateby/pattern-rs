@@ -2,7 +2,12 @@ const STORAGE_KEY = 'relateby-lang-tab'
 
 export function applyLanguageTab(): void {
   if (typeof window === 'undefined') return
-  const saved = localStorage.getItem(STORAGE_KEY)
+  let saved: string | null = null
+  try {
+    saved = localStorage.getItem(STORAGE_KEY)
+  } catch {
+    saved = null
+  }
   if (!saved) return
   document.querySelectorAll<HTMLButtonElement>('.vp-code-group .tabs button').forEach((btn) => {
     if (btn.textContent?.trim() === saved) {
@@ -18,7 +23,10 @@ export function registerLanguageTabListeners(): void {
     if (target.matches('.vp-code-group .tabs button')) {
       const label = target.textContent?.trim()
       if (label) {
-        localStorage.setItem(STORAGE_KEY, label)
+        try {
+          localStorage.setItem(STORAGE_KEY, label)
+        } catch {
+        }
       }
     }
   })

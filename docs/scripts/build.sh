@@ -23,12 +23,18 @@ if [[ ! -d "${VENV_PATH}" ]]; then
   exit 1
 fi
 source "${VENV_PATH}/bin/activate"
+rm -rf "${REPO_ROOT}/docs/public/reference/python"
 (cd "${REPO_ROOT}/python/packages/relateby" && \
   pdoc relateby --output-dir "${REPO_ROOT}/docs/public/reference/python")
 echo "  → docs/public/reference/python/ generated"
 
 # Step 3: TypeScript API reference
 echo "Step 3: Generating TypeScript API reference (TypeDoc)..."
+if [[ ! -d "${REPO_ROOT}/node_modules" ]]; then
+  echo "ERROR: Root node_modules not found. Run: npm install (at repo root)"
+  exit 1
+fi
+rm -rf "${REPO_ROOT}/docs/public/reference/ts"
 (cd "${REPO_ROOT}" && npx --prefix docs typedoc --options typedoc.json)
 echo "  → docs/public/reference/ts/ generated"
 
