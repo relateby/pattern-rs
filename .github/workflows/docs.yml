@@ -37,7 +37,7 @@ jobs:
           python -m venv python/packages/relateby/.venv
           source python/packages/relateby/.venv/bin/activate
           pip install pdoc
-          pip install -e "python/packages/relateby[dev]"
+          pip install "python/packages/relateby[dev]"
 
       - name: Install root Node.js dependencies
         run: npm install
