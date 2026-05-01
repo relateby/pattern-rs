@@ -67,3 +67,12 @@ typescript/packages/gram/node_modules/
 scripts/release/npm-smoke/node_modules/
 scripts/release/npm-smoke/package-lock.json
 *.tgz
+
+# VitePress docs (generated at build time)
+docs/public/reference/
+docs/public/llms.txt
+docs/public/llms-full.txt
+docs/.vitepress/dist/
+docs/.vitepress/cache/
+docs/node_modules/
+docs/package-lock.json

@@ -41,6 +41,7 @@ dev = [
     "pytest>=7.0",
     "pytest-cov>=4.0",
     "twine>=5.0",
+    "pdoc>=14.0",
 ]
 # All optional dependencies (add new extras above and reference them here)
 # Install with: pip install relateby-pattern[all]

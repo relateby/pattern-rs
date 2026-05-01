@@ -18,7 +18,7 @@ When porting features, study the Haskell source in `../pattern-hs/libs/` as auth
 
 ## Core Concepts
 
-**Pattern<V>**: A value paired with an ordered list of elements, each itself a `Pattern<V>`. This is the *decorated sequence* model: elements form the pattern concept; the value decorates it. An atomic pattern has no elements. Graph elements (nodes, relationships, walks) are one specialisation of this structure; see `docs/introduction.md` for the full model. Do not describe Pattern as a "tree", "hierarchical data", or frame graphs as its primary purpose — these lead to the wrong mental model.
+**Pattern<V>**: A value paired with an ordered list of elements, each itself a `Pattern<V>`. This is the *decorated sequence* model: elements form the pattern concept; the value decorates it. An atomic pattern has no elements. Graph elements (nodes, relationships, walks) are one specialisation of this structure; see `docs/contributor/introduction.md` for the full model. Do not describe Pattern as a "tree", "hierarchical data", or frame graphs as its primary purpose — these lead to the wrong mental model.
 
 **Subject**: A self-descriptive value type with identity, labels, and properties. Commonly used as `Pattern<Subject>` for property-graph data.
 
@@ -75,7 +75,7 @@ import relateby.pattern
 import relateby.gram
 ```
 
-See `docs/python-usage.md` and `docs/release.md`. For **publishing** (PyPI or crates.io), see **`docs/release.md`** for prerequisites, tag format, workflow, and recovery. For Python package development, prefer `uv` with a project-local `.venv` and stay within the supported range `>=3.8,<3.14` (Python `3.13` is the safest local default while PyO3 support for `3.14` is pending).
+See `docs/contributor/python-usage.md` and `docs/contributor/release.md`. For **publishing** (PyPI or crates.io), see **`docs/contributor/release.md`** for prerequisites, tag format, workflow, and recovery. For Python package development, prefer `uv` with a project-local `.venv` and stay within the supported range `>=3.8,<3.14` (Python `3.13` is the safest local default while PyO3 support for `3.14` is pending).
 
 ```bash
 # Create local virtual environment
@@ -204,7 +204,7 @@ pattern-rs/
 - Use ownership patterns idiomatically (consume `self` when appropriate)
 - Preserve concepts and laws, not Haskell syntax
 
-See `docs/porting-guide.md` for detailed guidance.
+See `docs/contributor/porting-guide.md` for detailed guidance.
 
 ### Testing with gramref CLI
 
@@ -218,7 +218,7 @@ gramref generate --type suite --count 100
 gramref parse "your gram expression"
 ```
 
-See `docs/gramref-cli-testing-guide.md` for detailed usage.
+See `docs/contributor/gramref-cli-testing-guide.md` for detailed usage.
 
 ### Adding Python Bindings
 
@@ -228,7 +228,7 @@ When adding new Rust functionality that should be exposed to Python:
 2. Add PyO3 wrapper in `src/python.rs` (feature-gated: `#[cfg(feature = "python")]`)
 3. Add Python tests in `tests/python/`
 4. Update type stubs in `pattern_core/__init__.pyi`
-5. Document in `docs/python-usage.md`
+5. Document in `docs/contributor/python-usage.md`
 6. Build and test: `cd crates/pattern-core && maturin develop --uv --features python && pytest tests/python/`
 
 See `crates/pattern-core/PYTHON-DEVELOPMENT.md` for current status.
@@ -241,7 +241,7 @@ The project uses comprehensive testing:
 - **Benchmarks**: `criterion` for performance tracking
 - **Equivalence checking**: Utilities for comparing pattern-rs and gram-hs implementations
 
-See `docs/testing-infrastructure.md` for detailed documentation.
+See `docs/contributor/testing-infrastructure.md` for detailed documentation.
 
 ## WASM Compatibility
 
@@ -297,10 +297,10 @@ See `.github/workflows/README.md` for details.
 - **Subject impl**: `crates/pattern-core/src/subject.rs`
 - **Python bindings**: `crates/pattern-core/src/python.rs`
 - **Codec**: `crates/gram-codec/src/lib.rs`
-- **Porting guide**: `docs/porting-guide.md`
-- **Release / publishing**: `docs/release.md` (PyPI and crates.io)
-- **Python usage**: `docs/python-usage.md`
-- **Testing guide**: `docs/testing-infrastructure.md`
+- **Porting guide**: `docs/contributor/porting-guide.md`
+- **Release / publishing**: `docs/contributor/release.md` (PyPI and crates.io)
+- **Python usage**: `docs/contributor/python-usage.md`
+- **Testing guide**: `docs/contributor/testing-infrastructure.md`
 - **CI script**: `./scripts/ci-local.sh`
 
 ## Cursor Rules
@@ -330,6 +330,8 @@ Key cursor rule highlights:
 - Topic content embedded in binary via `include_str!` (compile-time static) (045-pato-help)
 - TypeScript 5.x (all three changes), Markdown (documentation) + `vitest` (existing test runner), `@relateby/pattern` (existing), `effect >= 3.0.0` (peer) (046-ts-downstream-polish)
 - Rust 1.70.0 (MSRV), Edition 2021 · Python 3.8+ · TypeScript 5.x + PyO3 (existing), wasm-bindgen (existing), effect ≥3.0 (existing), nom (existing) (048-gram-codec-parity)
+- TypeScript 5.x (VitePress site + TypeDoc), Shell (build script), Rust 1.70+ (cargo doc), Python 3.13 (pdoc) + VitePress (site framework), cargo doc (Rust API ref), pdoc (Python API ref), TypeDoc with `entryPointStrategy: "packages"` (TypeScript API ref) (049-doc-website)
+- Static files; GitHub Pages hosting; `docs/public/reference/` generated at build time (gitignored) (049-doc-website)
 
 ## Recent Changes
 - 030-graph-classifier: Added Rust 1.70.0 (MSRV), Edition 2021 + std (HashMap, Vec, HashSet) — no new external crates required
