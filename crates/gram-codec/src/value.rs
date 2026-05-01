@@ -123,7 +123,10 @@ impl Value {
                     format!("\"\"\"{}\"\"\"", content)
                 } else {
                     // Use backtick format: tag`content` (the format the parser actually handles).
-                    // Escape backslashes and backticks in the content so the output round-trips.
+                    // Escape backslashes first, then backticks — order matters: if backticks were
+                    // escaped first, the newly inserted backslashes would be double-escaped on the
+                    // second pass, corrupting content that contains a literal backslash before a
+                    // backtick (e.g. "\`" → "\\`" → "\\\`" instead of "\\\\`").
                     let escaped = content.replace('\\', "\\\\").replace('`', "\\`");
                     format!("{}`{}`", tag, escaped)
                 }
@@ -313,6 +316,19 @@ mod tests {
             content: "has`backtick".to_string(),
         };
         assert_eq!(v.to_gram_notation(), "raw`has\\`backtick`");
+
+        let v = Value::TaggedString {
+            tag: "raw".to_string(),
+            content: "has\\backslash".to_string(),
+        };
+        assert_eq!(v.to_gram_notation(), "raw`has\\\\backslash`");
+
+        // Backslash immediately before a backtick: both must be escaped independently.
+        let v = Value::TaggedString {
+            tag: "raw".to_string(),
+            content: "end\\`here".to_string(),
+        };
+        assert_eq!(v.to_gram_notation(), "raw`end\\\\\\`here`");
     }
 
     #[test]
