@@ -1,6 +1,6 @@
 {
   "name": "@relateby/graph",
-  "version": "0.4.1",
+  "version": "0.4.2",
   "description": "Pure TypeScript graph interfaces and transforms for relateby",
   "license": "BSD-3-Clause",
   "repository": {
