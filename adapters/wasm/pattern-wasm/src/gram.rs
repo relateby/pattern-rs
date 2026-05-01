@@ -29,10 +29,19 @@ impl Gram {
     }
 
     /// Serialize an array of AstPattern objects (JS value) to gram notation.
+    ///
+    /// Uses `JSON.stringify` on the JavaScript side before deserializing with
+    /// `serde_json` to avoid `serde_wasm_bindgen::from_value` mishandling
+    /// `serde_json::Value` objects (such as tagged-string `{ type: "tagged", ... }`)
+    /// in the Node.js CJS environment.
     #[wasm_bindgen]
     pub fn stringify(patterns_js: JsValue) -> Result<String, JsValue> {
-        let asts: Vec<gram_codec::AstPattern> = serde_wasm_bindgen::from_value(patterns_js)
-            .map_err(|e| JsValue::from_str(&e.to_string()))?;
+        let json_str = js_sys::JSON::stringify(&patterns_js)
+            .map_err(|_| JsValue::from_str("JSON.stringify failed on patterns"))?
+            .as_string()
+            .ok_or_else(|| JsValue::from_str("JSON.stringify returned non-string"))?;
+        let asts: Vec<gram_codec::AstPattern> =
+            serde_json::from_str(&json_str).map_err(|e| JsValue::from_str(&e.to_string()))?;
         let patterns: Vec<gram_codec::Pattern<gram_codec::Subject>> = asts
             .iter()
             .map(|ast| ast.to_pattern())
@@ -68,10 +77,18 @@ impl Gram {
     }
 
     /// Serialize { header, patterns } to gram notation.
+    ///
+    /// Uses `JSON.stringify` on the JavaScript side before deserializing with
+    /// `serde_json` to avoid `serde_wasm_bindgen::from_value` mishandling
+    /// `serde_json::Value` objects in the Node.js CJS environment.
     #[wasm_bindgen(js_name = stringifyWithHeader)]
     pub fn stringify_with_header(input: JsValue) -> Result<String, JsValue> {
+        let json_str = js_sys::JSON::stringify(&input)
+            .map_err(|_| JsValue::from_str("JSON.stringify failed on header input"))?
+            .as_string()
+            .ok_or_else(|| JsValue::from_str("JSON.stringify returned non-string"))?;
         let result: gram_codec::ParseWithHeaderResult =
-            serde_wasm_bindgen::from_value(input).map_err(|e| JsValue::from_str(&e.to_string()))?;
+            serde_json::from_str(&json_str).map_err(|e| JsValue::from_str(&e.to_string()))?;
         let header = result
             .header_to_record()
             .map_err(|e| JsValue::from_str(&e.to_string()))?
