@@ -330,6 +330,8 @@ Key cursor rule highlights:
 - Topic content embedded in binary via `include_str!` (compile-time static) (045-pato-help)
 - TypeScript 5.x (all three changes), Markdown (documentation) + `vitest` (existing test runner), `@relateby/pattern` (existing), `effect >= 3.0.0` (peer) (046-ts-downstream-polish)
 - Rust 1.70.0 (MSRV), Edition 2021 · Python 3.8+ · TypeScript 5.x + PyO3 (existing), wasm-bindgen (existing), effect ≥3.0 (existing), nom (existing) (048-gram-codec-parity)
+- TypeScript 5.x (VitePress site + TypeDoc), Shell (build script), Rust 1.70+ (cargo doc), Python 3.13 (pdoc) + VitePress (site framework), cargo doc (Rust API ref), pdoc (Python API ref), TypeDoc with `entryPointStrategy: "packages"` (TypeScript API ref) (049-doc-website)
+- Static files; GitHub Pages hosting; `docs/public/reference/` generated at build time (gitignored) (049-doc-website)
 
 ## Recent Changes
 - 030-graph-classifier: Added Rust 1.70.0 (MSRV), Edition 2021 + std (HashMap, Vec, HashSet) — no new external crates required
