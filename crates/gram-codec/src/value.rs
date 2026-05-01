@@ -122,7 +122,13 @@ impl Value {
                 if tag.is_empty() {
                     format!("\"\"\"{}\"\"\"", content)
                 } else {
-                    format!("\"\"\"{}{}\"\"\"", tag, content)
+                    // Use backtick format: tag`content` (the format the parser actually handles).
+                    // Escape backslashes first, then backticks — order matters: if backticks were
+                    // escaped first, the newly inserted backslashes would be double-escaped on the
+                    // second pass, corrupting content that contains a literal backslash before a
+                    // backtick (e.g. "\`" → "\\`" → "\\\`" instead of "\\\\`").
+                    let escaped = content.replace('\\', "\\\\").replace('`', "\\`");
+                    format!("{}`{}`", tag, escaped)
                 }
             }
         }
@@ -290,13 +296,39 @@ mod tests {
             tag: "markdown".to_string(),
             content: "# Heading".to_string(),
         };
-        assert_eq!(v.to_gram_notation(), "\"\"\"markdown# Heading\"\"\"");
+        assert_eq!(v.to_gram_notation(), "markdown`# Heading`");
 
         let v = Value::TaggedString {
             tag: String::new(),
             content: "Plain text".to_string(),
         };
         assert_eq!(v.to_gram_notation(), "\"\"\"Plain text\"\"\"");
+
+        // Verify backtick and backslash escaping in content
+        let v = Value::TaggedString {
+            tag: "h3".to_string(),
+            content: "8f283082aa20c00".to_string(),
+        };
+        assert_eq!(v.to_gram_notation(), "h3`8f283082aa20c00`");
+
+        let v = Value::TaggedString {
+            tag: "raw".to_string(),
+            content: "has`backtick".to_string(),
+        };
+        assert_eq!(v.to_gram_notation(), "raw`has\\`backtick`");
+
+        let v = Value::TaggedString {
+            tag: "raw".to_string(),
+            content: "has\\backslash".to_string(),
+        };
+        assert_eq!(v.to_gram_notation(), "raw`has\\\\backslash`");
+
+        // Backslash immediately before a backtick: both must be escaped independently.
+        let v = Value::TaggedString {
+            tag: "raw".to_string(),
+            content: "end\\`here".to_string(),
+        };
+        assert_eq!(v.to_gram_notation(), "raw`end\\\\\\`here`");
     }
 
     #[test]
