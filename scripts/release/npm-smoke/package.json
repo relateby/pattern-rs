@@ -6,8 +6,8 @@
     "smoke": "node smoke.mjs"
   },
   "dependencies": {
-    "@relateby/gram": "file:../../../target/npm-packages/relateby-gram-0.4.1.tgz",
-    "@relateby/graph": "file:../../../target/npm-packages/relateby-graph-0.4.1.tgz",
-    "@relateby/pattern": "file:../../../target/npm-packages/relateby-pattern-0.4.1.tgz"
+    "@relateby/gram": "file:../../../target/npm-packages/relateby-gram-0.4.2.tgz",
+    "@relateby/graph": "file:../../../target/npm-packages/relateby-graph-0.4.2.tgz",
+    "@relateby/pattern": "file:../../../target/npm-packages/relateby-pattern-0.4.2.tgz"
   }
 }
