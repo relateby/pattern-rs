@@ -1,0 +1,15 @@
+{
+  "entryPointStrategy": "packages",
+  "entryPoints": [
+    "typescript/packages/pattern",
+    "typescript/packages/gram",
+    "typescript/packages/graph"
+  ],
+  "packageOptions": {
+    "entryPoints": ["src/index.ts"],
+    "tsconfig": "tsconfig.json"
+  },
+  "out": "docs/public/reference/ts",
+  "githubPages": false,
+  "name": "pattern-rs TypeScript API"
+}
