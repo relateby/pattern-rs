@@ -4,7 +4,7 @@
 // type signature — no thrown exceptions. Callers use Effect.runPromise or
 // pipe with Effect operations to compose before running.
 
-import { Effect, HashMap, HashSet, pipe } from "effect"
+import { Effect, pipe } from "effect"
 import { GramParseError } from "./errors.js"
 import { Pattern } from "./pattern.js"
 import { Subject } from "./subject.js"
@@ -351,9 +351,9 @@ function patternToRaw(p: Pattern<Subject>): object {
   return {
     subject: {
       identity:   p.value.identity,
-      labels:     [...HashSet.values(p.value.labels)].sort(),
+      labels:     [...p.value.labels].sort(),
       properties: Object.fromEntries(
-        [...HashMap.entries(p.value.properties)].map(([k, v]) => [k, valueToRaw(v)])
+        Object.entries(p.value.properties).map(([k, v]) => [k, valueToRaw(v)])
       ),
     },
     elements: p.elements.map(patternToRaw),

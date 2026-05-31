@@ -1,33 +1,45 @@
 // subject.ts — Self-describing entity with identity, labels, and properties
 //
-// Extends Data.Class for structural equality via Equal.equals.
-// Uses effect's HashSet and HashMap so Equal.equals works correctly
-// (JavaScript's native Set/Map don't implement the Equal protocol).
-// Builder methods are immutable (return new instances).
+// SubjectLike is a plain interface using native JS types — no Effect dependency.
+// Subject is the Effect-backed implementation using HashSet/HashMap for structural
+// equality via Equal.equals. Internal fields are prefixed with _ to allow
+// the native-typed getters to implement SubjectLike without name collision.
+//
+// Public construction API: Subject.fromId(id) + .withLabel() / .withProperty()
+// Direct constructor use (new Subject({...})) is internal — field names
+// _labels and _properties are implementation details subject to change.
 
 import { Data, HashMap, HashSet } from "effect"
 import type { Value } from "./value.js"
 
-export class Subject extends Data.Class<{
+export interface SubjectLike {
   readonly identity:   string
-  readonly labels:     HashSet.HashSet<string>
-  readonly properties: HashMap.HashMap<string, Value>
-}> {
+  readonly labels:     ReadonlyArray<string>
+  readonly properties: Readonly<Record<string, Value>>
+}
+
+export class Subject extends Data.Class<{
+  readonly identity:    string
+  readonly _labels:     HashSet.HashSet<string>
+  readonly _properties: HashMap.HashMap<string, Value>
+}> implements SubjectLike {
   static fromId(identity: string): Subject {
-    return new Subject({ identity, labels: HashSet.empty(), properties: HashMap.empty() })
+    return new Subject({ identity, _labels: HashSet.empty(), _properties: HashMap.empty() })
+  }
+
+  get labels(): ReadonlyArray<string> {
+    return [...HashSet.values(this._labels)]
+  }
+
+  get properties(): Readonly<Record<string, Value>> {
+    return Object.fromEntries(HashMap.entries(this._properties))
   }
 
   withLabel(label: string): Subject {
-    return new Subject({
-      ...this,
-      labels: HashSet.add(this.labels, label),
-    })
+    return new Subject({ ...this, _labels: HashSet.add(this._labels, label) })
   }
 
   withProperty(name: string, value: Value): Subject {
-    return new Subject({
-      ...this,
-      properties: HashMap.set(this.properties, name, value),
-    })
+    return new Subject({ ...this, _properties: HashMap.set(this._properties, name, value) })
   }
 }

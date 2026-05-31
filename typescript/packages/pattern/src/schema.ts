@@ -46,9 +46,9 @@ export const decodePayload = Schema.decodeUnknownSync(Schema.Array(RawPatternSch
 
 export function patternFromRaw(raw: RawPattern): Pattern<Subject> {
   const subject = new Subject({
-    identity:   raw.subject.identity,
-    labels:     HashSet.fromIterable(raw.subject.labels),
-    properties: HashMap.fromIterable(
+    identity:    raw.subject.identity,
+    _labels:     HashSet.fromIterable(raw.subject.labels),
+    _properties: HashMap.fromIterable(
       Object.entries(raw.subject.properties).map(([key, value]) => [key, valueFromRaw(value)] as const)
     ),
   })

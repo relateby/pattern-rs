@@ -1,4 +1,4 @@
-import { Effect, Either, HashMap, Option } from "effect"
+import { Effect, Either } from "effect"
 import { describe, expect, it } from "vitest"
 import { Gram } from "../src/gram.js"
 import { GramParseError } from "../src/errors.js"
@@ -102,9 +102,7 @@ describe("Gram parity", () => {
       const patterns = await Effect.runPromise(Gram.parse(input))
 
       expect(patterns).toHaveLength(1)
-      const codeVal = Option.getOrUndefined(
-        HashMap.get(patterns[0]!.value.properties, "code")
-      )
+      const codeVal = patterns[0]!.value.properties["code"]
       expect(codeVal).toBeDefined()
       expect(codeVal?._tag).toBe("TaggedStringVal")
 
@@ -113,9 +111,7 @@ describe("Gram parity", () => {
       // The stringified output must re-parse to the same tagged-string value.
       const reparsed = await Effect.runPromise(Gram.parse(gram))
       expect(reparsed).toHaveLength(1)
-      const reparsedCode = Option.getOrUndefined(
-        HashMap.get(reparsed[0]!.value.properties, "code")
-      )
+      const reparsedCode = reparsed[0]!.value.properties["code"]
       expect(reparsedCode).toBeDefined()
       expect(reparsedCode?._tag).toBe("TaggedStringVal")
       if (reparsedCode?._tag === "TaggedStringVal") {
@@ -138,9 +134,7 @@ describe("Gram parity", () => {
 
       expect(h2).toEqual(header)
       expect(reparsed).toHaveLength(1)
-      const reparsedCode = Option.getOrUndefined(
-        HashMap.get(reparsed[0]!.value.properties, "code")
-      )
+      const reparsedCode = reparsed[0]!.value.properties["code"]
       expect(reparsedCode).toBeDefined()
       expect(reparsedCode?._tag).toBe("TaggedStringVal")
       if (reparsedCode?._tag === "TaggedStringVal") {

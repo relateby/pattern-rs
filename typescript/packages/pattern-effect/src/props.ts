@@ -1,0 +1,61 @@
+import type { Value } from "@relateby/pattern"
+
+/**
+ * The plain-object shape of Subject properties — matches `Subject.properties`
+ * and `SubjectLike.properties` exactly.
+ */
+export type PropMap = Readonly<Record<string, Value>>
+
+/**
+ * Flatten Subject properties into plain JavaScript values.
+ *
+ * Accepts `subject.properties` directly (a `Record<string, Value>`) and
+ * returns a `Record<string, unknown>` suitable for decoding with schema
+ * libraries (Effect Schema, Zod, Valibot, etc.) without hand-rolling
+ * `_tag` checks.
+ *
+ * @example
+ * ```ts
+ * import { Gram } from "@relateby/pattern"
+ * import { fromSubjectProps } from "@relateby/pattern-effect"
+ * import { Schema } from "effect"
+ *
+ * const Resource = Schema.Struct({ id: Schema.String, qty: Schema.Int })
+ * const [p] = await Effect.runPromise(Gram.parse("(r:Resource {id: \"r1\", qty: 2})"))
+ * const decoded = Schema.decodeUnknownSync(Resource)(fromSubjectProps(p!.value.properties))
+ * ```
+ */
+export function fromSubjectProps(props: PropMap): Record<string, unknown> {
+  return Object.fromEntries(
+    Object.entries(props).map(([key, value]) => [key, valueToUnknown(value)])
+  )
+}
+
+function valueToUnknown(value: Value): unknown {
+  switch (value._tag) {
+    case "StringVal":
+    case "IntVal":
+    case "FloatVal":
+    case "BoolVal":
+    case "SymbolVal":
+      return value.value
+    case "NullVal":
+      return null
+    case "TaggedStringVal":
+      return { tag: value.tag, content: value.content }
+    case "RangeVal":
+      return { lower: value.lower, upper: value.upper }
+    case "MeasurementVal":
+      return { unit: value.unit, value: value.value }
+    case "ArrayVal":
+      return value.items.map(valueToUnknown)
+    case "MapVal":
+      return Object.fromEntries(
+        Object.entries(value.entries).map(([key, nested]) => [key, valueToUnknown(nested)])
+      )
+    default: {
+      const _exhaustive: never = value
+      return _exhaustive
+    }
+  }
+}
