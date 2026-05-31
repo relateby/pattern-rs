@@ -34,6 +34,9 @@ export {
 
 export { Gram } from "./gram.js"
 
+export type { PropMap } from "./props.js"
+export { fromGramProps } from "./props.js"
+
 export type {
   StringVal,
   IntVal,
