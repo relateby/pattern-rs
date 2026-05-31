@@ -314,6 +314,7 @@ replace(
 )
 
 update_package_json(repo / "typescript" / "packages" / "pattern" / "package.json")
+update_package_json(repo / "typescript" / "packages" / "pattern-effect" / "package.json")
 update_package_json(repo / "typescript" / "packages" / "graph" / "package.json")
 update_package_json(repo / "typescript" / "packages" / "gram" / "package.json", depends_on_pattern=True)
 
@@ -330,6 +331,7 @@ update_lockfile(
     repo / "package-lock.json",
     [
         "typescript/packages/pattern",
+        "typescript/packages/pattern-effect",
         "typescript/packages/graph",
         "typescript/packages/gram",
     ],
