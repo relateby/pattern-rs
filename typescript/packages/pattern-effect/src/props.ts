@@ -12,15 +12,15 @@ export type PropMap = HashMap.HashMap<string, Value>
  *
  * @example
  * ```ts
- * import { Gram, fromGramProps } from "@relateby/pattern-effect"
+ * import { Gram, fromSubjectProps } from "@relateby/pattern-effect"
  * import { Schema } from "effect"
  *
  * const Resource = Schema.Struct({ id: Schema.String, qty: Schema.Int })
  * const { patterns } = await Effect.runPromise(Gram.parseWithHeader("(r:Resource {id: \"r1\", qty: 2})"))
- * const decoded = Schema.decodeUnknownSync(Resource)(fromGramProps(patterns[0]!.value.properties))
+ * const decoded = Schema.decodeUnknownSync(Resource)(fromSubjectProps(patterns[0]!.value.properties))
  * ```
  */
-export function fromGramProps(props: PropMap): Record<string, unknown> {
+export function fromSubjectProps(props: PropMap): Record<string, unknown> {
   return Object.fromEntries(
     [...HashMap.entries(props)].map(([key, value]) => [key, valueToUnknown(value)])
   )

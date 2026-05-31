@@ -1,9 +1,9 @@
 import { HashMap } from "effect"
 import { describe, expect, it } from "vitest"
 import { Value } from "@relateby/pattern"
-import { fromGramProps } from "../src/index.js"
+import { fromSubjectProps } from "../src/index.js"
 
-describe("fromGramProps", () => {
+describe("fromSubjectProps", () => {
   it("flattens primitive gram property values", () => {
     const props = HashMap.fromIterable([
       ["name", Value.String({ value: "Alice" })],
@@ -13,7 +13,7 @@ describe("fromGramProps", () => {
       ["none", Value.Null({})],
     ] as const)
 
-    expect(fromGramProps(props)).toEqual({
+    expect(fromSubjectProps(props)).toEqual({
       name: "Alice",
       age: 42,
       active: true,
@@ -39,7 +39,7 @@ describe("fromGramProps", () => {
       ],
     ] as const)
 
-    expect(fromGramProps(props)).toEqual({
+    expect(fromSubjectProps(props)).toEqual({
       code: { tag: "h3", content: "8f283082aa20c00" },
       distance: { unit: "km", value: 10 },
       span: { lower: 1, upper: 3 },
