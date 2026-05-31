@@ -89,6 +89,8 @@ def curl_json(url: str) -> dict:
                 str(TIMEOUT),
                 "--max-time",
                 str(TIMEOUT),
+                "-H",
+                "User-Agent: relateby-pattern-rs/release-check (https://github.com/relateby/pattern-rs)",
                 url,
             ],
             capture_output=True,
