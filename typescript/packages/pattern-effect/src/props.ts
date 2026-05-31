@@ -1,28 +1,33 @@
-import { HashMap } from "effect"
 import type { Value } from "@relateby/pattern"
 
-/** Effect HashMap keyed by string — the shape of `Subject.properties` internals. */
-export type PropMap = HashMap.HashMap<string, Value>
+/**
+ * The plain-object shape of Subject properties — matches `Subject.properties`
+ * and `SubjectLike.properties` exactly.
+ */
+export type PropMap = Readonly<Record<string, Value>>
 
 /**
- * Convert native gram properties into plain JavaScript values.
+ * Flatten Subject properties into plain JavaScript values.
  *
- * Lets consumers decode properties with schema libraries
- * (Effect Schema, Zod, Valibot, etc.) without hand-rolling `_tag` checks.
+ * Accepts `subject.properties` directly (a `Record<string, Value>`) and
+ * returns a `Record<string, unknown>` suitable for decoding with schema
+ * libraries (Effect Schema, Zod, Valibot, etc.) without hand-rolling
+ * `_tag` checks.
  *
  * @example
  * ```ts
- * import { Gram, fromSubjectProps } from "@relateby/pattern-effect"
+ * import { Gram } from "@relateby/pattern"
+ * import { fromSubjectProps } from "@relateby/pattern-effect"
  * import { Schema } from "effect"
  *
  * const Resource = Schema.Struct({ id: Schema.String, qty: Schema.Int })
- * const { patterns } = await Effect.runPromise(Gram.parseWithHeader("(r:Resource {id: \"r1\", qty: 2})"))
- * const decoded = Schema.decodeUnknownSync(Resource)(fromSubjectProps(patterns[0]!.value.properties))
+ * const [p] = await Effect.runPromise(Gram.parse("(r:Resource {id: \"r1\", qty: 2})"))
+ * const decoded = Schema.decodeUnknownSync(Resource)(fromSubjectProps(p!.value.properties))
  * ```
  */
 export function fromSubjectProps(props: PropMap): Record<string, unknown> {
   return Object.fromEntries(
-    [...HashMap.entries(props)].map(([key, value]) => [key, valueToUnknown(value)])
+    Object.entries(props).map(([key, value]) => [key, valueToUnknown(value)])
   )
 }
 

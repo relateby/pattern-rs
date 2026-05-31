@@ -4,7 +4,10 @@
 // Subject is the Effect-backed implementation using HashSet/HashMap for structural
 // equality via Equal.equals. Internal fields are prefixed with _ to allow
 // the native-typed getters to implement SubjectLike without name collision.
-// Builder methods are immutable (return new instances).
+//
+// Public construction API: Subject.fromId(id) + .withLabel() / .withProperty()
+// Direct constructor use (new Subject({...})) is internal — field names
+// _labels and _properties are implementation details subject to change.
 
 import { Data, HashMap, HashSet } from "effect"
 import type { Value } from "./value.js"
