@@ -1,6 +1,6 @@
 {
   "name": "@relateby/pattern-effect",
-  "version": "0.1.0",
+  "version": "0.5.0",
   "description": "Effect interop utilities for @relateby/pattern",
   "license": "BSD-3-Clause",
   "repository": {
