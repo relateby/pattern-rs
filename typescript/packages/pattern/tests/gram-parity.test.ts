@@ -1,4 +1,4 @@
-import { Effect, Either, Option } from "effect"
+import { Effect, Either } from "effect"
 import { describe, expect, it } from "vitest"
 import { Gram } from "../src/gram.js"
 import { GramParseError } from "../src/errors.js"
