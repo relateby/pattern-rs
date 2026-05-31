@@ -1,13 +1,24 @@
 import { HashMap } from "effect"
-import type { Value } from "./value.js"
+import type { Value } from "@relateby/pattern"
 
+/** Effect HashMap keyed by string — the shape of `Subject.properties` internals. */
 export type PropMap = HashMap.HashMap<string, Value>
 
 /**
  * Convert native gram properties into plain JavaScript values.
  *
- * This lets consumers decode properties with schema libraries
+ * Lets consumers decode properties with schema libraries
  * (Effect Schema, Zod, Valibot, etc.) without hand-rolling `_tag` checks.
+ *
+ * @example
+ * ```ts
+ * import { Gram, fromGramProps } from "@relateby/pattern-effect"
+ * import { Schema } from "effect"
+ *
+ * const Resource = Schema.Struct({ id: Schema.String, qty: Schema.Int })
+ * const { patterns } = await Effect.runPromise(Gram.parseWithHeader("(r:Resource {id: \"r1\", qty: 2})"))
+ * const decoded = Schema.decodeUnknownSync(Resource)(fromGramProps(patterns[0]!.value.properties))
+ * ```
  */
 export function fromGramProps(props: PropMap): Record<string, unknown> {
   return Object.fromEntries(
@@ -37,5 +48,9 @@ function valueToUnknown(value: Value): unknown {
       return Object.fromEntries(
         Object.entries(value.entries).map(([key, nested]) => [key, valueToUnknown(nested)])
       )
+    default: {
+      const _exhaustive: never = value
+      return _exhaustive
+    }
   }
 }

@@ -8,7 +8,6 @@ const expectedTopLevelExports = [
   "StandardGraph",
   "Subject",
   "Value",
-  "fromGramProps",
   "findFirst",
   "fold",
   "toGraphView",

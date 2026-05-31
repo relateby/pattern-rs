@@ -1,0 +1,32 @@
+{
+  "name": "@relateby/pattern-effect",
+  "version": "0.1.0",
+  "description": "Effect interop utilities for @relateby/pattern",
+  "license": "BSD-3-Clause",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/relateby/pattern-rs.git"
+  },
+  "type": "module",
+  "main": "./src/index.ts",
+  "types": "./src/index.ts",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "scripts": {
+    "test": "vitest run",
+    "test:watch": "vitest"
+  },
+  "peerDependencies": {
+    "@relateby/pattern": "^0.4.2",
+    "effect": ">=3.0.0"
+  },
+  "devDependencies": {
+    "@types/node": "^25.3.0",
+    "typescript": "^5.0.0",
+    "vitest": "^2.0.0"
+  },
+  "overrides": {
+    "why-is-node-running": "3.2.2"
+  }
+}

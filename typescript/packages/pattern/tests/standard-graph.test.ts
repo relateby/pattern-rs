@@ -1,4 +1,4 @@
-import { Effect, HashSet, Option } from "effect"
+import { Effect, Option } from "effect"
 import { describe, expect, it } from "vitest"
 import { GramParseError } from "../src/errors.js"
 import { Pattern } from "../src/pattern.js"
@@ -110,8 +110,8 @@ describe("StandardGraph", () => {
       const red = Option.getOrThrow(graph.node("red"))
       const blue = Option.getOrThrow(graph.node("blue"))
 
-      expect(HashSet.has(red.value.labels, "Red")).toBe(true)
-      expect(HashSet.has(blue.value.labels, "Blue")).toBe(true)
+      expect(red.value.labels).toContain("Red")
+      expect(blue.value.labels).toContain("Blue")
       expect(graph.relationshipCount).toBe(2)
     })
 
@@ -122,8 +122,8 @@ describe("StandardGraph", () => {
       const graph = StandardGraph.fromPatterns([p1, p2])
 
       const n = Option.getOrThrow(graph.node("n"))
-      expect(HashSet.has(n.value.labels, "First")).toBe(true)
-      expect(HashSet.has(n.value.labels, "Second")).toBe(true)
+      expect(n.value.labels).toContain("First")
+      expect(n.value.labels).toContain("Second")
     })
 
     it("three-node cycle preserves all labels", () => {
@@ -149,9 +149,9 @@ describe("StandardGraph", () => {
       const red = Option.getOrThrow(graph.node("red"))
       const blue = Option.getOrThrow(graph.node("blue"))
 
-      expect(HashSet.has(green.value.labels, "Green")).toBe(true)
-      expect(HashSet.has(red.value.labels, "Red")).toBe(true)
-      expect(HashSet.has(blue.value.labels, "Blue")).toBe(true)
+      expect(green.value.labels).toContain("Green")
+      expect(red.value.labels).toContain("Red")
+      expect(blue.value.labels).toContain("Blue")
     })
   })
 })

@@ -34,9 +34,6 @@ export {
 
 export { Gram } from "./gram.js"
 
-export type { PropMap } from "./props.js"
-export { fromGramProps } from "./props.js"
-
 export type {
   StringVal,
   IntVal,
@@ -53,6 +50,7 @@ export type {
 } from "./value.js"
 export { Value, ValueSchema } from "./value.js"
 
+export type { SubjectLike } from "./subject.js"
 export { Subject } from "./subject.js"
 export { Pattern } from "./pattern.js"
 export { GramParseError } from "./errors.js"

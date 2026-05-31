@@ -1,4 +1,4 @@
-import { Effect, Equal, HashMap, HashSet, Option, pipe } from "effect"
+import { Effect, Equal, Option, pipe } from "effect"
 import { describe, expect, it } from "vitest"
 import {
   Gram,
@@ -18,8 +18,8 @@ describe("@relateby/pattern", () => {
       .withProperty("name", Value.String({ value: "Alice" }))
 
     expect(alice.identity).toBe("alice")
-    expect([...HashSet.values(alice.labels)]).toContain("Person")
-    expect([...HashMap.entries(alice.properties)]).toContainEqual([
+    expect(alice.labels).toContain("Person")
+    expect(Object.entries(alice.properties)).toContainEqual([
       "name",
       Value.String({ value: "Alice" }),
     ])
@@ -70,15 +70,15 @@ describe("@relateby/pattern", () => {
     )
 
     expect(parsed?.value.identity).toBe("alice")
-    expect([...HashMap.entries(parsed?.value.properties ?? HashMap.empty())]).toContainEqual([
+    expect(Object.entries(parsed?.value.properties ?? {})).toContainEqual([
       "name",
       Value.String({ value: "Alice" }),
     ])
-    expect([...HashMap.entries(parsed?.value.properties ?? HashMap.empty())]).toContainEqual([
+    expect(Object.entries(parsed?.value.properties ?? {})).toContainEqual([
       "age",
       Value.Int({ value: 42 }),
     ])
-    expect([...HashMap.entries(parsed?.value.properties ?? HashMap.empty())]).toContainEqual([
+    expect(Object.entries(parsed?.value.properties ?? {})).toContainEqual([
       "active",
       Value.Bool({ value: true }),
     ])

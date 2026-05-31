@@ -133,18 +133,10 @@ export class StandardGraph {
           // Union semantics: merge labels and properties so that a back-reference
           // (same identity without labels) does not overwrite labels established
           // by an earlier occurrence.
-          let mergedLabels = existing.value.labels
-          for (const label of HashSet.values(pattern.value.labels)) {
-            mergedLabels = HashSet.add(mergedLabels, label)
-          }
-          let mergedProperties = existing.value.properties
-          for (const [key, value] of HashMap.entries(pattern.value.properties)) {
-            mergedProperties = HashMap.set(mergedProperties, key, value)
-          }
           const mergedSubject = new Subject({
-            identity: pattern.value.identity,
-            labels: mergedLabels,
-            properties: mergedProperties,
+            identity:    pattern.value.identity,
+            _labels:     HashSet.union(existing.value._labels, pattern.value._labels),
+            _properties: HashMap.union(existing.value._properties, pattern.value._properties),
           })
           this._nodes.set(pattern.value.identity, Pattern.point(mergedSubject))
         } else {

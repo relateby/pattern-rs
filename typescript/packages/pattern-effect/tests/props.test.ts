@@ -1,6 +1,7 @@
 import { HashMap } from "effect"
 import { describe, expect, it } from "vitest"
-import { Value, fromGramProps } from "../src/index.js"
+import { Value } from "@relateby/pattern"
+import { fromGramProps } from "../src/index.js"
 
 describe("fromGramProps", () => {
   it("flattens primitive gram property values", () => {
