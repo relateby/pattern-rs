@@ -31,7 +31,7 @@
     "pack:release": "npm pack --pack-destination ../../../target/npm-packages"
   },
   "peerDependencies": {
-    "@relateby/pattern": "^0.4.2",
+    "@relateby/pattern": ">=0.4.2",
     "effect": ">=3.0.0"
   },
   "devDependencies": {
