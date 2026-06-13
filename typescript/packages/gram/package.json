@@ -30,7 +30,7 @@
     "test:watch": "vitest"
   },
   "dependencies": {
-    "@relateby/pattern": ">=0.5.1"
+    "@relateby/pattern": "0.5.1"
   },
   "devDependencies": {
     "typescript": "^5.0.0",
