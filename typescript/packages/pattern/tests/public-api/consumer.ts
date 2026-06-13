@@ -1,12 +1,14 @@
-import { Effect, Equal, Option, pipe } from "effect"
 import {
   Gram,
+  Option,
   Pattern,
   StandardGraph,
   Subject,
   Value,
   findFirst,
   fold,
+  matches,
+  pipe,
   toGraphView,
   values,
 } from "@relateby/pattern"
@@ -25,9 +27,9 @@ export async function exercisePublicSurface(): Promise<void> {
   })
 
   const graph = StandardGraph.fromPatterns([relationship])
-  const parsed = await Effect.runPromise(Gram.parse("(alice:Person)-->(bob:Person)"))
-  const serialized = await Effect.runPromise(Gram.stringify(parsed))
-  await Effect.runPromise(Gram.validate("(alice:Person)-->(bob:Person)"))
+  const parsed = await Gram.parse("(alice:Person)-->(bob:Person)")
+  const serialized = await Gram.stringify(parsed)
+  await Gram.validate("(alice:Person)-->(bob:Person)")
 
   const allValues = values(relationship)
   const count = pipe(relationship, fold(0, (acc) => acc + 1))
@@ -52,5 +54,6 @@ export async function exercisePublicSurface(): Promise<void> {
   void match
   void aliceNode
   void graphView
-  void Equal.equals(alice, alice)
+  void alice.equals(alice)
+  void matches(alicePattern, alicePattern)
 }
