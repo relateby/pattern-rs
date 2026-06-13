@@ -4,10 +4,10 @@
 // and comonad behavior without a property-based generator.
 
 import { describe, it, expect } from "vitest"
-import { Data, Equal, pipe } from "effect"
+import { pipe } from "../src/fp.js"
 import { Pattern } from "../src/pattern.js"
 import { Subject } from "../src/subject.js"
-import { map, fold, extend, extract, duplicate, values } from "../src/ops.js"
+import { map, fold, extend, extract, duplicate, values, matches } from "../src/ops.js"
 
 // --- Helpers ---
 
@@ -16,7 +16,7 @@ function mkSubject(id: string): Subject {
 }
 
 function mkPattern(id: string, ...children: Pattern<Subject>[]): Pattern<Subject> {
-  return new Pattern({ value: mkSubject(id), elements: Data.array(children) })
+  return new Pattern({ value: mkSubject(id), elements: children })
 }
 
 // A few representative pattern structures for law checking
@@ -32,7 +32,7 @@ describe("Functor laws", () => {
   it("identity: map(id)(p) equals p", () => {
     for (const p of testPatterns) {
       const result = pipe(p, map((v: Subject) => v))
-      expect(Equal.equals(result, p)).toBe(true)
+      expect(matches(result, p)).toBe(true)
     }
   })
 
@@ -44,7 +44,7 @@ describe("Functor laws", () => {
     for (const p of testPatterns) {
       const composed = pipe(p, map(fg))
       const chained = pipe(p, map(g), map(f))
-      expect(Equal.equals(composed, chained)).toBe(true)
+      expect(matches(composed, chained)).toBe(true)
     }
   })
 })
@@ -89,14 +89,14 @@ describe("Comonad laws", () => {
   it("extend(extract)(p) equals p", () => {
     for (const p of testPatterns) {
       const result = pipe(p, extend(extract))
-      expect(Equal.equals(result, p)).toBe(true)
+      expect(matches(result, p)).toBe(true)
     }
   })
 
   it("duplicate then extract gives back original", () => {
     for (const p of testPatterns) {
       const dup = duplicate(p)
-      expect(Equal.equals(extract(dup), p)).toBe(true)
+      expect(matches(extract(dup), p)).toBe(true)
     }
   })
 
@@ -107,7 +107,7 @@ describe("Comonad laws", () => {
     for (const p of testPatterns) {
       const lhs = pipe(p, extend(g), extend(f))
       const rhs = pipe(p, extend((q) => f(pipe(q, extend(g)))))
-      expect(Equal.equals(lhs, rhs)).toBe(true)
+      expect(matches(lhs, rhs)).toBe(true)
     }
   })
 })
@@ -136,23 +136,23 @@ describe("Pattern structural properties", () => {
   })
 })
 
-// --- Equal.equals for Subject and Pattern ---
+// --- Pattern equality ---
 
-describe("Structural equality via Effect Equal", () => {
-  it("two identical atomic patterns are Equal", () => {
+describe("Pattern equality via matches()", () => {
+  it("two identical atomic patterns are equal", () => {
     const p1 = Pattern.point(Subject.fromId("x"))
     const p2 = Pattern.point(Subject.fromId("x"))
-    expect(Equal.equals(p1, p2)).toBe(true)
+    expect(matches(p1, p2)).toBe(true)
   })
 
-  it("two different atomic patterns are not Equal", () => {
+  it("two different atomic patterns are not equal", () => {
     const p1 = Pattern.point(Subject.fromId("x"))
     const p2 = Pattern.point(Subject.fromId("y"))
-    expect(Equal.equals(p1, p2)).toBe(false)
+    expect(matches(p1, p2)).toBe(false)
   })
 
-  it("Pattern.point and Pattern.of produce Equal results", () => {
+  it("Pattern.point and Pattern.of produce equal results", () => {
     const s = Subject.fromId("a")
-    expect(Equal.equals(Pattern.point(s), Pattern.of(s))).toBe(true)
+    expect(matches(Pattern.point(s), Pattern.of(s))).toBe(true)
   })
 })

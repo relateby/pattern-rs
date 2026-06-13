@@ -1,10 +1,7 @@
 // value.ts — Tagged union of all gram value types
 //
-// Each variant is a plain interface with a _tag discriminant. Data.tagged()
-// creates constructors that provide structural equality via Equal.equals.
-// No Data.Case extension needed in effect v3.
-
-import { Data, Schema } from "effect"
+// Each variant is a plain discriminated-union interface. Factory functions fill
+// _tag automatically, matching the shape produced by Data.tagged() in Effect.
 
 // --- Variant interfaces ---
 
@@ -25,21 +22,40 @@ export type Value =
   StringVal | IntVal | FloatVal | BoolVal | NullVal | SymbolVal |
   TaggedStringVal | ArrayVal | MapVal | RangeVal | MeasurementVal
 
-// --- Constructor namespace — Data.tagged fills _tag automatically ---
-// Data.tagged() produces objects with structural equality via Equal.equals.
+// --- Constructor namespace — factory functions fill _tag automatically ---
 
 export const Value = {
-  String:       Data.tagged<StringVal>("StringVal"),
-  Int:          Data.tagged<IntVal>("IntVal"),
-  Float:        Data.tagged<FloatVal>("FloatVal"),
-  Bool:         Data.tagged<BoolVal>("BoolVal"),
-  Null:         Data.tagged<NullVal>("NullVal"),
-  Symbol:       Data.tagged<SymbolVal>("SymbolVal"),
-  TaggedString: Data.tagged<TaggedStringVal>("TaggedStringVal"),
-  Array:        Data.tagged<ArrayVal>("ArrayVal"),
-  Map:          Data.tagged<MapVal>("MapVal"),
-  Range:        Data.tagged<RangeVal>("RangeVal"),
-  Measurement:  Data.tagged<MeasurementVal>("MeasurementVal"),
+  String:       (args: Omit<StringVal,       "_tag">): StringVal       => ({ _tag: "StringVal",       ...args }),
+  Int:          (args: Omit<IntVal,          "_tag">): IntVal          => ({ _tag: "IntVal",          ...args }),
+  Float:        (args: Omit<FloatVal,        "_tag">): FloatVal        => ({ _tag: "FloatVal",        ...args }),
+  Bool:         (args: Omit<BoolVal,         "_tag">): BoolVal         => ({ _tag: "BoolVal",         ...args }),
+  Null:         (_args?: Record<never, never>): NullVal                => ({ _tag: "NullVal" }),
+  Symbol:       (args: Omit<SymbolVal,       "_tag">): SymbolVal       => ({ _tag: "SymbolVal",       ...args }),
+  TaggedString: (args: Omit<TaggedStringVal, "_tag">): TaggedStringVal => ({ _tag: "TaggedStringVal", ...args }),
+  Array:        (args: Omit<ArrayVal,        "_tag">): ArrayVal        => ({ _tag: "ArrayVal",        ...args }),
+  Map:          (args: Omit<MapVal,          "_tag">): MapVal          => ({ _tag: "MapVal",          ...args }),
+  Range:        (args: Omit<RangeVal,        "_tag">): RangeVal        => ({ _tag: "RangeVal",        ...args }),
+  Measurement:  (args: Omit<MeasurementVal,  "_tag">): MeasurementVal  => ({ _tag: "MeasurementVal",  ...args }),
+
+  equals(a: Value, b: Value): boolean {
+    if (a._tag !== b._tag) return false
+    const aRec = a as unknown as Record<string, unknown>
+    const bRec = b as unknown as Record<string, unknown>
+    const keys = Object.keys(aRec).filter(k => k !== "_tag")
+    return keys.every(k => {
+      const av = aRec[k], bv = bRec[k]
+      if (Array.isArray(av) && Array.isArray(bv)) {
+        return av.length === bv.length &&
+          av.every((item, i) => Value.equals(item as Value, bv[i] as Value))
+      }
+      if (isRecord(av) && isRecord(bv)) {
+        const aKeys = Object.keys(av), bKeys = Object.keys(bv)
+        return aKeys.length === bKeys.length &&
+          aKeys.every(ek => Value.equals(av[ek] as Value, bv[ek] as Value))
+      }
+      return av === bv
+    })
+  },
 } as const
 
 function isRecord(value: unknown): value is Record<string, unknown> {
@@ -64,7 +80,7 @@ export function valueFromRaw(raw: unknown): Value {
       : Value.Float({ value: raw })
   }
   if (Array.isArray(raw)) {
-    return Value.Array({ items: Data.array(raw.map(valueFromRaw)) })
+    return Value.Array({ items: raw.map(valueFromRaw) })
   }
   if (!isRecord(raw)) {
     throw new TypeError("Unsupported raw value")
@@ -97,19 +113,3 @@ export function valueFromRaw(raw: unknown): Value {
   }
 }
 
-// --- Schema for native tagged Value objects ---
-// Schema.suspend is required because ArrayVal and MapVal reference ValueSchema recursively.
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-export const ValueSchema: Schema.Schema<any> = Schema.Union(
-  Schema.TaggedStruct("StringVal",       { value: Schema.String }),
-  Schema.TaggedStruct("IntVal",          { value: Schema.Number }),
-  Schema.TaggedStruct("FloatVal",        { value: Schema.Number }),
-  Schema.TaggedStruct("BoolVal",         { value: Schema.Boolean }),
-  Schema.TaggedStruct("NullVal",         {}),
-  Schema.TaggedStruct("SymbolVal",       { value: Schema.String }),
-  Schema.TaggedStruct("TaggedStringVal", { tag: Schema.String, content: Schema.String }),
-  Schema.TaggedStruct("ArrayVal",        { items: Schema.Array(Schema.suspend(() => ValueSchema)) }),
-  Schema.TaggedStruct("MapVal",          { entries: Schema.Record({ key: Schema.String, value: Schema.suspend(() => ValueSchema) }) }),
-  Schema.TaggedStruct("RangeVal",        { lower: Schema.optional(Schema.Number), upper: Schema.optional(Schema.Number) }),
-  Schema.TaggedStruct("MeasurementVal",  { unit: Schema.String, value: Schema.Number }),
-)

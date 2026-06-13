@@ -328,93 +328,52 @@ in TypeScript with no further boundary crossings.
 
 ---
 
-## Part 4: Effect Integration
+## Part 4: FP Utilities and Effect Integration
 
-### Selected Modules
+### Design decision: Effect is not a dependency of `@relateby/pattern`
 
-The `effect` library is adopted as an optional peer dependency. Only the modules
-that solve real problems in `relateby` are used:
+`@relateby/pattern` ships with inline `pipe` and `Option<T>` utilities that have the **same tagged-union shape** as Effect's versions. This means:
 
-| Module | Decision | Reason |
+- Zero peer dependencies for `@relateby/pattern` consumers
+- Effect users get zero-friction interop — no type conversion at the adapter boundary
+- `@relateby/pattern-effect` wraps gram operations with `Effect.tryPromise`, re-exporting them as `Effect<T, GramParseError>`
+
+| Utility | Decision | Location |
 |---|---|---|
-| `pipe` | ✅ Re-export | Enables point-free composition; core to the FP style |
-| `Either` | ✅ Use for fallible ops | Replaces hand-rolled `{ _tag }` shape; full combinator suite |
-| `Option` | ✅ Use for nullable returns | Replaces `T \| null`; composable |
-| `Match` | ✅ Use internally | Exhaustive dispatch on `GraphClass` and `Substitution` ADTs |
-| `HashMap` | ❌ Skip | `ReadonlyMap` is sufficient; don't force the import |
-| `Chunk` | ❌ Skip | `ReadonlyArray` is the right type |
-| `Effect` (async) | ❌ Skip | All operations are synchronous |
-| `Schema` | ❌ Defer | Future `relateby/io` module |
+| `pipe` | ✅ Inline (Effect-shape) | `@relateby/pattern/fp.ts` |
+| `Option` | ✅ Inline (Effect-shape) | `@relateby/pattern/fp.ts` |
+| `Either` / `Effect` | ✅ Via adapter | `@relateby/pattern-effect` |
+| `HashMap` / `HashSet` | ❌ Skip | `ReadonlyMap` / `ReadonlyArray` sufficient |
+| `Data.Class` / `Schema` | ❌ Removed | Plain classes + hand-written validator |
 
-### `Either` and `Option` in the TypeScript Layer
-
-The WASM bindings already return `{ _tag: 'Right', right: T } | { _tag: 'Left', left: E }`.
-The TypeScript wrapper layer (`src/pattern/index.ts`) converts these to proper
-`Either.Either<T, E>` and `Option.Option<T>` values so users get the full
-combinator suite:
+### `pipe` and `Option` in `@relateby/pattern`
 
 ```typescript
-// src/pattern/index.ts — wrapping WASM returns
-import { Either, Option } from "effect";
+// All FP utilities come from the inline fp.ts — no "effect" import needed
+import { Option, pipe } from "@relateby/pattern"
 
-export function validate(
-  pattern: Pattern,
-  rules: ValidationRules,
-): Either.Either<void, ValidationError> {
-  const raw = pattern._validate(rules);
-  return raw._tag === "Right"
-    ? Either.right(undefined)
-    : Either.left(raw.left);
-}
-
-export function shortestPath(
-  query: GraphQuery,
-  start: Pattern,
-  end: Pattern,
-  weight?: Weight,
-): Option.Option<Pattern[]> {
-  const raw = _shortestPath(query, start, end, weight);
-  return raw === null ? Option.none() : Option.some(raw);
-}
+const result = pipe(
+  graph.node("alice"),           // Option<Pattern<Subject>>
+  Option.map(n => n.value.identity),   // Option<string>
+  Option.getOrElse(() => "unknown"),   // string
+)
 ```
 
-### `Match` for `GraphClass` Dispatch
-
-`Match.tag` + `Match.exhaustive` is used internally in `mapGraph` and
-`filterGraph`. If a new `GraphClass` variant is added to the Rust type, TypeScript
-will refuse to compile at every unhandled `Match` site:
+### Effect users: `@relateby/pattern-effect`
 
 ```typescript
-import { pipe, Match } from "effect";
+import { Effect } from "effect"
+import { Gram } from "@relateby/pattern-effect"  // Effect-wrapped gram ops
 
-const applyMapper = (cls: GraphClass, p: Pattern): Pattern =>
-  pipe(
-    Match.value(cls),
-    Match.tag("GNode",         () => fNode(p)),
-    Match.tag("GRelationship", () => fRel(p)),
-    Match.tag("GWalk",         () => fWalk(p)),
-    Match.tag("GAnnotation",   () => fAnnot(p)),
-    Match.tag("GOther",        () => fOther(cls, p)),
-    Match.exhaustive,  // compile error if any tag is missing
-  );
+const graph = yield* pipe(
+  Gram.parse("(a)-->(b)"),                        // Effect<ReadonlyArray<Pattern<Subject>>, GramParseError>
+  Effect.map(StandardGraph.fromPatterns),
+)
 ```
 
 ### Peer Dependency
 
-```json
-{
-  "peerDependencies": {
-    "effect": ">=3.0.0"
-  },
-  "peerDependenciesMeta": {
-    "effect": { "optional": true }
-  }
-}
-```
-
-Users who don't use Effect can still use `relateby`. The `pipe` function is
-available from `effect` or from any compatible utility. All graph operations
-are synchronous and have no Effect-specific return types in their core signatures.
+`@relateby/pattern` has no peer dependencies. `@relateby/pattern-effect` requires `effect >= 3.0.0` as a peer dependency.
 
 ---
 

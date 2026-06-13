@@ -102,9 +102,9 @@ A developer parses gram notation and constructs a `StandardGraph` — a graph th
 ### Functional Requirements
 
 - **FR-001**: The library MUST expose `Pattern`, `Subject`, `Value`, and `StandardGraph` as native objects in both TypeScript and Python — not as wrappers around a native extension handle.
-- **FR-002**: The library MUST provide structural equality comparison for `Pattern`, `Subject`, and `Value` without requiring custom comparators.
+- **FR-002**: The library MUST provide equality comparison for `Pattern`, `Subject`, and `Value`. `Subject` equality is identity-based (two subjects are equal if and only if their `identity` strings match); `Pattern` and `Value` equality is structural (recursive value comparison).
 - **FR-003**: All `Pattern` traversal operations (`map`, `fold`, `filter`, `findFirst`) MUST execute without crossing a native extension boundary after the initial parse.
-- **FR-004**: The gram parser MUST return a structured error value (not throw) when given invalid input.
+- **FR-004**: The gram parser MUST reject with a `GramParseError` (not an anonymous error) when given invalid input. TypeScript gram operations return `Promise<T>` and reject with `GramParseError`; Effect users wrap them via `@relateby/pattern-effect`.
 - **FR-005**: The library MUST continue to expose gram parse, stringify, and validate capabilities backed by the existing Rust codec — only the data structure layer moves to native code.
 - **FR-006**: The native TypeScript and Python `Pattern` implementations MUST produce behavior that matches the gram-hs Haskell reference for `fold` traversal order, `map`, `filter`, `extend`, and `extract`.
 - **FR-007**: The gram-hs Haskell reference (`../pattern-hs/libs/`) MUST be reviewed before implementing operations to confirm traversal semantics, `Value` variant completeness, and `StandardGraph` classification rules.
@@ -141,7 +141,7 @@ A developer parses gram notation and constructs a `StandardGraph` — a graph th
 
 - The gram-hs Haskell reference implementation at `../pattern-hs/libs/` is the authoritative source for operation semantics, `Value` variants, and `StandardGraph` classification rules. Any ambiguity in the Rust implementation is resolved by consulting gram-hs.
 - The existing TypeScript package (`@relateby/pattern`) and Python package (`relateby-pattern`) import paths are preserved. No major-version bump is required because the observable behavior is unchanged; only the internal implementation layer changes.
-- The effect-ts library (`effect`) is an acceptable peer dependency for the TypeScript implementation. It provides structural equality, typed error handling, schema-based validation, and functional composition utilities.
+- The `effect` library is NOT a dependency of `@relateby/pattern`. Inline `pipe` and `Option<T>` utilities (with the same tagged-union shape as Effect's versions) are provided directly, enabling zero-conversion interop for Effect users via `@relateby/pattern-effect`. The `effect` library remains a peer dependency only in `@relateby/pattern-effect`.
 - Python `dataclasses` and standard library types (`set`, `dict`, `list`) are sufficient for the Python implementation; no third-party Python libraries are required for the core data structures.
 - The gram stringify operation (native Pattern → gram string) remains acceptable with a JSON round-trip through the Rust codec, as stringify is significantly less frequent than parse in typical usage.
 - `findFirst` and other partial-result operations returning `Option` (TypeScript) or `Optional` (Python) instead of nullable types is a non-breaking API improvement, as the previous `undefined`/`None` return is a subset of the new behavior.
