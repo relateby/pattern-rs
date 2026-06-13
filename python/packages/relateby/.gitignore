@@ -1,0 +1,2 @@
+# Compiled native extension modules — rebuilt by scripts/build-dev.sh --python
+relateby/_native/*.so
