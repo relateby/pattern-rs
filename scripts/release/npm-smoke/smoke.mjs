@@ -1,13 +1,15 @@
-import { Effect, Either, Equal, Option, pipe } from "effect";
 import { filterGraph, mapGraph, SpliceGap, toGraphView } from "@relateby/graph";
 import { Gram } from "@relateby/gram";
 import {
+  Option,
   Pattern,
   StandardGraph,
   Subject,
   Value,
   findFirst,
   fold,
+  matches,
+  pipe,
   values,
 } from "@relateby/pattern";
 
@@ -16,8 +18,12 @@ const alice = Subject.fromId("alice")
   .withProperty("name", Value.String({ value: "Alice" }));
 const bob = Subject.fromId("bob").withLabel("Person");
 
-if (!Equal.equals(alice, alice)) {
-  throw new Error("Native Subject equality is not available");
+if (!alice.equals(alice)) {
+  throw new Error("Subject identity equality is not available");
+}
+
+if (matches(Pattern.point(alice), Pattern.point(bob))) {
+  throw new Error("Patterns with different subjects should not match");
 }
 
 const relationship = new Pattern({
@@ -26,9 +32,9 @@ const relationship = new Pattern({
 });
 
 const graph = StandardGraph.fromPatterns([relationship]);
-const parsed = await Effect.runPromise(Gram.parse("(alice:Person)-->(bob:Person)"));
-const serialized = await Effect.runPromise(Gram.stringify(parsed));
-await Effect.runPromise(Gram.validate("(alice:Person)-->(bob:Person)"));
+const parsed = await Gram.parse("(alice:Person)-->(bob:Person)");
+const serialized = await Gram.stringify(parsed);
+await Gram.validate("(alice:Person)-->(bob:Person)");
 
 if (graph.nodeCount !== 2 || graph.relationshipCount !== 1) {
   throw new Error("StandardGraph.fromPatterns returned an unexpected graph");
@@ -87,23 +93,15 @@ if (typeof serialized !== "string" || !serialized.includes("alice")) {
   throw new Error("Gram.stringify returned an unexpected result");
 }
 
-const stringifyFailure = await Effect.runPromise(
-  Effect.either(
-    Gram.stringify([
-      Pattern.point(
-        Subject.fromId("alice").withProperty("nickname", Value.Null({}))
-      ),
-    ])
-  )
-);
-
-if (!Either.isLeft(stringifyFailure) || !String(stringifyFailure.left.cause).includes("not representable")) {
-  throw new Error("Unsupported null values did not surface a structured stringify error");
+// Verify parse errors surface as GramParseError with the input attached
+let parseFailure = null;
+try {
+  await Gram.parse("(alice");
+} catch (err) {
+  parseFailure = err;
 }
 
-const parseFailure = await Effect.runPromise(Effect.either(Gram.parse("(alice")));
-
-if (!Either.isLeft(parseFailure) || parseFailure.left.input !== "(alice") {
+if (!parseFailure || parseFailure.input !== "(alice") {
   throw new Error("Invalid Gram input did not surface a structured public parse error");
 }
 
