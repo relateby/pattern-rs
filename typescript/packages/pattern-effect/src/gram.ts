@@ -16,7 +16,7 @@ export const Gram = {
     Effect.tryPromise({ try: () => NativeGram.parse(input), catch: wrapParseError(input) }),
 
   stringify: (patterns: ReadonlyArray<Pattern<Subject>>): Effect.Effect<string, GramParseError> =>
-    Effect.tryPromise({ try: () => NativeGram.stringify(patterns), catch: wrapParseError("") }),
+    Effect.tryPromise({ try: () => NativeGram.stringify(patterns), catch: wrapParseError("(stringify)") }),
 
   validate: (input: string): Effect.Effect<void, GramParseError> =>
     Effect.tryPromise({ try: () => NativeGram.validate(input), catch: wrapParseError(input) }),
@@ -31,5 +31,5 @@ export const Gram = {
     header: Record<string, unknown> | undefined,
     patterns: ReadonlyArray<Pattern<Subject>>,
   ): Effect.Effect<string, GramParseError> =>
-    Effect.tryPromise({ try: () => NativeGram.stringifyWithHeader(header, patterns), catch: wrapParseError("") }),
+    Effect.tryPromise({ try: () => NativeGram.stringifyWithHeader(header, patterns), catch: wrapParseError("(stringifyWithHeader)") }),
 }

@@ -167,7 +167,7 @@ export const Gram = {
       const wasm = await loadWasm()
       return wasm.stringify(patterns.map(patternToRaw))
     } catch (cause) {
-      throw cause instanceof GramParseError ? cause : new GramParseError({ input: "", cause })
+      throw cause instanceof GramParseError ? cause : new GramParseError({ input: "(stringify)", cause })
     }
   },
 
@@ -241,7 +241,7 @@ export const Gram = {
       const wasm = await loadWasm()
       return wasm.stringifyWithHeader({ header: header ?? null, patterns: patterns.map(patternToRaw) })
     } catch (cause) {
-      throw cause instanceof GramParseError ? cause : new GramParseError({ input: "", cause })
+      throw cause instanceof GramParseError ? cause : new GramParseError({ input: "(stringifyWithHeader)", cause })
     }
   },
 }

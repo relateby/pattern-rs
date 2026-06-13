@@ -36,6 +36,26 @@ export const Value = {
   Map:          (args: Omit<MapVal,          "_tag">): MapVal          => ({ _tag: "MapVal",          ...args }),
   Range:        (args: Omit<RangeVal,        "_tag">): RangeVal        => ({ _tag: "RangeVal",        ...args }),
   Measurement:  (args: Omit<MeasurementVal,  "_tag">): MeasurementVal  => ({ _tag: "MeasurementVal",  ...args }),
+
+  equals(a: Value, b: Value): boolean {
+    if (a._tag !== b._tag) return false
+    const aRec = a as unknown as Record<string, unknown>
+    const bRec = b as unknown as Record<string, unknown>
+    const keys = Object.keys(aRec).filter(k => k !== "_tag")
+    return keys.every(k => {
+      const av = aRec[k], bv = bRec[k]
+      if (Array.isArray(av) && Array.isArray(bv)) {
+        return av.length === bv.length &&
+          av.every((item, i) => Value.equals(item as Value, bv[i] as Value))
+      }
+      if (isRecord(av) && isRecord(bv)) {
+        const aKeys = Object.keys(av), bKeys = Object.keys(bv)
+        return aKeys.length === bKeys.length &&
+          aKeys.every(ek => Value.equals(av[ek] as Value, bv[ek] as Value))
+      }
+      return av === bv
+    })
+  },
 } as const
 
 function isRecord(value: unknown): value is Record<string, unknown> {

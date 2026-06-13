@@ -2,8 +2,8 @@
 //
 // SubjectLike is a plain interface using native JS types.
 // Subject uses identity-based equality: two subjects are equal iff their
-// identity strings are equal. Labels and properties are compared structurally
-// only when explicitly using Subject.deepEquals().
+// identity strings are equal. Use Value.equals() / matches() for structural
+// comparison of properties or patterns.
 //
 // Public construction: Subject.fromId(id) or Subject.from(subjectLike)
 // then .withLabel() / .withProperty() for immutable mutation.

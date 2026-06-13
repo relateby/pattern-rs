@@ -10,10 +10,25 @@ export type { Option }
 
 function valueEquals<V>(a: V, b: V): boolean {
   if (a === b) return true
-  if (typeof a === "object" && a !== null && "equals" in a && typeof (a as Record<string, unknown>)["equals"] === "function") {
+  if (typeof a !== "object" || a === null || typeof b !== "object" || b === null) return false
+  // Delegate to .equals() if available (e.g. Subject identity equality)
+  if ("equals" in a && typeof (a as Record<string, unknown>)["equals"] === "function") {
     return (a as { equals: (other: V) => boolean }).equals(b)
   }
-  return false
+  // Structural comparison for plain tagged-union objects (Value variants)
+  const aRec = a as Record<string, unknown>
+  const bRec = b as Record<string, unknown>
+  const aKeys = Object.keys(aRec)
+  const bKeys = Object.keys(bRec)
+  if (aKeys.length !== bKeys.length) return false
+  return aKeys.every(k => {
+    if (!(k in bRec)) return false
+    const av = aRec[k], bv = bRec[k]
+    if (Array.isArray(av) && Array.isArray(bv)) {
+      return av.length === bv.length && av.every((item, i) => valueEquals(item, bv[i]))
+    }
+    return valueEquals(av, bv)
+  })
 }
 
 function patternEquals<V>(a: Pattern<V>, b: Pattern<V>): boolean {
