@@ -1,6 +1,6 @@
-import { Effect, Option } from "effect"
 import { describe, expect, it } from "vitest"
 import { GramParseError } from "../src/errors.js"
+import { Option } from "../src/fp.js"
 import { Pattern } from "../src/pattern.js"
 import { StandardGraph } from "../src/standard-graph.js"
 import { Subject } from "../src/subject.js"
@@ -78,7 +78,7 @@ describe("StandardGraph", () => {
   })
 
   it("fromGram composes parse and classify", async () => {
-    const graph = await Effect.runPromise(StandardGraph.fromGram("(a:Person)-->(b:Person)"))
+    const graph = await StandardGraph.fromGram("(a:Person)-->(b:Person)")
 
     expect(graph.nodeCount).toBe(2)
     expect(graph.relationshipCount).toBe(1)
@@ -86,12 +86,8 @@ describe("StandardGraph", () => {
   })
 
   it("fromGram preserves parse failures", async () => {
-    const result = await Effect.runPromise(Effect.either(StandardGraph.fromGram("(alice")))
-
-    expect(result._tag).toBe("Left")
-    if (result._tag === "Left") {
-      expect(result.left).toBeInstanceOf(GramParseError)
-    }
+    const err = await StandardGraph.fromGram("(alice").catch(e => e)
+    expect(err).toBeInstanceOf(GramParseError)
   })
 
   describe("back-reference label preservation", () => {

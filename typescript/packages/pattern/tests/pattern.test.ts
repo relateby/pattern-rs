@@ -1,13 +1,14 @@
-import { Effect, Equal, Option, pipe } from "effect"
 import { describe, expect, it } from "vitest"
 import {
   Gram,
+  Option,
   Pattern,
   StandardGraph,
   Subject,
   Value,
   findFirst,
   fold,
+  pipe,
   values,
 } from "../src/index.js"
 
@@ -24,8 +25,7 @@ describe("@relateby/pattern", () => {
       Value.String({ value: "Alice" }),
     ])
     expect(
-      Equal.equals(
-        alice,
+      alice.equals(
         Subject.fromId("alice")
           .withLabel("Person")
           .withProperty("name", Value.String({ value: "Alice" }))
@@ -52,9 +52,9 @@ describe("@relateby/pattern", () => {
   })
 
   it("parses, validates, and stringifies gram notation through the JSON codec bridge", async () => {
-    const parsed = await Effect.runPromise(Gram.parse("(alice:Person)-->(bob:Person)"))
-    const serialized = await Effect.runPromise(Gram.stringify(parsed))
-    await Effect.runPromise(Gram.validate("(alice:Person)-->(bob:Person)"))
+    const parsed = await Gram.parse("(alice:Person)-->(bob:Person)")
+    const serialized = await Gram.stringify(parsed)
+    await Gram.validate("(alice:Person)-->(bob:Person)")
     const graph = StandardGraph.fromPatterns(parsed)
 
     expect(parsed).toHaveLength(1)
@@ -65,9 +65,7 @@ describe("@relateby/pattern", () => {
   })
 
   it("decodes subject properties from the JSON codec bridge", async () => {
-    const [parsed] = await Effect.runPromise(
-      Gram.parse('(alice:Person {name: "Alice", age: 42, active: true})')
-    )
+    const [parsed] = await Gram.parse('(alice:Person {name: "Alice", age: 42, active: true})')
 
     expect(parsed?.value.identity).toBe("alice")
     expect(Object.entries(parsed?.value.properties ?? {})).toContainEqual([
@@ -99,5 +97,6 @@ describe("@relateby/pattern", () => {
     expect(Option.getOrUndefined(graph.node("alice"))?.value.identity).toBe("alice")
     expect(Option.getOrUndefined(graph.source("r1"))?.value.identity).toBe("alice")
     expect(Option.getOrUndefined(graph.target("r1"))?.value.identity).toBe("bob")
+
   })
 })

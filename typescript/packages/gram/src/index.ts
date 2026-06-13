@@ -1,5 +1,3 @@
-import { Effect } from "effect";
-
 import { Gram as PatternGram } from "@relateby/pattern";
 
 export const Gram = PatternGram;
@@ -9,5 +7,5 @@ export const Gram = PatternGram;
  * The underlying `@relateby/pattern` package still performs lazy loading on demand.
  */
 export async function init(): Promise<void> {
-  await Effect.runPromise(PatternGram.validate("(init)"));
+  await PatternGram.validate("(init)");
 }

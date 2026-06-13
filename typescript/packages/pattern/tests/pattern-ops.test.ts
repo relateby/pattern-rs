@@ -1,4 +1,3 @@
-import { Data } from "effect"
 import { describe, expect, it } from "vitest"
 import { allValues, anyValue, combine, contains, depthAt, indicesAt, matches, para, sizeAt, unfold, values } from "../src/ops.js"
 import { Pattern } from "../src/pattern.js"
@@ -8,13 +7,13 @@ describe("Pattern ops", () => {
   it("values returns subjects in pre-order", () => {
     const pattern = new Pattern({
       value: Subject.fromId("root"),
-      elements: Data.array([
+      elements: [
         Pattern.point(Subject.fromId("left")),
         new Pattern({
           value: Subject.fromId("right"),
-          elements: Data.array([Pattern.point(Subject.fromId("leaf"))]),
+          elements: [Pattern.point(Subject.fromId("leaf"))],
         }),
-      ]),
+      ],
     })
 
     expect(values(pattern).map((subject) => subject.identity)).toEqual([
@@ -34,10 +33,10 @@ describe("Pattern ops", () => {
 const makeTree = () =>
   new Pattern({
     value: 1,
-    elements: Data.array([
+    elements: [
       Pattern.point(2),
-      new Pattern({ value: 3, elements: Data.array([Pattern.point(4)]) }),
-    ]),
+      new Pattern({ value: 3, elements: [Pattern.point(4)] }),
+    ],
   })
 
 describe("anyValue", () => {
@@ -103,8 +102,8 @@ describe("matches", () => {
   })
 
   it("returns false for trees with different structure", () => {
-    const a = new Pattern({ value: 1, elements: Data.array([Pattern.point(2)]) })
-    const b = new Pattern({ value: 1, elements: Data.array([Pattern.point(3)]) })
+    const a = new Pattern({ value: 1, elements: [Pattern.point(2)] })
+    const b = new Pattern({ value: 1, elements: [Pattern.point(3)] })
     expect(matches(a, b)).toBe(false)
   })
 })
@@ -141,7 +140,7 @@ describe("para", () => {
   })
 
   it("nested: height of single-level tree is 1", () => {
-    const oneLevel = new Pattern({ value: 0, elements: Data.array([Pattern.point(1), Pattern.point(2)]) })
+    const oneLevel = new Pattern({ value: 0, elements: [Pattern.point(1), Pattern.point(2)] })
     const height = para<number, number>((_p, rs) => rs.length === 0 ? 0 : 1 + Math.max(...rs))
     expect(height(oneLevel)).toBe(1)
   })
@@ -371,7 +370,7 @@ describe("contains", () => {
   })
 
   it("finds subtree, not just leaves", () => {
-    const subtree = new Pattern({ value: 3, elements: Data.array([Pattern.point(4)]) })
+    const subtree = new Pattern({ value: 3, elements: [Pattern.point(4)] })
     expect(contains(subtree)(makeTree())).toBe(true)
   })
 })

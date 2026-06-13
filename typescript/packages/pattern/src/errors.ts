@@ -1,12 +1,17 @@
 // errors.ts — Typed error for gram parse/serialize failures
 //
-// Data.TaggedError gives GramParseError a _tag discriminant, structured fields,
-// and a proper Error prototype chain. Errors are returned as Effect failures,
-// not thrown as exceptions.
+// Plain Error subclass with a _tag discriminant. GramParseError is thrown
+// by Gram methods and caught by callers (or wrapped in Effect by the adapter).
 
-import { Data } from "effect"
-
-export class GramParseError extends Data.TaggedError("GramParseError")<{
+export class GramParseError extends Error {
+  readonly _tag = "GramParseError" as const
   readonly input: string
   readonly cause: unknown
-}> {}
+
+  constructor({ input, cause }: { readonly input: string; readonly cause: unknown }) {
+    super(cause instanceof Error ? cause.message : String(cause))
+    this.name = "GramParseError"
+    this.input = input
+    this.cause = cause
+  }
+}

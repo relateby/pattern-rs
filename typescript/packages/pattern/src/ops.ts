@@ -1,10 +1,26 @@
 // ops.ts — Standalone curried pipeable operations on Pattern<V>
 //
 // All operations are pure standalone functions (not methods) so they compose
-// with effect-ts pipe() and can be tree-shaken independently.
+// with pipe() and can be tree-shaken independently.
 
-import { Data, Equal, Option, pipe } from "effect"
+import { Option, pipe } from "./fp.js"
 import { Pattern } from "./pattern.js"
+
+export type { Option }
+
+function valueEquals<V>(a: V, b: V): boolean {
+  if (a === b) return true
+  if (typeof a === "object" && a !== null && "equals" in a && typeof (a as Record<string, unknown>)["equals"] === "function") {
+    return (a as { equals: (other: V) => boolean }).equals(b)
+  }
+  return false
+}
+
+function patternEquals<V>(a: Pattern<V>, b: Pattern<V>): boolean {
+  if (!valueEquals(a.value, b.value)) return false
+  if (a.elements.length !== b.elements.length) return false
+  return a.elements.every((e, i) => patternEquals(e, b.elements[i]!))
+}
 
 // --- Functor ---
 
@@ -27,7 +43,7 @@ import { Pattern } from "./pattern.js"
 export const map =
   <V, U>(fn: (v: V) => U) =>
   (p: Pattern<V>): Pattern<U> =>
-    new Pattern({ value: fn(p.value), elements: Data.array(p.elements.map(map(fn))) })
+    new Pattern({ value: fn(p.value), elements: p.elements.map(map(fn)) })
 
 // --- Foldable ---
 
@@ -78,10 +94,10 @@ export const filter =
  */
 export const findFirst =
   <V>(pred: (v: V) => boolean) =>
-  (p: Pattern<V>): Option.Option<V> => {
+  (p: Pattern<V>): Option<V> => {
     if (pred(p.value)) return Option.some(p.value)
     return p.elements.reduce(
-      (found: Option.Option<V>, e) => Option.orElse(found, () => pipe(e, findFirst(pred))),
+      (found: Option<V>, e) => Option.orElse(found, () => pipe(e, findFirst(pred))),
       Option.none()
     )
   }
@@ -106,14 +122,14 @@ export const findFirst =
 export const extend =
   <V, U>(fn: (p: Pattern<V>) => U) =>
   (p: Pattern<V>): Pattern<U> =>
-    new Pattern({ value: fn(p), elements: Data.array(p.elements.map(extend(fn))) })
+    new Pattern({ value: fn(p), elements: p.elements.map(extend(fn)) })
 
 /** Extract the root value. */
 export const extract = <V>(p: Pattern<V>): V => p.value
 
 /** Replace each position's value with its own sub-pattern, enabling `extend` composition. */
 export const duplicate = <V>(p: Pattern<V>): Pattern<Pattern<V>> =>
-  new Pattern({ value: p, elements: Data.array(p.elements.map(duplicate)) })
+  new Pattern({ value: p, elements: p.elements.map(duplicate) })
 
 // --- Extra utility ---
 
@@ -150,13 +166,16 @@ export const allValues =
 /**
  * Structural equality — `true` if both patterns have the same shape and values.
  *
- * @typeParam V - Value type (must be structurally comparable via `effect` `Equal`)
+ * Value equality is identity-based for `Subject` (via `.equals()`) and uses
+ * `===` for primitives.
+ *
+ * @typeParam V - Value type
  * @param a - First pattern
  * @param b - Second pattern
  * @returns `true` when `a` and `b` are structurally equal
  */
 export const matches = <V>(a: Pattern<V>, b: Pattern<V>): boolean =>
-  Equal.equals(a, b)
+  patternEquals(a, b)
 
 /**
  * Return `true` if `needle` appears anywhere inside `haystack` (including at the root).
@@ -168,7 +187,7 @@ export const matches = <V>(a: Pattern<V>, b: Pattern<V>): boolean =>
 export const contains =
   <V>(needle: Pattern<V>) =>
   (haystack: Pattern<V>): boolean =>
-    Equal.equals(haystack, needle) || haystack.elements.some(contains(needle))
+    patternEquals(haystack, needle) || haystack.elements.some(contains(needle))
 
 // --- Paramorphism ---
 
@@ -229,7 +248,7 @@ export const combine =
   <V>(combineValues: (a: V, b: V) => V) =>
   (a: Pattern<V>) =>
   (b: Pattern<V>): Pattern<V> =>
-    new Pattern({ value: combineValues(a.value, b.value), elements: Data.array([...a.elements, ...b.elements]) })
+    new Pattern({ value: combineValues(a.value, b.value), elements: [...a.elements, ...b.elements] })
 
 // --- Anamorphism ---
 
@@ -259,7 +278,7 @@ export const unfold =
   (seed: A): Pattern<V> => {
     const [value, childSeeds] = expand(seed)
     const inner = unfold<A, V>(expand)
-    return new Pattern<V>({ value, elements: Data.array([...childSeeds].map(inner)) })
+    return new Pattern<V>({ value, elements: [...childSeeds].map(inner) })
   }
 
 // --- Comonad position helpers ---
@@ -293,7 +312,7 @@ export const sizeAt = <V>(p: Pattern<V>): Pattern<number> =>
  */
 export const indicesAt = <V>(p: Pattern<V>): Pattern<number[]> => {
   const go = (indices: number[]) => (sub: Pattern<V>): Pattern<number[]> =>
-    new Pattern({ value: indices, elements: Data.array(sub.elements.map((e, i) => go([...indices, i])(e))) })
+    new Pattern({ value: indices, elements: sub.elements.map((e, i) => go([...indices, i])(e)) })
   return go([])(p)
 }
 

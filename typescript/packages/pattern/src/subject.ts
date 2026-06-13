@@ -1,15 +1,13 @@
 // subject.ts — Self-describing entity with identity, labels, and properties
 //
-// SubjectLike is a plain interface using native JS types — no Effect dependency.
-// Subject is the Effect-backed implementation using HashSet/HashMap for structural
-// equality via Equal.equals. Internal fields are prefixed with _ to allow
-// the native-typed getters to implement SubjectLike without name collision.
+// SubjectLike is a plain interface using native JS types.
+// Subject uses identity-based equality: two subjects are equal iff their
+// identity strings are equal. Labels and properties are compared structurally
+// only when explicitly using Subject.deepEquals().
 //
-// Public construction API: Subject.fromId(id) + .withLabel() / .withProperty()
-// Direct constructor use (new Subject({...})) is internal — field names
-// _labels and _properties are implementation details subject to change.
+// Public construction: Subject.fromId(id) or Subject.from(subjectLike)
+// then .withLabel() / .withProperty() for immutable mutation.
 
-import { Data, HashMap, HashSet } from "effect"
 import type { Value } from "./value.js"
 
 export interface SubjectLike {
@@ -18,28 +16,58 @@ export interface SubjectLike {
   readonly properties: Readonly<Record<string, Value>>
 }
 
-export class Subject extends Data.Class<{
-  readonly identity:    string
-  readonly _labels:     HashSet.HashSet<string>
-  readonly _properties: HashMap.HashMap<string, Value>
-}> implements SubjectLike {
+export class Subject implements SubjectLike {
+  readonly identity: string
+  private readonly _labels: ReadonlyArray<string>
+  private readonly _properties: Readonly<Record<string, Value>>
+
+  constructor(
+    identity: string,
+    labels: ReadonlyArray<string>,
+    properties: Readonly<Record<string, Value>>,
+  ) {
+    this.identity = identity
+    this._labels = labels
+    this._properties = properties
+  }
+
   static fromId(identity: string): Subject {
-    return new Subject({ identity, _labels: HashSet.empty(), _properties: HashMap.empty() })
+    return new Subject(identity, [], {})
+  }
+
+  static from({ identity, labels, properties }: SubjectLike): Subject {
+    return new Subject(identity, [...labels], { ...properties })
   }
 
   get labels(): ReadonlyArray<string> {
-    return [...HashSet.values(this._labels)]
+    return this._labels
   }
 
   get properties(): Readonly<Record<string, Value>> {
-    return Object.fromEntries(HashMap.entries(this._properties))
+    return this._properties
   }
 
   withLabel(label: string): Subject {
-    return new Subject({ ...this, _labels: HashSet.add(this._labels, label) })
+    if (this._labels.includes(label)) return this
+    return new Subject(this.identity, [...this._labels, label], this._properties)
   }
 
   withProperty(name: string, value: Value): Subject {
-    return new Subject({ ...this, _properties: HashMap.set(this._properties, name, value) })
+    return new Subject(this.identity, this._labels, { ...this._properties, [name]: value })
+  }
+
+  /** Identity equality: two subjects are equal when their identity strings match. */
+  equals(other: Subject): boolean {
+    return this.identity === other.identity
+  }
+
+  /** Merge labels and properties from other into this subject (this wins on conflicts). */
+  merge(other: Subject): Subject {
+    const merged = new Set([...this._labels, ...other._labels])
+    return new Subject(
+      this.identity,
+      [...merged],
+      { ...other._properties, ...this._properties },
+    )
   }
 }

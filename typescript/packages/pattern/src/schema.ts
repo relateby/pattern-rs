@@ -1,14 +1,9 @@
 // schema.ts — Decode pipeline for the JSON interchange format
 //
 // The Rust gram-codec produces a JSON array of AstPattern objects using the
-// "subject" key (not "value"). This module validates and decodes that payload
-// into native Pattern<Subject> objects.
-//
-// Schema.suspend is required for the self-referential elements array.
-// The entire tree is decoded and validated in one pass before any Pattern is
-// constructed — invalid codec output surfaces as a GramParseError, not a crash.
+// "subject" key. This module validates and decodes that payload into native
+// Pattern<Subject> objects without any external schema library.
 
-import { Data, HashMap, HashSet, Schema } from "effect"
 import { valueFromRaw } from "./value.js"
 import { Subject } from "./subject.js"
 import { Pattern } from "./pattern.js"
@@ -26,34 +21,43 @@ interface RawPattern {
   elements: ReadonlyArray<RawPattern>
 }
 
-// --- Schemas ---
+// --- Runtime validators ---
 
-const RawSubjectSchema = Schema.Struct({
-  identity:   Schema.String,
-  labels:     Schema.Array(Schema.String),
-  properties: Schema.Record({ key: Schema.String, value: Schema.Unknown }),
-})
+function isRecord(v: unknown): v is Record<string, unknown> {
+  return typeof v === "object" && v !== null && !Array.isArray(v)
+}
 
-// Schema.suspend is required because RawPatternSchema references itself via elements
-const RawPatternSchema: Schema.Schema<RawPattern> = Schema.Struct({
-  subject:  RawSubjectSchema,
-  elements: Schema.Array(Schema.suspend((): Schema.Schema<RawPattern> => RawPatternSchema)),
-})
+function isRawSubject(v: unknown): v is RawSubject {
+  if (!isRecord(v)) return false
+  if (typeof v["identity"] !== "string") return false
+  if (!Array.isArray(v["labels"]) || !(v["labels"] as unknown[]).every(l => typeof l === "string")) return false
+  if (!isRecord(v["properties"])) return false
+  return true
+}
 
-export const decodePayload = Schema.decodeUnknownSync(Schema.Array(RawPatternSchema))
+function isRawPattern(v: unknown): v is RawPattern {
+  if (!isRecord(v)) return false
+  if (!isRawSubject(v["subject"])) return false
+  if (!Array.isArray(v["elements"]) || !(v["elements"] as unknown[]).every(isRawPattern)) return false
+  return true
+}
+
+export function validatePayload(raw: unknown): ReadonlyArray<RawPattern> {
+  if (!Array.isArray(raw) || !(raw as unknown[]).every(isRawPattern)) {
+    throw new TypeError("Invalid pattern payload from gram codec")
+  }
+  return raw as ReadonlyArray<RawPattern>
+}
 
 // --- Constructor from raw JSON ---
 
 export function patternFromRaw(raw: RawPattern): Pattern<Subject> {
-  const subject = new Subject({
-    identity:    raw.subject.identity,
-    _labels:     HashSet.fromIterable(raw.subject.labels),
-    _properties: HashMap.fromIterable(
-      Object.entries(raw.subject.properties).map(([key, value]) => [key, valueFromRaw(value)] as const)
+  const subject = Subject.from({
+    identity: raw.subject.identity,
+    labels:   raw.subject.labels,
+    properties: Object.fromEntries(
+      Object.entries(raw.subject.properties).map(([k, v]) => [k, valueFromRaw(v)])
     ),
   })
-  const elements = Data.array(
-    (raw.elements as ReadonlyArray<RawPattern>).map(patternFromRaw)
-  )
-  return new Pattern({ value: subject, elements })
+  return new Pattern({ value: subject, elements: raw.elements.map(patternFromRaw) })
 }

@@ -1,10 +1,6 @@
-// pattern.ts — Recursive tree structure, foundational data type
+// pattern.ts — Recursive decorated-sequence structure, foundational data type
 //
-// Extends Data.Class for structural equality via Equal.equals.
-// Uses Data.array() for elements so nested patterns compare structurally.
-// Operations are in ops.ts as standalone curried functions.
-
-import { Data } from "effect"
+// Operations are in ops.ts as standalone curried functions composable with pipe.
 
 /**
  * A value paired with an ordered list of elements, where each element is
@@ -34,19 +30,19 @@ import { Data } from "effect"
  * treated as a node, one with two elements as a relationship, and so on.
  * That interpretation is handled by `StandardGraph`, not by `Pattern` itself.
  *
- * Structural equality is provided by extending `effect`'s `Data.Class`: two
- * `Pattern` instances are equal when their `value` fields are equal and their
- * `elements` arrays are structurally equal (deep, recursive).
- *
  * Standalone pipeable operations (`map`, `fold`, `extend`, `para`, etc.) live
- * in `ops.ts` and compose with `effect`'s `pipe`.
+ * in `ops.ts` and compose with `pipe` from `fp.ts`.
  *
  * @typeParam V - The value type stored at every position
  */
-export class Pattern<V> extends Data.Class<{
+export class Pattern<V> {
   readonly value:    V
   readonly elements: ReadonlyArray<Pattern<V>>
-}> {
+
+  constructor({ value, elements }: { value: V; elements: ReadonlyArray<Pattern<V>> }) {
+    this.value = value
+    this.elements = elements
+  }
   /**
    * Create a leaf node (atomic pattern) holding `value` with no children.
    *
@@ -55,7 +51,7 @@ export class Pattern<V> extends Data.Class<{
    * @returns A `Pattern<V>` with no children
    */
   static point<V>(value: V): Pattern<V> {
-    return new Pattern({ value, elements: Data.array([]) })
+    return new Pattern({ value, elements: [] })
   }
 
   /**
@@ -84,7 +80,7 @@ export class Pattern<V> extends Data.Class<{
    * ```
    */
   static pattern<V>(value: V, elements: ReadonlyArray<Pattern<V>>): Pattern<V> {
-    return new Pattern({ value, elements: Data.array([...elements]) })
+    return new Pattern({ value, elements: [...elements] })
   }
 
   /**
@@ -104,7 +100,7 @@ export class Pattern<V> extends Data.Class<{
    * ```
    */
   static fromList<V>(value: V, values: ReadonlyArray<V>): Pattern<V> {
-    return new Pattern({ value, elements: Data.array([...values].map(v => Pattern.point(v))) })
+    return new Pattern({ value, elements: [...values].map(v => Pattern.point(v)) })
   }
 
   /** `true` when this pattern has no elements. */

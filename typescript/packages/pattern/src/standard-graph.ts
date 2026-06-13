@@ -1,8 +1,9 @@
-import { Effect, HashMap, HashSet, Option, pipe } from "effect"
+import { type Option, Option as O } from "./fp.js"
 import { Gram } from "./gram.js"
-import { GramParseError } from "./errors.js"
 import { Pattern } from "./pattern.js"
 import { Subject } from "./subject.js"
+
+export type { Option }
 
 export interface StandardRelationship {
   readonly pattern: Pattern<Subject>
@@ -25,8 +26,8 @@ export class StandardGraph {
     return graph
   }
 
-  static fromGram(input: string): Effect.Effect<StandardGraph, GramParseError> {
-    return pipe(Gram.parse(input), Effect.map(StandardGraph.fromPatterns))
+  static async fromGram(input: string): Promise<StandardGraph> {
+    return StandardGraph.fromPatterns(await Gram.parse(input))
   }
 
   get nodeCount(): number {
@@ -77,34 +78,30 @@ export class StandardGraph {
     return [...this._other.values()]
   }
 
-  node(id: string): Option.Option<Pattern<Subject>> {
+  node(id: string): Option<Pattern<Subject>> {
     return liftOption(this._nodes.get(id))
   }
 
-  relationship(id: string): Option.Option<StandardRelationship> {
+  relationship(id: string): Option<StandardRelationship> {
     return liftOption(this._relationships.get(id))
   }
 
-  annotation(id: string): Option.Option<Pattern<Subject>> {
+  annotation(id: string): Option<Pattern<Subject>> {
     return liftOption(this._annotations.get(id))
   }
 
-  walk(id: string): Option.Option<Pattern<Subject>> {
+  walk(id: string): Option<Pattern<Subject>> {
     return liftOption(this._walks.get(id))
   }
 
-  source(id: string): Option.Option<Pattern<Subject>> {
-    return pipe(
-      this.relationship(id),
-      Option.flatMap((relationship) => this.node(relationship.source))
-    )
+  source(id: string): Option<Pattern<Subject>> {
+    const rel = O.getOrUndefined(this.relationship(id))
+    return rel ? this.node(rel.source) : O.none()
   }
 
-  target(id: string): Option.Option<Pattern<Subject>> {
-    return pipe(
-      this.relationship(id),
-      Option.flatMap((relationship) => this.node(relationship.target))
-    )
+  target(id: string): Option<Pattern<Subject>> {
+    const rel = O.getOrUndefined(this.relationship(id))
+    return rel ? this.node(rel.target) : O.none()
   }
 
   neighbors(nodeId: string): ReadonlyArray<Pattern<Subject>> {
@@ -132,12 +129,8 @@ export class StandardGraph {
         if (existing !== undefined) {
           // Union semantics: merge labels and properties so that a back-reference
           // (same identity without labels) does not overwrite labels established
-          // by an earlier occurrence.
-          const mergedSubject = new Subject({
-            identity:    pattern.value.identity,
-            _labels:     HashSet.union(existing.value._labels, pattern.value._labels),
-            _properties: HashMap.union(existing.value._properties, pattern.value._properties),
-          })
+          // by an earlier occurrence. existing.value wins on property conflicts.
+          const mergedSubject = existing.value.merge(pattern.value)
           this._nodes.set(pattern.value.identity, Pattern.point(mergedSubject))
         } else {
           this._nodes.set(pattern.value.identity, pattern)
@@ -234,6 +227,6 @@ function isValidWalk(patterns: ReadonlyArray<Pattern<Subject>>): boolean {
   return active.length > 0
 }
 
-function liftOption<A>(value: A | undefined): Option.Option<A> {
-  return value === undefined ? Option.none() : Option.some(value)
+function liftOption<A>(value: A | undefined): Option<A> {
+  return value === undefined ? O.none() : O.some(value)
 }

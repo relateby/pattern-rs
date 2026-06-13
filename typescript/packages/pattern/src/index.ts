@@ -48,7 +48,9 @@ export type {
   MeasurementVal,
   Value as ValueType,
 } from "./value.js"
-export { Value, ValueSchema } from "./value.js"
+export { Value } from "./value.js"
+export { Option, pipe } from "./fp.js"
+export type { Option as OptionType } from "./fp.js"
 
 export type { SubjectLike } from "./subject.js"
 export { Subject } from "./subject.js"
