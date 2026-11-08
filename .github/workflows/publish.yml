@@ -232,8 +232,21 @@ jobs:
         env:
           RELEASE_VERSION: ${{ needs.validate.outputs.version }}
         run: |
+          # The registry can take a few minutes to serve a version that was just published.
           for package in @relateby/pattern @relateby/graph @relateby/gram; do
-            test "$(npm view "${package}@${RELEASE_VERSION}" version)" = "${RELEASE_VERSION}"
+            found=""
+            for i in 1 2 3 4 5 6 7 8 9 10; do
+              if [ "$(npm view "${package}@${RELEASE_VERSION}" version 2>/dev/null)" = "${RELEASE_VERSION}" ]; then
+                found=1
+                break
+              fi
+              echo "Attempt $i/10: ${package}@${RELEASE_VERSION} not yet visible on npm, retrying in 30s..."
+              sleep 30
+            done
+            if [ -z "$found" ]; then
+              echo "::error::${package}@${RELEASE_VERSION} not found on npm"
+              exit 1
+            fi
           done
       - name: Verify PyPI install smoke test
         env:
