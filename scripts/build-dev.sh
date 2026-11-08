@@ -21,7 +21,7 @@ set -euo pipefail
 SCRIPT_DIR="$(CDPATH="" cd "$(dirname "$0")" && pwd)"
 REPO_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
 
-WASM_PKG_DIR="$REPO_ROOT/typescript/packages/pattern"
+WASM_PKG_DIR="$REPO_ROOT/typescript/packages/gram"
 PYTHON_PKG_DIR="$REPO_ROOT/python/packages/relateby"
 
 RED='\033[0;31m'
@@ -91,10 +91,16 @@ if [[ $BUILD_PYTHON -eq 1 ]]; then
     ok "Wheel built in python/packages/relateby/dist/"
 
     step "Extracting .so files into source tree for pytest"
+    # dist/ may hold wheels from earlier versions; use the one just built (newest).
     shopt -s nullglob
     wheels=("$PYTHON_PKG_DIR/dist/"*.whl)
     shopt -u nullglob
-    WHEEL="${wheels[0]:-}"
+    WHEEL=""
+    for wheel in "${wheels[@]}"; do
+        if [[ -z "$WHEEL" || "$wheel" -nt "$WHEEL" ]]; then
+            WHEEL="$wheel"
+        fi
+    done
     if [[ -z "$WHEEL" ]]; then
         fail "No wheel found in $PYTHON_PKG_DIR/dist/"
     fi

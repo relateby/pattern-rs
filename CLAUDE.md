@@ -105,7 +105,7 @@ After editing `crates/gram-codec/src/python.rs`, `crates/pattern-core/src/python
 
 **Why this is needed:**
 
-- **TypeScript/WASM**: `npx vitest run` loads pre-built `.js`/`.wasm` files from `typescript/packages/pattern/wasm-node/`. If you change `gram.rs` and don't rebuild, tests run against stale binaries — wrong method names cause `GramParseError` at runtime.
+- **TypeScript/WASM**: `npx vitest run` loads pre-built `.js`/`.wasm` files from `typescript/packages/gram/wasm-node/`. If you change `gram.rs` and don't rebuild, tests run against stale binaries — wrong method names cause `GramParseError` at runtime.
 
 - **Python**: `pytest` adds `.` to `sys.path` (via `pythonpath = ["."]` in `pyproject.toml`). The source `relateby/_native/` only contains `__init__.py`; the compiled `.so` files live in the wheel. The script builds the wheel and extracts the `.so` files into the source tree so pytest can find them. Without this step, all native-dependent tests silently skip.
 
