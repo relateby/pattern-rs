@@ -64,3 +64,28 @@ jobs:
           ls -l wheelhouse
           python -m pip install --no-index --find-links wheelhouse relateby-pattern
           python scripts/release/python-smoke.py --expect-distribution relateby-pattern
+
+  sdist:
+    name: Build sdist and install from it
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          submodules: true
+      - uses: actions/setup-python@v6
+        with:
+          python-version: '3.12'
+      - name: Build sdist
+        run: |
+          python -m pip install build
+          python -m build --sdist --outdir sdist python/packages/relateby
+          ls -l sdist
+      - uses: actions/upload-artifact@v4
+        with:
+          name: sdist
+          path: sdist/*.tar.gz
+      - name: Install from the sdist (compiles Rust) and smoke test
+        run: |
+          python -m venv /tmp/sdist-venv
+          /tmp/sdist-venv/bin/pip install sdist/*.tar.gz
+          /tmp/sdist-venv/bin/python -I scripts/release/python-smoke.py --expect-distribution relateby-pattern
