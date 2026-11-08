@@ -284,13 +284,15 @@ pub fn boolean(input: &str) -> ParseResult<'_, bool> {
     alt((nom_value(true, tag("true")), nom_value(false, tag("false"))))(input)
 }
 
-/// Parse an array of values: [value1, value2, ...]
+/// Parse an array of scalar values: [value1, value2, ...]
+///
+/// Elements are scalars only (no nested arrays or maps), matching tree-sitter-gram.
 pub fn array(input: &str) -> ParseResult<'_, Vec<Value>> {
     delimited(
         char('['),
         delimited(
             ws,
-            separated_list0(delimited(ws, char(','), ws), value_parser),
+            separated_list0(delimited(ws, char(','), ws), scalar_value_parser),
             ws,
         ),
         cut(char(']')),
@@ -442,7 +444,12 @@ fn map_value(input: &str) -> ParseResult<'_, Value> {
                     separated_pair(
                         delimited(ws, key_name, ws),
                         char(':'),
-                        value_parser, // Recursive call for nested values
+                        // Entry values are scalars or arrays of scalars, matching
+                        // tree-sitter-gram (maps and nested arrays are rejected).
+                        alt((
+                            scalar_value_parser,
+                            delimited(ws, map(array, Value::VArray), ws),
+                        )),
                     ),
                 ),
                 ws,
@@ -459,8 +466,8 @@ fn map_value(input: &str) -> ParseResult<'_, Value> {
     )(input)
 }
 
-/// Parse any value type
-pub fn value_parser(input: &str) -> ParseResult<'_, Value> {
+/// Parse a scalar value: any value except an array or a map
+pub fn scalar_value_parser(input: &str) -> ParseResult<'_, Value> {
     delimited(
         ws,
         alt((
@@ -471,8 +478,6 @@ pub fn value_parser(input: &str) -> ParseResult<'_, Value> {
             }),
             // String (quoted)
             map(string_value, Value::VString),
-            // Map (before array, since both use braces/brackets)
-            map_value,
             // Range (before number, since it contains ..)
             map(range, Value::VRange),
             // Measurement (before number, since it's number + letters)
@@ -481,11 +486,18 @@ pub fn value_parser(input: &str) -> ParseResult<'_, Value> {
             number,
             // Boolean
             map(boolean, Value::VBoolean),
-            // Array
-            map(array, Value::VArray),
             // Unquoted symbol (last, most permissive)
             map(unquoted_identifier, Value::VSymbol),
         )),
+        ws,
+    )(input)
+}
+
+/// Parse any value type: a scalar, an array of scalars, or a map
+pub fn value_parser(input: &str) -> ParseResult<'_, Value> {
+    delimited(
+        ws,
+        alt((map_value, map(array, Value::VArray), scalar_value_parser)),
         ws,
     )(input)
 }

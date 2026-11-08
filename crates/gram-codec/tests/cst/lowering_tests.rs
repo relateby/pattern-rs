@@ -186,3 +186,30 @@ fn empty_subject() -> Subject {
         properties: HashMap::new(),
     }
 }
+
+/// `parse_gram` (nom) and `parse_gram_cst` + `lower` must accept and reject the
+/// same map shapes: map entries are scalars or arrays of scalars; arrays are
+/// scalars only.
+#[test]
+fn nom_and_cst_agree_on_map_and_array_depth() {
+    let cases = [
+        (r#"(a {m: {city: "P"}})"#, true),
+        (r#"(a {m: {n: "x", aliases: ["a", "b"]}})"#, true),
+        (r#"(a {m: {}})"#, true),
+        (r#"(a {m: ["a", "b"]})"#, true),
+        (r#"(a {m: {k: {j: 1}}})"#, false),
+        (r#"(a {m: {k: [{j: 1}]}})"#, false),
+        (r#"(a {m: {k: [["x"]]}})"#, false),
+        (r#"(a {m: [{j: 1}]})"#, false),
+        (r#"(a {m: [["x"]]})"#, false),
+    ];
+    for (input, valid) in cases {
+        let nom = gram_codec::parse_gram(input);
+        let cst = gram_codec::parse_gram_cst(input);
+        assert_eq!(nom.is_ok(), valid, "nom on {input}");
+        assert_eq!(cst.errors.is_empty(), valid, "cst on {input}");
+        if valid {
+            assert_eq!(nom.unwrap(), lower(cst.tree), "lowered output on {input}");
+        }
+    }
+}

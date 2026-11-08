@@ -49,10 +49,9 @@ scalar 0, array 1, map 2, record 3.
   (`pato/src/commands/parse.rs:155`).
 - **CST path flattens maps to strings.** `cst/parser.rs` (~lines 340, 370)
   converts `VMap` to `Value::String` for annotations.
-- **nom map parser is looser than the grammar.** `parser/value.rs::map_value`
-  recurses through `value_parser`, so it accepts maps of maps and arrays of
-  maps, which tree-sitter-gram rejects. Same pattern can be valid for
-  `parse_gram` and an error for `parse_gram_cst`.
+- **nom map/array depth: aligned.** `parser/value.rs` now bounds depth like the grammar
+  (arrays: scalars; map entries: scalar or array of scalars). A test runs both parsers
+  over nine shapes (`nom_and_cst_agree_on_map_and_array_depth`).
 - Docs not updated: any place that says map values are "scalar only".
 
 ## 3. New JSON interchange schema
@@ -77,5 +76,5 @@ string, array/object value rules. Worth a conformance test against the schema.
 
 1. (done) Capture nested doc comments in the CST.
 2. Fix map serialization and the `pato parse` panic.
-3. Align the nom map parser with the grammar, or retire it for this path.
+3. (done) Align the nom map parser with the grammar.
 4. Add gramdoc parsing and the attachment rules, then decide the Pattern-level home.
