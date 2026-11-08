@@ -306,7 +306,7 @@ fn serialize_record(
         .iter()
         .map(|(key, value)| {
             let value_str = serialize_property_value(value)?;
-            Ok(format!("{}: {}", quote_identifier(key), value_str))
+            Ok(format!("{}: {}", quote_key(key), value_str))
         })
         .collect::<Result<Vec<_>, SerializeError>>()?;
 
@@ -340,7 +340,7 @@ fn serialize_property_value(value: &pattern_core::Value) -> Result<String, Seria
                     }
                     Ok(format!(
                         "{}: {}",
-                        quote_identifier(key),
+                        quote_key(key),
                         serialize_property_value(entry)?
                     ))
                 })
@@ -392,7 +392,20 @@ fn serialize_measurement(unit: &str, value: f64) -> Result<String, SerializeErro
         )));
     }
     // `as i64` also turns -0.0 into 0, so no "-0" is written.
-    Ok(format!("{}{}", value as i64, unit))
+    let text = format!("{}{}", value as i64, unit);
+    // Some spellings are read as something else: `0xff` is a hexadecimal
+    // integer, `0xAcm` a measurement of 172m. Only succeed if the text reads
+    // back as the same measurement.
+    match crate::parser::value::value_parser(&text) {
+        Ok(("", pattern_core::Value::VMeasurement { unit: u, value: v }))
+            if u == unit && v == value => {}
+        _ => {
+            return Err(SerializeError::invalid_structure(format!(
+                "Measurement {value}{unit} is ambiguous in gram notation (reads back as a different value)"
+            )))
+        }
+    }
+    Ok(text)
 }
 
 /// Convert pattern_core::Value to gram_codec::Value
@@ -437,6 +450,18 @@ fn value_from_pattern_value(value: &pattern_core::Value) -> Result<Value, Serial
                 "Measurement values are only supported as record property values",
             ))
         }
+    }
+}
+
+/// Quote a record or map key if needed.
+///
+/// Keys are `symbol | quoted_name | double_quoted_name`: unlike identities and
+/// labels they cannot be bare integers, so integer-looking keys are quoted.
+fn quote_key(s: &str) -> String {
+    if s.starts_with(|c: char| c.is_ascii_digit() || c == '-') {
+        format!("`{}`", escape_backtick_string(s))
+    } else {
+        quote_identifier(s)
     }
 }
 

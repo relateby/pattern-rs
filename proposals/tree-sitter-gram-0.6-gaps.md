@@ -32,6 +32,10 @@ Gaps (found by probing, not by reading):
   `pato parse` / `pato fmt` via lowering lose them. (`pato fmt` works from the
   CST and keeps top-level ones verbatim.) Where docs live at the Pattern level
   is undecided; check what gram-data/gram-ontology settled before choosing.
+- **pato fmt refuses documents with nested doc comments** (records, subjects,
+  annotations, header record). It rebuilds output from lowered subjects and raw
+  fragments, which would drop them and let their text be scanned as syntax. Needs
+  real support before it can rewrite such files.
 - **pato lint** does not yet validate `@property`/`@label` names or
   `@element` counts (proposal question 8, `gram-lint-rules.md`).
 

@@ -122,3 +122,17 @@ fn nested_doc_comments_do_not_leak_to_parent_patterns() {
     let docs = nested_docs("[outer | (a {\n  /** on a */\n  x: 1\n}), (b)]");
     assert_eq!(docs, vec![vec!["/** on a */".to_string()]]);
 }
+
+#[test]
+fn doc_comment_inside_header_record_is_captured_on_document() {
+    let result = parse_gram_cst("{ /** documents version */ version: 1 }\n(a)");
+    assert!(result.errors.is_empty(), "{:?}", result.errors);
+    let docs: Vec<_> = result
+        .tree
+        .value
+        .doc_comments
+        .iter()
+        .map(|d| d.text.as_str())
+        .collect();
+    assert_eq!(docs, ["/** documents version */"]);
+}

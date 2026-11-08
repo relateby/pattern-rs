@@ -131,6 +131,19 @@ fn format_source_internal(
         return Err(format!("failed to parse {file_name}"));
     }
 
+    // The formatter rebuilds patterns from the lowered subject plus raw source
+    // fragments, which would drop nested doc comments and let their text be
+    // scanned as syntax. Refuse rather than rewrite documentation away.
+    if has_nested_doc_comments(&parse_result.tree) {
+        let message = format!(
+            "{file_name}: cannot format documents with doc comments inside records, subjects or annotations yet"
+        );
+        if report_errors {
+            eprintln!("{message}");
+        }
+        return Err(message);
+    }
+
     let mut items = Vec::new();
     if let Some(header) = parse_result.tree.value.subject.as_ref() {
         items.push(render_record(header.properties()));
@@ -151,6 +164,10 @@ fn format_source_internal(
     } else {
         Ok(format!("{body}\n"))
     }
+}
+
+fn has_nested_doc_comments(node: &Pattern<SyntaxNode>) -> bool {
+    !node.value.doc_comments.is_empty() || node.elements.iter().any(has_nested_doc_comments)
 }
 
 fn report_parse_errors(file_name: &str, source: &str, errors: &[gram_codec::cst::SourceSpan]) {

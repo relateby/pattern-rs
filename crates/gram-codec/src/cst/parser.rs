@@ -16,7 +16,7 @@ pub fn parse_gram_cst(input: &str) -> CstParseResult {
     {
         errors.push(whole_input_span(input));
         return CstParseResult {
-            tree: document_tree(input, whole_input_span(input), None, vec![]),
+            tree: document_tree(input, whole_input_span(input), None, vec![], vec![]),
             errors,
         };
     }
@@ -24,7 +24,7 @@ pub fn parse_gram_cst(input: &str) -> CstParseResult {
     let Some(tree) = parser.parse(input, None) else {
         errors.push(whole_input_span(input));
         return CstParseResult {
-            tree: document_tree(input, whole_input_span(input), None, vec![]),
+            tree: document_tree(input, whole_input_span(input), None, vec![], vec![]),
             errors,
         };
     };
@@ -67,6 +67,9 @@ pub fn parse_gram_cst(input: &str) -> CstParseResult {
             root.child_by_field_name("root")
                 .map(|record| extract_record_subject(record, input)),
             elements,
+            root.child_by_field_name("root")
+                .map(|record| collect_doc_comments(record, input))
+                .unwrap_or_default(),
         ),
         errors,
     }
@@ -537,6 +540,7 @@ fn document_tree(
     span: SourceSpan,
     subject: Option<Subject>,
     elements: Vec<Pattern<SyntaxNode>>,
+    doc_comments: Vec<DocComment>,
 ) -> Pattern<SyntaxNode> {
     Pattern::pattern(
         SyntaxNode {
@@ -544,7 +548,7 @@ fn document_tree(
             subject,
             span,
             annotations: vec![],
-            doc_comments: vec![],
+            doc_comments,
             text: None,
         },
         elements,

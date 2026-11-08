@@ -109,3 +109,30 @@ fn serializer_rejects_measurements_the_grammar_cannot_express() {
         );
     }
 }
+
+#[test]
+fn integer_looking_keys_are_quoted() {
+    for input in [r#"(a {m: {`1`: "x"}})"#, r#"(a {`1`: "x", `-2`: 3})"#] {
+        let first = parse_gram(input).unwrap();
+        let text = to_gram(&first).unwrap();
+        assert!(!text.contains("{1:") && !text.contains(" 1:"), "{text}");
+        let second = parse_gram(&text).unwrap_or_else(|e| panic!("reparse {text}: {e}"));
+        assert_eq!(first, second, "{input} via {text}");
+        #[cfg(feature = "cst")]
+        assert!(
+            gram_codec::parse_gram_cst(&text).errors.is_empty(),
+            "{text}"
+        );
+    }
+}
+
+#[test]
+fn serializer_rejects_measurements_that_read_back_differently() {
+    for unit in ["xff", "xAc"] {
+        let value = Value::VMeasurement {
+            unit: unit.into(),
+            value: 0.0,
+        };
+        assert!(to_gram(&[pattern_with(value)]).is_err(), "0{unit}");
+    }
+}
