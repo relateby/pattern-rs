@@ -171,31 +171,66 @@ jobs:
       - name: Publish @relateby/gram
         run: npm publish --workspace=@relateby/gram --access public --provenance
 
+  # Builds one abi3 wheel per platform and an sdist, and smoke-tests them, before
+  # anything is uploaded (see python-wheels.yml).
+  build-python:
+    name: Build Python artifacts
+    needs: validate
+    uses: ./.github/workflows/python-wheels.yml
+
   publish-python:
     name: Publish combined Python artifact
     runs-on: ubuntu-latest
-    needs: validate
+    needs: [validate, build-python]
     steps:
-      - uses: actions/checkout@v6
-        with:
-          submodules: true
-      - uses: dtolnay/rust-toolchain@stable
       - uses: actions/setup-python@v6
         with:
           python-version: '3.12'
-      - name: Install build tooling
-        run: pip install maturin twine
-      - name: Resolve Python package directory
-        run: echo "PY_PACKAGE_DIR=python/packages/relateby" >> "$GITHUB_ENV"
-      - name: Build combined wheel
+      - name: Install upload tooling
+        run: pip install twine
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: wheels-*
+          merge-multiple: true
+          path: dist
+      - uses: actions/download-artifact@v4
+        with:
+          name: sdist
+          path: dist
+      - name: Check the artifacts are the expected set for the release version
+        env:
+          RELEASE_VERSION: ${{ needs.validate.outputs.version }}
         run: |
-          cd "$PY_PACKAGE_DIR"
-          python -m pip wheel . -w dist --no-deps
-      - name: Publish relateby-pattern wheel
+          ls -l dist
+          shopt -s nullglob
+          wheels=(dist/*.whl)
+          sdists=(dist/*.tar.gz)
+          all=(dist/*)
+          if [ "${#wheels[@]}" -ne 5 ] || [ "${#sdists[@]}" -ne 1 ] || [ "${#all[@]}" -ne 6 ]; then
+            echo "::error::expected exactly 5 wheels and 1 sdist, found ${#wheels[@]} wheels, ${#sdists[@]} sdists, ${#all[@]} files"
+            exit 1
+          fi
+          for f in "${all[@]}"; do
+            case "$(basename "$f")" in
+              "relateby_pattern-${RELEASE_VERSION}-"*.whl|"relateby_pattern-${RELEASE_VERSION}.tar.gz") ;;
+              *) echo "::error::$f does not match release version ${RELEASE_VERSION}"; exit 1 ;;
+            esac
+          done
+          # The Linux wheels must keep the old-glibc baseline promised in the docs.
+          for arch in x86_64 aarch64; do
+            matches=(dist/*manylinux_2_17_"${arch}".whl)
+            if [ "${#matches[@]}" -ne 1 ]; then
+              echo "::error::expected exactly one manylinux_2_17 ${arch} wheel, found ${#matches[@]}"
+              exit 1
+            fi
+          done
+      - name: Check package metadata
+        run: twine check dist/*
+      - name: Publish relateby-pattern wheels and sdist
         env:
           TWINE_USERNAME: __token__
           TWINE_PASSWORD: ${{ secrets.PYPI_API_TOKEN }}
-        run: twine upload "$PY_PACKAGE_DIR"/dist/*
+        run: twine upload dist/*
 
   verify-release:
     name: Verify published artifacts

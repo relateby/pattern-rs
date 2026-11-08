@@ -60,3 +60,29 @@ testpaths = ["tests"]
 markers = [
     "public_api: validates the supported relateby.pattern and relateby.gram package surface",
 ]
+
+# Release wheels are built with cibuildwheel, run from the repository root:
+#   cibuildwheel --output-dir wheelhouse python/packages/relateby
+# (see .github/workflows/python-wheels.yml). The extension modules use the stable
+# ABI (pyo3 abi3-py38), so one interpreter build per platform produces a
+# cp38-abi3 wheel that works on every supported Python.
+[tool.cibuildwheel]
+build = "cp312-*"
+skip = "*-musllinux_*"
+build-verbosity = 1
+test-command = "python -c \"import relateby.pattern, relateby.gram; print(relateby.gram.round_trip('(a)-[:KNOWS]->(b)'))\""
+
+[tool.cibuildwheel.linux]
+archs = ["native"]
+# Pin the old-glibc baseline (manylinux_2_17 wheels) rather than rely on the
+# cibuildwheel default, which changes between cibuildwheel releases.
+manylinux-x86_64-image = "manylinux2014"
+manylinux-aarch64-image = "manylinux2014"
+before-all = "curl -sSf https://sh.rustup.rs | sh -s -- -y --profile minimal"
+environment = { PATH = "$HOME/.cargo/bin:$PATH" }
+
+[tool.cibuildwheel.macos]
+environment = { MACOSX_DEPLOYMENT_TARGET = "11.0" }
+
+[tool.cibuildwheel.windows]
+archs = ["AMD64"]

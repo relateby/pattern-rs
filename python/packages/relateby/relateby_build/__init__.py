@@ -6,6 +6,7 @@ relateby.pattern and relateby.gram (no top-level pattern_core/gram_codec).
 from __future__ import annotations
 
 import base64
+import io
 import re
 import shutil
 import subprocess
@@ -152,6 +153,42 @@ def _hash_file(path: Path) -> tuple[str, str]:
     return ("sha256", h)
 
 
+def _rewrite_root_manifest(text: str) -> str:
+    """Root Cargo.toml for the sdist: the workspace only has the crates the sdist ships.
+
+    The repository workspace also lists crates/pato, the WASM adapter and other
+    members that are not part of the Python distribution; cargo refuses to load a
+    workspace whose members are missing.
+    """
+    kept = {"crates/pattern-core", "crates/gram-codec", "benches"}
+
+    def keep_member(match: "re.Match[str]") -> str:
+        return match.group(0) if match.group(1) in kept else ""
+
+    return re.sub(r'^[ \t]*"([^"]+)",[ \t]*\n', keep_member, text, flags=re.MULTILINE)
+
+
+def _rewrite_gram_manifest(text: str) -> str:
+    """gram-codec Cargo.toml for the sdist.
+
+    - tree-sitter-gram is an optional path dependency on a git submodule that the
+      sdist does not ship, but cargo resolves it even when the feature is off.
+      Resolve it from crates.io instead by dropping the `path`.
+    - Drop the `cst_parse` example, which lives outside the crate directory.
+    """
+    text = re.sub(
+        r'(tree-sitter-gram\s*=\s*\{[^}]*?),?\s*path\s*=\s*"[^"]*"\s*,?',
+        r"\1,",
+        text,
+    )
+    text = re.sub(
+        r'\[\[example\]\]\s*\nname = "cst_parse"\s*\npath = "[^"]*"\s*\n(required-features = \[[^\]]*\]\s*\n)?',
+        "",
+        text,
+    )
+    return text
+
+
 def _iter_sdist_files(repo: Path, project_dir: Path) -> list[tuple[Path, str]]:
     """Return source files to include in the sdist."""
     files: list[tuple[Path, str]] = []
@@ -162,7 +199,10 @@ def _iter_sdist_files(repo: Path, project_dir: Path) -> list[tuple[Path, str]]:
 
     add_file(project_dir / "pyproject.toml", "pyproject.toml")
     add_file(project_dir / "README.md", "README.md")
-    add_file(repo / "Cargo.toml", "Cargo.toml")
+    # Cargo.toml (workspace root) and crates/gram-codec/Cargo.toml are rewritten in build_sdist.
+    # Cargo.lock is gitignored in this repository, so it is only shipped when one
+    # exists (a local build); release sdists built in CI do not contain it.
+    add_file(repo / "Cargo.lock", "Cargo.lock")
 
     for path in (project_dir / "relateby").rglob("*"):
         if path.is_file() and (path.suffix in {".py", ".pyi"} or path.name == "py.typed"):
@@ -178,6 +218,8 @@ def _iter_sdist_files(repo: Path, project_dir: Path) -> list[tuple[Path, str]]:
                 continue
             if any(part in {"target", ".pytest_cache", "__pycache__"} for part in path.parts):
                 continue
+            if crate_name == "gram-codec" and path.relative_to(crate_dir) == Path("Cargo.toml"):
+                continue  # added rewritten by build_sdist
             if path.suffix in {".rs", ".toml", ".md", ".lock"} or path.name in {"Cargo.toml", "README.md"}:
                 add_file(path, f"crates/{crate_name}/{path.relative_to(crate_dir)}")
 
@@ -363,6 +405,19 @@ def build_sdist(
         root = f"{wheel_dist_name}-{version}"
         for path, arc in _iter_sdist_files(repo, project_dir):
             tf.add(path, f"{root}/{arc}")
+
+        rewritten = {
+            "Cargo.toml": _rewrite_root_manifest((repo / "Cargo.toml").read_text(encoding="utf-8")),
+            "crates/gram-codec/Cargo.toml": _rewrite_gram_manifest(
+                (repo / "crates" / "gram-codec" / "Cargo.toml").read_text(encoding="utf-8")
+            ),
+        }
+        for arc, content in rewritten.items():
+            data = content.encode("utf-8")
+            info = tarfile.TarInfo(f"{root}/{arc}")
+            info.size = len(data)
+            info.mode = 0o644
+            tf.addfile(info, io.BytesIO(data))
 
     return tarball_name
 

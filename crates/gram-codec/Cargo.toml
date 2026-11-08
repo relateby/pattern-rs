@@ -40,7 +40,7 @@ proptest = "1.0"
 [features]
 default = []
 wasm = ["wasm-bindgen", "js-sys"]
-python = ["pyo3", "pythonize"]
+python = ["pyo3", "pythonize", "pyo3/abi3-py38"]
 cst = ["dep:tree-sitter", "dep:tree-sitter-gram"]
 
 [lib]
