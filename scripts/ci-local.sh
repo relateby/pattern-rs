@@ -137,12 +137,19 @@ python_release_build() {
 python_release_smoke() {
     local -a wheels=()
     local wheel
+    local candidate
     local pyproject_dir
     pyproject_dir="$(release_python_package_dir "$REPO_ROOT")"
     shopt -s nullglob
     wheels=("$pyproject_dir/dist/"*.whl)
     shopt -u nullglob
-    wheel="${wheels[0]:-}"
+    # dist/ can hold wheels from earlier versions; use the newest one.
+    wheel=""
+    for candidate in "${wheels[@]}"; do
+        if [[ -z "$wheel" || "$candidate" -nt "$wheel" ]]; then
+            wheel="$candidate"
+        fi
+    done
     if [[ -z "$wheel" ]]; then
         echo "No Python wheel found in $pyproject_dir/dist" >&2
         return 1

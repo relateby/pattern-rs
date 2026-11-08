@@ -74,12 +74,23 @@ When you add an optional library (e.g. a visualization or export helper), add a 
 
 ## Building and publishing
 
-Build the published wheel from repo root:
+For local development, build a wheel for the current platform:
 
 ```bash
 cd python/packages/relateby
 uv build --wheel --python 3.13 --out-dir dist
 ```
+
+Published artifacts are built in CI by `.github/workflows/python-wheels.yml`, which `publish.yml` calls before uploading to PyPI:
+
+- one wheel per platform, built with [cibuildwheel](https://cibuildwheel.pypa.io/) (configuration in `[tool.cibuildwheel]` in `pyproject.toml`): Linux x86_64 and aarch64 (`manylinux_2_17`), macOS arm64 and x86_64 (macOS 11+), and Windows 64-bit
+- an sdist, so other platforms can build from source (needs a Rust toolchain)
+
+The extension modules use the stable ABI (`pyo3/abi3-py38`), so each wheel is tagged `cp38-abi3` and works on every supported Python (3.8–3.13) rather than one wheel per Python version. musllinux (Alpine), Windows ARM64 and 32-bit builds are not published.
+
+The workflow smoke-tests every wheel on Python 3.9 and 3.13 (and 3.8 on Linux and Windows) and installs the sdist before anything is uploaded. It can also be run on its own: use "Run workflow" on the *Python wheels* workflow, or open a pull request that touches Python packaging.
+
+The sdist rewrites two manifests (`Cargo.toml`, `crates/gram-codec/Cargo.toml`) so that cargo can build the crates without the rest of the repository; see `relateby_build`.
 
 The legacy split package directories remain in the repository for migration/reference only and are not part of the supported publish path.
 

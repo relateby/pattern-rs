@@ -73,7 +73,7 @@ Release mode checks:
 - `@relateby/pattern`, `@relateby/graph`, and `@relateby/gram` build and test validation
 - `@relateby/pattern` public export inventory and public consumer typecheck
 - packed-artifact smoke install covering the public npm package surface
-- combined Python wheel build, public stub validation, metadata check, packaged-stub verification, and wheel smoke install
+- combined Python wheel build, public stub validation, metadata check, packaged-stub verification, and wheel smoke install (for the current platform only; the multi-platform wheels and the sdist are built and tested by `python-wheels.yml` during publish)
 
 Release preparation checks:
 
@@ -113,7 +113,7 @@ The publish workflow validates first, then publishes:
 4. `@relateby/pattern`
 5. `@relateby/graph`
 6. `@relateby/gram`
-7. `relateby-pattern` Python wheel
+7. `relateby-pattern` Python wheels (one per platform) and sdist, built and smoke-tested first by `python-wheels.yml`
 
 ## Verification
 
