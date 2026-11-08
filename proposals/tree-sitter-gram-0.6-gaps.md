@@ -74,10 +74,13 @@ string, array/object value rules. Worth a conformance test against the schema.
 ## 5. Measurements
 
 - tree-sitter-gram's `measurement` token is `-?(0|[1-9]\d*)[a-zA-Z]+`: **integer
-  magnitude only**, although the comment above it in `grammar.js` shows a decimal
-  form (`3.5kg`). The nom parser reads decimals, so `parse_gram` accepts `3.5kg`
-  and `parse_gram_cst` rejects it. Upstream should either widen the regex or fix
-  the comment; until then the two parsers disagree on decimal measurements.
+  magnitude only**. The EBNF and g4 agree; only the comment above the rule in
+  `grammar.js` shows a decimal form (`3.5kg`). The nom parser reads decimals, so
+  `parse_gram` accepts `3.5kg` and `parse_gram_cst` rejects it. Raised upstream as
+  [gram-data/tree-sitter-gram#34](https://github.com/gram-data/tree-sitter-gram/issues/34)
+  (integer-only vs. widen the regex). Until it is settled the two parsers disagree
+  on decimal measurements; if upstream keeps integer-only, tighten nom's
+  `measurement` to match.
 - Serializer writes `168cm`, refuses non-integer magnitudes, non-finite or huge
   values, and units that are not ASCII letters, since the grammar would reject
   the output. If upstream widens the regex, relax `serialize_measurement`.
