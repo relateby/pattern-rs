@@ -60,3 +60,20 @@ testpaths = ["tests"]
 markers = [
     "public_api: validates the supported relateby.pattern and relateby.gram package surface",
 ]
+
+# SPIKE: build one abi3 wheel per platform with cibuildwheel, run from the repo
+# root: cibuildwheel --output-dir wheelhouse python/packages/relateby
+# The extension modules use the stable ABI (pyo3 abi3-py38), so a single
+# interpreter build per platform produces a cp38-abi3 wheel for Python 3.8+.
+[tool.cibuildwheel]
+build = "cp312-*"
+skip = "*-musllinux_*"
+build-verbosity = 1
+test-command = "python -c \"import relateby.pattern, relateby.gram; print(relateby.gram.round_trip('(a)-[:KNOWS]->(b)'))\""
+
+[tool.cibuildwheel.linux]
+before-all = "curl -sSf https://sh.rustup.rs | sh -s -- -y --profile minimal"
+environment = { PATH = "$HOME/.cargo/bin:$PATH" }
+
+[tool.cibuildwheel.macos]
+environment = { MACOSX_DEPLOYMENT_TARGET = "11.0" }
