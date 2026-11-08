@@ -1,6 +1,8 @@
 """Tests for graph transform functions: map_graph, map_all_graph, filter_graph,
 fold_graph, map_with_context, para_graph.
 """
+from __future__ import annotations
+
 from relateby.pattern import (
     Pattern,
     Subject,
