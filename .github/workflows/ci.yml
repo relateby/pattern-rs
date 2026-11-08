@@ -234,3 +234,19 @@ jobs:
         run: twine check "$PY_PACKAGE_DIR"/dist/*
       - name: Smoke-test combined wheel
         run: bash ./scripts/release/smoke-python.sh --wheel ./"$PY_PACKAGE_DIR"/dist/*.whl
+
+  python-3-8-import:
+    name: Python 3.8 import check
+    runs-on: ubuntu-24.04
+    if: "${{ github.event_name != 'push' || !startsWith(github.event.head_commit.message, 'release: prepare v') }}"
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-python@v6
+        with:
+          python-version: '3.8'
+      # pyproject.toml declares requires-python >=3.8. The pure-Python package must
+      # import there; this needs no Rust build because relateby.pattern has no native code.
+      - name: Import relateby.pattern on Python 3.8
+        run: |
+          cd python/packages/relateby
+          python -c "import sys; import relateby.pattern; print('relateby.pattern imports on', sys.version.split()[0])"
