@@ -412,6 +412,8 @@ def build_sdist(
                 (repo / "crates" / "gram-codec" / "Cargo.toml").read_text(encoding="utf-8")
             ),
         }
+        # An sdist must carry PKG-INFO (core metadata); PyPI and `twine check` reject it otherwise.
+        rewritten["PKG-INFO"] = _generate_metadata(project_dir, version)
         for arc, content in rewritten.items():
             data = content.encode("utf-8")
             info = tarfile.TarInfo(f"{root}/{arc}")
