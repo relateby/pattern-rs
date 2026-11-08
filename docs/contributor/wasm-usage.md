@@ -28,14 +28,14 @@ This covers:
 cargo install wasm-pack
 
 # Build the WASM module (from repo root)
-cd typescript/packages/pattern
+cd typescript/packages/gram
 npm run build:wasm  # runs wasm-pack --target bundler
 npm run build:ts    # compiles TypeScript
 ```
 
 The `build:wasm` script runs:
 ```bash
-wasm-pack build ../../../adapters/wasm/pattern-wasm --target bundler --out-dir wasm
+wasm-pack build ../../../adapters/wasm/pattern-wasm --target bundler --out-dir ../../../typescript/packages/gram/wasm
 ```
 
 ## Quick Start
