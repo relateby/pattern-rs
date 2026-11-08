@@ -42,11 +42,10 @@ scalar 0, array 1, map 2, record 3.
 
 - Parses and lowers: `{identity: {name: "x", aliases: ["a", "b"]}}` is valid
   in both parsers and appears correctly in JSON output.
-- **Serializer rejects every map**, with or without arrays:
-  `Map values not supported in gram notation properties`
-  (`gram-codec/src/serializer.rs:352`). Pre-existing, but now reachable for the
-  motivating shape. `pato parse` (gram output) **panics** on it
-  (`pato/src/commands/parse.rs:155`).
+- **Serializer: fixed.** Maps are written directly in `serialize_property_value`
+  (the codec `Value` has no map variant), with the grammar depth check, and
+  `pato parse` reports a serialize error instead of panicking. Round-trip tests in
+  `tests/map_roundtrip.rs`. `Measurement` values are still rejected by the serializer.
 - **CST path flattens maps to strings.** `cst/parser.rs` (~lines 340, 370)
   converts `VMap` to `Value::String` for annotations.
 - **nom map/array depth: aligned.** `parser/value.rs` now bounds depth like the grammar
@@ -75,6 +74,6 @@ string, array/object value rules. Worth a conformance test against the schema.
 ## Suggested order
 
 1. (done) Capture nested doc comments in the CST.
-2. Fix map serialization and the `pato parse` panic.
+2. (done) Fix map serialization and the `pato parse` panic.
 3. (done) Align the nom map parser with the grammar.
 4. Add gramdoc parsing and the attachment rules, then decide the Pattern-level home.

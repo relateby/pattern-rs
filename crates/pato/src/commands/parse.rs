@@ -51,9 +51,18 @@ pub fn parse_paths(files: &[PathBuf], output_format: ParseOutputFormat) -> Parse
 
         return match read_stdin() {
             Ok(source) => match parse_source("<stdin>", source) {
-                Ok(parsed) => ParseOutcome {
-                    exit_code: 0,
-                    stdout: Some(render_outputs(&[parsed], output_format)),
+                Ok(parsed) => match render_outputs(&[parsed], output_format) {
+                    Ok(stdout) => ParseOutcome {
+                        exit_code: 0,
+                        stdout: Some(stdout),
+                    },
+                    Err(message) => {
+                        eprintln!("{message}");
+                        ParseOutcome {
+                            exit_code: 2,
+                            stdout: None,
+                        }
+                    }
                 },
                 Err(()) => ParseOutcome {
                     exit_code: 2,
@@ -95,7 +104,19 @@ pub fn parse_paths(files: &[PathBuf], output_format: ParseOutputFormat) -> Parse
         0
     };
 
-    let stdout = (!parsed.is_empty()).then(|| render_outputs(&parsed, output_format));
+    let mut exit_code = exit_code;
+    let stdout = if parsed.is_empty() {
+        None
+    } else {
+        match render_outputs(&parsed, output_format) {
+            Ok(stdout) => Some(stdout),
+            Err(message) => {
+                eprintln!("{message}");
+                exit_code = exit_code.max(2);
+                None
+            }
+        }
+    };
 
     ParseOutcome { exit_code, stdout }
 }
@@ -133,27 +154,30 @@ fn report_parse_errors(file_name: &str, source: &str, errors: &[SourceSpan]) {
     }
 }
 
-fn render_outputs(parsed: &[ParsedInput], output_format: ParseOutputFormat) -> String {
+fn render_outputs(
+    parsed: &[ParsedInput],
+    output_format: ParseOutputFormat,
+) -> Result<String, String> {
     match output_format {
         ParseOutputFormat::Gram => render_gram(parsed),
-        ParseOutputFormat::Sexp => render_sexp(parsed),
-        ParseOutputFormat::Json => render_json(parsed),
-        ParseOutputFormat::Summary => render_summary(parsed),
+        ParseOutputFormat::Sexp => Ok(render_sexp(parsed)),
+        ParseOutputFormat::Json => Ok(render_json(parsed)),
+        ParseOutputFormat::Summary => Ok(render_summary(parsed)),
     }
 }
 
-fn render_gram(parsed: &[ParsedInput]) -> String {
+fn render_gram(parsed: &[ParsedInput]) -> Result<String, String> {
     let patterns = parsed
         .iter()
         .flat_map(|input| input.lowered.iter().cloned())
         .collect::<Vec<_>>();
 
     if patterns.is_empty() {
-        return String::new();
+        return Ok(String::new());
     }
 
-    let raw = to_gram(&patterns).expect("lowered patterns should serialize to gram");
-    fmt::format_gram(&raw).expect("generated gram output should be canonical")
+    let raw = to_gram(&patterns).map_err(|error| format!("cannot render as gram: {error}"))?;
+    Ok(fmt::format_gram(&raw).expect("generated gram output should be canonical"))
 }
 
 fn render_json(parsed: &[ParsedInput]) -> String {

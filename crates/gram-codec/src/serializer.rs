@@ -305,14 +305,62 @@ fn serialize_record(
     let prop_strs: Vec<String> = props
         .iter()
         .map(|(key, value)| {
-            // Convert pattern_core::Value to gram_codec::Value
-            let gram_value = value_from_pattern_value(value)?;
-            let value_str = gram_value.to_gram_notation();
+            let value_str = serialize_property_value(value)?;
             Ok(format!("{}: {}", quote_identifier(key), value_str))
         })
         .collect::<Result<Vec<_>, SerializeError>>()?;
 
     Ok(format!("{{{}}}", prop_strs.join(", ")))
+}
+
+/// Serialize a record property value.
+///
+/// Maps are written directly: `gram_codec::Value` has no map variant, so they
+/// cannot go through `value_from_pattern_value`.
+fn serialize_property_value(value: &pattern_core::Value) -> Result<String, SerializeError> {
+    match value {
+        pattern_core::Value::VMap(map) => {
+            let mut entries: Vec<_> = map.iter().collect();
+            entries.sort_by_key(|(k, _)| *k);
+            let items = entries
+                .into_iter()
+                .map(|(key, entry)| {
+                    // Grammar depth budget: a map entry is a scalar or an array of scalars.
+                    let ok = match entry {
+                        pattern_core::Value::VMap(_) => false,
+                        pattern_core::Value::VArray(items) => items
+                            .iter()
+                            .all(|i| !matches!(i, pattern_core::Value::VMap(_) | pattern_core::Value::VArray(_))),
+                        _ => true,
+                    };
+                    if !ok {
+                        return Err(SerializeError::invalid_structure(format!(
+                            "Map entry '{key}' is nested too deeply: map entries must be scalars or arrays of scalars"
+                        )));
+                    }
+                    Ok(format!(
+                        "{}: {}",
+                        quote_identifier(key),
+                        serialize_property_value(entry)?
+                    ))
+                })
+                .collect::<Result<Vec<_>, SerializeError>>()?;
+            Ok(format!("{{{}}}", items.join(", ")))
+        }
+        pattern_core::Value::VArray(items)
+            if items.iter().any(|i| {
+                matches!(
+                    i,
+                    pattern_core::Value::VMap(_) | pattern_core::Value::VArray(_)
+                )
+            }) =>
+        {
+            Err(SerializeError::invalid_structure(
+                "Array elements must be scalars (no nested arrays or maps)",
+            ))
+        }
+        other => Ok(value_from_pattern_value(other)?.to_gram_notation()),
+    }
 }
 
 /// Convert pattern_core::Value to gram_codec::Value
@@ -346,10 +394,9 @@ fn value_from_pattern_value(value: &pattern_core::Value) -> Result<Value, Serial
             content: content.clone(),
         }),
         pattern_core::Value::VMap(_map) => {
-            // Maps are not supported in gram notation property values
-            // They would need to be serialized as nested patterns
+            // Handled by `serialize_property_value`; the codec Value type has no map variant.
             Err(SerializeError::invalid_structure(
-                "Map values not supported in gram notation properties",
+                "Map values are only supported as record property values",
             ))
         }
         pattern_core::Value::VMeasurement { .. } => {
