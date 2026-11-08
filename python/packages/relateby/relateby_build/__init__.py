@@ -200,6 +200,8 @@ def _iter_sdist_files(repo: Path, project_dir: Path) -> list[tuple[Path, str]]:
     add_file(project_dir / "pyproject.toml", "pyproject.toml")
     add_file(project_dir / "README.md", "README.md")
     # Cargo.toml (workspace root) and crates/gram-codec/Cargo.toml are rewritten in build_sdist.
+    # Cargo.lock is gitignored in this repository, so it is only shipped when one
+    # exists (a local build); release sdists built in CI do not contain it.
     add_file(repo / "Cargo.lock", "Cargo.lock")
 
     for path in (project_dir / "relateby").rglob("*"):

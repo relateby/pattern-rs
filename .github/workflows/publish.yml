@@ -197,22 +197,32 @@ jobs:
         with:
           name: sdist
           path: dist
-      - name: Check the artifacts match the release version
+      - name: Check the artifacts are the expected set for the release version
         env:
           RELEASE_VERSION: ${{ needs.validate.outputs.version }}
         run: |
           ls -l dist
           shopt -s nullglob
-          files=(dist/*)
-          if [ "${#files[@]}" -lt 6 ]; then
-            echo "::error::expected 5 wheels and 1 sdist, found ${#files[@]} files"
+          wheels=(dist/*.whl)
+          sdists=(dist/*.tar.gz)
+          all=(dist/*)
+          if [ "${#wheels[@]}" -ne 5 ] || [ "${#sdists[@]}" -ne 1 ] || [ "${#all[@]}" -ne 6 ]; then
+            echo "::error::expected exactly 5 wheels and 1 sdist, found ${#wheels[@]} wheels, ${#sdists[@]} sdists, ${#all[@]} files"
             exit 1
           fi
-          for f in "${files[@]}"; do
+          for f in "${all[@]}"; do
             case "$(basename "$f")" in
               "relateby_pattern-${RELEASE_VERSION}-"*.whl|"relateby_pattern-${RELEASE_VERSION}.tar.gz") ;;
               *) echo "::error::$f does not match release version ${RELEASE_VERSION}"; exit 1 ;;
             esac
+          done
+          # The Linux wheels must keep the old-glibc baseline promised in the docs.
+          for arch in x86_64 aarch64; do
+            matches=(dist/*manylinux_2_17_"${arch}".whl)
+            if [ "${#matches[@]}" -ne 1 ]; then
+              echo "::error::expected exactly one manylinux_2_17 ${arch} wheel, found ${#matches[@]}"
+              exit 1
+            fi
           done
       - name: Check package metadata
         run: twine check dist/*

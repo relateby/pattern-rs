@@ -74,6 +74,10 @@ test-command = "python -c \"import relateby.pattern, relateby.gram; print(relate
 
 [tool.cibuildwheel.linux]
 archs = ["native"]
+# Pin the old-glibc baseline (manylinux_2_17 wheels) rather than rely on the
+# cibuildwheel default, which changes between cibuildwheel releases.
+manylinux-x86_64-image = "manylinux2014"
+manylinux-aarch64-image = "manylinux2014"
 before-all = "curl -sSf https://sh.rustup.rs | sh -s -- -y --profile minimal"
 environment = { PATH = "$HOME/.cargo/bin:$PATH" }
 
