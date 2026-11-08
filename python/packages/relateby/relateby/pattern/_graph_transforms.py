@@ -5,7 +5,7 @@ the TypeScript graph/transforms.ts functions.
 """
 from __future__ import annotations
 
-from typing import Callable, Optional, TypeVar, Union
+from typing import Callable, Optional, Tuple, TypeVar, Union
 
 from ._pattern import Pattern
 from ._subject import Subject
@@ -17,7 +17,7 @@ R = TypeVar("R")
 # - "delete_container": remove the entire container when any child is removed
 # - "splice_gap": remove the child, keep the container with remaining children
 # - ("replace_with_surrogate", surrogate): replace removed child with surrogate pattern
-Substitution = Union[str, tuple[str, "Pattern[Subject]"]]
+Substitution = Union[str, Tuple[str, "Pattern[Subject]"]]
 
 
 class GraphQuery:
