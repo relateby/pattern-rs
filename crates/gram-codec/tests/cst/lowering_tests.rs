@@ -75,6 +75,7 @@ fn lowering_builds_annotation_wrapper_from_property_annotations_only() {
             span: span(),
             annotations: vec![],
             text: None,
+            doc_comments: vec![],
         },
         vec![Pattern::pattern(
             SyntaxNode {
@@ -92,6 +93,7 @@ fn lowering_builds_annotation_wrapper_from_property_annotations_only() {
                     },
                 ],
                 text: None,
+                doc_comments: vec![],
             },
             vec![Pattern::point(SyntaxNode {
                 kind: SyntaxKind::Node,
@@ -99,6 +101,7 @@ fn lowering_builds_annotation_wrapper_from_property_annotations_only() {
                 span: span(),
                 annotations: vec![],
                 text: None,
+                doc_comments: vec![],
             })],
         )],
     );

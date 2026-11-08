@@ -48,7 +48,7 @@ fn lower_node(node: Pattern<SyntaxNode>) -> Option<Pattern<Subject>> {
                 vec![inner],
             ))
         }
-        SyntaxKind::Comment => None,
+        SyntaxKind::Comment | SyntaxKind::DocComment => None,
     }
 }
 

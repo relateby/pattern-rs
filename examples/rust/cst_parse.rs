@@ -61,5 +61,6 @@ fn format_kind(kind: &SyntaxKind) -> &'static str {
         SyntaxKind::Subject => "Subject",
         SyntaxKind::Annotated => "Annotated",
         SyntaxKind::Comment => "Comment",
+        SyntaxKind::DocComment => "DocComment",
     }
 }

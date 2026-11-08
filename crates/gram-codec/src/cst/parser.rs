@@ -1,6 +1,8 @@
 //! tree-sitter-backed CST parsing entry points.
 
-use crate::cst::{Annotation, ArrowKind, CstParseResult, SourceSpan, SyntaxKind, SyntaxNode};
+use crate::cst::{
+    Annotation, ArrowKind, CstParseResult, DocComment, SourceSpan, SyntaxKind, SyntaxNode,
+};
 use crate::{Pattern, Subject, Value};
 use std::collections::HashSet;
 use tree_sitter::{Node, Parser};
@@ -45,7 +47,8 @@ pub fn parse_gram_cst(input: &str) -> CstParseResult {
             | "relationship_pattern"
             | "subject_pattern"
             | "annotated_pattern"
-            | "comment" => {
+            | "comment"
+            | "doc_comment" => {
                 if let Some(element) = convert_named_node(child, input, &mut errors) {
                     elements.push(element);
                 }
@@ -79,7 +82,8 @@ fn convert_named_node(
         "relationship_pattern" => Some(convert_relationship_pattern(node, input, errors)),
         "subject_pattern" => Some(convert_subject_pattern(node, input, errors)),
         "annotated_pattern" => Some(convert_annotated_pattern(node, input, errors)),
-        "comment" => Some(convert_comment(node, input)),
+        "comment" => Some(convert_comment(node, input, SyntaxKind::Comment)),
+        "doc_comment" => Some(convert_comment(node, input, SyntaxKind::DocComment)),
         "pattern_reference" => Some(convert_pattern_reference(node, input, errors)),
         _ => {
             record_error(errors, node);
@@ -94,6 +98,7 @@ fn convert_node_pattern(node: Node<'_>, input: &str) -> Pattern<SyntaxNode> {
         subject: extract_subject(node, input),
         span: span_from_node(node),
         annotations: vec![],
+        doc_comments: collect_doc_comments(node, input),
         text: None,
     })
 }
@@ -131,6 +136,9 @@ fn convert_relationship_pattern(
             subject: arrow_node.and_then(|kind| extract_subject(kind, input)),
             span: span_from_node(node),
             annotations: vec![],
+            doc_comments: arrow_node
+                .map(|kind| collect_doc_comments(kind, input))
+                .unwrap_or_default(),
             text: None,
         },
         vec![left, right],
@@ -177,6 +185,7 @@ fn convert_subject_pattern(
             subject: extract_subject(node, input),
             span: span_from_node(node),
             annotations: vec![],
+            doc_comments: collect_doc_comments(node, input),
             text: None,
         },
         elements,
@@ -202,18 +211,45 @@ fn convert_annotated_pattern(
             subject: None,
             span: span_from_node(node),
             annotations,
+            doc_comments: collect_doc_comments(node, input),
             text: None,
         },
         inner.into_iter().collect(),
     )
 }
 
-fn convert_comment(node: Node<'_>, input: &str) -> Pattern<SyntaxNode> {
+/// Collect `doc_comment` nodes nested under `node`, without descending into
+/// child patterns (those own their doc comments).
+fn collect_doc_comments(node: Node<'_>, input: &str) -> Vec<DocComment> {
+    fn walk(node: Node<'_>, input: &str, out: &mut Vec<DocComment>) {
+        let mut cursor = node.walk();
+        for child in node.children(&mut cursor) {
+            match child.kind() {
+                "doc_comment" => out.push(DocComment {
+                    text: node_text(child, input).to_string(),
+                    span: span_from_node(child),
+                }),
+                "node_pattern"
+                | "relationship_pattern"
+                | "subject_pattern"
+                | "annotated_pattern"
+                | "pattern_reference" => {}
+                _ => walk(child, input, out),
+            }
+        }
+    }
+    let mut out = Vec::new();
+    walk(node, input, &mut out);
+    out
+}
+
+fn convert_comment(node: Node<'_>, input: &str, kind: SyntaxKind) -> Pattern<SyntaxNode> {
     Pattern::point(SyntaxNode {
-        kind: SyntaxKind::Comment,
+        kind,
         subject: None,
         span: span_from_node(node),
         annotations: vec![],
+        doc_comments: vec![],
         text: Some(node_text(node, input).to_string()),
     })
 }
@@ -242,6 +278,7 @@ fn convert_pattern_reference(
         }),
         span: span_from_node(node),
         annotations: vec![],
+        doc_comments: vec![],
         text: None,
     })
 }
@@ -507,6 +544,7 @@ fn document_tree(
             subject,
             span,
             annotations: vec![],
+            doc_comments: vec![],
             text: None,
         },
         elements,
@@ -519,6 +557,7 @@ fn fallback_pattern(node: Node<'_>) -> Pattern<SyntaxNode> {
         subject: None,
         span: span_from_node(node),
         annotations: vec![],
+        doc_comments: vec![],
         text: None,
     })
 }

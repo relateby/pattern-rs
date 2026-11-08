@@ -170,9 +170,11 @@ fn report_parse_errors(file_name: &str, source: &str, errors: &[gram_codec::cst:
 
 fn render_top_level_element(source: &str, node: &Pattern<SyntaxNode>) -> String {
     match node.value.kind {
-        SyntaxKind::Comment => source_map::span_text(source, &node.value.span)
-            .trim()
-            .to_string(),
+        SyntaxKind::Comment | SyntaxKind::DocComment => {
+            source_map::span_text(source, &node.value.span)
+                .trim()
+                .to_string()
+        }
         _ => render_pattern(source, node),
     }
 }
@@ -180,9 +182,11 @@ fn render_top_level_element(source: &str, node: &Pattern<SyntaxNode>) -> String 
 fn render_pattern(source: &str, node: &Pattern<SyntaxNode>) -> String {
     match &node.value.kind {
         SyntaxKind::Document => String::new(),
-        SyntaxKind::Comment => source_map::span_text(source, &node.value.span)
-            .trim()
-            .to_string(),
+        SyntaxKind::Comment | SyntaxKind::DocComment => {
+            source_map::span_text(source, &node.value.span)
+                .trim()
+                .to_string()
+        }
         SyntaxKind::Node => {
             format!(
                 "({})",

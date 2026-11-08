@@ -227,6 +227,7 @@ fn render_document_sexp(source: &str, tree: &Pattern<SyntaxNode>) -> String {
 fn render_pattern_lines(source: &str, node: &Pattern<SyntaxNode>, indent: usize) -> Vec<String> {
     match &node.value.kind {
         SyntaxKind::Comment => vec![format!("{}(comment)", spaces(indent))],
+        SyntaxKind::DocComment => vec![format!("{}(doc_comment)", spaces(indent))],
         SyntaxKind::Node => {
             if is_pattern_reference(source, node) {
                 render_pattern_reference_lines(source, node, indent)
@@ -773,7 +774,7 @@ fn count_summary(source: &str, tree: &Pattern<SyntaxNode>) -> SummaryCounts {
 
 fn count_summary_inner(source: &str, node: &Pattern<SyntaxNode>, counts: &mut SummaryCounts) {
     match &node.value.kind {
-        SyntaxKind::Document | SyntaxKind::Comment => {}
+        SyntaxKind::Document | SyntaxKind::Comment | SyntaxKind::DocComment => {}
         SyntaxKind::Node => {
             if !is_pattern_reference(source, node) {
                 counts.nodes += 1;

@@ -542,7 +542,7 @@ fn collect_identity_occurrences_inner(
             }
             return;
         }
-        SyntaxKind::Comment => return,
+        SyntaxKind::Comment | SyntaxKind::DocComment => return,
         SyntaxKind::Annotated => {
             for child in &pattern.elements {
                 collect_identity_occurrences_inner(source, child, top_level, occurrences);
@@ -598,7 +598,7 @@ fn collect_label_occurrences_inner(
     occurrences: &mut Vec<LabelOccurrence>,
 ) {
     match pattern.value.kind {
-        SyntaxKind::Document | SyntaxKind::Comment => {}
+        SyntaxKind::Document | SyntaxKind::Comment | SyntaxKind::DocComment => {}
         SyntaxKind::Annotated => {
             for child in &pattern.elements {
                 collect_label_occurrences_inner(source, child, occurrences);

@@ -25,6 +25,7 @@ pub enum SyntaxKind {
     Subject,
     Annotated,
     Comment,
+    DocComment,
 }
 
 #[derive(Clone, Debug)]
@@ -46,6 +47,18 @@ pub struct SyntaxNode {
     pub span: SourceSpan,
     pub annotations: Vec<Annotation>,
     pub text: Option<String>,
+    /// Doc comments (`/** ... */`) nested inside this node's own subject, record
+    /// or element list, in source order. Top-level doc comments are separate
+    /// `SyntaxKind::DocComment` nodes. Attachment to a specific property or
+    /// element is left to consumers (compare spans).
+    pub doc_comments: Vec<DocComment>,
+}
+
+/// A raw documentation comment with its source span. Contents are not parsed.
+#[derive(Clone, Debug, PartialEq, Eq)]
+pub struct DocComment {
+    pub text: String,
+    pub span: SourceSpan,
 }
 
 #[derive(Clone, Debug)]
