@@ -77,3 +77,6 @@ environment = { PATH = "$HOME/.cargo/bin:$PATH" }
 
 [tool.cibuildwheel.macos]
 environment = { MACOSX_DEPLOYMENT_TARGET = "11.0" }
+
+[tool.cibuildwheel.windows]
+archs = ["AMD64"]
