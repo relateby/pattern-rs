@@ -80,6 +80,31 @@ jobs:
           /tmp/sdist-venv/bin/pip install sdist/*.tar.gz
           /tmp/sdist-venv/bin/python -I scripts/release/python-smoke.py --expect-distribution relateby-pattern
 
+  # The same gate publish.yml applies before uploading: the artifacts must pass
+  # `twine check` (it rejects, for example, an sdist without PKG-INFO).
+  check-artifacts:
+    name: Check artifact metadata
+    needs: [build-wheels, build-sdist]
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/setup-python@v6
+        with:
+          python-version: '3.12'
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: wheels-*
+          merge-multiple: true
+          path: dist
+      - uses: actions/download-artifact@v4
+        with:
+          name: sdist
+          path: dist
+      - name: twine check
+        run: |
+          python -m pip install twine
+          ls -l dist
+          twine check dist/*
+
   smoke-wheels:
     name: Smoke (${{ matrix.os }}, py${{ matrix.python }})
     needs: build-wheels
