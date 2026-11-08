@@ -347,20 +347,52 @@ fn serialize_property_value(value: &pattern_core::Value) -> Result<String, Seria
                 .collect::<Result<Vec<_>, SerializeError>>()?;
             Ok(format!("{{{}}}", items.join(", ")))
         }
-        pattern_core::Value::VArray(items)
-            if items.iter().any(|i| {
-                matches!(
-                    i,
-                    pattern_core::Value::VMap(_) | pattern_core::Value::VArray(_)
-                )
-            }) =>
-        {
+        pattern_core::Value::VArray(items) => {
+            let items = items
+                .iter()
+                .map(serialize_scalar)
+                .collect::<Result<Vec<_>, _>>()?;
+            Ok(format!("[{}]", items.join(", ")))
+        }
+        other => serialize_scalar(other),
+    }
+}
+
+/// Serialize a scalar (anything except an array or a map).
+///
+/// Measurements are written here because `gram_codec::Value` has no
+/// measurement variant.
+fn serialize_scalar(value: &pattern_core::Value) -> Result<String, SerializeError> {
+    match value {
+        pattern_core::Value::VMap(_) | pattern_core::Value::VArray(_) => {
             Err(SerializeError::invalid_structure(
                 "Array elements must be scalars (no nested arrays or maps)",
             ))
         }
+        pattern_core::Value::VMeasurement { unit, value } => serialize_measurement(unit, *value),
         other => Ok(value_from_pattern_value(other)?.to_gram_notation()),
     }
+}
+
+/// Serialize a measurement as `<integer><unit>`, e.g. `168cm`.
+///
+/// tree-sitter-gram's `measurement` token is `-?(0|[1-9]\d*)[a-zA-Z]+`: an
+/// integer magnitude and an ASCII-letter unit, nothing else. (The nom parser is
+/// more permissive and also reads `3.5kg`.) Output the grammar would reject is
+/// refused rather than written.
+fn serialize_measurement(unit: &str, value: f64) -> Result<String, SerializeError> {
+    if unit.is_empty() || !unit.chars().all(|c| c.is_ascii_alphabetic()) {
+        return Err(SerializeError::invalid_structure(format!(
+            "Measurement unit '{unit}' must be one or more ASCII letters"
+        )));
+    }
+    if !value.is_finite() || value.fract() != 0.0 || value.abs() >= 9_007_199_254_740_992.0 {
+        return Err(SerializeError::invalid_structure(format!(
+            "Measurement magnitude {value} is not representable: gram measurements take an integer magnitude"
+        )));
+    }
+    // `as i64` also turns -0.0 into 0, so no "-0" is written.
+    Ok(format!("{}{}", value as i64, unit))
 }
 
 /// Convert pattern_core::Value to gram_codec::Value
@@ -400,9 +432,9 @@ fn value_from_pattern_value(value: &pattern_core::Value) -> Result<Value, Serial
             ))
         }
         pattern_core::Value::VMeasurement { .. } => {
-            // Measurements are not supported in basic gram notation
+            // Handled by `serialize_scalar`; the codec Value type has no measurement variant.
             Err(SerializeError::invalid_structure(
-                "Measurement values not supported in gram notation",
+                "Measurement values are only supported as record property values",
             ))
         }
     }

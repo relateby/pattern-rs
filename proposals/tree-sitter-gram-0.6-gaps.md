@@ -45,7 +45,7 @@ scalar 0, array 1, map 2, record 3.
 - **Serializer: fixed.** Maps are written directly in `serialize_property_value`
   (the codec `Value` has no map variant), with the grammar depth check, and
   `pato parse` reports a serialize error instead of panicking. Round-trip tests in
-  `tests/map_roundtrip.rs`. `Measurement` values are still rejected by the serializer.
+  `tests/map_roundtrip.rs`. Measurements serialize as `<integer><unit>` (see section 5).
 - **CST path flattens maps to strings.** `cst/parser.rs` (~lines 340, 370)
   converts `VMap` to `Value::String` for annotations.
 - **nom map/array depth: aligned.** `parser/value.rs` now bounds depth like the grammar
@@ -70,6 +70,18 @@ string, array/object value rules. Worth a conformance test against the schema.
 - `docs/gram.ebnf`, `gram-reference.md` and `gram.g4` in tree-sitter-gram were
   updated for both changes; `gram.g4` was not in the diff stat I read, so it may
   lag the other grammars.
+
+## 5. Measurements
+
+- tree-sitter-gram's `measurement` token is `-?(0|[1-9]\d*)[a-zA-Z]+`: **integer
+  magnitude only**, although the comment above it in `grammar.js` shows a decimal
+  form (`3.5kg`). The nom parser reads decimals, so `parse_gram` accepts `3.5kg`
+  and `parse_gram_cst` rejects it. Upstream should either widen the regex or fix
+  the comment; until then the two parsers disagree on decimal measurements.
+- Serializer writes `168cm`, refuses non-integer magnitudes, non-finite or huge
+  values, and units that are not ASCII letters, since the grammar would reject
+  the output. If upstream widens the regex, relax `serialize_measurement`.
+- Still open: the CST path turns measurement annotation values into strings.
 
 ## Suggested order
 

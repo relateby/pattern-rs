@@ -49,3 +49,63 @@ fn serializer_rejects_maps_deeper_than_the_grammar_allows() {
         );
     }
 }
+
+#[test]
+fn measurement_values_round_trip() {
+    for input in [
+        "(a {h: 168cm})",
+        "(a {n: -5m, z: 0m})",
+        r#"(a {m: {len: 5Km}, list: [1m, 2m]})"#,
+        "(a {xs: [10kg, 20kg]})",
+    ] {
+        let first = parse_gram(input).unwrap();
+        let text = to_gram(&first).unwrap_or_else(|e| panic!("serialize {input}: {e}"));
+        assert!(
+            !text.contains(".0"),
+            "integer magnitudes stay integers: {text}"
+        );
+        let second = parse_gram(&text).unwrap_or_else(|e| panic!("reparse {text}: {e}"));
+        assert_eq!(first, second, "round trip of {input} via {text}");
+        #[cfg(feature = "cst")]
+        {
+            let cst = gram_codec::parse_gram_cst(&text);
+            assert!(cst.errors.is_empty(), "CST rejects {text}");
+        }
+    }
+}
+
+#[test]
+fn serializer_rejects_measurements_the_grammar_cannot_express() {
+    let bad = [
+        Value::VMeasurement {
+            unit: "kg".into(),
+            value: 3.5,
+        },
+        Value::VMeasurement {
+            unit: "".into(),
+            value: 1.0,
+        },
+        Value::VMeasurement {
+            unit: "m2".into(),
+            value: 1.0,
+        },
+        Value::VMeasurement {
+            unit: "µm".into(),
+            value: 1.0,
+        },
+        Value::VMeasurement {
+            unit: "m".into(),
+            value: f64::NAN,
+        },
+        Value::VMeasurement {
+            unit: "m".into(),
+            value: 1e300,
+        },
+    ];
+    for value in bad {
+        assert!(
+            to_gram(&[pattern_with(value.clone())]).is_err(),
+            "{value:?}"
+        );
+    }
+}
