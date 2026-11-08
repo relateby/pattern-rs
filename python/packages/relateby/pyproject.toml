@@ -72,6 +72,7 @@ build-verbosity = 1
 test-command = "python -c \"import relateby.pattern, relateby.gram; print(relateby.gram.round_trip('(a)-[:KNOWS]->(b)'))\""
 
 [tool.cibuildwheel.linux]
+archs = ["native"]
 before-all = "curl -sSf https://sh.rustup.rs | sh -s -- -y --profile minimal"
 environment = { PATH = "$HOME/.cargo/bin:$PATH" }
 
