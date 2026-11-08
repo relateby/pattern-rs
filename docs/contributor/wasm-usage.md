@@ -2,15 +2,12 @@
 
 This guide covers using pattern-rs from JavaScript/TypeScript via WebAssembly.
 
-## Package
+## Packages
 
-The supported npm artifact is `@relateby/pattern`.
+Two npm packages are involved:
 
-It includes:
-
-- the Gram codec exposed through `Gram`
-- pure TypeScript `Pattern`, `Subject`, `Value`, and `StandardGraph`
-- pure TypeScript graph interfaces and transforms
+- `@relateby/gram` holds the WASM-backed Gram codec, exposed through `Gram` (plus `init()`). The WASM build output (`wasm/`, `wasm-node/`) lives here.
+- `@relateby/pattern` holds the pure TypeScript `Pattern`, `Subject`, `Value`, and `StandardGraph`, graph interfaces and transforms. It has no WASM of its own.
 
 ## Graph API
 
@@ -42,7 +39,10 @@ wasm-pack build ../../../adapters/wasm/pattern-wasm --target bundler --out-dir .
 
 ```typescript
 import { Effect, Option } from "effect"
-import { Gram, StandardGraph } from "@relateby/pattern"
+import { init, Gram } from "@relateby/gram"
+import { StandardGraph } from "@relateby/pattern"
+
+await init()
 
 const patterns = await Effect.runPromise(
   Gram.parse("(alice:Person)-[:KNOWS]->(bob:Person)")
