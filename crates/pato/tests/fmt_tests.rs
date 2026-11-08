@@ -209,3 +209,32 @@ fn unique_temp_dir() -> PathBuf {
     fs::create_dir_all(&path).expect("temp dir should be created");
     path
 }
+
+#[test]
+fn fmt_refuses_to_rewrite_nested_doc_comments() {
+    for input in [
+        "(a /** :Ghost */)\n",
+        "(Person {\n  /** The full name. */\n  name: \"x\"\n})\n",
+        "@key(id) /** @property name */ (a)\n",
+    ] {
+        let output = run_pato_with_stdin(["fmt", "-"], input);
+        assert_eq!(output.status.code(), Some(2), "{input}");
+        assert!(output.stdout.is_empty(), "{input}");
+        assert!(
+            String::from_utf8(output.stderr)
+                .unwrap()
+                .contains("doc comments"),
+            "{input}"
+        );
+    }
+}
+
+#[test]
+fn fmt_keeps_top_level_doc_comments() {
+    let input = "/** A person. */\n(a)\n";
+    let output = run_pato_with_stdin(["fmt", "-"], input);
+    assert_eq!(output.status.code(), Some(0));
+    assert!(String::from_utf8(output.stdout)
+        .unwrap()
+        .contains("/** A person. */"));
+}

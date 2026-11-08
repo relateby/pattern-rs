@@ -7,13 +7,21 @@ use nom::{
     character::complete::multispace1,
     combinator::{recognize, rest, value},
     multi::many0,
-    sequence::{delimited, pair},
+    sequence::{delimited, pair, tuple},
     Parser,
 };
 
 /// Consume whitespace and comments
 pub fn ws(input: &str) -> ParseResult<'_, ()> {
-    value((), many0(alt((value((), multispace1), comment))))(input)
+    value(
+        (),
+        many0(alt((value((), multispace1), doc_comment, comment))),
+    )(input)
+}
+
+/// Parse a documentation comment: /** ... */ (gramdoc; content is not interpreted)
+pub fn doc_comment(input: &str) -> ParseResult<'_, ()> {
+    value((), tuple((tag("/**"), take_until("*/"), tag("*/"))))(input)
 }
 
 /// Parse a comment: // text until newline
@@ -83,6 +91,13 @@ mod tests {
     fn test_ws_with_comment() {
         let (remaining, _) = ws("// comment\nhello").unwrap();
         assert_eq!(remaining, "hello");
+    }
+
+    #[test]
+    fn test_doc_comment() {
+        let (remaining, _) = doc_comment("/** doc\n * @property x y\n */(a)").unwrap();
+        assert_eq!(remaining, "(a)");
+        assert!(doc_comment("/* plain */").is_err());
     }
 
     #[test]

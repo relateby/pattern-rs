@@ -6,4 +6,6 @@ mod syntax_node;
 
 pub use lowering::lower;
 pub use parser::parse_gram_cst;
-pub use syntax_node::{Annotation, ArrowKind, CstParseResult, SourceSpan, SyntaxKind, SyntaxNode};
+pub use syntax_node::{
+    Annotation, ArrowKind, CstParseResult, DocComment, SourceSpan, SyntaxKind, SyntaxNode,
+};
