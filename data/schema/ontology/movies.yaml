@@ -1,0 +1,36 @@
+schema: "https://neo4j.com/docs/ontology-graph-spec/1.0.0/schema.json"
+version: "1.0.0"
+id: movies
+name: Movies
+description: People and the movies they act in.
+nodes:
+  person:
+    label: Person
+    description: A person who acts in movies.
+    aliases: [Actor, Performer]
+    properties:
+      name:
+        type: STRING
+        description: The person's full name.
+        must_exist: true
+  movie:
+    label: Movie
+    description: A film released to the public.
+    aliases: [Film]
+    properties:
+      title:
+        type: STRING
+        description: The title the movie was released under.
+        unique: true
+relationships:
+  acted-in:
+    type: ACTED_IN
+    description: The person appeared in the movie as a cast member.
+    from:
+      node: person
+    to:
+      node: movie
+    properties:
+      role:
+        type: STRING
+        description: The character the person played.

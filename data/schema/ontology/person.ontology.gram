@@ -1,0 +1,18 @@
+
+/**
+ * A human individual.
+ *
+ * @property name The full name of the person.
+ */
+(Person {
+    name: "STRING!"
+})
+
+/**
+ * Un être humain.
+ *
+ * @property name Le nom complet de la personne.
+ */
+[:French {
+      name: "nom"
+} | Person ]
